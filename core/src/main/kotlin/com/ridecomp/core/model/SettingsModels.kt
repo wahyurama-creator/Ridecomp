@@ -1,0 +1,56 @@
+package com.ridecomp.core.model
+
+import com.ridecomp.core.config.AutoPauseConfig
+import com.ridecomp.core.config.ProfileDefaults
+import com.ridecomp.core.config.ReminderConfig
+
+public enum class Sex { MALE, FEMALE }
+
+/** Riding position → CdA for estimated power (05-DATA-MODEL §3.7). */
+public enum class RidingPosition { TOPS, HOODS, DROPS }
+
+/** Surface → rolling resistance for estimated power. */
+public enum class Surface { ROAD, GRAVEL }
+
+public enum class UnitSystem { METRIC, IMPERIAL }
+
+/** Screen behaviour during a ride (02-DESIGN §6). */
+public enum class ScreenMode { ALWAYS_ON, AUTO_DIM, OFF }
+
+/** Automatic battery modes (12-FEATURE-SPECS §3), ordered from least to most restrictive. */
+public enum class BatteryMode { NORMAL, SAVER, CRITICAL, EMERGENCY }
+
+/** Rider profile (05-DATA-MODEL `profile`). */
+public data class RiderProfile(
+    val weightKg: Double = ProfileDefaults.WEIGHT_KG,
+    val bikeWeightKg: Double = ProfileDefaults.BIKE_WEIGHT_KG,
+    val wheelCircumferenceMm: Int = ProfileDefaults.WHEEL_CIRCUMFERENCE_MM,
+    val hrMaxBpm: Int? = null,
+    val hrRestBpm: Int? = null,
+    val ftpW: Int? = null,
+    val birthYear: Int? = null,
+    val sex: Sex? = null,
+    val ridingPosition: RidingPosition = RidingPosition.HOODS,
+    val surface: Surface = Surface.ROAD,
+)
+
+/**
+ * Settings that shape a recording. In Phase 2 these move into activity profiles (12-FEATURE-SPECS §4);
+ * until then one global set is used.
+ */
+public data class RideSettings(
+    val isAutoPauseEnabled: Boolean = AutoPauseConfig.IS_ENABLED_DEFAULT,
+    val autoPauseSpeedMps: Double = AutoPauseConfig.SPEED_THRESHOLD_MPS,
+    val autoPauseDelayS: Int = AutoPauseConfig.DELAY_DEFAULT_S,
+    val idlePromptMin: Int = AutoPauseConfig.IDLE_PROMPT_DEFAULT_MIN,
+    /** Auto lap distance; null = off. */
+    val autoLapM: Double? = null,
+    /** Drink reminder interval of moving time; null = off. */
+    val drinkIntervalMin: Int? = ReminderConfig.DRINK_INTERVAL_DEFAULT_MIN,
+    /** Eat reminder interval of moving time; null = off. */
+    val eatIntervalMin: Int? = ReminderConfig.EAT_INTERVAL_DEFAULT_MIN,
+    val screenMode: ScreenMode = ScreenMode.AUTO_DIM,
+    /** The user may disable the Saver mode only (12-FEATURE-SPECS §3). */
+    val isBatterySaverEnabled: Boolean = true,
+    val unitSystem: UnitSystem = UnitSystem.METRIC,
+)
