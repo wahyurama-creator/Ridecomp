@@ -77,6 +77,10 @@ Proyek mengikuti **Clean Architecture** (aturan lengkap: `08-CODING-RULES.md` §
                    notifikasi, deteksi merek HP, FIT SDK adapter (jika dipilih), GpxReader,
                    AccelerometerSource, BatteryLevelSource, SmsSender, AlertPlayer (getar/bunyi),
                    ShareCardRenderer (Canvas → PNG)
+:ui-common       ← Android library (Compose): design system — tema & token (warna, dimensi, tipografi),
+                   komponen reusable (DataField, BigButton, AlertBanner, ListRow, state kosong/error,
+                   ScreenScaffold), UdfViewModel + ObserveEffects, @ThemePreviews. Tidak bergantung
+                   pada modul lain (keputusan D-06).
 :feature-ride    ← Compose: layar ride, data field, layar pause, ringkasan
 :feature-history ← Compose: riwayat & detail
 :feature-sensors ← Compose: scan & pairing
@@ -87,7 +91,7 @@ Proyek mengikuti **Clean Architecture** (aturan lengkap: `08-CODING-RULES.md` §
 :app             ← Application, navigasi, tema, DI root, i18n (values/ & values-in/)
 ```
 
-**Aturan dependensi:** `:core` tidak bergantung pada modul lain. `:data` & `:platform` bergantung pada `:core` (mengimplementasikan interface-nya). `:feature-*` hanya bergantung pada `:core` dan tidak saling bergantung. `:app` adalah composition root yang menyambungkan implementasi lewat Koin. Semua logika yang bisa diuji tanpa Android berada di `:core`.
+**Aturan dependensi:** `:core` tidak bergantung pada modul lain. `:data` & `:platform` bergantung pada `:core` (mengimplementasikan interface-nya). `:feature-*` hanya bergantung pada `:core` dan `:ui-common`, dan tidak saling bergantung. Aturan ini ditegakkan otomatis oleh root `build.gradle.kts` (build gagal saat konfigurasi) dan aturan detekt `ForbiddenImport` per lapisan (`config/detekt/`). `:app` adalah composition root yang menyambungkan implementasi lewat Koin. Semua logika yang bisa diuji tanpa Android berada di `:core`.
 
 ## 4. Komponen utama & alur data
 
