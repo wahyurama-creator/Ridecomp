@@ -14,6 +14,60 @@ plugins {
     alias(libs.plugins.ktlint) apply false
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.kover) apply false
+    alias(libs.plugins.dependency.check)
+    alias(libs.plugins.license.report) apply false
+}
+
+// ---------------------------------------------------------------------------------------------
+// Supply-chain security (T0.13, 11-SECURITY-RULES §A).
+// ---------------------------------------------------------------------------------------------
+
+/** CVSS score from which a vulnerability is High/Critical and blocks the build (SUP-06). */
+val cveBlockingCvssScore = 7.0f
+
+// SUP-03: lock every resolved configuration (lockfiles are committed). Regenerate consciously with
+// `./gradlew <tasks> --write-locks` whenever a dependency changes.
+allprojects {
+    dependencyLocking {
+        lockAllConfigurations()
+    }
+}
+buildscript {
+    configurations.classpath {
+        resolutionStrategy.activateDependencyLocking()
+    }
+}
+
+// SUP-06: `./gradlew dependencyCheckAggregate`. Set NVD_API_KEY in the environment (never commit it)
+// to download the NVD database quickly.
+dependencyCheck {
+    failBuildOnCVSS = cveBlockingCvssScore
+    formats = listOf("HTML", "JSON")
+    skipTestGroups = true
+    nvd {
+        providers.environmentVariable("NVD_API_KEY").orNull?.let { apiKey = it }
+    }
+    analyzers {
+        assemblyEnabled = false
+        nodeEnabled = false
+        nodeAuditEnabled = false
+        retirejs {
+            enabled = false
+        }
+        ossIndex {
+            enabled = false
+        }
+    }
+}
+
+// SUP-07: `./gradlew generateLicenseReport` -> <module>/build/reports/dependency-license/ for every module.
+// Only what ships in the APK: release runtime of Android modules, runtime of the JVM :core module.
+subprojects {
+    apply(plugin = "com.github.jk1.dependency-license-report")
+    extensions.configure<com.github.jk1.license.LicenseReportExtension> {
+        configurations = arrayOf("releaseRuntimeClasspath", "runtimeClasspath")
+        renderers = arrayOf(com.github.jk1.license.render.InventoryHtmlReportRenderer())
+    }
 }
 
 val detektKotlinVersion = libs.versions.detektKotlin.get()

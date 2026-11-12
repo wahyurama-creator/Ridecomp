@@ -1,3 +1,5 @@
+import java.util.Properties
+
 // :app = composition root: Application, navigation, DI (Koin) wiring, i18n resources.
 plugins {
     alias(libs.plugins.android.application)
@@ -13,8 +15,27 @@ android {
         versionName = "0.1.0"
     }
 
+    // SEC-BLD-02/03: the release key lives outside the repo in keystore.properties (git-ignored).
+    // Without that file the release APK is built unsigned.
+    val keystoreProperties = rootProject.file("keystore.properties").takeIf { it.exists() }?.let { file ->
+        Properties().apply { file.inputStream().use { load(it) } }
+    }
+    if (keystoreProperties != null) {
+        signingConfigs {
+            create("release") {
+                storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+                enableV2Signing = true
+                enableV3Signing = true
+            }
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("release")
             // R8 minify + resource shrinking (DEP-04, SEC-BLD-01).
             optimization {
                 enable = true

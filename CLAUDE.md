@@ -1,45 +1,47 @@
 # CLAUDE.md — Aturan Kerja untuk Claude Code
 
-Proyek: **RideComp**, aplikasi cycling computer untuk HP Android low-end (native Kotlin + Jetpack Compose). Spesifikasi lengkap ada di `docs` (fitur tambahan detail di `../docs`). **Baca semua dokumen di `../docs` sebelum mengerjakan apa pun.** Aturan di `../docs`, `../docs`, `../docs`, dan `../docs` bersifat WAJIB.
+Proyek: **RideComp**, aplikasi cycling computer untuk HP Android low-end (native Kotlin + Jetpack Compose). Spesifikasi lengkap ada di `docs/01-PRD.md` s.d. `docs/07-TEST-PLAN.md` (fitur tambahan detail di `docs/12-FEATURE-SPECS.md`). **Baca semua dokumen di `docs/` sebelum mengerjakan apa pun.** Aturan di `docs/08-CODING-RULES.md`, `docs/09-RELIABILITY-RULES.md`, `docs/10-FEATURE-CHECKLIST.md`, dan `docs/11-SECURITY-RULES.md` bersifat WAJIB. Keputusan yang sudah diambil tercatat di `docs/reports/DECISIONS.md`.
 
 ## Prinsip kerja (WAJIB)
 
-1. **Minta persetujuan sebelum bertindak.** Setiap task dimulai dengan **Rencana** (`docs` tahap ①). Tunggu persetujuan pemilik proyek sebelum menulis kode.
+1. **Minta persetujuan sebelum bertindak.** Setiap task dimulai dengan **Rencana** (`docs/10-FEATURE-CHECKLIST.md` tahap ①). Tunggu persetujuan pemilik proyek sebelum menulis kode. (Pemilik dapat mendelegasikan keputusan; keputusan agent dicatat di `docs/reports/DECISIONS.md`.)
 2. **Jika ada yang ambigu, berikan pilihan.** Jangan menebak. Sajikan 2–3 opsi beserta kelebihan/kekurangannya, lalu tunggu keputusan.
-3. **Satu fase per sesi, satu task per branch.** Ikuti urutan di `docs`. Jangan mengerjakan fitur dari fase berikutnya.
+3. **Satu fase per sesi, satu task per branch.** Ikuti urutan di `docs/06-ROADMAP.md`. Jangan mengerjakan fitur dari fase berikutnya.
 4. **Jangan menambah dependency tanpa izin** (DEP-02). Kelola lewat Gradle version catalog.
-5. **Spesifikasi adalah acuan.** Penyimpangan dari `docs` atau pelanggaran aturan harus dijelaskan, disetujui, ditandai `// RULE-EXCEPTION: <alasan>`, dan dokumen diperbarui.
+5. **Spesifikasi adalah acuan.** Penyimpangan dari `docs/` atau pelanggaran aturan harus dijelaskan, disetujui, ditandai `// RULE-EXCEPTION: <alasan>`, dan dokumen diperbarui.
 6. **Jujur soal status.** Jangan menyatakan sesuatu "berhasil/lulus" tanpa menjalankan perintah verifikasinya dan menampilkan hasilnya.
+7. **Tanpa magic number/string.** Konstanta di satu tempat per lapisan (`com.ridecomp.core.config`, `*Names`/`*Keys`, token `:ui-common`, `strings.xml`). Komponen & helper dibuat reusable (`:ui-common`, `core.util`, `*Ext.kt`).
+8. **Commit setiap task** (Conventional Commits + ID task), di branch `feature/<TaskID>-<slug>`, lalu merge ke `main`.
 
-## Alur setiap task (ringkas; detail di `docs`)
+## Alur setiap task (ringkas; detail di `docs/10-FEATURE-CHECKLIST.md`)
 
 ```
 ① Rencana → (persetujuan) → ② Implementasi + test → ③ Verifikasi (lint, test, LeakCanary, StrictMode, dumpsys, perangkat) → ④ Feature Report → (diterima) → selesai
 ```
-Feature Report memakai `docs`, disimpan di `../docs`.
+Feature Report memakai `docs/templates/FEATURE_REPORT.md`, disimpan di `docs/reports/`.
 
-## Aturan inti (ringkasan; daftar lengkap di `docs`)
+## Aturan inti (ringkasan; daftar lengkap di `docs/08-CODING-RULES.md`)
 
-**Arsitektur:** Clean Architecture + UDF. `:core` (domain, Kotlin murni, tanpa `android.*`) ← `:data`/`:platform` (implementasi) ; `:feature-*` (presentation) hanya bergantung pada `:core`. Repository/source = interface di `:core`. Satu UseCase = satu aksi. Logika bisnis tidak di ViewModel/Composable/Service.
+**Arsitektur:** Clean Architecture + UDF. `:core` (domain, Kotlin murni, tanpa `android.*`) ← `:data`/`:platform` (implementasi) ; `:feature-*` (presentation) hanya bergantung pada `:core` dan `:ui-common` (design system). Repository/source = interface di `:core`. Satu UseCase = satu aksi. Logika bisnis tidak di ViewModel/Composable/Service. ViewModel layar turunan `UdfViewModel` (`:ui-common`).
 
 **Penamaan:** `camelCase` variabel & fungsi · `PascalCase` class & Composable · `SCREAMING_SNAKE_CASE` konstanta & enum entry · `snake_case` resource · package huruf kecil · boolean `is/has/can/should` · sufiks satuan (`distanceM`, `speedMps`, `durationMs`) · sufiks peran (`…UseCase`, `…Repository`, `…RepositoryImpl`, `…ViewModel`, `…UiState`). Kode dalam bahasa Inggris.
 
 **Kotlin:** tidak ada `!!`, tidak ada magic number, `val` & koleksi immutable, `when` exhaustive tanpa `else` untuk sealed, tidak ada catch kosong, tidak menelan `CancellationException`, waktu dari `Clock` yang diinjeksi.
 
-**Coroutines/Compose:** tidak ada `GlobalScope`/`runBlocking`; dispatcher diinjeksi; callback Android lewat `callbackFlow` + `awaitClose { unregister }`; UI collect dengan `collectAsStateWithLifecycle()`; Screen stateless + Preview; satu data field = satu sumber state.
+**Coroutines/Compose:** tidak ada `GlobalScope`/`runBlocking`; dispatcher diinjeksi; callback Android lewat `callbackFlow` + `awaitClose { unregister }`; UI collect dengan `collectAsStateWithLifecycle()`; Screen stateless + Preview (`@ThemePreviews`); satu data field = satu sumber state.
 
-## Reliabilitas (ringkasan; detail di `docs`)
+## Reliabilitas (ringkasan; detail di `docs/09-RELIABILITY-RULES.md`)
 
 - **Setiap resource berat (GPS, BLE GATT, scan, wakelock, foreground service, sensor, MapView, listener) punya pemilik, titik akuisisi, dan titik pelepasan pasti**, terdaftar di tabel §1 dokumen 09.
 - **Saat tidak merekam: tidak ada GPS, BLE, wakelock, maupun foreground service aktif.**
 - Wakelock selalu dengan timeout dan dilepas di `finally`. BLE: `disconnect()` + `close()`. Scan selalu bertimeout.
-- Koleksi di memori berbatas (ring buffer); track di-flush ke DB tiap 5 detik.
+- Koleksi di memori berbatas (`RingBuffer`/`RollingAverage`); track di-flush ke DB tiap 5 detik.
 - LeakCanary (debug) dan StrictMode (debug) aktif; temuan = bug yang wajib diperbaiki.
 - Perekaman di foreground service; recovery setelah crash/kill; kehilangan sensor/izin tidak menghentikan rekaman atau membuat crash.
 
-## Keamanan (ringkasan; detail di `docs`)
+## Keamanan (ringkasan; detail di `docs/11-SECURITY-RULES.md`)
 
-- **Library:** hanya `google()`/`mavenCentral()`; versi dikunci (tanpa `+`); dependency locking & verification metadata aktif; scan CVE (High/Critical = blocker); evaluasi + review merged manifest sebelum menambah dependency; secret scan sebelum commit.
+- **Library:** hanya `google()`/`mavenCentral()` (Plugin Portal hanya untuk plugin build, dibatasi `content{}`); versi dikunci (tanpa `+`); dependency locking & verification metadata aktif; scan CVE (High/Critical = blocker); evaluasi + review merged manifest sebelum menambah dependency; secret scan sebelum commit (`git config core.hooksPath scripts/git-hooks`).
 - **Kode:** semua input luar (GPX, intent, BLE, jaringan) divalidasi; XML tanpa DOCTYPE/entity; komponen `exported=false` kecuali terdokumentasi; PendingIntent `FLAG_IMMUTABLE`; share via FileProvider; data hanya di internal storage; rahasia di Keystore & dikecualikan dari backup; HTTPS saja; tidak ada data lokasi/token di log release.
 - **Setiap task:** jawab checklist review keamanan manual (§D, 13 poin). **Setiap akhir fase:** scan CVE, lisensi, update dependency, MobSF atas APK release, perbarui threat model.
 
@@ -54,11 +56,12 @@ Feature Report memakai `docs`, disimpan di `../docs`.
 
 ```
 ./gradlew ktlintCheck detekt lint test koverVerify   # setiap task (Lint Security = error)
-gitleaks protect --staged                           # sebelum commit
-./gradlew dependencyCheckAnalyze                    # bila dependency berubah & setiap akhir fase
+scripts/git-hooks/pre-commit (otomatis saat commit)  # secret scan; gitleaks bila terpasang
+./gradlew dependencyCheckAggregate                  # bila dependency berubah & setiap akhir fase (NVD_API_KEY disarankan)
+./gradlew generateLicenseReport                     # akhir fase
 ```
-(Nama task/tool disesuaikan dengan pilihan yang disetujui di Fase 0.)
-Plus verifikasi manual sesuai `docs` tahap ③.
+Daemon Gradle berjalan di JDK 21 (`gradle/gradle-daemon-jvm.properties`, lihat D-07).
+Plus verifikasi manual sesuai `docs/10-FEATURE-CHECKLIST.md` tahap ③.
 
 ## Yang TIDAK boleh dilakukan
 
