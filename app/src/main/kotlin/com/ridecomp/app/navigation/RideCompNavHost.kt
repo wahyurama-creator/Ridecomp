@@ -10,9 +10,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import com.ridecomp.feature.history.ui.ActivityDetailRoute
 import com.ridecomp.feature.history.ui.HistoryRoute
+import com.ridecomp.feature.history.ui.StravaHelpRoute
 import com.ridecomp.feature.ride.ui.HomeRoute
 import com.ridecomp.feature.ride.ui.PreRideRoute
 import com.ridecomp.feature.ride.ui.RideRoute
@@ -35,6 +39,13 @@ object AppRoutes {
     const val PROFILE = "profile"
     const val RIDE_SETTINGS = "ride_settings"
     const val BATTERY_HELP = "battery_help"
+    const val STRAVA_HELP = "strava_help"
+    const val ARG_ACTIVITY_ID = "activityId"
+    const val ACTIVITY_DETAIL = "activity/{$ARG_ACTIVITY_ID}"
+
+    const val NO_ACTIVITY = -1L
+
+    fun activityDetail(activityId: Long): String = "activity/$activityId"
 
     /** Full-screen routes where the bottom bar is hidden (ride flow, onboarding). */
     val FULL_SCREEN: Set<String> = setOf(ONBOARDING, PRE_RIDE, RIDE, SUMMARY)
@@ -54,9 +65,7 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
             OnboardingRoute(onDone = { navController.navigateClearingBackStack(TopLevelDestination.HOME.route) })
         }
         rideGraph(navController)
-        composable(TopLevelDestination.HISTORY.route) {
-            HistoryRoute(onStartRide = { navController.navigate(AppRoutes.PRE_RIDE) })
-        }
+        historyGraph(navController)
         composable(TopLevelDestination.ROUTES.route) {
             // TODO(T3.1): open the GPX file picker.
             RoutesRoute(onImportGpx = {})
@@ -100,11 +109,33 @@ private fun NavGraphBuilder.rideGraph(navController: NavHostController) {
     }
     composable(AppRoutes.SUMMARY) {
         SummaryRoute(
-            // TODO(T1.13): open the activity detail of the saved ride.
-            onSaved = { navController.navigateClearingBackStack(TopLevelDestination.HISTORY.route) },
+            onSaved = { activityId ->
+                navController.navigateClearingBackStack(TopLevelDestination.HISTORY.route)
+                navController.navigate(AppRoutes.activityDetail(activityId))
+            },
             onDiscarded = { navController.navigateClearingBackStack(TopLevelDestination.HOME.route) },
         )
     }
+}
+
+private fun NavGraphBuilder.historyGraph(navController: NavHostController) {
+    composable(TopLevelDestination.HISTORY.route) {
+        HistoryRoute(
+            onStartRide = { navController.navigate(AppRoutes.PRE_RIDE) },
+            onOpenActivity = { id -> navController.navigate(AppRoutes.activityDetail(id)) },
+        )
+    }
+    composable(
+        AppRoutes.ACTIVITY_DETAIL,
+        arguments = listOf(navArgument(AppRoutes.ARG_ACTIVITY_ID) { type = NavType.LongType }),
+    ) { entry ->
+        ActivityDetailRoute(
+            activityId = entry.arguments?.getLong(AppRoutes.ARG_ACTIVITY_ID) ?: AppRoutes.NO_ACTIVITY,
+            onDeleted = { navController.popBackStack() },
+            onOpenStravaHelp = { navController.navigate(AppRoutes.STRAVA_HELP) },
+        )
+    }
+    composable(AppRoutes.STRAVA_HELP) { StravaHelpRoute() }
 }
 
 private fun openSection(section: SettingsSection, navController: NavHostController, context: Context) {

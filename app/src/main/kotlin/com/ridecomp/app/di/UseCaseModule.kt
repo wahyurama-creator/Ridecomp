@@ -3,6 +3,7 @@ package com.ridecomp.app.di
 import com.ridecomp.core.usecase.CompleteOnboardingUseCase
 import com.ridecomp.core.usecase.DeleteActivityUseCase
 import com.ridecomp.core.usecase.EstimateHrMaxUseCase
+import com.ridecomp.core.usecase.ExportActivityUseCase
 import com.ridecomp.core.usecase.ExportFileStore
 import com.ridecomp.core.usecase.ExportFitUseCase
 import com.ridecomp.core.usecase.ExportGpxUseCase
@@ -23,9 +24,12 @@ import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.PerformRideActionUseCase
 import com.ridecomp.core.usecase.ReadBatteryUseCase
 import com.ridecomp.core.usecase.RenameActivityUseCase
+import com.ridecomp.core.usecase.SaveActivityFileUseCase
 import com.ridecomp.core.usecase.SaveProfileUseCase
 import com.ridecomp.core.usecase.SaveRideSettingsUseCase
+import com.ridecomp.core.usecase.ShareActivityFileUseCase
 import com.ridecomp.core.usecase.StartRideUseCase
+import com.ridecomp.core.usecase.SuggestExportFileNameUseCase
 import com.ridecomp.platform.export.AndroidExportFileStore
 import com.ridecomp.platform.export.AndroidExportedFileHandler
 import java.time.ZoneId
@@ -62,4 +66,8 @@ val useCaseModule = module {
     factory { HandleRecoveredRideUseCase(get(), get()) }
     factory { ObserveGpsStatusUseCase(get()) }
     factory { ReadBatteryUseCase(get()) }
+    factory { ExportActivityUseCase(get(), get()) }
+    factory { ShareActivityFileUseCase(get(), get()) }
+    factory { SaveActivityFileUseCase(get(), get()) }
+    factory { SuggestExportFileNameUseCase(get(), get()) }
 }

@@ -3,4 +3,39 @@
     <string name="history_title">Riwayat</string>
     <string name="history_empty">Belum ada ride. Mulai ride pertamamu</string>
     <string name="history_empty_action">MULAI RIDE</string>
+    <string name="history_item_subtitle">%1$s · %2$s · %3$s</string>
+    <string name="history_fit_exported">FIT diekspor</string>
+
+    <string name="detail_title">Ride</string>
+    <string name="detail_not_found">Ride ini sudah tidak ada.</string>
+    <string name="detail_distance">Jarak</string>
+    <string name="detail_moving_time">Waktu bergerak</string>
+    <string name="detail_elapsed_time">Waktu total</string>
+    <string name="detail_avg_speed">Kec. rata-rata</string>
+    <string name="detail_max_speed">Kec. maks</string>
+    <string name="detail_ascent">Tanjakan</string>
+    <string name="detail_descent">Turunan</string>
+    <string name="detail_chart_speed">KECEPATAN</string>
+    <string name="detail_chart_elevation">ELEVASI</string>
+    <string name="detail_laps">Lap</string>
+    <string name="detail_lap_row">Lap %1$d</string>
+    <string name="detail_export_fit">EKSPOR FIT</string>
+    <string name="detail_export_gpx">EKSPOR GPX</string>
+    <string name="detail_save_fit">SIMPAN FIT KE DOWNLOAD</string>
+    <string name="detail_strava_help">Cara upload ke Strava</string>
+    <string name="detail_delete">HAPUS RIDE</string>
+    <string name="detail_delete_title">Hapus ride ini?</string>
+    <string name="detail_delete_message">Ride dan file ekspornya akan dihapus permanen.</string>
+    <string name="detail_ok">OK</string>
+    <string name="detail_cancel">Batal</string>
+    <string name="detail_export_failed">File tidak bisa dibuat. Periksa ruang penyimpanan lalu coba lagi.</string>
+    <string name="detail_saved_copy">File tersimpan.</string>
+
+    <string name="strava_title">Upload ke Strava</string>
+    <string name="strava_intro">Strava menerima file FIT dari RideComp. Upload gratis dan manual:</string>
+    <string name="strava_step_1">1. Buka ride di RideComp lalu ketuk EKSPOR FIT. Pilih Strava bila muncul, atau simpan file (Drive atau Download).</string>
+    <string name="strava_step_2">2. Di browser buka strava.com, masuk, lalu buka “Upload aktivitas” (di HP, ubah browser ke “Situs desktop” bila menunya tidak ada).</string>
+    <string name="strava_step_3">3. Pilih “File”, pilih file .fit lalu simpan. Kecepatan, jarak, elevasi, dan (mulai Fase 2) heart rate, cadence, serta power tampil di Strava.</string>
+    <string name="strava_note">Upload otomatis lewat Strava API adalah fitur opsional berikutnya dan memerlukan langganan Strava.</string>
+    <string name="strava_open">BUKA HALAMAN UPLOAD STRAVA</string>
 </resources>
