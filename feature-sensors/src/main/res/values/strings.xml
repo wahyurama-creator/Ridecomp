@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sensors_title">Sensors</string>
+    <string name="sensors_empty">No saved sensors. Scan for heart rate, speed/cadence or power sensors.</string>
+    <string name="sensors_scan_action">Scan</string>
+</resources>

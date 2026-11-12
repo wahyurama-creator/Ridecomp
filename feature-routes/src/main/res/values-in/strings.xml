@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="routes_title">Rute</string>
+    <string name="routes_empty">Belum ada rute. Import file GPX untuk ride mengikuti rute.</string>
+    <string name="routes_import_action">Import GPX</string>
+</resources>

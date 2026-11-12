@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">Pengaturan</string>
+    <string name="settings_profile">Profil</string>
+    <string name="settings_profile_subtitle">Berat badan, sepeda, ukuran roda, HR max, FTP</string>
+    <string name="settings_data_pages">Halaman data</string>
+    <string name="settings_screen_battery">Layar &amp; baterai</string>
+    <string name="settings_safety">Keselamatan</string>
+    <string name="settings_offline_maps">Peta offline</string>
+    <string name="settings_units">Satuan</string>
+    <string name="settings_language">Bahasa</string>
+    <string name="settings_backup">Backup &amp; restore</string>
+    <string name="settings_battery_help">HP saya mematikan app</string>
+</resources>

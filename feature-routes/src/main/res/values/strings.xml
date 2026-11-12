@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="routes_title">Routes</string>
+    <string name="routes_empty">No routes yet. Import a GPX file to ride a route.</string>
+    <string name="routes_import_action">Import GPX</string>
+</resources>

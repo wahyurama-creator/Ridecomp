@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="history_title">Riwayat</string>
+    <string name="history_empty">Belum ada ride. Mulai ride pertamamu</string>
+    <string name="history_empty_action">MULAI RIDE</string>
+</resources>

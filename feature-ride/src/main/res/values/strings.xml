@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ride_home_title">RideComp</string>
+    <string name="ride_start_button">START RIDE</string>
+    <string name="ride_home_no_last_ride">No rides yet. Your last ride summary will appear here.</string>
+</resources>
