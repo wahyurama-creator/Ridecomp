@@ -119,3 +119,25 @@ public class SensorFusion(
 
     private fun Long?.isFresh(nowMs: Long): Boolean = this != null && nowMs - this <= RecordingConfig.SAMPLE_MAX_AGE_MS
 }
+
+/** Sensor problems shown as ride banners (T2.9, F-14). */
+public enum class SensorAlertType { LOST, LOW_BATTERY }
+
+public data class SensorAlert(val kind: SensorKind, val type: SensorAlertType, val batteryPercent: Int? = null)
+
+/**
+ * Current sensor alerts, one per sensor at most: a sensor that was connected and dropped is LOST (it is
+ * reconnecting); a connected sensor below [SensorLimits.LOW_BATTERY_PERCENT] has LOW_BATTERY. A sensor
+ * that never connected during this ride is not reported.
+ */
+public fun SensorSnapshot.alerts(): List<SensorAlert> = SensorKind.entries.mapNotNull { kind ->
+    val state = states[kind]
+    val battery = state?.batteryPercent
+    when {
+        state == null -> null
+        !state.isConnected -> SensorAlert(kind, SensorAlertType.LOST)
+        battery != null && battery < SensorLimits.LOW_BATTERY_PERCENT ->
+            SensorAlert(kind, SensorAlertType.LOW_BATTERY, battery)
+        else -> null
+    }
+}

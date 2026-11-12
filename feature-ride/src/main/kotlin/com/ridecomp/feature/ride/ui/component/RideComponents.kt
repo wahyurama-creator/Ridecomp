@@ -1,5 +1,6 @@
 package com.ridecomp.feature.ride.ui.component
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -14,10 +15,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.ReminderType
 import com.ridecomp.core.engine.recording.RideAction
+import com.ridecomp.core.engine.sensors.SensorAlert
+import com.ridecomp.core.engine.sensors.SensorAlertType
+import com.ridecomp.core.engine.sensors.SensorKind
+import com.ridecomp.core.engine.sensors.SensorLimits
+import com.ridecomp.core.engine.sensors.SensorState
+import com.ridecomp.core.engine.sensors.alerts
 import com.ridecomp.core.model.BatteryMode
 import com.ridecomp.core.model.RideStatus
 import com.ridecomp.core.util.UnitFormatter
@@ -68,9 +76,15 @@ fun RideField(
     )
 }
 
-/** Thin top bar: REC/PAUSE, GPS state, battery mode (02-DESIGN §3.4). */
+/** Thin top bar: REC/PAUSE, GPS state, connected sensors, battery mode (02-DESIGN §3.4). */
 @Composable
-fun RideStatusBar(status: RideStatus, hasGpsFix: Boolean, batteryMode: BatteryMode, modifier: Modifier = Modifier) {
+fun RideStatusBar(
+    status: RideStatus,
+    hasGpsFix: Boolean,
+    batteryMode: BatteryMode,
+    modifier: Modifier = Modifier,
+    sensors: Map<SensorKind, SensorState> = emptyMap(),
+) {
     val colors = RideCompTheme.colors
     val (label, color) = when (status) {
         RideStatus.RECORDING -> stringResource(R.string.ride_status_rec) to colors.danger
@@ -94,6 +108,13 @@ fun RideStatusBar(status: RideStatus, hasGpsFix: Boolean, batteryMode: BatteryMo
             BatteryMode.NORMAL -> colors.textSecondary
             BatteryMode.SAVER -> colors.warnText
             BatteryMode.CRITICAL, BatteryMode.EMERGENCY -> colors.danger
+        }
+        SensorKind.entries.filter { it in sensors }.forEach { kind ->
+            Text(
+                text = kind.statusLabel(),
+                style = RideCompTheme.typography.dataLabel,
+                color = sensors.getValue(kind).statusColor(),
+            )
         }
         Text(text = BATTERY_LABEL, style = RideCompTheme.typography.dataLabel, color = batteryColor)
     }
@@ -154,6 +175,7 @@ fun RideBanners(live: LiveRide, onAction: (RideAction) -> Unit) {
             ),
         )
     }
+    SensorBanners(live.sensors.snapshot.alerts())
     BatteryBanner(live.batteryMode)
 }
 
@@ -171,3 +193,48 @@ private fun BatteryBanner(mode: BatteryMode) {
 /** Short status symbols (not translated). */
 private const val GPS_LABEL = "GPS"
 private const val BATTERY_LABEL = "BAT"
+private const val HEART_RATE_LABEL = "HR"
+private const val CADENCE_LABEL = "CAD"
+private const val POWER_LABEL = "PWR"
+
+/** One banner per sensor problem (T2.9). Lost = warning while it reconnects; low battery = info. */
+@Composable
+private fun SensorBanners(alerts: List<SensorAlert>) {
+    alerts.forEach { alert ->
+        val sensorName = stringResource(alert.kind.nameRes())
+        when (alert.type) {
+            SensorAlertType.LOST -> AlertBanner(
+                message = stringResource(R.string.ride_sensor_lost, sensorName),
+                severity = AlertSeverity.WARN,
+            )
+            SensorAlertType.LOW_BATTERY -> AlertBanner(
+                message = stringResource(R.string.ride_sensor_battery_low, sensorName, alert.batteryPercent ?: 0),
+                severity = AlertSeverity.INFO,
+            )
+        }
+    }
+}
+
+@StringRes
+private fun SensorKind.nameRes(): Int = when (this) {
+    SensorKind.HEART_RATE -> R.string.ride_sensor_hr
+    SensorKind.SPEED_CADENCE -> R.string.ride_sensor_csc
+    SensorKind.POWER -> R.string.ride_sensor_power
+}
+
+private fun SensorKind.statusLabel(): String = when (this) {
+    SensorKind.HEART_RATE -> HEART_RATE_LABEL
+    SensorKind.SPEED_CADENCE -> CADENCE_LABEL
+    SensorKind.POWER -> POWER_LABEL
+}
+
+@Composable
+private fun SensorState.statusColor(): Color {
+    val colors = RideCompTheme.colors
+    val battery = batteryPercent
+    return when {
+        !isConnected -> colors.danger
+        battery != null && battery < SensorLimits.LOW_BATTERY_PERCENT -> colors.warnText
+        else -> colors.ok
+    }
+}
