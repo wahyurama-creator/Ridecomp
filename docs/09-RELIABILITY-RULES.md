@@ -28,6 +28,8 @@ Setiap resource berat **harus** memiliki satu pemilik, titik akuisisi, dan titik
 | Bitmap kartu share | `ShareCardRenderer` | Render dimulai | Setelah PNG ditulis | `recycle()`/lepas referensi | Memory Profiler + LeakCanary |
 | Stream backup/restore (ZIP, DB snapshot) | `BackupManager` | Mulai backup/restore | Selesai/gagal/dibatalkan | `use { }` + hapus folder sementara | StrictMode `detectLeakedClosableObjects` |
 | File sementara share/FIT darurat | Pemanggil | Dibuat | Setelah dibagikan / app dibuka berikutnya / ride disimpan | Hapus file | Cek folder cache |
+| File crash log (`filesDir/crash_logs`) | `CrashLogStore` (`:platform`) | Uncaught exception | Rotasi: hanya 10 file terbaru disimpan; `clear()` dari pengaturan | `File.delete()` | `CrashLogStoreTest` |
+| Database Room | Koin `single` di `:app` (`dataModule`) | Akses pertama (lazy) | Hidup selama proses (by design; satu instance) | — | LeakCanary; StrictMode (tidak ada akses di main thread) |
 
 **Aturan REL-01:** setiap resource baru yang ditambahkan ke kode **wajib** ditambahkan ke tabel ini di PR yang sama.
 

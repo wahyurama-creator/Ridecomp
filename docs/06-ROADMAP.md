@@ -18,19 +18,19 @@ Spesifikasi detail fitur tambahan: `../12-FEATURE-SPECS.md`.
 ---
 
 ## Fase 0 — Fondasi
-- [ ] T0.1 Buat proyek Android Kotlin + Compose (`com.ridecomp.app` atau sesuai keputusan pemilik), minSdk 26, Gradle Kotlin DSL + version catalog, R8 di release, ABI splits.
-- [ ] T0.2 Struktur multi-modul sesuai `03-ARCHITECTURE.md` §3; pastikan `:core` adalah modul Kotlin/JVM murni (build gagal bila mengimpor `android.*`).
-- [ ] T0.3 Tema gelap + design tokens (`02-DESIGN.md` §4), komponen `BigButton`, `DataField` (dengan angka tabular & auto-fit).
-- [ ] T0.4 Navigation Compose & kerangka layar: Home, Riwayat, Sensor, Rute, Pengaturan (placeholder).
-- [ ] T0.5 Room DB + skema awal (`profile`, `settings`, `activities`, `track_points`, `events`, `laps`) + migrasi.
-- [ ] T0.6 i18n via string resources (`values/` en, `values-in/` id) + Koin DI root.
-- [ ] T0.7 Tooling kualitas: `.editorconfig` (sudah ada), ktlint, detekt, Android Lint, Kover (coverage `:core` ≥ 80%), satu perintah verifikasi (`./gradlew ktlintCheck detekt lint test koverVerify`). Sesuaikan nama task bila plugin berbeda, dengan persetujuan.
-- [ ] T0.8 Usulkan daftar dependency + versi → tunggu persetujuan.
-- [ ] T0.9 Fondasi reliabilitas: LeakCanary (`debugImplementation`), StrictMode `detectAll` di build debug, uncaught exception handler → crash log lokal (ERR-06).
-- [ ] T0.10 Abstraksi dasar di `:core`: `Clock`, `DispatcherProvider`, `Logger`, ring buffer generik + implementasi Android & fake untuk test.
-- [ ] T0.11 Penjaga arsitektur: build gagal bila `:core` mengimpor `android.*`/`androidx.*`, atau `:feature-*` bergantung pada `:data`/`:platform` (mis. aturan detekt/Konsist atau pemeriksaan Gradle; ajukan pilihan).
-- [ ] T0.12 Folder `docs/reports/` + Feature Report pertama (untuk Fase 0).
-- [ ] T0.13 Fondasi keamanan (`11-SECURITY-RULES.md`): repository terbatas, dependency locking, `verification-metadata.xml`, validasi Gradle Wrapper, scan CVE (ajukan pilihan: OWASP Dependency-Check / OSV-Scanner), laporan lisensi, gitleaks pre-commit, Android Lint Security = error, Network Security Config (tanpa cleartext), aturan backup, semua komponen `exported=false`, `.gitignore` rahasia (sudah ada).
+- [x] T0.1 Buat proyek Android Kotlin + Compose (`com.ridecomp.app` atau sesuai keputusan pemilik), minSdk 26, Gradle Kotlin DSL + version catalog, R8 di release, ABI splits.
+- [x] T0.2 Struktur multi-modul sesuai `03-ARCHITECTURE.md` §3; pastikan `:core` adalah modul Kotlin/JVM murni (build gagal bila mengimpor `android.*`).
+- [x] T0.3 Tema gelap + design tokens (`02-DESIGN.md` §4), komponen `BigButton`, `DataField` (dengan angka tabular & auto-fit).
+- [x] T0.4 Navigation Compose & kerangka layar: Home, Riwayat, Sensor, Rute, Pengaturan (placeholder).
+- [x] T0.5 Room DB + skema awal (`profile`, `settings`, `activities`, `track_points`, `events`, `laps`) + migrasi.
+- [x] T0.6 i18n via string resources (`values/` en, `values-in/` id) + Koin DI root.
+- [x] T0.7 Tooling kualitas: `.editorconfig` (sudah ada), ktlint, detekt, Android Lint, Kover (coverage `:core` ≥ 80%), satu perintah verifikasi (`./gradlew ktlintCheck detekt lint test koverVerify`). Sesuaikan nama task bila plugin berbeda, dengan persetujuan.
+- [x] T0.8 Usulkan daftar dependency + versi → tunggu persetujuan.
+- [x] T0.9 Fondasi reliabilitas: LeakCanary (`debugImplementation`), StrictMode `detectAll` di build debug, uncaught exception handler → crash log lokal (ERR-06).
+- [x] T0.10 Abstraksi dasar di `:core`: `Clock`, `DispatcherProvider`, `Logger`, ring buffer generik + implementasi Android & fake untuk test.
+- [x] T0.11 Penjaga arsitektur: build gagal bila `:core` mengimpor `android.*`/`androidx.*`, atau `:feature-*` bergantung pada `:data`/`:platform` (mis. aturan detekt/Konsist atau pemeriksaan Gradle; ajukan pilihan).
+- [x] T0.12 Folder `docs/reports/` + Feature Report pertama (untuk Fase 0).
+- [x] T0.13 Fondasi keamanan (`11-SECURITY-RULES.md`): repository terbatas, dependency locking, `verification-metadata.xml`, validasi Gradle Wrapper, scan CVE (ajukan pilihan: OWASP Dependency-Check / OSV-Scanner), laporan lisensi, gitleaks pre-commit, Android Lint Security = error, Network Security Config (tanpa cleartext), aturan backup, semua komponen `exported=false`, `.gitignore` rahasia (sudah ada).
 
 **DoD:** app terpasang di HP fisik, navigasi antar layar jalan, perintah verifikasi lulus tanpa warning, LeakCanary & StrictMode aktif di debug, APK release ter-build.
 
