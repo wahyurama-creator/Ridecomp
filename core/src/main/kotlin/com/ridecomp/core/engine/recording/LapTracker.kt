@@ -1,0 +1,96 @@
+package com.ridecomp.core.engine.recording
+
+import com.ridecomp.core.config.Units
+import com.ridecomp.core.model.Lap
+import com.ridecomp.core.model.LapTrigger
+
+/** Cumulative ride values at one moment; laps are differences between two of these. */
+public data class RideProgress(val timeMs: Long, val distanceM: Double, val movingMs: Long, val ascentM: Double)
+
+/** The running lap, for the lap data page (02-DESIGN §3.4 page 4). */
+public data class LapStatus(
+    /** 1-based number shown to the rider. */
+    val number: Int,
+    val elapsedMs: Long,
+    val distanceM: Double,
+    val movingMs: Long,
+    val avgSpeedMps: Double,
+)
+
+/**
+ * Manual laps and auto laps every [autoLapM] meters (01-PRD F-12). Auto laps are cut exactly at each
+ * multiple of [autoLapM]; the overshoot belongs to the next lap. Feed [onTick] once per second while
+ * recording.
+ */
+public class LapTracker(private val autoLapM: Double? = null) {
+    private var index = 0
+    private var start: RideProgress? = null
+    private var maxSpeedMps = 0.0
+
+    /** Starts the first lap (or resumes after recovery with the given lap [startIndex]). */
+    public fun start(at: RideProgress, startIndex: Int = 0) {
+        index = startIndex
+        start = at
+        maxSpeedMps = 0.0
+    }
+
+    /** Updates the running lap; returns a closed auto lap when its distance was reached. */
+    public fun onTick(now: RideProgress, speedMps: Double?): Lap? {
+        val begin = start
+        if (begin != null && speedMps != null && speedMps > maxSpeedMps) maxSpeedMps = speedMps
+        val reachedLapM = autoLapM?.takeIf { begin != null && now.distanceM - begin.distanceM >= it }
+        // Cut exactly at the lap distance; the remainder starts the next lap.
+        return if (begin != null && reachedLapM != null) {
+            close(now.copy(distanceM = begin.distanceM + reachedLapM), LapTrigger.DISTANCE)
+        } else {
+            null
+        }
+    }
+
+    /** Closes the running lap on the LAP button. */
+    public fun manualLap(now: RideProgress): Lap? = start?.let { close(now, LapTrigger.MANUAL) }
+
+    /** Closes the final lap when the ride finishes; an empty final lap is dropped. */
+    public fun finish(now: RideProgress): Lap? {
+        val begin = start ?: return null
+        val isEmpty = now.distanceM <= begin.distanceM && now.movingMs <= begin.movingMs
+        return if (isEmpty) null.also { start = null } else close(now, LapTrigger.MANUAL).also { start = null }
+    }
+
+    /** Progress of the running lap, or null before the ride starts. */
+    public fun status(now: RideProgress): LapStatus? = start?.let { begin ->
+        val distance = now.distanceM - begin.distanceM
+        val moving = now.movingMs - begin.movingMs
+        LapStatus(
+            number = index + 1,
+            elapsedMs = now.timeMs - begin.timeMs,
+            distanceM = distance,
+            movingMs = moving,
+            avgSpeedMps = averageSpeedMps(distance, moving),
+        )
+    }
+
+    private fun close(end: RideProgress, trigger: LapTrigger): Lap {
+        val begin = requireNotNull(start) { "lap not started" }
+        val distance = end.distanceM - begin.distanceM
+        val movingMs = end.movingMs - begin.movingMs
+        val lap = Lap(
+            index = index,
+            startTimeMs = begin.timeMs,
+            endTimeMs = end.timeMs,
+            distanceM = distance,
+            movingS = movingMs / Units.MS_PER_SECOND,
+            avgSpeedMps = averageSpeedMps(distance, movingMs),
+            maxSpeedMps = maxSpeedMps,
+            ascentM = end.ascentM - begin.ascentM,
+            trigger = trigger,
+        )
+        index++
+        start = end
+        maxSpeedMps = 0.0
+        return lap
+    }
+
+    private fun averageSpeedMps(distanceM: Double, movingMs: Long): Double =
+        if (movingMs > 0) distanceM / (movingMs.toDouble() / Units.MS_PER_SECOND) else 0.0
+}
