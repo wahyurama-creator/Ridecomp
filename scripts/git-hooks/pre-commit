@@ -1,0 +1,41 @@
+#!/bin/sh
+# Secret scan before every commit (SUP-11). Install once per clone:
+#   git config core.hooksPath scripts/git-hooks
+#
+# Uses gitleaks when installed (recommended: https://github.com/gitleaks/gitleaks).
+# Without gitleaks, a basic pattern check on the staged diff is used and a warning is printed.
+
+if command -v gitleaks >/dev/null 2>&1; then
+    gitleaks git --pre-commit --staged --redact --no-banner
+    exit $?
+fi
+
+echo "pre-commit: gitleaks not installed - running basic secret patterns only." >&2
+
+# A password is flagged only when assigned a literal value (not when read, e.g. getProperty("...")).
+QUOTE="[\"']"
+PATTERNS="-----BEGIN [A-Z ]*PRIVATE KEY-----|client_secret[[:space:]]*[=:]"
+PATTERNS="$PATTERNS|(store|key)Password[[:space:]]*=[[:space:]]*$QUOTE?[^\"'[:space:](]+$QUOTE?[[:space:]]*\$"
+PATTERNS="$PATTERNS|AKIA[0-9A-Z]{16}|ghp_[0-9A-Za-z]{36}|xox[baprs]-[0-9A-Za-z-]+|Bearer [0-9A-Za-z._-]{20,}"
+
+# Only added lines, excluding this hook itself and documentation.
+MATCHES=$(git diff --cached -U0 --no-color -- . ':(exclude)scripts/git-hooks/*' ':(exclude)*.md' \
+    | grep -E '^\+' | grep -v '^+++' | grep -En -e "$PATTERNS")
+
+if [ -n "$MATCHES" ]; then
+    echo "pre-commit: possible secret in staged changes:" >&2
+    echo "$MATCHES" | cut -c1-120 >&2
+    echo "Remove it (keep secrets in keystore.properties / environment), or commit with care." >&2
+    exit 1
+fi
+
+for file in $(git diff --cached --name-only --diff-filter=A); do
+    case "$file" in
+        *.jks|*.keystore|*.p12|*.pem|keystore.properties|secrets.properties|local.properties|.env)
+            echo "pre-commit: refusing to commit secret file $file" >&2
+            exit 1
+            ;;
+    esac
+done
+
+exit 0

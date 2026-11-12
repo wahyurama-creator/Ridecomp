@@ -1,19 +1,22 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-   Sample data extraction rules file; uncomment and customize as necessary.
-   See https://developer.android.com/about/versions/12/backup-restore#xml-changes
-   for details.
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Android 12+ backup rules (SEC-STO-03, decision D-15).
+    Cloud backup: nothing. Ride data contains home locations and health data; RideComp has its own
+    (optionally encrypted) backup & restore (F-19), and the PRD keeps data on the device only.
+    Device-to-device transfer (local, cable/Wi-Fi Direct): rides and settings are copied so a new phone
+    keeps its history. Secrets added later (Strava token, Phase 5) must be excluded here.
 -->
 <data-extraction-rules>
     <cloud-backup>
-        <!-- TODO: Use <include> and <exclude> to control what is backed up.
-        <include .../>
-        <exclude .../>
-        -->
+        <exclude domain="root" path="." />
+        <exclude domain="file" path="." />
+        <exclude domain="database" path="." />
+        <exclude domain="sharedpref" path="." />
+        <exclude domain="external" path="." />
     </cloud-backup>
-    <!--
     <device-transfer>
-        <include .../>
-        <exclude .../>
+        <include domain="database" path="." />
+        <include domain="file" path="." />
+        <include domain="sharedpref" path="." />
     </device-transfer>
-    -->
 </data-extraction-rules>
