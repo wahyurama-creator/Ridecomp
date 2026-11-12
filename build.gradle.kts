@@ -49,8 +49,12 @@ dependencyCheck {
     }
     analyzers {
         assemblyEnabled = false
-        nodeEnabled = false
-        nodeAuditEnabled = false
+        nodePackage {
+            enabled = false
+        }
+        nodeAudit {
+            enabled = false
+        }
         retirejs {
             enabled = false
         }
@@ -91,6 +95,10 @@ subprojects {
     }
     tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
         jvmTarget = jvmTargetVersion
+    }
+    // KT-01: zero compiler warnings.
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
+        compilerOptions.allWarningsAsErrors.set(true)
     }
 }
 
