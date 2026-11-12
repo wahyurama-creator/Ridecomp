@@ -94,4 +94,15 @@
     <string name="metric_calories">Calories</string>
     <string name="unit_watts_per_kg">W/kg</string>
     <string name="unit_kcal">kcal</string>
+    <string name="data_pages_title">Data pages</string>
+    <string name="data_pages_field_count">Fields per page</string>
+    <string name="data_pages_first_full_width">First field full width</string>
+    <string name="data_pages_tap_hint">Tap a field to choose its metric.</string>
+    <string name="data_pages_page">Page</string>
+    <string name="data_pages_save">Save</string>
+    <string name="data_pages_add">Add page</string>
+    <string name="data_pages_remove">Remove page</string>
+    <string name="data_pages_reset">Restore defaults</string>
+    <string name="data_pages_choose_metric">Choose metric</string>
+    <string name="data_pages_cancel">Cancel</string>
 </resources>

@@ -5,12 +5,18 @@ import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RideAction
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RideStatus
+import com.ridecomp.core.usecase.ObserveDataPagesUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.PerformRideActionUseCase
+import com.ridecomp.feature.ride.model.DataPage
+import com.ridecomp.feature.ride.model.DefaultDataPages
+import com.ridecomp.feature.ride.model.RideMetricKeys
+import com.ridecomp.feature.ride.model.toDataPages
 import com.ridecomp.ui.udf.UdfViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -29,11 +35,17 @@ sealed interface RideEffect {
 class RideViewModel(
     observeLive: ObserveLiveRideUseCase,
     observeSettings: ObserveRideSettingsUseCase,
+    observeDataPages: ObserveDataPagesUseCase,
     private val performAction: PerformRideActionUseCase,
 ) : UdfViewModel<Unit, RideAction, RideEffect>(Unit) {
     val liveRide: StateFlow<LiveRide> = observeLive()
     val settings: StateFlow<RideSettings> = observeSettings()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), RideSettings())
+
+    /** The rider's pages (T2.8), or the defaults. */
+    val pages: StateFlow<List<DataPage>> = observeDataPages(RideMetricKeys.ALL)
+        .map { layout -> layout?.toDataPages() ?: DefaultDataPages.ALL }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), DefaultDataPages.ALL)
 
     init {
         viewModelScope.launch {

@@ -18,6 +18,7 @@ import com.ridecomp.app.DevTools
 import com.ridecomp.feature.history.ui.ActivityDetailRoute
 import com.ridecomp.feature.history.ui.HistoryRoute
 import com.ridecomp.feature.history.ui.StravaHelpRoute
+import com.ridecomp.feature.ride.ui.DataPagesEditorRoute
 import com.ridecomp.feature.ride.ui.HomeRoute
 import com.ridecomp.feature.ride.ui.PreRideRoute
 import com.ridecomp.feature.ride.ui.RideRoute
@@ -40,6 +41,7 @@ object AppRoutes {
     const val PROFILE = "profile"
     const val RIDE_SETTINGS = "ride_settings"
     const val BATTERY_HELP = "battery_help"
+    const val DATA_PAGES = "data_pages"
     const val STRAVA_HELP = "strava_help"
     const val DEVELOPER = "developer"
     const val ARG_ACTIVITY_ID = "activityId"
@@ -84,6 +86,7 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
         composable(AppRoutes.PROFILE) { ProfileRoute(onSaved = { navController.popBackStack() }) }
         composable(AppRoutes.RIDE_SETTINGS) { RideSettingsRoute() }
         composable(AppRoutes.BATTERY_HELP) { BatteryHelpRoute() }
+        composable(AppRoutes.DATA_PAGES) { DataPagesEditorRoute(onDone = { navController.popBackStack() }) }
         composable(AppRoutes.DEVELOPER) { DevTools.DeveloperScreen() }
     }
 }
@@ -154,7 +157,8 @@ private fun openSection(section: SettingsSection, navController: NavHostControll
                 Intent(Settings.ACTION_APP_LOCALE_SETTINGS, (PACKAGE_SCHEME + context.packageName).toUri()),
             )
         }
-        SettingsSection.DATA_PAGES, SettingsSection.SAFETY, SettingsSection.BACKUP, SettingsSection.OFFLINE_MAPS -> Unit
+        SettingsSection.DATA_PAGES -> navController.navigate(AppRoutes.DATA_PAGES)
+        SettingsSection.SAFETY, SettingsSection.BACKUP, SettingsSection.OFFLINE_MAPS -> Unit
     }
 }
 

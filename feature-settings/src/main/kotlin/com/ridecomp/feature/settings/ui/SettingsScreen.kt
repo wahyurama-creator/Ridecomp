@@ -24,7 +24,7 @@ enum class SettingsSection(
 ) {
     PROFILE(R.string.settings_profile, R.string.settings_profile_subtitle),
     RIDE_SCREEN_BATTERY(R.string.settings_screen_battery),
-    DATA_PAGES(R.string.settings_data_pages, taskId = "T2.8"),
+    DATA_PAGES(R.string.settings_data_pages),
     SAFETY(R.string.settings_safety, taskId = "T2.14"),
     BACKUP(R.string.settings_backup, taskId = "T2.17"),
     OFFLINE_MAPS(R.string.settings_offline_maps, taskId = "T3.4"),

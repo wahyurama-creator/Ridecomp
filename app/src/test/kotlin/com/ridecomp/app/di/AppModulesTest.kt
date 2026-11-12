@@ -29,6 +29,7 @@ import com.ridecomp.core.usecase.ExportFileStore
 import com.ridecomp.core.usecase.ExportedFileHandler
 import com.ridecomp.feature.history.viewmodel.ActivityDetailViewModel
 import com.ridecomp.feature.history.viewmodel.HistoryViewModel
+import com.ridecomp.feature.ride.viewmodel.DataPagesEditorViewModel
 import com.ridecomp.feature.ride.viewmodel.HomeViewModel
 import com.ridecomp.feature.ride.viewmodel.PreRideViewModel
 import com.ridecomp.feature.ride.viewmodel.RideViewModel
@@ -105,5 +106,6 @@ class AppModulesTest {
         assertNotNull(koin.get<HistoryViewModel>())
         assertNotNull(koin.get<ActivityDetailViewModel> { parametersOf(1L) })
         assertNotNull(koin.get<SensorsViewModel>())
+        assertNotNull(koin.get<DataPagesEditorViewModel>())
     }
 }

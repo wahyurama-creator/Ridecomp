@@ -66,7 +66,7 @@ Spesifikasi detail fitur tambahan: `../12-FEATURE-SPECS.md`.
 - [x] T2.5 Metrik: HR avg/max/zona, cadence avg, power 3s/10s/avg/max/NP, W/kg.
 - [x] T2.6 Estimated power (label EST, tidak ke FIT).
 - [x] T2.7 Kalori (urutan prioritas `05-DATA-MODEL.md` §3.10).
-- [ ] T2.8 Editor halaman data (pilih jumlah field & metrik).
+- [x] T2.8 Editor halaman data (pilih jumlah field & metrik).
 - [x] T2.9 Peringatan sensor putus/kembali/baterai rendah.
 - [x] T2.10 FIT: tambah HR, cadence, power di record/lap/session + device_info sensor.
 - [ ] T2.11 Grafik HR/cadence/power di detail aktivitas.

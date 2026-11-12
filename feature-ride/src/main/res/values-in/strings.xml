@@ -94,4 +94,15 @@
     <string name="metric_calories">Kalori</string>
     <string name="unit_watts_per_kg">W/kg</string>
     <string name="unit_kcal">kkal</string>
+    <string name="data_pages_title">Halaman data</string>
+    <string name="data_pages_field_count">Jumlah field per halaman</string>
+    <string name="data_pages_first_full_width">Field pertama lebar penuh</string>
+    <string name="data_pages_tap_hint">Ketuk field untuk memilih metriknya.</string>
+    <string name="data_pages_page">Halaman</string>
+    <string name="data_pages_save">Simpan</string>
+    <string name="data_pages_add">Tambah halaman</string>
+    <string name="data_pages_remove">Hapus halaman</string>
+    <string name="data_pages_reset">Kembalikan default</string>
+    <string name="data_pages_choose_metric">Pilih metrik</string>
+    <string name="data_pages_cancel">Batal</string>
 </resources>
