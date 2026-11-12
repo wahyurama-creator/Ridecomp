@@ -4,8 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import com.ridecomp.ui.component.EmptyState
+import com.ridecomp.ui.theme.RideCompTheme
 
 /** Single activity hosting the Compose UI. */
 class MainActivity : ComponentActivity() {
@@ -13,8 +14,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MaterialTheme {
-                Text(text = getString(R.string.app_name))
+            RideCompTheme {
+                EmptyState(message = stringResource(R.string.app_name))
             }
         }
     }
