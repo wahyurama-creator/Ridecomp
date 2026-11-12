@@ -7,17 +7,6 @@ plugins {
 
 android {
     namespace = "com.ridecomp.data"
-    compileSdk {
-        version = release(37)
-    }
-    defaultConfig {
-        minSdk = 26
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
     sourceSets {
         // Exported Room schemas are used by migration tests (TEST-07).
         getByName("androidTest").assets.directories.add("$projectDir/schemas")

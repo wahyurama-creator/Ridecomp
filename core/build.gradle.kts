@@ -1,19 +1,29 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 // :core = DOMAIN layer. Pure Kotlin/JVM: no android.*, androidx.*, Room, Koin or UI (ARCH-01).
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kover)
+}
+
+// TEST-01: line coverage of :core must stay >= 80 %.
+kover {
+    reports {
+        verify {
+            rule {
+                minBound(80)
+            }
+        }
+    }
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.toVersion(libs.versions.jvmTarget.get())
+    targetCompatibility = JavaVersion.toVersion(libs.versions.jvmTarget.get())
 }
 
 kotlin {
     explicitApi()
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_17)
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(libs.versions.jvmTarget.get()))
     }
 }
 
