@@ -1,0 +1,103 @@
+# 09 — Reliability Rules: Memory, Battery, Resource, Stability (WAJIB)
+
+Aplikasi ini berjalan berjam-jam di HP low-end. Kebocoran kecil (memori, wakelock, GPS yang lupa dimatikan) akan menjadi masalah besar. Setiap aturan di sini punya **cara verifikasi**; verifikasi dicatat di Feature Report (`10-FEATURE-CHECKLIST.md`).
+
+> Catatan jujur: tidak ada proses yang menjamin perangkat lunak 100% bebas bug. Aturan, test otomatis, alat deteksi (LeakCanary, StrictMode), dan uji lapangan di bawah ini dirancang agar bug **tertangkap sedini mungkin** dan tidak lolos ke ride sungguhan.
+
+---
+
+## 1. Tabel siklus hidup resource (sumber kebenaran)
+
+Setiap resource berat **harus** memiliki satu pemilik, titik akuisisi, dan titik pelepasan yang pasti.
+
+| Resource | Pemilik | Diakuisisi saat | WAJIB dilepas saat | API pelepasan | Verifikasi |
+|---|---|---|---|---|---|
+| Update lokasi GPS | `AndroidLocationSource` (dipakai `RecordingService`) | Pre-ride / start ride | Ride selesai/dibuang, service destroy, `awaitClose` | `LocationManager.removeUpdates()` | `adb shell dumpsys location` tidak menampilkan request app setelah ride selesai |
+| Koneksi BLE (GATT) | `BleSensorSource` | Pre-ride / pairing | Ride selesai, sensor dilupakan, service destroy | `disconnect()` lalu **`close()`** | Sensor kembali advertising (terlihat di scan app lain); log koneksi |
+| Scan BLE | Layar Sensor / reconnect | Tombol scan / reconnect | Timeout (≤ 15 dtk), layar ditutup, perangkat ditemukan | `stopScan()` | Log + scan berhenti dalam batas waktu |
+| Wakelock parsial | `RecordingService` | Status recording | Status idle/finished, service destroy (di `finally`) | `release()` (cek `isHeld`) | `adb shell dumpsys power` → tidak ada wakelock milik app saat idle |
+| Foreground service | `RecordingService` | Start ride | Ride disimpan/dibuang | `stopForeground(STOP_FOREGROUND_REMOVE)` + `stopSelf()` | Notifikasi hilang; `adb shell dumpsys activity services` |
+| Sensor barometer | `PressureSource` | Start ride | Ride selesai, `awaitClose` | `SensorManager.unregisterListener()` | `adb shell dumpsys sensorservice` |
+| Wake layar | Layar ride | Mode "selalu nyala" & layar ride terlihat | Layar ride ditutup / mode diganti | `FLAG_KEEP_SCREEN_ON` dihapus (via `DisposableEffect`) | Layar mati normal setelah keluar layar ride |
+| MapView MapLibre | Composable peta | Composable masuk komposisi | Keluar komposisi | `onStop()` + `onDestroy()` | LeakCanary bersih; memori turun setelah keluar layar peta |
+| Coroutine scope service | `RecordingService` | `onCreate` | `onDestroy` | `serviceScope.cancel()` | Test + log |
+| Cursor/stream file | Pemanggil | Buka | Selesai dipakai | `use { }` | StrictMode `detectLeakedClosableObjects` |
+| Vibrator/MediaPlayer/ToneGenerator (alert, alarm insiden) | `AlertPlayer` | Alert/hitung mundur muncul | Setelah bunyi, dibatalkan, atau service destroy | `release()` / `cancel()` | StrictMode + review |
+| Akselerometer (deteksi insiden) | `AccelerometerSource` | Ride dimulai **dan** fitur insiden aktif | Ride selesai/jeda manual, fitur dimatikan, `awaitClose` | `SensorManager.unregisterListener()` | `dumpsys sensorservice` tidak menampilkan listener app setelah ride |
+| Pembacaan level baterai | `BatteryLevelSource` | Tick pipeline (≤ 1x/30 dtk) | — (sticky broadcast dibaca, bukan receiver terdaftar) | Tidak ada receiver permanen | Review |
+| Bitmap kartu share | `ShareCardRenderer` | Render dimulai | Setelah PNG ditulis | `recycle()`/lepas referensi | Memory Profiler + LeakCanary |
+| Stream backup/restore (ZIP, DB snapshot) | `BackupManager` | Mulai backup/restore | Selesai/gagal/dibatalkan | `use { }` + hapus folder sementara | StrictMode `detectLeakedClosableObjects` |
+| File sementara share/FIT darurat | Pemanggil | Dibuat | Setelah dibagikan / app dibuka berikutnya / ride disimpan | Hapus file | Cek folder cache |
+
+**Aturan REL-01:** setiap resource baru yang ditambahkan ke kode **wajib** ditambahkan ke tabel ini di PR yang sama.
+
+---
+
+## 2. Memory leak
+
+| ID | Aturan | Verifikasi |
+|---|---|---|
+| MEM-01 | Tidak menyimpan `Activity`, `Fragment`, `View`, `Composable` state, atau `Context` non-application di objek berumur panjang (ViewModel, singleton Koin, service, companion object). Butuh context → `applicationContext` yang diinjeksi. | Review + LeakCanary |
+| MEM-02 | Setiap listener/callback/observer yang didaftarkan **harus** di-unregister pada lifecycle pasangannya (register di `onStart` → unregister di `onStop`, dst.). | Review + LeakCanary |
+| MEM-03 | Callback Android dibungkus `callbackFlow` dengan `awaitClose { unregister }` (CO-04). | Unit/instrumented test: collector dibatalkan → unregister terpanggil (fake) |
+| MEM-04 | Tidak ada inner class / lambda anonim berumur panjang yang menangkap `Activity`/`View` (termasuk `Handler` & `Runnable` tertunda). | Review + LeakCanary |
+| MEM-05 | **Koleksi di memori harus berbatas.** Buffer track point di-flush tiap 5 dtk (maks ~10 record); rolling window (power 3s/10s/30s, grade, smoothing) memakai ring buffer ukuran tetap; data grafik live memakai downsample berukuran tetap. Dilarang `MutableList` yang terus bertambah sepanjang ride. | Unit test ukuran buffer + profil memori ride 3 jam |
+| MEM-06 | Bitmap/gambar (thumbnail peta ringkasan) diskalakan sesuai ukuran tampil dan tidak di-cache tanpa batas. | Profiler |
+| MEM-07 | LeakCanary aktif di build **debug** (`debugImplementation`). Setiap leak yang dilaporkan = bug P0 sebelum task selesai. | Laporan LeakCanary kosong setelah alur uji fitur |
+| MEM-08 | **Uji memori ride panjang:** jalankan simulasi ride 3 jam (fake GPS/BLE 10x speed); heap Java/Kotlin harus stabil (tidak naik terus) setelah fase awal. | `adb shell dumpsys meminfo com.ridecomp.app` di awal, tengah, akhir; atau Memory Profiler |
+
+---
+
+## 3. Battery leak
+
+| ID | Aturan | Verifikasi |
+|---|---|---|
+| BAT-01 | **Saat tidak merekam, app tidak boleh memegang GPS, koneksi BLE, wakelock, maupun foreground service.** | Uji "idle drain" (§6, L11) |
+| BAT-02 | Wakelock hanya `PARTIAL_WAKE_LOCK`, selalu `acquire(timeout)` (mis. 10 menit) dan diperpanjang berkala selama recording; dilepas di blok `finally` dan `onDestroy`. Dilarang `acquire()` tanpa timeout. | `dumpsys power` |
+| BAT-03 | GPS 1 Hz hanya saat recording/pre-ride. Saat **paused manual > 10 menit**, interval diturunkan (mis. 5 dtk) dan kembali 1 Hz saat resume. | Log interval + test state machine |
+| BAT-04 | Scan BLE selalu dengan filter service UUID dan timeout. Tidak ada scan terus-menerus; reconnect memakai backoff (`03-ARCHITECTURE.md` §4.4). | Log + test backoff |
+| BAT-05 | Tidak ada `AlarmManager`, `WorkManager` periodik, `JobScheduler`, atau sinkronisasi background saat idle. (Fase 5: upload Strava hanya dipicu pengguna atau saat app terbuka.) | Review + `dumpsys jobscheduler`/`dumpsys alarm` |
+| BAT-06 | Update UI & notifikasi ≤ 1 Hz; notifikasi foreground di-update dengan `setOnlyAlertOnce(true)` dan hanya bila teks berubah. | Review |
+| BAT-07 | Tidak ada request jaringan selama ride (kecuali pengguna mengaktifkan unduh tile online). | Network Inspector |
+| BAT-08 | Layar: mode redup/mati bekerja; `KEEP_SCREEN_ON` hanya di layar ride. | Uji manual |
+| BAT-10 | Akselerometer hanya aktif selama recording dengan fitur insiden aktif, laju sedang (~50 Hz), dan dihentikan saat jeda manual; tidak pernah saat idle. | `dumpsys sensorservice` |
+| BAT-11 | Perhitungan best efforts, segmen, dan beban latihan dijalankan **setelah** ride disimpan (bukan selama ride) dan hanya sekali per ride. | Review + log |
+| BAT-09 | **Uji konsumsi:** catat % baterai per jam pada ride uji; regresi > 20% dibanding uji sebelumnya = bug. Untuk investigasi gunakan `adb shell dumpsys batterystats` (reset sebelum uji) atau Battery Historian. | Catatan di `field-tests.md` |
+
+---
+
+## 4. Stabilitas, ANR, dan crash
+
+| ID | Aturan | Verifikasi |
+|---|---|---|
+| STB-01 | **StrictMode** aktif di build debug: `ThreadPolicy.detectAll()` dan `VmPolicy.detectAll()` dengan `penaltyLog()`; pelanggaran = bug yang harus diperbaiki. | Logcat bersih selama alur uji |
+| STB-02 | Tidak ada I/O, parsing GPX/FIT, atau kalkulasi berat di main thread. | StrictMode |
+| STB-03 | `RecordingService.onStartCommand` memanggil `startForeground()` segera (sebelum kerja lain) untuk menghindari crash `ForegroundServiceDidNotStartInTimeException`. | Instrumented test + uji Android 12+ |
+| STB-04 | Izin dicek **setiap kali** sebelum memakai GPS/BLE (pengguna bisa mencabut izin kapan saja); jika dicabut di tengah ride → simpan data, tampilkan peringatan, jangan crash. | Uji manual: cabut izin saat ride simulasi |
+| STB-05 | Bluetooth/GPS dimatikan pengguna di tengah ride → rekaman lanjut dengan data yang tersisa, peringatan muncul, pulih otomatis saat dinyalakan lagi. | Uji manual |
+| STB-06 | Proses dibunuh/HP restart → recovery (`03-ARCHITECTURE.md` §4.5). | L4 |
+| STB-07 | Rotasi layar, mode gelap/terang, ubah ukuran font sistem, dan bahasa tidak menghilangkan state atau menghentikan rekaman (state di ViewModel/service, bukan di composable). | Uji manual |
+| STB-08 | Penyimpanan hampir penuh → peringatan sebelum ride; jika gagal tulis DB, rekaman tetap di buffer dan dicoba ulang, pengguna diberi tahu. | Test dengan fake DAO yang gagal |
+| STB-09 | Semua input eksternal (file GPX, byte BLE, nilai GPS) divalidasi; input rusak tidak boleh menyebabkan crash. | Test dengan input rusak/acak (fuzz sederhana untuk parser) |
+
+---
+
+## 5. Konkurensi & data race
+
+| ID | Aturan |
+|---|---|
+| CONC-01 | State bersama di pipeline perekaman hanya diubah oleh satu coroutine (aktor/channel) atau melalui `MutableStateFlow.update {}`. Dilarang variabel mutable yang ditulis dari beberapa thread tanpa sinkronisasi. |
+| CONC-02 | Callback BLE/GPS (thread binder) hanya meneruskan data ke Flow/Channel; tidak mengubah state domain langsung. |
+| CONC-03 | Operasi GATT diserialkan (satu operasi pada satu waktu). |
+
+---
+
+## 6. Uji wajib terkait reliabilitas (tambahan untuk `07-TEST-PLAN.md`)
+
+| # | Skenario | Lulus jika |
+|---|---|---|
+| R1 | Simulasi ride 3 jam (10x speed) | Heap stabil; tidak ada leak LeakCanary; tidak ada pelanggaran StrictMode |
+| R2 | Buka-tutup layar ride/peta/riwayat 30x | Memori kembali ke baseline; LeakCanary bersih |
+| L11 | **Idle drain:** setelah ride disimpan, HP dibiarkan 8 jam dengan app di background | Tidak ada wakelock/GPS/BLE/service aktif milik app (`dumpsys power`, `dumpsys location`, `dumpsys activity services`); konsumsi baterai app dapat diabaikan |
+| L12 | Cabut izin lokasi / matikan Bluetooth / matikan GPS di tengah ride | Tidak crash, data tersimpan, pulih sesuai STB-04/05 |
+| L13 | Ride + 3 sensor tersambung 2 jam | Tidak ada koneksi GATT "nyangkut" setelah ride selesai; sensor bisa dipakai app lain |
