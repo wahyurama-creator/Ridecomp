@@ -17,6 +17,9 @@
     <string name="detail_descent">Turunan</string>
     <string name="detail_chart_speed">KECEPATAN</string>
     <string name="detail_chart_elevation">ELEVASI</string>
+    <string name="detail_chart_heart_rate">DETAK JANTUNG</string>
+    <string name="detail_chart_cadence">CADENCE</string>
+    <string name="detail_chart_power">POWER</string>
     <string name="detail_laps">Lap</string>
     <string name="detail_lap_row">Lap %1$d</string>
     <string name="detail_export_fit">EKSPOR FIT</string>

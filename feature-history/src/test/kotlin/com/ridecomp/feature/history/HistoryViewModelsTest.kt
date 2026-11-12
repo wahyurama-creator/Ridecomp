@@ -29,6 +29,7 @@ import com.ridecomp.feature.history.viewmodel.ActivityDetailEffect
 import com.ridecomp.feature.history.viewmodel.ActivityDetailUiEvent
 import com.ridecomp.feature.history.viewmodel.ActivityDetailUseCases
 import com.ridecomp.feature.history.viewmodel.ActivityDetailViewModel
+import com.ridecomp.feature.history.viewmodel.ChartKind
 import com.ridecomp.feature.history.viewmodel.FileMessage
 import com.ridecomp.feature.history.viewmodel.HistoryUiEvent
 import com.ridecomp.feature.history.viewmodel.HistoryViewModel
@@ -115,9 +116,31 @@ class HistoryViewModelsTest {
         val state = detailViewModel(id).uiState.value
 
         assertEquals(ActivityStatus.FINISHED, state.activity?.status)
-        assertEquals(10, state.speedChart.size)
-        assertEquals(36.0, state.speedChart.first().y)
-        assertEquals(1.0, state.speedChart.first().x)
+        val speed = state.charts.single { it.kind == ChartKind.SPEED }.values
+        assertEquals(10, speed.size)
+        assertEquals(36.0, speed.first().y)
+        assertEquals(1.0, speed.first().x)
+        // No altitude or sensor data: those charts are left out.
+        assertEquals(listOf(ChartKind.SPEED), state.charts.map { it.kind })
+    }
+
+    @Test
+    fun `sensor charts appear when the ride has sensor data`() = runTest {
+        val id = savedRide(FakeClock.DEFAULT_START_MS)
+        repository.appendSamples(
+            id,
+            (1..5).map {
+                RideSample(it * 1_000L, distanceM = it * 10.0, heartRateBpm = 140, cadenceRpm = 85, powerW = 200)
+            },
+        )
+
+        val charts = detailViewModel(id).uiState.value.charts
+
+        assertEquals(
+            listOf(ChartKind.HEART_RATE, ChartKind.CADENCE, ChartKind.POWER),
+            charts.map { it.kind },
+        )
+        assertEquals(200.0, charts.last().values.first().y)
     }
 
     @Test

@@ -2,6 +2,7 @@ package com.ridecomp.feature.history.ui
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -16,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.config.Units
@@ -26,6 +28,7 @@ import com.ridecomp.feature.history.viewmodel.ActivityDetailEffect
 import com.ridecomp.feature.history.viewmodel.ActivityDetailUiEvent
 import com.ridecomp.feature.history.viewmodel.ActivityDetailUiState
 import com.ridecomp.feature.history.viewmodel.ActivityDetailViewModel
+import com.ridecomp.feature.history.viewmodel.ChartKind
 import com.ridecomp.feature.history.viewmodel.FileMessage
 import com.ridecomp.ui.component.AlertBanner
 import com.ridecomp.ui.component.AlertSeverity
@@ -123,14 +126,11 @@ private fun Totals(state: ActivityDetailUiState) {
 @Composable
 private fun Charts(state: ActivityDetailUiState) {
     Column(modifier = Modifier.padding(horizontal = RideCompDimens.spacingM)) {
-        if (state.speedChart.size > 1) {
-            LineChart(title = stringResource(R.string.detail_chart_speed), values = state.speedChart)
-        }
-        if (state.elevationChart.any { it.y != null }) {
+        state.charts.forEach { chart ->
             LineChart(
-                title = stringResource(R.string.detail_chart_elevation),
-                values = state.elevationChart,
-                color = RideCompTheme.colors.track,
+                title = stringResource(chart.kind.titleRes()),
+                values = chart.values,
+                color = chart.kind.color(),
             )
         }
     }
@@ -235,3 +235,20 @@ private fun ActivityDetailMissingPreview() {
     }
 }
 private const val SEPARATOR = " · "
+
+@StringRes
+private fun ChartKind.titleRes(): Int = when (this) {
+    ChartKind.SPEED -> R.string.detail_chart_speed
+    ChartKind.ELEVATION -> R.string.detail_chart_elevation
+    ChartKind.HEART_RATE -> R.string.detail_chart_heart_rate
+    ChartKind.CADENCE -> R.string.detail_chart_cadence
+    ChartKind.POWER -> R.string.detail_chart_power
+}
+
+@Composable
+private fun ChartKind.color(): Color = when (this) {
+    ChartKind.SPEED, ChartKind.CADENCE -> RideCompTheme.colors.accent
+    ChartKind.ELEVATION -> RideCompTheme.colors.track
+    ChartKind.HEART_RATE -> RideCompTheme.colors.danger
+    ChartKind.POWER -> RideCompTheme.colors.warn
+}
