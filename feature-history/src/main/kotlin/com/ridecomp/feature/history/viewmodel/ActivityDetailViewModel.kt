@@ -34,9 +34,8 @@ data class ActivityDetailUiState(
     val activity: Activity? = null,
     val isMissing: Boolean = false,
     val laps: ImmutableList<Lap> = persistentListOf(),
-    /** Speed (display units) and elevation vs distance (km/mi), downsampled ≤ ~1000 points. */
-    val speedChart: ImmutableList<ChartValue> = persistentListOf(),
-    val elevationChart: ImmutableList<ChartValue> = persistentListOf(),
+    /** Charts vs distance (km/mi) in display units, downsampled ≤ ~1000 points; only those with data. */
+    val charts: ImmutableList<RideChart> = persistentListOf(),
     val unitSystem: UnitSystem = UnitSystem.METRIC,
     val isWorking: Boolean = false,
     val message: FileMessage? = null,
@@ -117,8 +116,8 @@ class ActivityDetailViewModel(
     private suspend fun loadDetails(unitSystem: UnitSystem) {
         val laps = getLaps(activityId).toImmutableList()
         // Downsampling and conversion are CPU work: off the main thread (02-DESIGN §6).
-        val (speed, elevation) = withContext(dispatchers.default) { loadChart(activityId).toCharts(unitSystem) }
-        updateState { copy(laps = laps, speedChart = speed, elevationChart = elevation) }
+        val charts = withContext(dispatchers.default) { loadChart(activityId).toCharts(unitSystem) }
+        updateState { copy(laps = laps, charts = charts) }
     }
 
     private fun runFileAction(successMessage: FileMessage?, action: suspend () -> Outcome<*, *>) {
@@ -133,14 +132,33 @@ class ActivityDetailViewModel(
     }
 }
 
-private fun List<ChartPoint>.toCharts(
-    unitSystem: UnitSystem,
-): Pair<ImmutableList<ChartValue>, ImmutableList<ChartValue>> {
+/** Charts of the detail screen (02-DESIGN §3.7, T2.11 adds the sensor charts). */
+enum class ChartKind { SPEED, ELEVATION, HEART_RATE, CADENCE, POWER }
+
+@Immutable
+data class RideChart(val kind: ChartKind, val values: ImmutableList<ChartValue>)
+
+/** Converts samples to display-unit charts; a chart without at least two values is left out. */
+internal fun List<ChartPoint>.toCharts(unitSystem: UnitSystem): ImmutableList<RideChart> {
     val isMetric = unitSystem == UnitSystem.METRIC
     val distanceDivisor = if (isMetric) Units.METERS_PER_KM else Units.METERS_PER_MILE
     val speedFactor = if (isMetric) Units.KMH_PER_MPS else Units.MPH_PER_MPS
     val altitudeDivisor = if (isMetric) 1.0 else Units.METERS_PER_FOOT
-    val speed = map { ChartValue(it.distanceM / distanceDivisor, it.speedMps?.times(speedFactor)) }
-    val elevation = map { ChartValue(it.distanceM / distanceDivisor, it.altitudeM?.div(altitudeDivisor)) }
-    return speed.toImmutableList() to elevation.toImmutableList()
+    return ChartKind.entries.mapNotNull { kind ->
+        val values = map { point ->
+            val y = when (kind) {
+                ChartKind.SPEED -> point.speedMps?.times(speedFactor)
+                ChartKind.ELEVATION -> point.altitudeM?.div(altitudeDivisor)
+                ChartKind.HEART_RATE -> point.heartRateBpm?.toDouble()
+                ChartKind.CADENCE -> point.cadenceRpm?.toDouble()
+                ChartKind.POWER -> point.powerW?.toDouble()
+            }
+            ChartValue(point.distanceM / distanceDivisor, y)
+        }
+        values.takeIf { list -> list.count { it.y != null } >= MIN_CHART_VALUES }
+            ?.let { RideChart(kind, it.toImmutableList()) }
+    }.toImmutableList()
 }
+
+/** A line needs two points. */
+private const val MIN_CHART_VALUES = 2

@@ -17,6 +17,9 @@
     <string name="detail_descent">Descent</string>
     <string name="detail_chart_speed">SPEED</string>
     <string name="detail_chart_elevation">ELEVATION</string>
+    <string name="detail_chart_heart_rate">HEART RATE</string>
+    <string name="detail_chart_cadence">CADENCE</string>
+    <string name="detail_chart_power">POWER</string>
     <string name="detail_laps">Laps</string>
     <string name="detail_lap_row">Lap %1$d</string>
     <string name="detail_export_fit">EXPORT FIT</string>

@@ -69,7 +69,7 @@ Spesifikasi detail fitur tambahan: `../12-FEATURE-SPECS.md`.
 - [x] T2.8 Editor halaman data (pilih jumlah field & metrik).
 - [x] T2.9 Peringatan sensor putus/kembali/baterai rendah.
 - [x] T2.10 FIT: tambah HR, cadence, power di record/lap/session + device_info sensor.
-- [ ] T2.11 Grafik HR/cadence/power di detail aktivitas.
+- [x] T2.11 Grafik HR/cadence/power di detail aktivitas.
 - [ ] T2.12 Kontrol tombol volume (opsional, setting).
 - [ ] T2.13 Profil aktivitas Road/Gravel/MTB/Indoor/Commute (§4), termasuk mode Indoor tanpa GPS; pemilih profil di Pre-ride.
 - [ ] T2.14 Layar Keselamatan: kontak darurat (contact picker), nama pengendara, izin SMS, SMS uji (§5.1).
