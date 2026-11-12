@@ -64,6 +64,15 @@ public object RecordingConfig {
     /** Hard cap of points kept in memory before a forced flush (MEM-05). */
     public const val MAX_BUFFERED_POINTS: Int = 30
 
+    /**
+     * Points kept while the database keeps failing (STB-08): 10 minutes at 1 Hz. Beyond that the oldest
+     * pending points are dropped (and logged) so memory stays bounded (MEM-05).
+     */
+    public const val MAX_PENDING_POINTS: Int = 600
+
+    /** Moving-time ticks longer than this are not counted (the device stalled); a `gap` event is logged. */
+    public const val MAX_TICK_INTERVAL_MS: Long = 5_000L
+
     /** A sensor/GPS value older than this is considered missing in a record (03-ARCHITECTURE §4.3). */
     public const val SAMPLE_MAX_AGE_MS: Long = 3_000L
 

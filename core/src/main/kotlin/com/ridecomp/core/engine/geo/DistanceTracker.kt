@@ -31,8 +31,31 @@ public class DistanceTracker(
         anchor = null
     }
 
+    /**
+     * Movement measured while auto-paused, kept aside until the resume is confirmed: committed on
+     * resume, discarded when the rider stops again (so the first meters after a stop are not lost).
+     */
+    public var tentativeM: Double = 0.0
+        private set
+
     /** Adds the movement up to [fix] (already accepted by [GpsFilter]). Returns the meters added. */
-    public fun add(fix: LocationFix, isCounting: Boolean): Double {
+    public fun add(fix: LocationFix, isCounting: Boolean): Double = measure(fix, isCounting).also { totalM += it }
+
+    /** Like [add] but the movement goes to [tentativeM] (auto-paused, resume not yet confirmed). */
+    public fun addTentative(fix: LocationFix): Double = measure(fix, isCounting = true).also { tentativeM += it }
+
+    /** Resume confirmed: the tentative movement becomes real distance. */
+    public fun commitTentative() {
+        totalM += tentativeM
+        tentativeM = 0.0
+    }
+
+    /** Rider stopped again: the tentative movement is dropped. */
+    public fun discardTentative() {
+        tentativeM = 0.0
+    }
+
+    private fun measure(fix: LocationFix, isCounting: Boolean): Double {
         val previous = anchor
         val segmentM = previous?.let { GeoMath.distanceM(it.latDeg, it.lonDeg, fix.latDeg, fix.lonDeg) } ?: 0.0
         val reportedSpeed = fix.speedMps
@@ -43,8 +66,6 @@ public class DistanceTracker(
         }
         val isAnchorMoving = previous == null || !isCounting || reportedSpeed != null || counted != null
         if (isAnchorMoving) anchor = fix
-        val addedM = counted ?: 0.0
-        totalM += addedM
-        return addedM
+        return counted ?: 0.0
     }
 }
