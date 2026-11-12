@@ -43,6 +43,10 @@ public class AutoPauseDetector(private val settings: AutoPauseSettings) {
     private var pausePoint: MotionSample? = null
     private var autoPausedAtMs: Long? = null
 
+    /** When the rider actually stopped for the last auto pause (start of the slow period). */
+    public var lastStopStartedAtMs: Long? = null
+        private set
+
     /** Evaluates [sample] while recording. Returns [AutoPauseDecision.PAUSE] when the ride should pause. */
     public fun onRecording(sample: MotionSample): AutoPauseDecision {
         val speed = sample.speedMps
@@ -95,6 +99,7 @@ public class AutoPauseDetector(private val settings: AutoPauseSettings) {
     }
 
     private fun enterPause(sample: MotionSample) {
+        lastStopStartedAtMs = slowSince?.timeMs ?: sample.timeMs
         pausePoint = slowSince?.takeIf { it.latDeg != null } ?: sample
         autoPausedAtMs = sample.timeMs
         slowSince = null
