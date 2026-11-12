@@ -1,0 +1,183 @@
+package com.ridecomp.core.testing
+
+import com.ridecomp.core.model.Activity
+import com.ridecomp.core.model.ActivityStatus
+import com.ridecomp.core.model.Lap
+import com.ridecomp.core.model.RideEvent
+import com.ridecomp.core.model.RideSample
+import com.ridecomp.core.model.RideSettings
+import com.ridecomp.core.model.RideTotals
+import com.ridecomp.core.model.RiderProfile
+import com.ridecomp.core.repository.ActivityRepository
+import com.ridecomp.core.repository.NewActivity
+import com.ridecomp.core.repository.ProfileRepository
+import com.ridecomp.core.repository.SettingsRepository
+import com.ridecomp.core.source.IdGenerator
+import com.ridecomp.core.source.RideNameProvider
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
+
+/** In-memory [ActivityRepository]. Set [isFailing] to simulate a broken database (STB-08). */
+public class FakeActivityRepository : ActivityRepository {
+    public var isFailing: Boolean = false
+    private val activities = MutableStateFlow<Map<Long, Activity>>(emptyMap())
+    public val samples: MutableMap<Long, MutableList<RideSample>> = mutableMapOf()
+    public val events: MutableMap<Long, MutableList<RideEvent>> = mutableMapOf()
+    public val laps: MutableMap<Long, MutableList<Lap>> = mutableMapOf()
+    public var checkpointCount: Int = 0
+        private set
+    private var nextId = 1L
+
+    private fun failIfNeeded() {
+        if (isFailing) error("simulated database failure")
+    }
+
+    private fun update(id: Long, change: (Activity) -> Activity) {
+        failIfNeeded()
+        activities.value = activities.value + (id to change(requireNotNull(activities.value[id])))
+    }
+
+    /** Puts a stored activity directly (e.g. a ride left recording by a crash). */
+    public fun put(activity: Activity) {
+        activities.value = activities.value + (activity.id to activity)
+        nextId = maxOf(nextId, activity.id + 1)
+    }
+
+    override suspend fun create(activity: NewActivity): Long {
+        failIfNeeded()
+        val id = nextId++
+        put(
+            Activity(
+                id = id,
+                uuid = activity.uuid,
+                name = activity.name,
+                status = ActivityStatus.RECORDING,
+                startedAtMs = activity.startedAtMs,
+                endedAtMs = null,
+                totals = RideTotals(),
+                lastCheckpointAtMs = activity.startedAtMs,
+            ),
+        )
+        return id
+    }
+
+    override suspend fun appendSamples(activityId: Long, samples: List<RideSample>) {
+        failIfNeeded()
+        val list = this.samples.getOrPut(activityId) { mutableListOf() }
+        list.removeAll { existing -> samples.any { it.timeMs == existing.timeMs } }
+        list += samples
+        list.sortBy { it.timeMs }
+    }
+
+    override suspend fun appendEvents(activityId: Long, events: List<RideEvent>) {
+        failIfNeeded()
+        this.events.getOrPut(activityId) { mutableListOf() } += events
+    }
+
+    override suspend fun saveLap(activityId: Long, lap: Lap) {
+        failIfNeeded()
+        laps.getOrPut(activityId) { mutableListOf() } += lap
+    }
+
+    override suspend fun checkpoint(activityId: Long, status: ActivityStatus, totals: RideTotals, atMs: Long) {
+        update(activityId) { it.copy(status = status, totals = totals, lastCheckpointAtMs = atMs) }
+        checkpointCount++
+    }
+
+    override suspend fun finish(activityId: Long, name: String, totals: RideTotals, endedAtMs: Long) {
+        update(activityId) {
+            it.copy(status = ActivityStatus.FINISHED, name = name, totals = totals, endedAtMs = endedAtMs)
+        }
+    }
+
+    override suspend fun delete(activityId: Long) {
+        failIfNeeded()
+        activities.value = activities.value - activityId
+        samples.remove(activityId)
+        events.remove(activityId)
+        laps.remove(activityId)
+    }
+
+    override suspend fun rename(activityId: Long, name: String) {
+        update(activityId) { it.copy(name = name) }
+    }
+
+    override suspend fun markFitExported(activityId: Long, fitPath: String, atMs: Long) {
+        update(activityId) { it.copy(fitPath = fitPath, fitExportedAtMs = atMs) }
+    }
+
+    override suspend fun get(activityId: Long): Activity? = activities.value[activityId]
+
+    override fun observe(activityId: Long): Flow<Activity?> = activities.map { it[activityId] }
+
+    override suspend fun findRecoverable(): Activity? = activities.value.values
+        .filter { it.status == ActivityStatus.RECORDING || it.status == ActivityStatus.PAUSED }
+        .maxByOrNull { it.startedAtMs }
+
+    override fun observeFinished(limit: Int, offset: Int): Flow<List<Activity>> = activities.map { all ->
+        all.values.filter { it.status == ActivityStatus.FINISHED }
+            .sortedByDescending { it.startedAtMs }
+            .drop(offset)
+            .take(limit)
+    }
+
+    override fun observeFinishedCount(): Flow<Int> =
+        activities.map { all -> all.values.count { it.status == ActivityStatus.FINISHED } }
+
+    override suspend fun getLaps(activityId: Long): List<Lap> = laps[activityId].orEmpty().toList()
+
+    override suspend fun getEvents(activityId: Long): List<RideEvent> = events[activityId].orEmpty().toList()
+
+    override suspend fun getSamples(activityId: Long, afterTimeMs: Long, limit: Int): List<RideSample> =
+        samples[activityId].orEmpty().filter { it.timeMs > afterTimeMs }.take(limit)
+
+    override suspend fun getSampleCount(activityId: Long): Int = samples[activityId].orEmpty().size
+}
+
+/** In-memory [ProfileRepository]. */
+public class FakeProfileRepository(initial: RiderProfile? = null) : ProfileRepository {
+    private val profile = MutableStateFlow(initial)
+
+    override fun observe(): Flow<RiderProfile> = profile.map { it ?: RiderProfile() }
+
+    override suspend fun get(): RiderProfile = profile.value ?: RiderProfile()
+
+    override suspend fun save(profile: RiderProfile) {
+        this.profile.value = profile
+    }
+
+    override suspend fun hasProfile(): Boolean = profile.value != null
+}
+
+/** In-memory [SettingsRepository]. */
+public class FakeSettingsRepository(initial: RideSettings = RideSettings()) : SettingsRepository {
+    private val settings = MutableStateFlow(initial)
+    private val onboarding = MutableStateFlow(false)
+
+    override fun observeRideSettings(): Flow<RideSettings> = settings
+
+    override suspend fun getRideSettings(): RideSettings = settings.value
+
+    override suspend fun saveRideSettings(settings: RideSettings) {
+        this.settings.value = settings
+    }
+
+    override fun observeOnboardingDone(): Flow<Boolean> = onboarding
+
+    override suspend fun setOnboardingDone() {
+        onboarding.value = true
+    }
+}
+
+/** Sequential ids: "id-1", "id-2"… */
+public class FakeIdGenerator : IdGenerator {
+    private var next = 1
+
+    override fun newId(): String = "id-${next++}"
+}
+
+/** Name "Ride <startedAtMs>". */
+public class FakeRideNameProvider : RideNameProvider {
+    override fun defaultName(startedAtMs: Long): String = "Ride $startedAtMs"
+}

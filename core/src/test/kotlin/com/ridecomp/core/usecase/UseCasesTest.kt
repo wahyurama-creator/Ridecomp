@@ -1,0 +1,172 @@
+package com.ridecomp.core.usecase
+
+import com.ridecomp.core.model.Activity
+import com.ridecomp.core.model.ActivityStatus
+import com.ridecomp.core.model.RideSample
+import com.ridecomp.core.model.RideSettings
+import com.ridecomp.core.model.RideTotals
+import com.ridecomp.core.model.RiderProfile
+import com.ridecomp.core.repository.NewActivity
+import com.ridecomp.core.testing.FakeActivityRepository
+import com.ridecomp.core.testing.FakeClock
+import com.ridecomp.core.testing.FakeProfileRepository
+import com.ridecomp.core.testing.FakeSettingsRepository
+import com.ridecomp.core.util.Outcome
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.runTest
+
+class TimeOfDayTest {
+    @Test
+    fun `hours map to parts of the day`() {
+        assertEquals(TimeOfDay.EVENING, TimeOfDay.ofHour(2))
+        assertEquals(TimeOfDay.MORNING, TimeOfDay.ofHour(6))
+        assertEquals(TimeOfDay.NOON, TimeOfDay.ofHour(12))
+        assertEquals(TimeOfDay.AFTERNOON, TimeOfDay.ofHour(16))
+        assertEquals(TimeOfDay.EVENING, TimeOfDay.ofHour(20))
+    }
+}
+
+class ActivityUseCasesTest {
+    private val repository = FakeActivityRepository()
+
+    private fun stored(id: Long, status: ActivityStatus, startedAt: Long) = Activity(
+        id = id,
+        uuid = "u$id",
+        name = "Ride $id",
+        status = status,
+        startedAtMs = startedAt,
+        endedAtMs = null,
+        totals = RideTotals(),
+        lastCheckpointAtMs = startedAt,
+    )
+
+    @Test
+    fun `recoverable ride is the latest unfinished one`() = runTest {
+        repository.put(stored(1, ActivityStatus.FINISHED, 10))
+        repository.put(stored(2, ActivityStatus.PAUSED, 20))
+
+        assertEquals(2L, GetRecoverableRideUseCase(repository)()?.id)
+    }
+
+    @Test
+    fun `no recoverable ride when all are finished`() = runTest {
+        repository.put(stored(1, ActivityStatus.FINISHED, 10))
+
+        assertNull(GetRecoverableRideUseCase(repository)())
+    }
+
+    @Test
+    fun `history is paged newest first`() = runTest {
+        (1L..5L).forEach { repository.put(stored(it, ActivityStatus.FINISHED, it)) }
+
+        val page = ObserveHistoryPageUseCase(repository)(page = 1, pageSize = 2).first().map { it.id }
+
+        assertEquals(listOf(3L, 2L), page)
+        assertEquals(5, ObserveHistoryCountUseCase(repository)().first())
+    }
+
+    @Test
+    fun `rename trims and ignores blank names`() = runTest {
+        val id = repository.create(NewActivity("u", "Old", 0))
+        val rename = RenameActivityUseCase(repository)
+
+        rename(id, "  Gowes Kaliurang  ")
+        rename(id, "   ")
+
+        assertEquals("Gowes Kaliurang", repository.get(id)?.name)
+        assertEquals("Gowes Kaliurang", ObserveActivityUseCase(repository)(id).first()?.name)
+    }
+
+    @Test
+    fun `delete removes the ride`() = runTest {
+        val id = repository.create(NewActivity("u", "Ride", 0))
+
+        DeleteActivityUseCase(repository)(id)
+
+        assertNull(repository.get(id))
+        assertEquals(emptyList(), GetLapsUseCase(repository)(id))
+    }
+
+    @Test
+    fun `chart is downsampled to the maximum point count and keeps order`() = runTest {
+        val id = repository.create(NewActivity("u", "Ride", 0))
+        repository.appendSamples(id, (1..3_500).map { RideSample(timeMs = it * 1_000L, distanceM = it * 8.0) })
+
+        val chart = LoadRideChartUseCase(repository)(id, maxPoints = 1_000)
+
+        assertTrue(chart.size <= 1_000)
+        assertTrue(chart.size >= 800)
+        assertEquals(chart.map { it.distanceM }.sorted(), chart.map { it.distanceM })
+    }
+
+    @Test
+    fun `chart of an empty ride is empty`() = runTest {
+        val id = repository.create(NewActivity("u", "Ride", 0))
+
+        assertEquals(emptyList(), LoadRideChartUseCase(repository)(id))
+    }
+}
+
+class ProfileUseCasesTest {
+    private val repository = FakeProfileRepository()
+    private val clock = FakeClock()
+    private val save = SaveProfileUseCase(repository, clock)
+
+    @Test
+    fun `valid profile is saved`() = runTest {
+        val result = save(RiderProfile(weightKg = 68.0, hrMaxBpm = 185, ftpW = 220, birthYear = 1999))
+
+        assertEquals(Outcome.Success(Unit), result)
+        assertTrue(HasProfileUseCase(repository)())
+        assertEquals(68.0, ObserveProfileUseCase(repository)().first().weightKg)
+    }
+
+    @Test
+    fun `every invalid field is reported at once and nothing is saved`() = runTest {
+        val result = save(
+            RiderProfile(
+                weightKg = 5.0,
+                bikeWeightKg = 500.0,
+                wheelCircumferenceMm = 10,
+                hrMaxBpm = 400,
+                hrRestBpm = 300,
+                ftpW = 5,
+                birthYear = 3000,
+            ),
+        )
+
+        assertEquals(Outcome.Failure(InvalidProfile(ProfileField.entries.toSet())), result)
+        assertFalse(HasProfileUseCase(repository)())
+    }
+
+    @Test
+    fun `non finite weight is rejected`() = runTest {
+        val result = save(RiderProfile(weightKg = Double.NaN))
+
+        assertEquals(Outcome.Failure(InvalidProfile(setOf(ProfileField.WEIGHT))), result)
+    }
+
+    @Test
+    fun `hr max estimate is 220 minus age`() {
+        // FakeClock starts on 2026-01-01.
+        assertEquals(190, EstimateHrMaxUseCase(clock)(birthYear = 1996))
+    }
+}
+
+class SettingsUseCasesTest {
+    @Test
+    fun `ride settings and onboarding round trip`() = runTest {
+        val repository = FakeSettingsRepository()
+
+        SaveRideSettingsUseCase(repository)(RideSettings(autoPauseDelayS = 10))
+        CompleteOnboardingUseCase(repository)()
+
+        assertEquals(10, ObserveRideSettingsUseCase(repository)().first().autoPauseDelayS)
+        assertTrue(ObserveOnboardingDoneUseCase(repository)().first())
+    }
+}

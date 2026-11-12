@@ -163,6 +163,8 @@ public object ProfileDefaults {
     public const val MAX_WHEEL_MM: Int = 3_000
     public const val MIN_HR_MAX: Int = 100
     public const val MAX_HR_MAX: Int = 230
+    public const val MIN_HR_REST: Int = 25
+    public const val MAX_HR_REST: Int = 120
     public const val MIN_FTP_W: Int = 50
     public const val MAX_FTP_W: Int = 600
     public const val MIN_BIRTH_YEAR: Int = 1_920
@@ -175,6 +177,9 @@ public object ProfileDefaults {
 public object ActivityConfig {
     /** History page size (02-DESIGN §3.7). */
     public const val HISTORY_PAGE_SIZE: Int = 20
+
+    /** Longest ride name kept (input from the user). */
+    public const val MAX_NAME_LENGTH: Int = 80
 
     /** Track points read per chunk for export/charts (DATA-04). */
     public const val TRACK_CHUNK_SIZE: Int = 1_000

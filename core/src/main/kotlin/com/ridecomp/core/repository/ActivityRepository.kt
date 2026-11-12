@@ -1,0 +1,59 @@
+package com.ridecomp.core.repository
+
+import com.ridecomp.core.model.Activity
+import com.ridecomp.core.model.ActivityStatus
+import com.ridecomp.core.model.Lap
+import com.ridecomp.core.model.RideEvent
+import com.ridecomp.core.model.RideSample
+import com.ridecomp.core.model.RideTotals
+import kotlinx.coroutines.flow.Flow
+
+/** New activity row created when a ride starts. */
+public data class NewActivity(val uuid: String, val name: String, val startedAtMs: Long)
+
+/** Rides and their track, events and laps (05-DATA-MODEL §1). Implemented in :data (ARCH-03). */
+public interface ActivityRepository {
+    /** Creates a ride in `recording` status and returns its id. */
+    public suspend fun create(activity: NewActivity): Long
+
+    /** Writes one flush batch in a single transaction (DATA-03). */
+    public suspend fun appendSamples(activityId: Long, samples: List<RideSample>)
+
+    public suspend fun appendEvents(activityId: Long, events: List<RideEvent>)
+
+    public suspend fun saveLap(activityId: Long, lap: Lap)
+
+    /** Stores the running totals and status so a killed ride can be recovered (03-ARCH §4.5). */
+    public suspend fun checkpoint(activityId: Long, status: ActivityStatus, totals: RideTotals, atMs: Long)
+
+    /** Marks the ride as saved (`finished`). */
+    public suspend fun finish(activityId: Long, name: String, totals: RideTotals, endedAtMs: Long)
+
+    /** Deletes the ride, its children and its files (SEC-STO-06). */
+    public suspend fun delete(activityId: Long)
+
+    public suspend fun rename(activityId: Long, name: String)
+
+    public suspend fun markFitExported(activityId: Long, fitPath: String, atMs: Long)
+
+    public suspend fun get(activityId: Long): Activity?
+
+    public fun observe(activityId: Long): Flow<Activity?>
+
+    /** The most recent ride left in `recording`/`paused` by a crash or kill. */
+    public suspend fun findRecoverable(): Activity?
+
+    /** One page of saved rides, newest first (DATA-04). */
+    public fun observeFinished(limit: Int, offset: Int): Flow<List<Activity>>
+
+    public fun observeFinishedCount(): Flow<Int>
+
+    public suspend fun getLaps(activityId: Long): List<Lap>
+
+    public suspend fun getEvents(activityId: Long): List<RideEvent>
+
+    /** Bounded chunk of samples strictly after [afterTimeMs], oldest first (keyset paging). */
+    public suspend fun getSamples(activityId: Long, afterTimeMs: Long, limit: Int): List<RideSample>
+
+    public suspend fun getSampleCount(activityId: Long): Int
+}

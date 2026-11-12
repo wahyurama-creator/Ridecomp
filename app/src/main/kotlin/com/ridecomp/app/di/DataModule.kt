@@ -1,10 +1,16 @@
 package com.ridecomp.app.di
 
+import com.ridecomp.core.repository.ActivityRepository
+import com.ridecomp.core.repository.ProfileRepository
+import com.ridecomp.core.repository.SettingsRepository
 import com.ridecomp.data.db.RideCompDatabase
+import com.ridecomp.data.repository.ActivityRepositoryImpl
+import com.ridecomp.data.repository.ProfileRepositoryImpl
+import com.ridecomp.data.repository.SettingsRepositoryImpl
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
-/** Database and DAOs. Repository implementations are added per feature (ARCH-03). */
+/** Database, DAOs and repository implementations (ARCH-03). */
 val dataModule = module {
     single { RideCompDatabase.build(androidContext()) }
     single { get<RideCompDatabase>().activityDao() }
@@ -13,4 +19,7 @@ val dataModule = module {
     single { get<RideCompDatabase>().lapDao() }
     single { get<RideCompDatabase>().profileDao() }
     single { get<RideCompDatabase>().settingsDao() }
+    single<ActivityRepository> { ActivityRepositoryImpl(get(), get(), get(), get(), get()) }
+    single<ProfileRepository> { ProfileRepositoryImpl(get()) }
+    single<SettingsRepository> { SettingsRepositoryImpl(get()) }
 }
