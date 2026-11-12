@@ -35,26 +35,26 @@ Spesifikasi detail fitur tambahan: `../12-FEATURE-SPECS.md`.
 **DoD:** app terpasang di HP fisik, navigasi antar layar jalan, perintah verifikasi lulus tanpa warning, LeakCanary & StrictMode aktif di debug, APK release ter-build.
 
 ## Fase 1 — Perekam GPS (MVP-a)
-- [ ] T1.1 Onboarding izin (lokasi, notifikasi, optimasi baterai) + panduan per merek HP.
-- [ ] T1.2 Profil (berat, sepeda, keliling roda, HR max, FTP, umur, jenis kelamin opsional).
-- [ ] T1.3 Foreground service + RideEngine state machine (start/pause/resume/stop/discard).
-- [ ] T1.4 Stream GPS 1 Hz + filter akurasi + jarak + speed.
-- [ ] T1.4b Jeda & lanjut otomatis lengkap (`../12-FEATURE-SPECS.md` §1): setting ambang & durasi, tahan GPS drift, indikator "JEDA OTOMATIS", prompt diam lama, event FIT.
-- [ ] T1.5 SampleMerger 1 record/detik + DbWriter batch 5 detik + checkpoint.
-- [ ] T1.6 Recovery setelah crash/kill (banner di Home).
-- [ ] T1.7 Elevasi (GPS/barometer), total tanjakan, grade.
-- [ ] T1.8 Layar ride: halaman data (konfigurasi default), status bar, kontrol pause/lap, layar pause.
-- [ ] T1.9 Lap manual + auto-lap jarak.
-- [ ] T1.10 Notifikasi foreground menampilkan waktu, jarak, speed (update ≤ 1 Hz) + aksi Pause.
-- [ ] T1.11 Mode layar: selalu nyala / redup otomatis / mati.
-- [ ] T1.12 Ringkasan setelah ride + simpan.
-- [ ] T1.13 Riwayat + detail (grafik speed & elevasi, downsampled).
-- [ ] T1.14 FIT writer + export (share / simpan) + GPX export.
-- [ ] T1.15 Layar bantuan "Upload ke Strava manual".
-- [ ] T1.16 Baseline Profile untuk cold start.
-- [ ] T1.17 Unit test: haversine, filter GPS, auto-pause (termasuk GPS drift & tanjakan pelan), elevasi histeresis, FIT writer.
-- [ ] T1.18 Pengingat minum & makan (§2).
-- [ ] T1.19 Mode baterai kritis otomatis 20/10/5% + FIT darurat (§3), dengan `BatteryLevelSource` fake untuk test.
+- [x] T1.1 Onboarding izin (lokasi, notifikasi, optimasi baterai) + panduan per merek HP.
+- [x] T1.2 Profil (berat, sepeda, keliling roda, HR max, FTP, umur, jenis kelamin opsional).
+- [x] T1.3 Foreground service + RideEngine state machine (start/pause/resume/stop/discard).
+- [x] T1.4 Stream GPS 1 Hz + filter akurasi + jarak + speed.
+- [x] T1.4b Jeda & lanjut otomatis lengkap (`../12-FEATURE-SPECS.md` §1): setting ambang & durasi, tahan GPS drift, indikator "JEDA OTOMATIS", prompt diam lama, event FIT.
+- [x] T1.5 SampleMerger 1 record/detik + DbWriter batch 5 detik + checkpoint.
+- [x] T1.6 Recovery setelah crash/kill (banner di Home).
+- [x] T1.7 Elevasi (GPS/barometer), total tanjakan, grade.
+- [x] T1.8 Layar ride: halaman data (konfigurasi default), status bar, kontrol pause/lap, layar pause.
+- [x] T1.9 Lap manual + auto-lap jarak.
+- [x] T1.10 Notifikasi foreground menampilkan waktu, jarak, speed (update ≤ 1 Hz) + aksi Pause.
+- [x] T1.11 Mode layar: selalu nyala / redup otomatis / mati.
+- [x] T1.12 Ringkasan setelah ride + simpan.
+- [x] T1.13 Riwayat + detail (grafik speed & elevasi, downsampled).
+- [x] T1.14 FIT writer + export (share / simpan) + GPX export.
+- [x] T1.15 Layar bantuan "Upload ke Strava manual".
+- [ ] T1.16 Baseline Profile untuk cold start. *(Ditunda: butuh perangkat/emulator + dependency macrobenchmark — D-23.)*
+- [x] T1.17 Unit test: haversine, filter GPS, auto-pause (termasuk GPS drift & tanjakan pelan), elevasi histeresis, FIT writer.
+- [x] T1.18 Pengingat minum & makan (§2).
+- [x] T1.19 Mode baterai kritis otomatis 20/10/5% + FIT darurat (§3), dengan `BatteryLevelSource` fake untuk test.
 
 **DoD:** 3 ride uji di jalan (≥ 30 menit) berhasil, file FIT diterima Strava, recovery teruji (force stop app di tengah ride).
 

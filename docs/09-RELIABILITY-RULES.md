@@ -12,13 +12,13 @@ Setiap resource berat **harus** memiliki satu pemilik, titik akuisisi, dan titik
 
 | Resource | Pemilik | Diakuisisi saat | WAJIB dilepas saat | API pelepasan | Verifikasi |
 |---|---|---|---|---|---|
-| Update lokasi GPS | `AndroidLocationSource` (dipakai `RecordingService`) | Pre-ride / start ride | Ride selesai/dibuang, service destroy, `awaitClose` | `LocationManager.removeUpdates()` | `adb shell dumpsys location` tidak menampilkan request app setelah ride selesai |
+| Update lokasi GPS | `AndroidLocationSource` (dipakai `RecordingService` dan pre-ride lewat `ObserveGpsStatusUseCase` + `WhileSubscribed`) | Pre-ride (selama layar terlihat) / start ride | Ride selesai/dibuang, service destroy, `awaitClose` | `LocationManager.removeUpdates()` | `adb shell dumpsys location` tidak menampilkan request app setelah ride selesai |
 | Koneksi BLE (GATT) | `BleSensorSource` | Pre-ride / pairing | Ride selesai, sensor dilupakan, service destroy | `disconnect()` lalu **`close()`** | Sensor kembali advertising (terlihat di scan app lain); log koneksi |
 | Scan BLE | Layar Sensor / reconnect | Tombol scan / reconnect | Timeout (≤ 15 dtk), layar ditutup, perangkat ditemukan | `stopScan()` | Log + scan berhenti dalam batas waktu |
-| Wakelock parsial | `RecordingService` | Status recording | Status idle/finished, service destroy (di `finally`) | `release()` (cek `isHeld`) | `adb shell dumpsys power` → tidak ada wakelock milik app saat idle |
+| Wakelock parsial | `RecordingService` (`WakeLockHolder`) | Status recording | Status idle/finished, service destroy (di `finally`) | `release()` (cek `isHeld`) | `adb shell dumpsys power` → tidak ada wakelock milik app saat idle |
 | Foreground service | `RecordingService` | Start ride | Ride disimpan/dibuang | `stopForeground(STOP_FOREGROUND_REMOVE)` + `stopSelf()` | Notifikasi hilang; `adb shell dumpsys activity services` |
-| Sensor barometer | `PressureSource` | Start ride | Ride selesai, `awaitClose` | `SensorManager.unregisterListener()` | `adb shell dumpsys sensorservice` |
-| Wake layar | Layar ride | Mode "selalu nyala" & layar ride terlihat | Layar ride ditutup / mode diganti | `FLAG_KEEP_SCREEN_ON` dihapus (via `DisposableEffect`) | Layar mati normal setelah keluar layar ride |
+| Sensor barometer | `AndroidPressureSource` (dihentikan juga saat mode baterai Kritis) | Start ride | Ride selesai, `awaitClose` | `SensorManager.unregisterListener()` | `adb shell dumpsys sensorservice` |
+| Wake layar + override kecerahan (redup otomatis) | `RideScreenModeEffect` (layar ride) | Mode "selalu nyala" & layar ride terlihat | Layar ride ditutup / mode diganti | `FLAG_KEEP_SCREEN_ON` dihapus (via `DisposableEffect`) | Layar mati normal setelah keluar layar ride |
 | MapView MapLibre | Composable peta | Composable masuk komposisi | Keluar komposisi | `onStop()` + `onDestroy()` | LeakCanary bersih; memori turun setelah keluar layar peta |
 | Coroutine scope service | `RecordingService` | `onCreate` | `onDestroy` | `serviceScope.cancel()` | Test + log |
 | Cursor/stream file | Pemanggil | Buka | Selesai dipakai | `use { }` | StrictMode `detectLeakedClosableObjects` |
