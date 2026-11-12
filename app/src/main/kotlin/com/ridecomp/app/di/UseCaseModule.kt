@@ -8,6 +8,7 @@ import com.ridecomp.core.usecase.ExportFileStore
 import com.ridecomp.core.usecase.ExportFitUseCase
 import com.ridecomp.core.usecase.ExportGpxUseCase
 import com.ridecomp.core.usecase.ExportedFileHandler
+import com.ridecomp.core.usecase.ForgetSensorUseCase
 import com.ridecomp.core.usecase.GetLapsUseCase
 import com.ridecomp.core.usecase.GetRecoverableRideUseCase
 import com.ridecomp.core.usecase.HandleRecoveredRideUseCase
@@ -21,12 +22,15 @@ import com.ridecomp.core.usecase.ObserveLiveRideUseCase
 import com.ridecomp.core.usecase.ObserveOnboardingDoneUseCase
 import com.ridecomp.core.usecase.ObserveProfileUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
+import com.ridecomp.core.usecase.ObserveSavedSensorsUseCase
+import com.ridecomp.core.usecase.PairSensorUseCase
 import com.ridecomp.core.usecase.PerformRideActionUseCase
 import com.ridecomp.core.usecase.ReadBatteryUseCase
 import com.ridecomp.core.usecase.RenameActivityUseCase
 import com.ridecomp.core.usecase.SaveActivityFileUseCase
 import com.ridecomp.core.usecase.SaveProfileUseCase
 import com.ridecomp.core.usecase.SaveRideSettingsUseCase
+import com.ridecomp.core.usecase.ScanSensorsUseCase
 import com.ridecomp.core.usecase.ShareActivityFileUseCase
 import com.ridecomp.core.usecase.StartRideUseCase
 import com.ridecomp.core.usecase.SuggestExportFileNameUseCase
@@ -70,4 +74,8 @@ val useCaseModule = module {
     factory { ShareActivityFileUseCase(get(), get()) }
     factory { SaveActivityFileUseCase(get(), get()) }
     factory { SuggestExportFileNameUseCase(get(), get()) }
+    factory { ObserveSavedSensorsUseCase(get()) }
+    factory { ScanSensorsUseCase(get()) }
+    factory { PairSensorUseCase(get(), get()) }
+    factory { ForgetSensorUseCase(get()) }
 }

@@ -73,8 +73,7 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
             RoutesRoute(onImportGpx = {})
         }
         composable(TopLevelDestination.SENSORS.route) {
-            // TODO(T2.1): start the BLE scan screen.
-            SensorsRoute(onScan = {})
+            SensorsRoute()
         }
         composable(TopLevelDestination.SETTINGS.route) {
             SettingsRoute(

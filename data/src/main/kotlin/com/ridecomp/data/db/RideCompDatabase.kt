@@ -5,16 +5,19 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.ridecomp.data.db.dao.ActivityDao
 import com.ridecomp.data.db.dao.EventDao
 import com.ridecomp.data.db.dao.LapDao
 import com.ridecomp.data.db.dao.ProfileDao
+import com.ridecomp.data.db.dao.SensorDao
 import com.ridecomp.data.db.dao.SettingsDao
 import com.ridecomp.data.db.dao.TrackPointDao
 import com.ridecomp.data.db.entity.ActivityEntity
 import com.ridecomp.data.db.entity.EventEntity
 import com.ridecomp.data.db.entity.LapEntity
 import com.ridecomp.data.db.entity.ProfileEntity
+import com.ridecomp.data.db.entity.SensorEntity
 import com.ridecomp.data.db.entity.SettingEntity
 import com.ridecomp.data.db.entity.TrackPointEntity
 
@@ -30,6 +33,7 @@ import com.ridecomp.data.db.entity.TrackPointEntity
         TrackPointEntity::class,
         EventEntity::class,
         LapEntity::class,
+        SensorEntity::class,
     ],
     version = RideCompDatabase.VERSION,
     exportSchema = true,
@@ -47,8 +51,10 @@ abstract class RideCompDatabase : RoomDatabase() {
 
     abstract fun settingsDao(): SettingsDao
 
+    abstract fun sensorDao(): SensorDao
+
     companion object {
-        const val VERSION = 1
+        const val VERSION = 2
 
         /**
          * Builds the database in internal storage (SEC-STO-01). Destructive migration is never enabled:
@@ -61,7 +67,23 @@ abstract class RideCompDatabase : RoomDatabase() {
     }
 }
 
-/** Ordered list of all migrations. Empty while the schema is at version 1. */
+/** Ordered list of all migrations (DATA-02). SQL is copied from the exported schemas. */
 object RideCompMigrations {
-    val ALL: List<Migration> = emptyList()
+    /** v2: paired BLE sensors (T2.1). */
+    val MIGRATION_1_2: Migration = object : Migration(1, 2) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `${DbNames.TABLE_SENSORS}` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`remote_id` TEXT NOT NULL, `name` TEXT NOT NULL, `services` TEXT NOT NULL, " +
+                    "`last_battery` INTEGER, `auto_connect` INTEGER NOT NULL, `created_at` INTEGER NOT NULL)",
+            )
+            db.execSQL(
+                "CREATE UNIQUE INDEX IF NOT EXISTS `index_sensors_remote_id` " +
+                    "ON `${DbNames.TABLE_SENSORS}` (`remote_id`)",
+            )
+        }
+    }
+
+    val ALL: List<Migration> = listOf(MIGRATION_1_2)
 }

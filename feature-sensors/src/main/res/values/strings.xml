@@ -3,4 +3,27 @@
     <string name="sensors_title">Sensors</string>
     <string name="sensors_empty">No saved sensors. Scan for heart rate, speed/cadence or power sensors.</string>
     <string name="sensors_scan_action">Scan</string>
+    <string name="sensors_stop_scan">Stop scan</string>
+    <string name="sensors_saved">Saved</string>
+    <string name="sensors_found">Found</string>
+    <string name="sensors_scanning">Scanning…</string>
+    <string name="sensors_pair">Pair</string>
+    <string name="sensors_forget">Forget</string>
+    <string name="sensors_cancel">Cancel</string>
+    <string name="sensors_forget_title">Forget %1$s?</string>
+    <string name="sensors_forget_message">It will no longer connect automatically. You can pair it again later.</string>
+    <string name="sensors_unnamed">Unnamed sensor</string>
+    <string name="sensors_kind_hr">Heart rate</string>
+    <string name="sensors_kind_csc">Speed/cadence</string>
+    <string name="sensors_kind_power">Power</string>
+    <string name="sensors_kind_unknown">Sensor</string>
+    <string name="sensors_kind_separator">" · "</string>
+    <string name="sensors_subtitle">%1$s · %2$s</string>
+    <string name="sensors_battery">Battery %1$d%%</string>
+    <string name="sensors_battery_low">Battery low %1$d%%</string>
+    <string name="sensors_scan_failed">Scan failed. Try again.</string>
+    <string name="sensors_blocker_permission">Bluetooth permission is needed to find sensors.</string>
+    <string name="sensors_blocker_permission_action">Allow</string>
+    <string name="sensors_blocker_bluetooth">Bluetooth is off.</string>
+    <string name="sensors_blocker_bluetooth_action">Turn on</string>
 </resources>
