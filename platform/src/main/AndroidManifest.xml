@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Permissions of the recording pipeline (03-ARCHITECTURE §2, SEC-PLT-06). Bluetooth, SMS and network
+    permissions are added in the phase that needs them. Location "while in use" is enough because the
+    foreground service is started from the open app (no ACCESS_BACKGROUND_LOCATION).
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- GPS is mandatory (01-PRD §5 minimum device): rides cannot be recorded without it. -->
+    <uses-feature
+        android:name="android.hardware.location.gps"
+        android:required="true"
+        tools:ignore="UnnecessaryRequiredFeature" />
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <!--
+        Required by the spec (01-PRD risk "OEM kills the app", 03-ARCHITECTURE §7): without the exemption
+        aggressive OEMs stop rides. Distribution is APK sideload; to be reviewed before any Play Store release.
+    -->
+    <uses-permission
+        android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"
+        tools:ignore="BatteryLife" />
+
+    <application>
+        <!-- Not exported (SEC-PLT-01/02): only explicit intents from this app reach it. -->
+        <service
+            android:name=".service.RecordingService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+    </application>
+
+</manifest>
