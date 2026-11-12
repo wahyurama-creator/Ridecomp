@@ -26,6 +26,8 @@ object RideCompDimens {
     val cornerRadius = 8.dp
     val bannerMinHeight = 56.dp
     val contentMaxWidth = 600.dp
+    val chartHeight = 140.dp
+    val chartStroke = 2.dp
 
     // Data field typography (02-DESIGN §4.2)
     val dataValueMinSize = 32.sp
