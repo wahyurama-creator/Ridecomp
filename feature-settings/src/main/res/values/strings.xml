@@ -53,6 +53,8 @@
     <string name="ride_settings_screen_off">Off (data in notification)</string>
     <string name="ride_settings_battery_saver">Battery saver at 20 %</string>
     <string name="ride_settings_battery_saver_description">Critical (10 %) and emergency (5 %) modes always stay on.</string>
+    <string name="ride_settings_volume_buttons">Volume buttons</string>
+    <string name="ride_settings_volume_buttons_description">During a ride: Volume Up = lap, Volume Down = pause/resume.</string>
     <string name="ride_settings_units">Units</string>
     <string name="ride_settings_metric">Metric (km, m)</string>
     <string name="ride_settings_imperial">Imperial (mi, ft)</string>

@@ -26,6 +26,8 @@ sealed interface RideSettingsUiEvent {
 
     data class BatterySaver(val isEnabled: Boolean) : RideSettingsUiEvent
 
+    data class VolumeButtons(val isEnabled: Boolean) : RideSettingsUiEvent
+
     data class Units(val system: UnitSystem) : RideSettingsUiEvent
 }
 
@@ -46,6 +48,7 @@ class RideSettingsViewModel(
             is RideSettingsUiEvent.EatInterval -> currentState.copy(eatIntervalMin = event.minutes)
             is RideSettingsUiEvent.Screen -> currentState.copy(screenMode = event.mode)
             is RideSettingsUiEvent.BatterySaver -> currentState.copy(isBatterySaverEnabled = event.isEnabled)
+            is RideSettingsUiEvent.VolumeButtons -> currentState.copy(isVolumeButtonsEnabled = event.isEnabled)
             is RideSettingsUiEvent.Units -> currentState.copy(unitSystem = event.system)
         }
         updateState { updated }
