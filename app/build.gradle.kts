@@ -1,35 +1,47 @@
+// :app = composition root: Application, navigation, DI (Koin) wiring, i18n resources.
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
 
 android {
-    namespace = "com.ways.ridecomp"
+    namespace = "com.ridecomp.app"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "com.ways.ridecomp"
-        minSdk = 23
+        applicationId = "com.ridecomp.app"
+        minSdk = 26
         targetSdk = 37
         versionCode = 1
-        versionName = "1.0"
+        versionName = "0.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
+            // R8 minify + resource shrinking (DEP-04, SEC-BLD-01).
             optimization {
                 enable = true
-                packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
             }
         }
     }
+
+    // MapLibre (Phase 3) ships native libraries; many low-end phones are still 32-bit (03-ARCHITECTURE §2).
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a", "armeabi-v7a")
+            isUniversalApk = false
+        }
+    }
+
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
         compose = true
@@ -37,19 +49,31 @@ android {
 }
 
 dependencies {
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.graphics)
-    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(project(":core"))
+    implementation(project(":data"))
+    implementation(project(":platform"))
+    implementation(project(":ui-common"))
+    implementation(project(":feature-ride"))
+    implementation(project(":feature-history"))
+    implementation(project(":feature-sensors"))
+    implementation(project(":feature-routes"))
+    implementation(project(":feature-settings"))
+    implementation(project(":feature-training"))
+
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.navigation.compose)
+
+    testImplementation(libs.kotlin.test.junit)
     testImplementation(libs.junit)
+
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
-    androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.espresso.core)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }

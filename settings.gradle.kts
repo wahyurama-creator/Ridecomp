@@ -8,7 +8,19 @@ pluginManagement {
             }
         }
         mavenCentral()
-        gradlePluginPortal()
+        // RULE-EXCEPTION: SUP-01 — approved by the owner on 2026-11-12. The Gradle Plugin Portal is used
+        // only for build-time quality/security plugins that are not published elsewhere, and is restricted
+        // to their groups so it cannot serve any other artifact.
+        gradlePluginPortal {
+            content {
+                includeGroupByRegex("org\\.jlleitschuh\\.gradle.*")
+                includeGroupByRegex("org\\.owasp.*")
+                includeGroupByRegex("com\\.github\\.jk1.*")
+                includeGroupByRegex("io\\.gitlab\\.arturbosch\\.detekt.*")
+                includeGroupByRegex("org\\.jetbrains\\.kotlinx\\.kover.*")
+                includeGroupByRegex("org\\.gradle\\.toolchains.*")
+            }
+        }
     }
 }
 plugins {
@@ -22,5 +34,16 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Ridecomp"
+rootProject.name = "RideComp"
+
 include(":app")
+include(":core")
+include(":data")
+include(":platform")
+include(":ui-common")
+include(":feature-ride")
+include(":feature-history")
+include(":feature-sensors")
+include(":feature-routes")
+include(":feature-settings")
+include(":feature-training")
