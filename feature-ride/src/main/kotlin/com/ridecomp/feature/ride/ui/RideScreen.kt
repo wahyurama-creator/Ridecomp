@@ -62,6 +62,7 @@ fun RideRoute(
 ) {
     val live = viewModel.liveRide.collectAsStateWithLifecycle()
     val settings by viewModel.settings.collectAsStateWithLifecycle()
+    val pages by viewModel.pages.collectAsStateWithLifecycle()
     ObserveEffects(viewModel.effects) { effect ->
         when (effect) {
             RideEffect.OpenSummary -> onFinished()
@@ -85,6 +86,7 @@ fun RideRoute(
         live = live,
         formatter = formatter,
         onAction = viewModel::onEvent,
+        pages = pages,
         modifier = modifier.pointerInput(Unit) {
             // Any touch wakes a dimmed screen; the event is observed, not consumed.
             awaitEachGesture {

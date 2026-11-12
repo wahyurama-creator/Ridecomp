@@ -1,5 +1,6 @@
 package com.ridecomp.core.repository
 
+import com.ridecomp.core.model.DataPagesLayout
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RiderProfile
 import kotlinx.coroutines.flow.Flow
@@ -28,4 +29,10 @@ public interface SettingsRepository {
     public fun observeOnboardingDone(): Flow<Boolean>
 
     public suspend fun setOnboardingDone()
+
+    /** Custom data pages, or null when the rider uses the defaults (T2.8). */
+    public fun observeDataPages(): Flow<DataPagesLayout?>
+
+    /** Saves custom pages; null restores the defaults. */
+    public suspend fun saveDataPages(layout: DataPagesLayout?)
 }

@@ -2,6 +2,7 @@ package com.ridecomp.core.testing
 
 import com.ridecomp.core.model.Activity
 import com.ridecomp.core.model.ActivityStatus
+import com.ridecomp.core.model.DataPagesLayout
 import com.ridecomp.core.model.Lap
 import com.ridecomp.core.model.RideEvent
 import com.ridecomp.core.model.RideSample
@@ -167,6 +168,14 @@ public class FakeSettingsRepository(initial: RideSettings = RideSettings()) : Se
 
     override suspend fun setOnboardingDone() {
         onboarding.value = true
+    }
+
+    public val dataPages: MutableStateFlow<DataPagesLayout?> = MutableStateFlow(null)
+
+    override fun observeDataPages(): Flow<DataPagesLayout?> = dataPages
+
+    override suspend fun saveDataPages(layout: DataPagesLayout?) {
+        dataPages.value = layout
     }
 }
 

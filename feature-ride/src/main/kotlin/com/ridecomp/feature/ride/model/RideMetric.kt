@@ -3,6 +3,8 @@ package com.ridecomp.feature.ride.model
 import androidx.annotation.StringRes
 import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.sensors.SensorKind
+import com.ridecomp.core.model.DataPageLayout
+import com.ridecomp.core.model.DataPagesLayout
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.ride.R
 import java.time.Instant
@@ -119,6 +121,12 @@ enum class RideMetric(
     }),
     ;
 
+    /**
+     * Stable id stored in the data page JSON (05-DATA-MODEL §2). Derived from the entry name: renaming an
+     * entry drops it from saved pages (they fall back gracefully, see `sanitized`), so rename with care.
+     */
+    val key: String get() = name.lowercase(Locale.ROOT)
+
     /** Display text of this metric for [live]. */
     fun value(live: LiveRide, format: UnitFormatter, zone: ZoneId = ZoneId.systemDefault()): String =
         MetricContext(live, format, zone).read()
@@ -170,4 +178,26 @@ object DefaultDataPages {
         ),
     )
     val ALL: List<DataPage> = listOf(MAIN, CLIMB, LAP)
+
+    /** Starting point of a page added in the editor. */
+    val NEW_PAGE: DataPageLayout = DataPageLayout(listOf(RideMetric.SPEED.key, RideMetric.DISTANCE.key))
 }
+
+/** Lookup between stored metric keys and [RideMetric]. */
+object RideMetricKeys {
+    private val byKey: Map<String, RideMetric> = RideMetric.entries.associateBy { it.key }
+
+    /** Every key this app version can show; used to sanitize stored pages. */
+    val ALL: Set<String> = byKey.keys
+
+    fun metricOf(key: String): RideMetric? = byKey[key]
+}
+
+/** Stored layout → renderable pages (unknown keys were already removed by `sanitized`). */
+fun DataPagesLayout.toDataPages(): List<DataPage> = pages.map { page ->
+    DataPage(page.fields.mapNotNull(RideMetricKeys::metricOf), page.isFirstFullWidth)
+}
+
+/** Renderable pages → stored layout. */
+fun List<DataPage>.toLayout(): DataPagesLayout =
+    DataPagesLayout(map { page -> DataPageLayout(page.metrics.map { it.key }, page.isFirstFullWidth) })

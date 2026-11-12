@@ -1,5 +1,6 @@
 package com.ridecomp.data.repository
 
+import com.ridecomp.core.model.DataPagesLayout
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RiderProfile
 import com.ridecomp.core.repository.ProfileRepository
@@ -7,6 +8,7 @@ import com.ridecomp.core.repository.SettingsRepository
 import com.ridecomp.data.db.dao.ProfileDao
 import com.ridecomp.data.db.dao.SettingsDao
 import com.ridecomp.data.db.entity.SettingEntity
+import com.ridecomp.data.json.DataPagesJson
 import com.ridecomp.data.mapper.SettingsKeys
 import com.ridecomp.data.mapper.toDomain
 import com.ridecomp.data.mapper.toEntities
@@ -45,5 +47,16 @@ class SettingsRepositoryImpl(private val dao: SettingsDao) : SettingsRepository 
 
     override suspend fun setOnboardingDone() {
         dao.upsert(SettingEntity(SettingsKeys.ONBOARDING_DONE, true.toString()))
+    }
+
+    override fun observeDataPages(): Flow<DataPagesLayout?> =
+        dao.observe(SettingsKeys.DATA_PAGES).map { json -> json?.let(DataPagesJson::decode) }.distinctUntilChanged()
+
+    override suspend fun saveDataPages(layout: DataPagesLayout?) {
+        if (layout == null) {
+            dao.delete(SettingsKeys.DATA_PAGES)
+        } else {
+            dao.upsert(SettingEntity(SettingsKeys.DATA_PAGES, DataPagesJson.encode(layout)))
+        }
     }
 }

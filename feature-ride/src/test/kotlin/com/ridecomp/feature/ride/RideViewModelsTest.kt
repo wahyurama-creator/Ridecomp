@@ -15,6 +15,7 @@ import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.usecase.GetRecoverableRideUseCase
 import com.ridecomp.core.usecase.HandleRecoveredRideUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
+import com.ridecomp.core.usecase.ObserveDataPagesUseCase
 import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
@@ -122,6 +123,7 @@ class RideViewModelsTest {
         val viewModel = RideViewModel(
             ObserveLiveRideUseCase(controller),
             ObserveRideSettingsUseCase(settings),
+            ObserveDataPagesUseCase(settings),
             PerformRideActionUseCase(controller),
         )
 

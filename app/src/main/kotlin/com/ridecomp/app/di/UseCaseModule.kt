@@ -15,6 +15,7 @@ import com.ridecomp.core.usecase.HandleRecoveredRideUseCase
 import com.ridecomp.core.usecase.HasProfileUseCase
 import com.ridecomp.core.usecase.LoadRideChartUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
+import com.ridecomp.core.usecase.ObserveDataPagesUseCase
 import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
 import com.ridecomp.core.usecase.ObserveHistoryCountUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
@@ -27,7 +28,9 @@ import com.ridecomp.core.usecase.PairSensorUseCase
 import com.ridecomp.core.usecase.PerformRideActionUseCase
 import com.ridecomp.core.usecase.ReadBatteryUseCase
 import com.ridecomp.core.usecase.RenameActivityUseCase
+import com.ridecomp.core.usecase.ResetDataPagesUseCase
 import com.ridecomp.core.usecase.SaveActivityFileUseCase
+import com.ridecomp.core.usecase.SaveDataPagesUseCase
 import com.ridecomp.core.usecase.SaveProfileUseCase
 import com.ridecomp.core.usecase.SaveRideSettingsUseCase
 import com.ridecomp.core.usecase.ScanSensorsUseCase
@@ -78,4 +81,7 @@ val useCaseModule = module {
     factory { ScanSensorsUseCase(get()) }
     factory { PairSensorUseCase(get(), get()) }
     factory { ForgetSensorUseCase(get()) }
+    factory { ObserveDataPagesUseCase(get()) }
+    factory { SaveDataPagesUseCase(get()) }
+    factory { ResetDataPagesUseCase(get()) }
 }

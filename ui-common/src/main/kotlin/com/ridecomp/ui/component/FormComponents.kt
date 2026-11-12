@@ -1,5 +1,6 @@
 package com.ridecomp.ui.component
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -8,6 +9,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilterChip
@@ -164,6 +168,51 @@ fun ConfirmDialog(
                 Text(confirmLabel, color = RideCompTheme.colors.danger)
             }
         },
+        dismissButton = {
+            TextButton(onClick = onDismiss, modifier = Modifier.heightIn(min = RideCompDimens.touchTargetMin)) {
+                Text(dismissLabel)
+            }
+        },
+        containerColor = RideCompTheme.colors.surface,
+    )
+}
+
+/** Pick one value from a longer list (metric for a data field, …); the current value is highlighted. */
+@Composable
+fun <T> PickerDialog(
+    title: String,
+    choices: ImmutableList<Choice<T>>,
+    selected: T?,
+    dismissLabel: String,
+    onPick: (T) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            LazyColumn {
+                items(choices, key = { it.label }) { choice ->
+                    Text(
+                        text = choice.label,
+                        style = RideCompTheme.typography.body,
+                        color = if (choice.value ==
+                            selected
+                        ) {
+                            RideCompTheme.colors.accent
+                        } else {
+                            RideCompTheme.colors.textPrimary
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = RideCompDimens.touchTargetMin)
+                            .clickable(role = Role.Button) { onPick(choice.value) }
+                            .wrapContentHeight(Alignment.CenterVertically),
+                    )
+                }
+            }
+        },
+        confirmButton = {},
         dismissButton = {
             TextButton(onClick = onDismiss, modifier = Modifier.heightIn(min = RideCompDimens.touchTargetMin)) {
                 Text(dismissLabel)

@@ -1,5 +1,6 @@
 package com.ridecomp.feature.ride.di
 
+import com.ridecomp.feature.ride.viewmodel.DataPagesEditorViewModel
 import com.ridecomp.feature.ride.viewmodel.HomeViewModel
 import com.ridecomp.feature.ride.viewmodel.PreRideViewModel
 import com.ridecomp.feature.ride.viewmodel.RideViewModel
@@ -11,6 +12,7 @@ import org.koin.dsl.module
 val rideFeatureModule = module {
     viewModel { HomeViewModel(get(), get(), get(), get(), get()) }
     viewModel { PreRideViewModel(get(), get(), get()) }
-    viewModel { RideViewModel(get(), get(), get()) }
+    viewModel { RideViewModel(get(), get(), get(), get()) }
     viewModel { SummaryViewModel(get(), get(), get(), get(), get()) }
+    viewModel { DataPagesEditorViewModel(get(), get(), get()) }
 }

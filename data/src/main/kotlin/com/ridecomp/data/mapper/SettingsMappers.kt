@@ -23,6 +23,7 @@ internal object SettingsKeys {
     const val BATTERY_SAVER_ENABLED = "ride.battery_saver_enabled"
     const val UNIT_SYSTEM = "app.unit_system"
     const val ONBOARDING_DONE = "app.onboarding_done"
+    const val DATA_PAGES = "ride.data_pages"
 
     /** Stored for an optional value that the user switched off (distinguishes "off" from "default"). */
     const val OFF = "off"
