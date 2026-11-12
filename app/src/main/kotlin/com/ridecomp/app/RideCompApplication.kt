@@ -26,7 +26,8 @@ class RideCompApplication :
         startKoin {
             androidLogger(if (BuildConfig.DEBUG) Level.INFO else Level.NONE)
             androidContext(this@RideCompApplication)
-            modules(appModules)
+            allowOverride(true)
+            modules(appModules + DevTools.koinOverrides)
         }
         CrashLogHandler.install(get<CrashLogStore>())
     }
