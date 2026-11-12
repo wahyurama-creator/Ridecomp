@@ -1,0 +1,84 @@
+# Overrides on top of detekt's default config (buildUponDefaultConfig = true).
+# Rule IDs refer to docs/08-CODING-RULES.md.
+
+complexity:
+  LongMethod:            # KT-05: functions max ~40 lines
+    active: true
+    threshold: 40
+    ignoreAnnotated: ['Composable', 'Preview']
+  LargeClass:            # KT-05: classes max ~300 lines
+    active: true
+    threshold: 300
+  LongParameterList:     # KT-05: max 6 parameters
+    active: true
+    functionThreshold: 7
+    constructorThreshold: 7
+    ignoreDefaultParameters: false
+    ignoreAnnotated: ['Composable']
+  TooManyFunctions:
+    active: true
+    ignorePrivate: true
+    thresholdInFiles: 20
+    thresholdInClasses: 20
+    thresholdInInterfaces: 20
+
+naming:
+  FunctionNaming:        # NAME-07: Composables are PascalCase
+    active: true
+    ignoreAnnotated: ['Composable']
+  TopLevelPropertyNaming:
+    active: true
+    constantPattern: '[A-Z][_A-Z0-9]*'
+  BooleanPropertyNaming: # NAME-09
+    active: true
+    allowedPattern: '^(is|has|can|should)'
+
+potential-bugs:
+  UnsafeCallOnNullableType:  # KT-03: no !!
+    active: true
+  LateinitUsage:             # KT-04
+    active: true
+    ignoreOnClassesPattern: '.*(Activity|Application|Service|Test)$'
+
+style:
+  MagicNumber:           # KT-06
+    active: true
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreAnnotated: ['Preview']
+    excludes: ['**/test/**', '**/androidTest/**', '**/*Test.kt']
+  ForbiddenComment:      # KT-10: TODO needs a task id, e.g. TODO(T2.5)
+    active: true
+    comments:
+      - reason: 'TODO must reference a task id, e.g. TODO(T2.5): ...'
+        value: 'TODO:'
+      - reason: 'FIXME is not allowed; create a task.'
+        value: 'FIXME'
+      - reason: 'STOPSHIP is not allowed.'
+        value: 'STOPSHIP'
+  ForbiddenMethodCall:   # KT-12: time comes from the injected Clock
+    active: true
+    methods:
+      - reason: 'Use the injected Clock (KT-12).'
+        value: 'java.lang.System.currentTimeMillis'
+      - reason: 'Use the injected Clock (KT-12).'
+        value: 'java.lang.System.nanoTime'
+      - reason: 'Use Logger (ERR-05).'
+        value: 'kotlin.io.println'
+  UnusedPrivateMember:
+    active: true
+    ignoreAnnotated: ['Preview']
+
+coroutines:
+  GlobalCoroutineUsage:  # CO-01
+    active: true
+  InjectDispatcher:      # CO-03
+    active: true
+  SleepInsteadOfDelay:
+    active: true
+
+exceptions:
+  SwallowedException:    # ERR-01
+    active: true
+  TooGenericExceptionCaught:
+    active: true

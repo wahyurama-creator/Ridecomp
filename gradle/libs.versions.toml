@@ -2,6 +2,11 @@
 # Approved by the project owner on 2026-11-12 (T0.8).
 [versions]
 agp = "9.5.1"
+# Android / JVM levels used by every module (single source of truth).
+compileSdk = "37"
+targetSdk = "37"
+minSdk = "26"
+jvmTarget = "17"
 kotlin = "2.4.21"
 ksp = "2.3.13"
 coreKtx = "1.19.1"
@@ -22,6 +27,8 @@ espressoCore = "3.7.0"
 turbine = "1.2.1"
 ktlintGradle = "14.2.0"
 detekt = "1.23.8"
+# Kotlin compiler that detekt 1.23.8 was built with; detekt runs on its own isolated classpath.
+detektKotlin = "2.0.21"
 kover = "0.9.11"
 dependencyCheck = "13.0.0"
 licenseReport = "3.1.5"

@@ -1,0 +1,15 @@
+# :core is the pure-Kotlin domain layer (ARCH-01).
+style:
+  ForbiddenImport:
+    active: true
+    imports:
+      - reason: ':core must not depend on Android (ARCH-01).'
+        value: 'android.*'
+      - reason: ':core must not depend on AndroidX (ARCH-01).'
+        value: 'androidx.*'
+      - reason: ':core must not depend on Koin (ARCH-01).'
+        value: 'org.koin.*'
+      - reason: ':core must not depend on outer layers (ARCH-01).'
+        value: 'com.ridecomp.data.*'
+      - reason: ':core must not depend on outer layers (ARCH-01).'
+        value: 'com.ridecomp.platform.*'

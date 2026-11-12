@@ -1,0 +1,11 @@
+# :feature-* modules are presentation only (ARCH-02).
+style:
+  ForbiddenImport:
+    active: true
+    imports:
+      - reason: 'Feature modules must not use :data directly (ARCH-02).'
+        value: 'com.ridecomp.data.*'
+      - reason: 'Feature modules must not use :platform directly (ARCH-02).'
+        value: 'com.ridecomp.platform.*'
+      - reason: 'ViewModels/UI must not hold Android framework objects that leak (ARCH-07).'
+        value: 'androidx.navigation.NavController'

@@ -6,18 +6,11 @@ plugins {
 
 android {
     namespace = "com.ridecomp.app"
-    compileSdk {
-        version = release(37)
-    }
-
     defaultConfig {
         applicationId = "com.ridecomp.app"
-        minSdk = 26
-        targetSdk = 37
+        targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = 1
         versionName = "0.1.0"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -39,10 +32,6 @@ android {
         }
     }
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
     buildFeatures {
         compose = true
     }
