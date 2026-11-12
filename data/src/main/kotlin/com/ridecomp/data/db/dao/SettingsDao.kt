@@ -15,8 +15,17 @@ interface SettingsDao {
     @Query("SELECT value FROM ${DbNames.TABLE_SETTINGS} WHERE `key` = :key")
     suspend fun get(key: String): String?
 
+    @Query("SELECT * FROM ${DbNames.TABLE_SETTINGS}")
+    fun observeAll(): Flow<List<SettingEntity>>
+
+    @Query("SELECT * FROM ${DbNames.TABLE_SETTINGS}")
+    suspend fun getAll(): List<SettingEntity>
+
     @Upsert
     suspend fun upsert(setting: SettingEntity)
+
+    @Upsert
+    suspend fun upsertAll(settings: List<SettingEntity>)
 
     @Query("DELETE FROM ${DbNames.TABLE_SETTINGS} WHERE `key` = :key")
     suspend fun delete(key: String)
