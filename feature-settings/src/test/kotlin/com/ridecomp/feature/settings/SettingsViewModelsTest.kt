@@ -1,0 +1,164 @@
+package com.ridecomp.feature.settings
+
+import app.cash.turbine.test
+import com.ridecomp.core.model.RideSettings
+import com.ridecomp.core.model.RiderProfile
+import com.ridecomp.core.model.ScreenMode
+import com.ridecomp.core.testing.FakeClock
+import com.ridecomp.core.testing.FakeProfileRepository
+import com.ridecomp.core.testing.FakeSettingsRepository
+import com.ridecomp.core.usecase.CompleteOnboardingUseCase
+import com.ridecomp.core.usecase.EstimateHrMaxUseCase
+import com.ridecomp.core.usecase.ObserveProfileUseCase
+import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
+import com.ridecomp.core.usecase.ProfileField
+import com.ridecomp.core.usecase.SaveProfileUseCase
+import com.ridecomp.core.usecase.SaveRideSettingsUseCase
+import com.ridecomp.feature.settings.ui.PhoneBrand
+import com.ridecomp.feature.settings.viewmodel.OnboardingEffect
+import com.ridecomp.feature.settings.viewmodel.OnboardingStep
+import com.ridecomp.feature.settings.viewmodel.OnboardingUiEvent
+import com.ridecomp.feature.settings.viewmodel.OnboardingViewModel
+import com.ridecomp.feature.settings.viewmodel.ProfileEffect
+import com.ridecomp.feature.settings.viewmodel.ProfileUiEvent
+import com.ridecomp.feature.settings.viewmodel.ProfileViewModel
+import com.ridecomp.feature.settings.viewmodel.RideSettingsUiEvent
+import com.ridecomp.feature.settings.viewmodel.RideSettingsViewModel
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class SettingsViewModelsTest {
+    @BeforeTest
+    fun setUp() {
+        Dispatchers.setMain(UnconfinedTestDispatcher())
+    }
+
+    @AfterTest
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+
+    private val profiles = FakeProfileRepository(RiderProfile(weightKg = 70.0))
+    private val clock = FakeClock()
+
+    private fun profileViewModel() = ProfileViewModel(
+        ObserveProfileUseCase(profiles),
+        SaveProfileUseCase(profiles, clock),
+        EstimateHrMaxUseCase(clock),
+    )
+
+    @Test
+    fun `profile loads the stored values as text`() {
+        val viewModel = profileViewModel()
+
+        assertEquals("70", viewModel.uiState.value.weightKg)
+        assertTrue(viewModel.uiState.value.isLoaded)
+    }
+
+    @Test
+    fun `indonesian decimal comma is accepted and saved`() = runTest {
+        val viewModel = profileViewModel()
+
+        viewModel.effects.test {
+            viewModel.onEvent(ProfileUiEvent.FieldChanged(ProfileField.WEIGHT, "68,5"))
+            viewModel.onEvent(ProfileUiEvent.Save)
+
+            assertEquals(ProfileEffect.Saved, awaitItem())
+        }
+        assertEquals(68.5, profiles.get().weightKg)
+    }
+
+    @Test
+    fun `text that is not a number marks the field invalid and nothing is saved`() {
+        val viewModel = profileViewModel()
+
+        viewModel.onEvent(ProfileUiEvent.FieldChanged(ProfileField.FTP, "abc"))
+        viewModel.onEvent(ProfileUiEvent.Save)
+
+        assertEquals(setOf(ProfileField.FTP), viewModel.uiState.value.invalidFields)
+    }
+
+    @Test
+    fun `out of range value is reported by the use case`() {
+        val viewModel = profileViewModel()
+
+        viewModel.onEvent(ProfileUiEvent.FieldChanged(ProfileField.WEIGHT, "5"))
+        viewModel.onEvent(ProfileUiEvent.Save)
+
+        assertEquals(setOf(ProfileField.WEIGHT), viewModel.uiState.value.invalidFields)
+    }
+
+    @Test
+    fun `hr max estimate needs a birth year`() {
+        val viewModel = profileViewModel()
+
+        viewModel.onEvent(ProfileUiEvent.EstimateHrMax)
+        assertTrue(ProfileField.BIRTH_YEAR in viewModel.uiState.value.invalidFields)
+
+        viewModel.onEvent(ProfileUiEvent.FieldChanged(ProfileField.BIRTH_YEAR, "1996"))
+        viewModel.onEvent(ProfileUiEvent.EstimateHrMax)
+        assertEquals("190", viewModel.uiState.value.hrMaxBpm)
+        assertTrue(viewModel.uiState.value.isHrMaxEstimated)
+    }
+
+    @Test
+    fun `picking a common wheel fills the circumference`() {
+        val viewModel = profileViewModel()
+
+        viewModel.onEvent(ProfileUiEvent.WheelPicked(2_136))
+
+        assertEquals("2136", viewModel.uiState.value.wheelCircumferenceMm)
+    }
+
+    @Test
+    fun `ride settings changes are saved immediately`() = runTest {
+        val repository = FakeSettingsRepository()
+        val viewModel =
+            RideSettingsViewModel(ObserveRideSettingsUseCase(repository), SaveRideSettingsUseCase(repository))
+
+        viewModel.onEvent(RideSettingsUiEvent.Screen(ScreenMode.ALWAYS_ON))
+        viewModel.onEvent(RideSettingsUiEvent.DrinkInterval(null))
+
+        assertEquals(
+            RideSettings(screenMode = ScreenMode.ALWAYS_ON, drinkIntervalMin = null),
+            repository.getRideSettings(),
+        )
+    }
+
+    @Test
+    fun `onboarding walks through the steps and completes`() = runTest {
+        val settings = FakeSettingsRepository()
+        val viewModel = OnboardingViewModel(CompleteOnboardingUseCase(settings))
+
+        viewModel.onEvent(OnboardingUiEvent.Back)
+        assertEquals(OnboardingStep.LOCATION, viewModel.uiState.value)
+        repeat(5) { viewModel.onEvent(OnboardingUiEvent.Next) }
+        assertEquals(OnboardingStep.PROFILE, viewModel.uiState.value)
+
+        viewModel.effects.test {
+            viewModel.onEvent(OnboardingUiEvent.Finished)
+            assertEquals(OnboardingEffect.Done, awaitItem())
+        }
+        assertTrue(settings.observeOnboardingDone().first())
+    }
+
+    @Test
+    fun `phone brands are recognised from the manufacturer`() {
+        assertEquals(PhoneBrand.XIAOMI, PhoneBrand.of("Xiaomi"))
+        assertEquals(PhoneBrand.XIAOMI, PhoneBrand.of("POCO"))
+        assertEquals(PhoneBrand.OPPO, PhoneBrand.of("realme"))
+        assertEquals(PhoneBrand.TRANSSION, PhoneBrand.of("INFINIX MOBILITY LIMITED"))
+        assertEquals(PhoneBrand.OTHER, PhoneBrand.of("Google"))
+    }
+}

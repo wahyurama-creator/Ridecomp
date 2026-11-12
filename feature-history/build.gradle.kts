@@ -15,6 +15,7 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":ui-common"))
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.androidx.compose)
