@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sensors_title">Sensor</string>
+    <string name="sensors_empty">Belum ada sensor tersimpan. Pindai sensor heart rate, speed/cadence, atau power.</string>
+    <string name="sensors_scan_action">Pindai</string>
+</resources>
