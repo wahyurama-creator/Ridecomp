@@ -1,6 +1,8 @@
 package com.ridecomp.platform.service
 
 import com.ridecomp.core.engine.recording.RecordingSession
+import com.ridecomp.core.engine.sensors.SensorConnector
+import com.ridecomp.core.engine.sensors.SensorRepository
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.ProfileRepository
 import com.ridecomp.core.repository.SettingsRepository
@@ -30,6 +32,8 @@ interface RecordingDependencies {
     val logger: Logger
     val stateHolder: RideStateHolder
     val alertPlayer: AlertPlayer
+    val sensorRepository: SensorRepository
+    val sensorConnector: SensorConnector
 
     /** Writes the temporary emergency FIT at ≤ 5 % battery (12-FEATURE-SPECS §3). */
     val exportFit: ExportFitUseCase

@@ -1,6 +1,8 @@
 package com.ridecomp.app.di
 
 import com.ridecomp.app.AppViewModel
+import com.ridecomp.core.engine.sensors.BleScanner
+import com.ridecomp.core.engine.sensors.SensorRepository
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.ProfileRepository
 import com.ridecomp.core.repository.SettingsRepository
@@ -12,12 +14,14 @@ import com.ridecomp.core.source.Logger
 import com.ridecomp.core.source.RideController
 import com.ridecomp.core.testing.FakeActivityRepository
 import com.ridecomp.core.testing.FakeBatteryLevelSource
+import com.ridecomp.core.testing.FakeBleScanner
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeExportFileStore
 import com.ridecomp.core.testing.FakeExportedFileHandler
 import com.ridecomp.core.testing.FakeLocationSource
 import com.ridecomp.core.testing.FakeProfileRepository
 import com.ridecomp.core.testing.FakeRideController
+import com.ridecomp.core.testing.FakeSensorRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.testing.RecordingLogger
 import com.ridecomp.core.testing.TestDispatcherProvider
@@ -29,6 +33,7 @@ import com.ridecomp.feature.ride.viewmodel.HomeViewModel
 import com.ridecomp.feature.ride.viewmodel.PreRideViewModel
 import com.ridecomp.feature.ride.viewmodel.RideViewModel
 import com.ridecomp.feature.ride.viewmodel.SummaryViewModel
+import com.ridecomp.feature.sensors.viewmodel.SensorsViewModel
 import com.ridecomp.feature.settings.viewmodel.OnboardingViewModel
 import com.ridecomp.feature.settings.viewmodel.ProfileViewModel
 import com.ridecomp.feature.settings.viewmodel.RideSettingsViewModel
@@ -66,6 +71,8 @@ class AppModulesTest {
         single<RideController> { FakeRideController() }
         single<ExportFileStore> { FakeExportFileStore() }
         single<ExportedFileHandler> { FakeExportedFileHandler() }
+        single<SensorRepository> { FakeSensorRepository() }
+        single<BleScanner> { FakeBleScanner() }
     }
 
     @BeforeTest
@@ -97,5 +104,6 @@ class AppModulesTest {
         assertNotNull(koin.get<OnboardingViewModel>())
         assertNotNull(koin.get<HistoryViewModel>())
         assertNotNull(koin.get<ActivityDetailViewModel> { parametersOf(1L) })
+        assertNotNull(koin.get<SensorsViewModel>())
     }
 }

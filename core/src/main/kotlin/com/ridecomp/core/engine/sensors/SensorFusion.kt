@@ -18,7 +18,13 @@ public sealed interface SensorReading {
 
     public data class Power(val measurement: PowerMeasurement, override val receivedAtMs: Long) : SensorReading
 
-    public data class Battery(val kind: SensorKind, val percent: Int, override val receivedAtMs: Long) : SensorReading
+    public data class Battery(
+        val kind: SensorKind,
+        val percent: Int,
+        override val receivedAtMs: Long,
+        /** BLE address, to store the last battery level of the paired sensor. */
+        val address: String? = null,
+    ) : SensorReading
 
     public data class Connection(val kind: SensorKind, val isConnected: Boolean, override val receivedAtMs: Long) :
         SensorReading

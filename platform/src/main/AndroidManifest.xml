@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Permissions of the recording pipeline (03-ARCHITECTURE §2, SEC-PLT-06). Bluetooth, SMS and network
+    Permissions of the recording pipeline (03-ARCHITECTURE §2, SEC-PLT-06). SMS and network
     permissions are added in the phase that needs them. Location "while in use" is enough because the
     foreground service is started from the open app (no ACCESS_BACKGROUND_LOCATION).
 -->
@@ -27,6 +27,26 @@
     <uses-permission
         android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"
         tools:ignore="BatteryLife" />
+
+    <!--
+        BLE sensors (Phase 2, 04-INTEGRATIONS §A). Optional hardware: the app works with GPS only.
+        Android 12+: scan without deriving location (neverForLocation); Android 8–11: legacy permissions,
+        BLE scanning there relies on the location permission already requested above.
+    -->
+    <uses-feature
+        android:name="android.hardware.bluetooth_le"
+        android:required="false" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH"
+        android:maxSdkVersion="30" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_ADMIN"
+        android:maxSdkVersion="30" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation"
+        tools:targetApi="s" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
     <application>
         <!-- Not exported (SEC-PLT-01/02): only explicit intents from this app reach it. -->

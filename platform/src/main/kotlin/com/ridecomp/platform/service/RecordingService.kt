@@ -16,6 +16,7 @@ import com.ridecomp.core.engine.recording.RecorderOutput
 import com.ridecomp.core.engine.recording.RecordingSession
 import com.ridecomp.core.engine.recording.RideAction
 import com.ridecomp.core.engine.recording.RideSetup
+import com.ridecomp.core.engine.sensors.SensorReading
 import com.ridecomp.core.model.ActivityStatus
 import com.ridecomp.core.model.RideEventType
 import com.ridecomp.core.model.RideSettings
@@ -149,6 +150,7 @@ class RecordingService : LifecycleService() {
         wakeLock.acquireOrRenew(deps.clock.nowMs())
         pipelineJobs += scope.launch { tickLoop() }
         pipelineJobs += scope.launch { collectLocation() }
+        pipelineJobs += scope.launch { collectSensors() }
         startPressure()
     }
 
@@ -180,6 +182,27 @@ class RecordingService : LifecycleService() {
                 true
             }
             .collect { fix -> sessionLock.withLock { session?.onLocation(fix) } }
+    }
+
+    /**
+     * Paired auto-connect sensors (T2.3). The connector reconnects by itself; a failure here (Bluetooth
+     * permission revoked, adapter gone) never stops the ride (STB-04): it is retried later.
+     */
+    private suspend fun collectSensors() {
+        val sensors = deps.sensorRepository.getAutoConnect()
+        if (sensors.isEmpty()) return
+        deps.sensorConnector.readings(sensors)
+            .retryWhen { cause, _ ->
+                deps.logger.warn(TAG, cause) { "Sensors unavailable, retrying" }
+                delay(SOURCE_RETRY_MS)
+                true
+            }
+            .collect { reading ->
+                sessionLock.withLock { session?.onSensor(reading) }
+                if (reading is SensorReading.Battery) {
+                    reading.address?.let { deps.sensorRepository.updateBattery(it, reading.percent) }
+                }
+            }
     }
 
     private fun startPressure() {
@@ -220,8 +243,10 @@ class RecordingService : LifecycleService() {
         RideEventType.BATTERY_MODE_SAVER, RideEventType.BATTERY_MODE_CRITICAL,
         RideEventType.BATTERY_MODE_EMERGENCY,
         -> AlertPattern.LONG
+        RideEventType.SENSOR_LOST -> AlertPattern.DOUBLE
+        RideEventType.SENSOR_BACK -> AlertPattern.SHORT
         RideEventType.START, RideEventType.PAUSE, RideEventType.RESUME, RideEventType.STOP, RideEventType.GAP,
-        RideEventType.LAP, RideEventType.SENSOR_LOST, RideEventType.SENSOR_BACK, RideEventType.REMINDER_ACK,
+        RideEventType.LAP, RideEventType.REMINDER_ACK,
         -> null
     }
 

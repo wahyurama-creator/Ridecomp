@@ -3,4 +3,27 @@
     <string name="sensors_title">Sensor</string>
     <string name="sensors_empty">Belum ada sensor tersimpan. Pindai sensor heart rate, speed/cadence, atau power.</string>
     <string name="sensors_scan_action">Pindai</string>
+    <string name="sensors_stop_scan">Hentikan pindai</string>
+    <string name="sensors_saved">Tersimpan</string>
+    <string name="sensors_found">Ditemukan</string>
+    <string name="sensors_scanning">Memindai…</string>
+    <string name="sensors_pair">Pasangkan</string>
+    <string name="sensors_forget">Lupakan</string>
+    <string name="sensors_cancel">Batal</string>
+    <string name="sensors_forget_title">Lupakan %1$s?</string>
+    <string name="sensors_forget_message">Sensor tidak lagi tersambung otomatis. Anda bisa memasangkannya lagi nanti.</string>
+    <string name="sensors_unnamed">Sensor tanpa nama</string>
+    <string name="sensors_kind_hr">Detak jantung</string>
+    <string name="sensors_kind_csc">Speed/cadence</string>
+    <string name="sensors_kind_power">Power</string>
+    <string name="sensors_kind_unknown">Sensor</string>
+    <string name="sensors_kind_separator">" · "</string>
+    <string name="sensors_subtitle">%1$s · %2$s</string>
+    <string name="sensors_battery">Baterai %1$d%%</string>
+    <string name="sensors_battery_low">Baterai lemah %1$d%%</string>
+    <string name="sensors_scan_failed">Pemindaian gagal. Coba lagi.</string>
+    <string name="sensors_blocker_permission">Izin Bluetooth diperlukan untuk mencari sensor.</string>
+    <string name="sensors_blocker_permission_action">Izinkan</string>
+    <string name="sensors_blocker_bluetooth">Bluetooth mati.</string>
+    <string name="sensors_blocker_bluetooth_action">Nyalakan</string>
 </resources>

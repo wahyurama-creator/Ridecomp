@@ -59,16 +59,16 @@ Spesifikasi detail fitur tambahan: `../12-FEATURE-SPECS.md`.
 **DoD:** 3 ride uji di jalan (≥ 30 menit) berhasil, file FIT diterima Strava, recovery teruji (force stop app di tengah ride).
 
 ## Fase 2 — Sensor BLE (MVP-b)
-- [ ] T2.1 Layar Sensor: scan (filter service), pairing, simpan, lupakan, baterai sensor.
-- [ ] T2.2 Parser HR, CSC, CP + unit test lengkap (`04-INTEGRATIONS.md` §A.6).
-- [ ] T2.3 Sensor manager: auto-connect, reconnect backoff, status per sensor.
-- [ ] T2.4 Integrasi ke SampleMerger (prioritas sumber speed/cadence/power).
-- [ ] T2.5 Metrik: HR avg/max/zona, cadence avg, power 3s/10s/avg/max/NP, W/kg.
-- [ ] T2.6 Estimated power (label EST, tidak ke FIT).
-- [ ] T2.7 Kalori (urutan prioritas `05-DATA-MODEL.md` §3.10).
+- [x] T2.1 Layar Sensor: scan (filter service), pairing, simpan, lupakan, baterai sensor.
+- [x] T2.2 Parser HR, CSC, CP + unit test lengkap (`04-INTEGRATIONS.md` §A.6).
+- [x] T2.3 Sensor manager: auto-connect, reconnect backoff, status per sensor.
+- [x] T2.4 Integrasi ke SampleMerger (prioritas sumber speed/cadence/power).
+- [x] T2.5 Metrik: HR avg/max/zona, cadence avg, power 3s/10s/avg/max/NP, W/kg.
+- [x] T2.6 Estimated power (label EST, tidak ke FIT).
+- [x] T2.7 Kalori (urutan prioritas `05-DATA-MODEL.md` §3.10).
 - [ ] T2.8 Editor halaman data (pilih jumlah field & metrik).
 - [ ] T2.9 Peringatan sensor putus/kembali/baterai rendah.
-- [ ] T2.10 FIT: tambah HR, cadence, power di record/lap/session + device_info sensor.
+- [x] T2.10 FIT: tambah HR, cadence, power di record/lap/session + device_info sensor.
 - [ ] T2.11 Grafik HR/cadence/power di detail aktivitas.
 - [ ] T2.12 Kontrol tombol volume (opsional, setting).
 - [ ] T2.13 Profil aktivitas Road/Gravel/MTB/Indoor/Commute (§4), termasuk mode Indoor tanpa GPS; pemilih profil di Pre-ride.
