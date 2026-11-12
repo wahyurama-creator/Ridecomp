@@ -15,10 +15,13 @@ import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RecorderOutput
 import com.ridecomp.core.engine.recording.RecordingSession
 import com.ridecomp.core.engine.recording.RideAction
+import com.ridecomp.core.engine.recording.RideSetup
 import com.ridecomp.core.model.ActivityStatus
 import com.ridecomp.core.model.RideEventType
+import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RideStatus
 import com.ridecomp.core.model.UnitSystem
+import com.ridecomp.core.model.ageYears
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.core.util.onSuccess
 import com.ridecomp.platform.device.AlertPattern
@@ -105,7 +108,7 @@ class RecordingService : LifecycleService() {
         val settings = deps.settingsRepository.getRideSettings()
         formatter = UnitFormatter(settings.unitSystem)
         val newSession = deps.newSession()
-        newSession.start(settings, altitudeSource(), deps.clock.nowMs()).onSuccess { output ->
+        newSession.start(rideSetup(settings), deps.clock.nowMs()).onSuccess { output ->
             session = newSession
             publish(output)
             startPipeline()
@@ -120,7 +123,7 @@ class RecordingService : LifecycleService() {
         formatter = UnitFormatter(settings.unitSystem)
         val resumeAs = if (storedStatus == ActivityStatus.RECORDING) RideStatus.RECORDING else RideStatus.PAUSED
         val restored = deps.newSession()
-        restored.resume(activity, settings, altitudeSource(), resumeAs, deps.clock.nowMs())
+        restored.resume(activity, rideSetup(settings), resumeAs, deps.clock.nowMs())
         session = restored
         restored.tick(deps.clock.nowMs())?.let(::publish)
         startPipeline()
@@ -257,6 +260,11 @@ class RecordingService : LifecycleService() {
         deps.stateHolder.reset()
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
         stopSelf()
+    }
+
+    private suspend fun rideSetup(settings: RideSettings): RideSetup {
+        val profile = deps.profileRepository.get()
+        return RideSetup(settings, altitudeSource(), profile, profile.ageYears(deps.clock.nowMs()))
     }
 
     private fun altitudeSource(): AltitudeSource =

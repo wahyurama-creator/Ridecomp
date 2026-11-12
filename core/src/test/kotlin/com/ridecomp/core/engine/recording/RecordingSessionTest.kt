@@ -27,6 +27,7 @@ class RecordingSessionTest {
     private val logger = RecordingLogger()
     private val session = RecordingSession(repository, FakeIdGenerator(), FakeRideNameProvider(), logger)
     private val settings = RideSettings(drinkIntervalMin = null, eatIntervalMin = null)
+    private val setup = RideSetup(settings, AltitudeSource.GPS)
     private var second = 0L
 
     private val now: Long get() = T0 + second * 1_000
@@ -41,7 +42,7 @@ class RecordingSessionTest {
 
     @Test
     fun `start creates a recording activity with a default name and start event`() = runTest {
-        session.start(settings, AltitudeSource.GPS, now)
+        session.start(setup, now)
 
         val id = assertNotNull(session.activityId)
         val activity = assertNotNull(repository.get(id))
@@ -52,7 +53,7 @@ class RecordingSessionTest {
 
     @Test
     fun `points are written in 5 second batches with a checkpoint each time`() = runTest {
-        session.start(settings, AltitudeSource.GPS, now)
+        session.start(setup, now)
         val id = requireNotNull(session.activityId)
 
         ride(4)
@@ -66,16 +67,16 @@ class RecordingSessionTest {
 
     @Test
     fun `starting twice is refused`() = runTest {
-        session.start(settings, AltitudeSource.GPS, now)
+        session.start(setup, now)
 
-        val second = session.start(settings, AltitudeSource.GPS, now)
+        val second = session.start(setup, now)
 
         assertEquals(Outcome.Failure(SessionError.AlreadyRecording), second)
     }
 
     @Test
     fun `finish flushes everything and save marks the ride finished`() = runTest {
-        session.start(settings, AltitudeSource.GPS, now)
+        session.start(setup, now)
         val id = requireNotNull(session.activityId)
         ride(7)
 
@@ -93,7 +94,7 @@ class RecordingSessionTest {
 
     @Test
     fun `discard deletes the ride`() = runTest {
-        session.start(settings, AltitudeSource.GPS, now)
+        session.start(setup, now)
         val id = requireNotNull(session.activityId)
         ride(3)
 
@@ -106,7 +107,7 @@ class RecordingSessionTest {
 
     @Test
     fun `a broken database never stops recording and nothing is lost once it recovers`() = runTest {
-        session.start(settings, AltitudeSource.GPS, now)
+        session.start(setup, now)
         val id = requireNotNull(session.activityId)
 
         repository.isFailing = true
@@ -121,13 +122,13 @@ class RecordingSessionTest {
 
     @Test
     fun `recovered ride continues from its checkpoint`() = runTest {
-        session.start(settings, AltitudeSource.GPS, now)
+        session.start(setup, now)
         val id = requireNotNull(session.activityId)
         ride(12)
         val checkpoint = requireNotNull(repository.get(id))
 
         val restarted = RecordingSession(repository, FakeIdGenerator(), FakeRideNameProvider(), logger)
-        restarted.resume(checkpoint, settings, AltitudeSource.GPS, RideStatus.PAUSED, now + 60_000)
+        restarted.resume(checkpoint, setup, RideStatus.PAUSED, now + 60_000)
         val output = assertNotNull(restarted.tick(now + 61_000))
 
         assertEquals(RideStatus.PAUSED, output.live.status)
@@ -144,7 +145,7 @@ class RecordingSessionTest {
 
     @Test
     fun `invalid commands are reported, not thrown`() = runTest {
-        session.start(settings, AltitudeSource.GPS, now)
+        session.start(setup, now)
 
         val result = session.perform(RideAction.FINISH, now)
 
@@ -153,7 +154,7 @@ class RecordingSessionTest {
 
     @Test
     fun `emergency checkpoint writes pending points immediately`() = runTest {
-        session.start(settings, AltitudeSource.GPS, now)
+        session.start(setup, now)
         val id = requireNotNull(session.activityId)
         ride(3)
 

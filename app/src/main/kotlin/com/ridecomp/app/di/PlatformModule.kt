@@ -3,6 +3,7 @@ package com.ridecomp.app.di
 import com.ridecomp.app.BuildConfig
 import com.ridecomp.core.engine.recording.RecordingSession
 import com.ridecomp.core.repository.ActivityRepository
+import com.ridecomp.core.repository.ProfileRepository
 import com.ridecomp.core.repository.SettingsRepository
 import com.ridecomp.core.source.BatteryLevelSource
 import com.ridecomp.core.source.Clock
@@ -54,6 +55,7 @@ val platformModule = module {
 class KoinRecordingDependencies(private val koin: Koin) : RecordingDependencies {
     override val activityRepository get() = koin.get<ActivityRepository>()
     override val settingsRepository get() = koin.get<SettingsRepository>()
+    override val profileRepository get() = koin.get<ProfileRepository>()
     override val locationSource get() = koin.get<LocationSource>()
     override val pressureSource get() = koin.get<PressureSource>()
     override val batteryLevelSource get() = koin.get<BatteryLevelSource>()
