@@ -30,6 +30,9 @@ enum class SettingsSection(
     OFFLINE_MAPS(R.string.settings_offline_maps, taskId = "T3.4"),
     LANGUAGE(R.string.settings_language),
     BATTERY_HELP(R.string.settings_battery_help),
+
+    /** Debug builds only (simulated GPS, 07-TEST-PLAN §2). */
+    DEVELOPER(R.string.settings_developer),
     ;
 
     /** Per-app language lives in Android settings from Android 13 (locales_config). */
@@ -39,16 +42,29 @@ enum class SettingsSection(
 
 /** Settings entry point (UI-01). */
 @Composable
-fun SettingsRoute(onSectionClick: (SettingsSection) -> Unit, modifier: Modifier = Modifier) {
-    SettingsScreen(onSectionClick = onSectionClick, modifier = modifier)
+fun SettingsRoute(
+    onSectionClick: (SettingsSection) -> Unit,
+    modifier: Modifier = Modifier,
+    isDeveloperMenuVisible: Boolean = false,
+) {
+    SettingsScreen(
+        onSectionClick = onSectionClick,
+        modifier = modifier,
+        isDeveloperMenuVisible = isDeveloperMenuVisible,
+    )
 }
 
 /** Stateless list of settings sections. */
 @Composable
-fun SettingsScreen(onSectionClick: (SettingsSection) -> Unit, modifier: Modifier = Modifier) {
+fun SettingsScreen(
+    onSectionClick: (SettingsSection) -> Unit,
+    modifier: Modifier = Modifier,
+    isDeveloperMenuVisible: Boolean = false,
+) {
+    val sections = SettingsSection.entries.filter { it != SettingsSection.DEVELOPER || isDeveloperMenuVisible }
     ScreenScaffold(modifier = modifier, title = stringResource(R.string.settings_title)) {
         LazyColumn {
-            items(SettingsSection.entries, key = { it.name }) { section ->
+            items(sections, key = { it.name }) { section ->
                 ListRow(
                     title = stringResource(section.titleRes),
                     subtitle = if (section.isAvailable) {

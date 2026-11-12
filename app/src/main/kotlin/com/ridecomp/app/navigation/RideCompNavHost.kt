@@ -14,6 +14,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.ridecomp.app.DevTools
 import com.ridecomp.feature.history.ui.ActivityDetailRoute
 import com.ridecomp.feature.history.ui.HistoryRoute
 import com.ridecomp.feature.history.ui.StravaHelpRoute
@@ -40,6 +41,7 @@ object AppRoutes {
     const val RIDE_SETTINGS = "ride_settings"
     const val BATTERY_HELP = "battery_help"
     const val STRAVA_HELP = "strava_help"
+    const val DEVELOPER = "developer"
     const val ARG_ACTIVITY_ID = "activityId"
     const val ACTIVITY_DETAIL = "activity/{$ARG_ACTIVITY_ID}"
 
@@ -75,11 +77,15 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
             SensorsRoute(onScan = {})
         }
         composable(TopLevelDestination.SETTINGS.route) {
-            SettingsRoute(onSectionClick = { section -> openSection(section, navController, context) })
+            SettingsRoute(
+                onSectionClick = { section -> openSection(section, navController, context) },
+                isDeveloperMenuVisible = DevTools.IS_DEVELOPER_MENU_AVAILABLE,
+            )
         }
         composable(AppRoutes.PROFILE) { ProfileRoute(onSaved = { navController.popBackStack() }) }
         composable(AppRoutes.RIDE_SETTINGS) { RideSettingsRoute() }
         composable(AppRoutes.BATTERY_HELP) { BatteryHelpRoute() }
+        composable(AppRoutes.DEVELOPER) { DevTools.DeveloperScreen() }
     }
 }
 
@@ -143,6 +149,7 @@ private fun openSection(section: SettingsSection, navController: NavHostControll
         SettingsSection.PROFILE -> navController.navigate(AppRoutes.PROFILE)
         SettingsSection.RIDE_SCREEN_BATTERY -> navController.navigate(AppRoutes.RIDE_SETTINGS)
         SettingsSection.BATTERY_HELP -> navController.navigate(AppRoutes.BATTERY_HELP)
+        SettingsSection.DEVELOPER -> navController.navigate(AppRoutes.DEVELOPER)
         SettingsSection.LANGUAGE -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             context.startActivity(
                 Intent(Settings.ACTION_APP_LOCALE_SETTINGS, (PACKAGE_SCHEME + context.packageName).toUri()),

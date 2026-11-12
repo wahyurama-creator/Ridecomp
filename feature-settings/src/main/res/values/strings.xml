@@ -11,6 +11,7 @@
     <string name="settings_language">Language</string>
     <string name="settings_backup">Backup &amp; restore</string>
     <string name="settings_battery_help">My phone kills the app</string>
+    <string name="settings_developer" translatable="false">Developer</string>
     <string name="settings_coming_soon">Available in a later version</string>
 
     <string name="profile_title">Profile</string>
