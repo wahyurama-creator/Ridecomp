@@ -136,6 +136,9 @@ public object ReminderConfig {
     public const val SNOOZE_MIN: Int = 5
     public const val AUTO_DISMISS_MS: Long = 10_000L
     public const val MAX_REPEATS: Int = 2
+
+    /** Interval choices offered in settings, minutes of moving time. */
+    public val INTERVAL_CHOICES_MIN: List<Int> = listOf(15, 20, 30, 45, 60)
 }
 
 /** Automatic battery modes (12-FEATURE-SPECS §3). */
@@ -171,6 +174,20 @@ public object ProfileDefaults {
 
     /** Age-predicted HR max = this − age (05-DATA-MODEL §3.8, shown as an estimate). */
     public const val HR_MAX_AGE_BASE: Int = 220
+
+    /** Common tyre sizes and their circumference in mm (02-DESIGN §3.1). Labels are not translated. */
+    public val COMMON_WHEELS_MM: List<Pair<String, Int>> = listOf(
+        "700x23c" to 2_096,
+        "700x25c" to 2_105,
+        "700x28c" to 2_136,
+        "700x32c" to 2_155,
+        "700x35c" to 2_168,
+        "700x40c" to 2_200,
+        "650bx47" to 2_079,
+        "26x2.0" to 2_055,
+        "27.5x2.2" to 2_148,
+        "29x2.2" to 2_273,
+    )
 }
 
 /** Activity naming and storage. */

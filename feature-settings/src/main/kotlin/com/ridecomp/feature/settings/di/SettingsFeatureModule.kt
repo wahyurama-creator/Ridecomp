@@ -1,0 +1,14 @@
+package com.ridecomp.feature.settings.di
+
+import com.ridecomp.feature.settings.viewmodel.OnboardingViewModel
+import com.ridecomp.feature.settings.viewmodel.ProfileViewModel
+import com.ridecomp.feature.settings.viewmodel.RideSettingsViewModel
+import org.koin.core.module.dsl.viewModel
+import org.koin.dsl.module
+
+/** ViewModels of the settings feature; use cases come from the app graph. */
+val settingsFeatureModule = module {
+    viewModel { ProfileViewModel(get(), get(), get()) }
+    viewModel { RideSettingsViewModel(get(), get()) }
+    viewModel { OnboardingViewModel(get()) }
+}
