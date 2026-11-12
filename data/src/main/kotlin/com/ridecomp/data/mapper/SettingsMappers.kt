@@ -21,6 +21,7 @@ internal object SettingsKeys {
     const val EAT_INTERVAL_MIN = "ride.eat_interval_min"
     const val SCREEN_MODE = "ride.screen_mode"
     const val BATTERY_SAVER_ENABLED = "ride.battery_saver_enabled"
+    const val VOLUME_BUTTONS_ENABLED = "ride.volume_buttons_enabled"
     const val UNIT_SYSTEM = "app.unit_system"
     const val ONBOARDING_DONE = "app.onboarding_done"
     const val DATA_PAGES = "ride.data_pages"
@@ -74,6 +75,8 @@ internal fun List<SettingEntity>.toRideSettings(): RideSettings {
         screenMode = values[SettingsKeys.SCREEN_MODE]?.toEnumOrNull<ScreenMode>() ?: defaults.screenMode,
         isBatterySaverEnabled = values[SettingsKeys.BATTERY_SAVER_ENABLED]?.toBooleanStrictOrNull()
             ?: defaults.isBatterySaverEnabled,
+        isVolumeButtonsEnabled = values[SettingsKeys.VOLUME_BUTTONS_ENABLED]?.toBooleanStrictOrNull()
+            ?: defaults.isVolumeButtonsEnabled,
         unitSystem = values[SettingsKeys.UNIT_SYSTEM]?.toEnumOrNull<UnitSystem>() ?: defaults.unitSystem,
     )
 }
@@ -89,6 +92,7 @@ internal fun RideSettings.toEntities(): List<SettingEntity> = listOf(
     SettingEntity(SettingsKeys.EAT_INTERVAL_MIN, eatIntervalMin?.toString() ?: SettingsKeys.OFF),
     SettingEntity(SettingsKeys.SCREEN_MODE, screenMode.toDbValue()),
     SettingEntity(SettingsKeys.BATTERY_SAVER_ENABLED, isBatterySaverEnabled.toString()),
+    SettingEntity(SettingsKeys.VOLUME_BUTTONS_ENABLED, isVolumeButtonsEnabled.toString()),
     SettingEntity(SettingsKeys.UNIT_SYSTEM, unitSystem.toDbValue()),
 )
 

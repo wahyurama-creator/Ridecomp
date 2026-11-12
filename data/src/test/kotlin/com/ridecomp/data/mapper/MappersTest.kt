@@ -98,6 +98,7 @@ class MappersTest {
             eatIntervalMin = 30,
             screenMode = ScreenMode.OFF,
             isBatterySaverEnabled = false,
+            isVolumeButtonsEnabled = true,
             unitSystem = UnitSystem.IMPERIAL,
         )
 

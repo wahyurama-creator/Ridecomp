@@ -52,6 +52,8 @@
     <string name="ride_settings_screen_off">Mati (data di notifikasi)</string>
     <string name="ride_settings_battery_saver">Mode hemat di 20 %</string>
     <string name="ride_settings_battery_saver_description">Mode kritis (10 %) dan darurat (5 %) selalu aktif.</string>
+    <string name="ride_settings_volume_buttons">Tombol volume</string>
+    <string name="ride_settings_volume_buttons_description">Saat ride: Volume Atas = lap, Volume Bawah = jeda/lanjut.</string>
     <string name="ride_settings_units">Satuan</string>
     <string name="ride_settings_metric">Metrik (km, m)</string>
     <string name="ride_settings_imperial">Imperial (mi, ft)</string>

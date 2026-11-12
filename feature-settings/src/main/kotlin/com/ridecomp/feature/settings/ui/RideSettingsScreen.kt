@@ -117,6 +117,12 @@ private fun ScreenAndBattery(settings: RideSettings, onEvent: (RideSettingsUiEve
         isChecked = settings.isBatterySaverEnabled,
         onCheckedChange = { onEvent(RideSettingsUiEvent.BatterySaver(it)) },
     )
+    SwitchRow(
+        label = stringResource(R.string.ride_settings_volume_buttons),
+        description = stringResource(R.string.ride_settings_volume_buttons_description),
+        isChecked = settings.isVolumeButtonsEnabled,
+        onCheckedChange = { onEvent(RideSettingsUiEvent.VolumeButtons(it)) },
+    )
     ChoiceChips(
         label = stringResource(R.string.ride_settings_units),
         choices = listOf(

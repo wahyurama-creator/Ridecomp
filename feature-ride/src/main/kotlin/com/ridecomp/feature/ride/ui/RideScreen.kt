@@ -34,6 +34,7 @@ import com.ridecomp.feature.ride.model.DataPage
 import com.ridecomp.feature.ride.model.DefaultDataPages
 import com.ridecomp.feature.ride.model.MetricUnitLabels
 import com.ridecomp.feature.ride.model.RideMetric
+import com.ridecomp.feature.ride.model.rideAction
 import com.ridecomp.feature.ride.ui.component.RideBanners
 import com.ridecomp.feature.ride.ui.component.RideControlBar
 import com.ridecomp.feature.ride.ui.component.RideField
@@ -50,6 +51,7 @@ import com.ridecomp.ui.component.StatRow
 import com.ridecomp.ui.theme.RideCompDimens
 import com.ridecomp.ui.theme.RideCompTheme
 import com.ridecomp.ui.udf.ObserveEffects
+import com.ridecomp.ui.util.volumeKeys
 import org.koin.androidx.compose.koinViewModel
 
 /** Ride screen (T1.8): data pages, status bar, controls, banners, pause screen, screen mode. */
@@ -87,13 +89,18 @@ fun RideRoute(
         formatter = formatter,
         onAction = viewModel::onEvent,
         pages = pages,
-        modifier = modifier.pointerInput(Unit) {
-            // Any touch wakes a dimmed screen; the event is observed, not consumed.
-            awaitEachGesture {
-                awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+        modifier = modifier
+            .volumeKeys(settings.isVolumeButtonsEnabled) { key ->
                 interaction++
+                key.rideAction(live.value.status)?.let(viewModel::onEvent)
             }
-        },
+            .pointerInput(Unit) {
+                // Any touch wakes a dimmed screen; the event is observed, not consumed.
+                awaitEachGesture {
+                    awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                    interaction++
+                }
+            },
     )
 }
 

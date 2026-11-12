@@ -54,6 +54,8 @@ public data class RideSettings(
     val screenMode: ScreenMode = ScreenMode.AUTO_DIM,
     /** The user may disable the Saver mode only (12-FEATURE-SPECS §3). */
     val isBatterySaverEnabled: Boolean = true,
+    /** Volume Up = lap, Volume Down = pause/resume on the ride screen (02-DESIGN §3.4, T2.12). */
+    val isVolumeButtonsEnabled: Boolean = false,
     val unitSystem: UnitSystem = UnitSystem.METRIC,
 )
 
