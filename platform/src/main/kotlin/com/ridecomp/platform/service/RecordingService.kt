@@ -205,8 +205,10 @@ class RecordingService : LifecycleService() {
             pressureJob?.cancel()
             pressureJob = null
         }
-        // TODO(T1.14): also write the temporary emergency FIT file here.
-        if (change.shouldWriteEmergencyFit) active.emergencyCheckpoint(now)
+        if (change.shouldWriteEmergencyFit) {
+            active.emergencyCheckpoint(now)
+            active.activityId?.let { id -> deps.exportFit(id, isEmergency = true) }
+        }
     }
 
     private fun alertFor(type: RideEventType): AlertPattern? = when (type) {
