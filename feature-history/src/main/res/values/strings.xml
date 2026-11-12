@@ -3,4 +3,39 @@
     <string name="history_title">History</string>
     <string name="history_empty">No rides yet. Start your first ride</string>
     <string name="history_empty_action">START RIDE</string>
+    <string name="history_item_subtitle">%1$s · %2$s · %3$s</string>
+    <string name="history_fit_exported">FIT exported</string>
+
+    <string name="detail_title">Ride</string>
+    <string name="detail_not_found">This ride no longer exists.</string>
+    <string name="detail_distance">Distance</string>
+    <string name="detail_moving_time">Moving time</string>
+    <string name="detail_elapsed_time">Total time</string>
+    <string name="detail_avg_speed">Avg speed</string>
+    <string name="detail_max_speed">Max speed</string>
+    <string name="detail_ascent">Ascent</string>
+    <string name="detail_descent">Descent</string>
+    <string name="detail_chart_speed">SPEED</string>
+    <string name="detail_chart_elevation">ELEVATION</string>
+    <string name="detail_laps">Laps</string>
+    <string name="detail_lap_row">Lap %1$d</string>
+    <string name="detail_export_fit">EXPORT FIT</string>
+    <string name="detail_export_gpx">EXPORT GPX</string>
+    <string name="detail_save_fit">SAVE FIT TO DOWNLOADS</string>
+    <string name="detail_strava_help">How to upload to Strava</string>
+    <string name="detail_delete">DELETE RIDE</string>
+    <string name="detail_delete_title">Delete this ride?</string>
+    <string name="detail_delete_message">The ride and its exported files will be deleted permanently.</string>
+    <string name="detail_ok">OK</string>
+    <string name="detail_cancel">Cancel</string>
+    <string name="detail_export_failed">Could not create the file. Check free storage and try again.</string>
+    <string name="detail_saved_copy">File saved.</string>
+
+    <string name="strava_title">Upload to Strava</string>
+    <string name="strava_intro">Strava accepts the FIT file from RideComp. Upload is free and manual:</string>
+    <string name="strava_step_1">1. Open the ride in RideComp and tap EXPORT FIT. Choose Strava if it is offered, or save the file (Drive or Downloads).</string>
+    <string name="strava_step_2">2. In a browser go to strava.com, sign in, and open “Upload activity” (on a phone, switch the browser to “Desktop site” if the page is missing).</string>
+    <string name="strava_step_3">3. Choose “File”, select the .fit file and save. Speed, distance, elevation and (from Phase 2) heart rate, cadence and power appear in Strava.</string>
+    <string name="strava_note">Automatic upload via the Strava API is an optional later feature and needs a Strava subscription.</string>
+    <string name="strava_open">OPEN STRAVA UPLOAD PAGE</string>
 </resources>

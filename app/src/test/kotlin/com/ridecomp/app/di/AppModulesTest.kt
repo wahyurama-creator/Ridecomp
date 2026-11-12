@@ -14,6 +14,7 @@ import com.ridecomp.core.testing.FakeActivityRepository
 import com.ridecomp.core.testing.FakeBatteryLevelSource
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeExportFileStore
+import com.ridecomp.core.testing.FakeExportedFileHandler
 import com.ridecomp.core.testing.FakeLocationSource
 import com.ridecomp.core.testing.FakeProfileRepository
 import com.ridecomp.core.testing.FakeRideController
@@ -21,6 +22,9 @@ import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.testing.RecordingLogger
 import com.ridecomp.core.testing.TestDispatcherProvider
 import com.ridecomp.core.usecase.ExportFileStore
+import com.ridecomp.core.usecase.ExportedFileHandler
+import com.ridecomp.feature.history.viewmodel.ActivityDetailViewModel
+import com.ridecomp.feature.history.viewmodel.HistoryViewModel
 import com.ridecomp.feature.ride.viewmodel.HomeViewModel
 import com.ridecomp.feature.ride.viewmodel.PreRideViewModel
 import com.ridecomp.feature.ride.viewmodel.RideViewModel
@@ -39,6 +43,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
+import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
 import org.koin.java.KoinJavaComponent.getKoin
 
@@ -60,6 +65,7 @@ class AppModulesTest {
         single<BatteryLevelSource> { FakeBatteryLevelSource() }
         single<RideController> { FakeRideController() }
         single<ExportFileStore> { FakeExportFileStore() }
+        single<ExportedFileHandler> { FakeExportedFileHandler() }
     }
 
     @BeforeTest
@@ -89,5 +95,7 @@ class AppModulesTest {
         assertNotNull(koin.get<ProfileViewModel>())
         assertNotNull(koin.get<RideSettingsViewModel>())
         assertNotNull(koin.get<OnboardingViewModel>())
+        assertNotNull(koin.get<HistoryViewModel>())
+        assertNotNull(koin.get<ActivityDetailViewModel> { parametersOf(1L) })
     }
 }
