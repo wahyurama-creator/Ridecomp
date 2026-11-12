@@ -8,6 +8,8 @@ import com.ridecomp.core.engine.geo.GpsRejection
 import com.ridecomp.core.engine.metrics.AltitudeSource
 import com.ridecomp.core.engine.metrics.ElevationSnapshot
 import com.ridecomp.core.engine.metrics.ElevationTracker
+import com.ridecomp.core.engine.sensors.SensorReading
+import com.ridecomp.core.engine.sensors.SensorSnapshot
 import com.ridecomp.core.model.BatteryMode
 import com.ridecomp.core.model.Lap
 import com.ridecomp.core.model.LocationFix
@@ -17,6 +19,7 @@ import com.ridecomp.core.model.RideSample
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RideStatus
 import com.ridecomp.core.model.RideTotals
+import com.ridecomp.core.model.RiderProfile
 import com.ridecomp.core.util.Outcome
 import com.ridecomp.core.util.map
 
@@ -54,6 +57,8 @@ public data class LiveRide(
     val batteryMode: BatteryMode = BatteryMode.NORMAL,
     val reminder: ActiveReminder? = null,
     val isIdlePromptVisible: Boolean = false,
+    /** Heart rate, cadence, power, estimates and sensor states (Phase 2). */
+    val sensors: LiveSensors = LiveSensors(),
 )
 
 /** Result of a tick or an action: new state plus what must be persisted. */
@@ -73,8 +78,16 @@ public data class RecorderOutput(
  *
  * Not thread-safe by design: confine to one coroutine (CONC-01).
  */
-public class RideRecorder(settings: RideSettings, altitudeSource: AltitudeSource) {
+public class RideRecorder(
+    settings: RideSettings,
+    altitudeSource: AltitudeSource,
+    profile: RiderProfile = RiderProfile(),
+    ageYears: Int? = null,
+) {
     private val metrics = RideMetricsAccumulator()
+    private val sensors = SensorRideMetrics(profile, ageYears)
+    private var sensorSnapshot = SensorSnapshot()
+    private var estimatedPowerW: Int? = null
     private val elevation = ElevationTracker(altitudeSource)
     private val laps = LapTracker(settings.autoLapM)
     private val autoPause = AutoPauseDetector(
@@ -136,6 +149,15 @@ public class RideRecorder(settings: RideSettings, altitudeSource: AltitudeSource
     public fun onLocation(fix: LocationFix): GpsRejection? =
         metrics.onFix(fix, countingMode(fix.speedMps ?: metrics.currentSpeedMps(fix.timeMs)))
 
+    /** New sensor data from the BLE layer; connection changes are logged as events (T2.9). */
+    public fun onSensor(reading: SensorReading) {
+        sensors.onReading(reading)
+        if (reading is SensorReading.Connection && startedAtMs != null) {
+            val type = if (reading.isConnected) RideEventType.SENSOR_BACK else RideEventType.SENSOR_LOST
+            pendingEvents += RideEvent(reading.receivedAtMs, type)
+        }
+    }
+
     /** New barometric altitude (already converted from pressure). */
     public fun onAltitude(altitudeM: Double, timeMs: Long) {
         latestAltitudeM = altitudeM
@@ -182,6 +204,8 @@ public class RideRecorder(settings: RideSettings, altitudeSource: AltitudeSource
     public fun tick(nowMs: Long): RecorderOutput {
         val closed = mutableListOf<Lap>()
         val interval = lastTickMs?.let { nowMs - it } ?: 0L
+        sensorSnapshot = sensors.snapshot(nowMs)
+        metrics.updateWheel(sensorSnapshot.wheelSpeedMps)
         val mode = countingMode(metrics.currentSpeedMps(nowMs))
         if (status == RideStatus.AUTO_PAUSED && mode == CountingMode.NONE) metrics.discardTentative()
         val isGap = metrics.onTickInterval(interval, mode)
@@ -189,7 +213,16 @@ public class RideRecorder(settings: RideSettings, altitudeSource: AltitudeSource
         lastTickMs = nowMs
         evaluateAutoPause(nowMs)
         val elevationSnapshot = updateElevation(nowMs)
+        estimatedPowerW = null
         if (status == RideStatus.RECORDING) {
+            estimatedPowerW =
+                sensors.onMovingSecond(sensorSnapshot, metrics.currentSpeedMps(nowMs), elevationSnapshot.gradePercent)
+            laps.onSensorSecond(
+                sensorSnapshot.heartRateBpm,
+                sensorSnapshot.cadenceRpm,
+                sensorSnapshot.powerW,
+                sensorSnapshot.hasPowerMeter,
+            )
             laps.onTick(progress(nowMs), metrics.currentSpeedMps(nowMs))?.let {
                 closed += it
                 pendingEvents += RideEvent(nowMs, RideEventType.LAP)
@@ -204,14 +237,16 @@ public class RideRecorder(settings: RideSettings, altitudeSource: AltitudeSource
     /** Totals for the activity checkpoint and the saved ride. */
     public fun totals(nowMs: Long): RideTotals {
         val elevationSnapshot = elevation.snapshot()
-        return RideTotals(
-            elapsedS = elapsedMs(nowMs) / Units.MS_PER_SECOND,
-            movingS = metrics.movingMs / Units.MS_PER_SECOND,
-            distanceM = metrics.distanceM,
-            ascentM = elevationSnapshot.ascentM,
-            descentM = elevationSnapshot.descentM,
-            avgSpeedMps = metrics.averageSpeedMps(),
-            maxSpeedMps = metrics.maxSpeedMps,
+        return sensors.totals(
+            RideTotals(
+                elapsedS = elapsedMs(nowMs) / Units.MS_PER_SECOND,
+                movingS = metrics.movingMs / Units.MS_PER_SECOND,
+                distanceM = metrics.distanceM,
+                ascentM = elevationSnapshot.ascentM,
+                descentM = elevationSnapshot.descentM,
+                avgSpeedMps = metrics.averageSpeedMps(),
+                maxSpeedMps = metrics.maxSpeedMps,
+            ),
         )
     }
 
@@ -241,7 +276,14 @@ public class RideRecorder(settings: RideSettings, altitudeSource: AltitudeSource
 
     private fun evaluateAutoPause(nowMs: Long) {
         val fix = metrics.latestFix?.takeIf { metrics.isFixFresh(nowMs) }
-        val motion = MotionSample(nowMs, metrics.currentSpeedMps(nowMs), fix?.latDeg, fix?.lonDeg, fix?.accuracyM)
+        val motion = MotionSample(
+            timeMs = nowMs,
+            speedMps = metrics.currentSpeedMps(nowMs),
+            latDeg = fix?.latDeg,
+            lonDeg = fix?.lonDeg,
+            accuracyM = fix?.accuracyM,
+            isFromWheelSensor = metrics.isWheelSpeed,
+        )
         val command = when (status) {
             RideStatus.RECORDING ->
                 RideCommand.AUTO_PAUSE.takeIf { autoPause.onRecording(motion) == AutoPauseDecision.PAUSE }
@@ -315,6 +357,10 @@ public class RideRecorder(settings: RideSettings, altitudeSource: AltitudeSource
             gpsAccuracyM = fix?.accuracyM,
             distanceM = metrics.distanceM,
             speedMps = metrics.currentSpeedMps(nowMs),
+            heartRateBpm = sensorSnapshot.heartRateBpm,
+            cadenceRpm = sensorSnapshot.cadenceRpm,
+            powerW = sensorSnapshot.powerW,
+            estPowerW = estimatedPowerW,
         )
     }
 
@@ -339,6 +385,7 @@ public class RideRecorder(settings: RideSettings, altitudeSource: AltitudeSource
             isIdlePromptVisible = status == RideStatus.AUTO_PAUSED &&
                 !isIdlePromptDismissed &&
                 autoPause.isIdlePromptDue(nowMs),
+            sensors = sensors.live(sensorSnapshot),
         )
     }
 

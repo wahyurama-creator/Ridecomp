@@ -35,7 +35,7 @@ import com.ridecomp.ui.theme.RideCompDimens
 import com.ridecomp.ui.udf.ObserveEffects
 import org.koin.androidx.compose.koinViewModel
 
-/** Metrics on the summary (02-DESIGN §3.6); sensor values and charts follow in Phase 2 / detail. */
+/** Metrics on the summary (02-DESIGN §3.6); sensor metrics show -- without sensors. */
 private val SUMMARY_METRICS = listOf(
     RideMetric.DISTANCE,
     RideMetric.MOVING_TIME,
@@ -44,6 +44,13 @@ private val SUMMARY_METRICS = listOf(
     RideMetric.MAX_SPEED,
     RideMetric.ASCENT,
     RideMetric.DESCENT,
+    RideMetric.AVG_HEART_RATE,
+    RideMetric.MAX_HEART_RATE,
+    RideMetric.AVG_CADENCE,
+    RideMetric.AVG_POWER,
+    RideMetric.MAX_POWER,
+    RideMetric.NORMALIZED_POWER,
+    RideMetric.CALORIES,
 )
 
 /** Summary after finishing (T1.12): name, totals, SAVE or DISCARD. */

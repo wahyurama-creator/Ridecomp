@@ -1,8 +1,10 @@
 package com.ridecomp.core.engine.recording
 
 import com.ridecomp.core.config.Units
+import com.ridecomp.core.engine.metrics.AverageMax
 import com.ridecomp.core.model.Lap
 import com.ridecomp.core.model.LapTrigger
+import kotlin.math.roundToInt
 
 /** Cumulative ride values at one moment; laps are differences between two of these. */
 public data class RideProgress(val timeMs: Long, val distanceM: Double, val movingMs: Long, val ascentM: Double)
@@ -15,6 +17,8 @@ public data class LapStatus(
     val distanceM: Double,
     val movingMs: Long,
     val avgSpeedMps: Double,
+    val avgHeartRateBpm: Int? = null,
+    val avgPowerW: Int? = null,
 )
 
 /**
@@ -26,6 +30,22 @@ public class LapTracker(private val autoLapM: Double? = null) {
     private var index = 0
     private var start: RideProgress? = null
     private var maxSpeedMps = 0.0
+    private var heartRate = AverageMax()
+    private var cadence = AverageMax()
+    private var powerSum = 0.0
+    private var powerSeconds = 0L
+    private var maxPowerW: Int? = null
+
+    /** Adds one moving second of sensor data to the running lap (power counts coasting zeros). */
+    public fun onSensorSecond(heartRateBpm: Int?, cadenceRpm: Int?, powerW: Int?, hasPowerMeter: Boolean) {
+        heartRate.add(heartRateBpm)
+        cadence.add(cadenceRpm)
+        if (hasPowerMeter) {
+            powerSum += powerW ?: 0
+            powerSeconds++
+            powerW?.let { maxPowerW = maxOf(maxPowerW ?: 0, it) }
+        }
+    }
 
     /** Starts the first lap (or resumes after recovery with the given lap [startIndex]). */
     public fun start(at: RideProgress, startIndex: Int = 0) {
@@ -67,6 +87,8 @@ public class LapTracker(private val autoLapM: Double? = null) {
             distanceM = distance,
             movingMs = moving,
             avgSpeedMps = averageSpeedMps(distance, moving),
+            avgHeartRateBpm = heartRate.average(),
+            avgPowerW = if (powerSeconds > 0) (powerSum / powerSeconds).roundToInt() else null,
         )
     }
 
@@ -84,11 +106,25 @@ public class LapTracker(private val autoLapM: Double? = null) {
             maxSpeedMps = maxSpeedMps,
             ascentM = end.ascentM - begin.ascentM,
             trigger = trigger,
+            avgHeartRateBpm = heartRate.average(),
+            maxHeartRateBpm = heartRate.max,
+            avgCadenceRpm = cadence.average(),
+            avgPowerW = if (powerSeconds > 0) (powerSum / powerSeconds).roundToInt() else null,
+            maxPowerW = maxPowerW,
         )
         index++
         start = end
-        maxSpeedMps = 0.0
+        resetLapAggregates()
         return lap
+    }
+
+    private fun resetLapAggregates() {
+        maxSpeedMps = 0.0
+        heartRate = AverageMax()
+        cadence = AverageMax()
+        powerSum = 0.0
+        powerSeconds = 0
+        maxPowerW = null
     }
 
     private fun averageSpeedMps(distanceM: Double, movingMs: Long): Double =

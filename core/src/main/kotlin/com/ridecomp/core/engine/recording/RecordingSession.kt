@@ -2,11 +2,13 @@ package com.ridecomp.core.engine.recording
 
 import com.ridecomp.core.config.Units
 import com.ridecomp.core.engine.metrics.AltitudeSource
+import com.ridecomp.core.engine.sensors.SensorReading
 import com.ridecomp.core.model.Activity
 import com.ridecomp.core.model.ActivityStatus
 import com.ridecomp.core.model.LocationFix
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RideStatus
+import com.ridecomp.core.model.RiderProfile
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.NewActivity
 import com.ridecomp.core.source.IdGenerator
@@ -16,6 +18,14 @@ import com.ridecomp.core.util.Outcome
 import com.ridecomp.core.util.asFailure
 import com.ridecomp.core.util.onSuccess
 import com.ridecomp.core.util.runCatchingCancellable
+
+/** Everything that configures one ride. */
+public data class RideSetup(
+    val settings: RideSettings,
+    val altitudeSource: AltitudeSource,
+    val profile: RiderProfile = RiderProfile(),
+    val ageYears: Int? = null,
+)
 
 /** Why a session command could not run. */
 public sealed interface SessionError {
@@ -51,13 +61,9 @@ public class RecordingSession(
     public val pointsDropped: Int get() = buffer.droppedCount
 
     /** Starts a new ride and creates its activity row. */
-    public suspend fun start(
-        settings: RideSettings,
-        altitudeSource: AltitudeSource,
-        nowMs: Long,
-    ): Outcome<RecorderOutput, SessionError> {
+    public suspend fun start(setup: RideSetup, nowMs: Long): Outcome<RecorderOutput, SessionError> {
         if (recorder != null) return SessionError.AlreadyRecording.asFailure()
-        val newRecorder = RideRecorder(settings, altitudeSource)
+        val newRecorder = setup.newRecorder()
         val output = newRecorder.handle(RideAction.START, nowMs)
         return output.mapErrorToSession().onSuccess { started ->
             recorder = newRecorder
@@ -67,14 +73,8 @@ public class RecordingSession(
     }
 
     /** Continues a ride interrupted by a crash/kill, from its last checkpoint (03-ARCHITECTURE §4.5). */
-    public suspend fun resume(
-        activity: Activity,
-        settings: RideSettings,
-        altitudeSource: AltitudeSource,
-        resumeAs: RideStatus,
-        nowMs: Long,
-    ) {
-        val restored = RideRecorder(settings, altitudeSource)
+    public suspend fun resume(activity: Activity, setup: RideSetup, resumeAs: RideStatus, nowMs: Long) {
+        val restored = setup.newRecorder()
         val totals = activity.totals
         restored.restore(
             startedAtMs = activity.startedAtMs,
@@ -95,6 +95,11 @@ public class RecordingSession(
 
     public fun onLocation(fix: LocationFix) {
         recorder?.onLocation(fix)?.let { rejection -> logger.debug(TAG) { "GPS fix dropped: $rejection" } }
+    }
+
+    /** Parsed BLE data (heart rate, speed/cadence, power, battery, connection). */
+    public fun onSensor(reading: SensorReading) {
+        recorder?.onSensor(reading)
     }
 
     public fun onAltitude(altitudeM: Double, timeMs: Long) {
@@ -182,6 +187,8 @@ public class RecordingSession(
             logger.error(TAG, error) { "Database write failed ($what); will retry" }
         }
     }
+
+    private fun RideSetup.newRecorder() = RideRecorder(settings, altitudeSource, profile, ageYears)
 
     private fun RideStatus.toActivityStatus(): ActivityStatus = when (this) {
         RideStatus.RECORDING, RideStatus.AUTO_PAUSED -> ActivityStatus.RECORDING

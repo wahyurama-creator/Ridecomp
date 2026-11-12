@@ -30,6 +30,7 @@ import com.ridecomp.ui.component.BannerAction
 import com.ridecomp.ui.component.BigButton
 import com.ridecomp.ui.component.BigButtonStyle
 import com.ridecomp.ui.component.DataField
+import com.ridecomp.ui.component.DataFieldStatus
 import com.ridecomp.ui.theme.RideCompDimens
 import com.ridecomp.ui.theme.RideCompTheme
 
@@ -40,6 +41,8 @@ fun rememberMetricUnitLabels(): MetricUnitLabels = MetricUnitLabels(
     rpm = stringResource(R.string.unit_rpm),
     watt = stringResource(R.string.unit_watt),
     percent = stringResource(R.string.unit_percent),
+    wattsPerKg = stringResource(R.string.unit_watts_per_kg),
+    kcal = stringResource(R.string.unit_kcal),
 )
 
 /**
@@ -55,10 +58,12 @@ fun RideField(
     modifier: Modifier = Modifier,
 ) {
     val text by remember(metric, formatter) { derivedStateOf { metric.value(live.value, formatter) } }
+    val isLost by remember(metric) { derivedStateOf { metric.isSensorLost(live.value) } }
     DataField(
         label = stringResource(metric.labelRes),
-        value = text,
+        value = if (isLost) UnitFormatter.NO_VALUE else text,
         unit = metric.unit(formatter, labels),
+        status = if (isLost) DataFieldStatus.WARNING else DataFieldStatus.NORMAL,
         modifier = modifier,
     )
 }

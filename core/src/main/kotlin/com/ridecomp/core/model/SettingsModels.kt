@@ -3,6 +3,8 @@ package com.ridecomp.core.model
 import com.ridecomp.core.config.AutoPauseConfig
 import com.ridecomp.core.config.ProfileDefaults
 import com.ridecomp.core.config.ReminderConfig
+import java.time.Instant
+import java.time.ZoneOffset
 
 public enum class Sex { MALE, FEMALE }
 
@@ -54,3 +56,7 @@ public data class RideSettings(
     val isBatterySaverEnabled: Boolean = true,
     val unitSystem: UnitSystem = UnitSystem.METRIC,
 )
+
+/** Age in whole years at [nowMs] (UTC year difference), or null without a birth year. */
+public fun RiderProfile.ageYears(nowMs: Long): Int? =
+    birthYear?.let { Instant.ofEpochMilli(nowMs).atZone(ZoneOffset.UTC).year - it }

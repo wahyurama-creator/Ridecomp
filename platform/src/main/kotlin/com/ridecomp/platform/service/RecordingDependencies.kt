@@ -2,6 +2,7 @@ package com.ridecomp.platform.service
 
 import com.ridecomp.core.engine.recording.RecordingSession
 import com.ridecomp.core.repository.ActivityRepository
+import com.ridecomp.core.repository.ProfileRepository
 import com.ridecomp.core.repository.SettingsRepository
 import com.ridecomp.core.source.BatteryLevelSource
 import com.ridecomp.core.source.Clock
@@ -20,6 +21,7 @@ import com.ridecomp.platform.device.AlertPlayer
 interface RecordingDependencies {
     val activityRepository: ActivityRepository
     val settingsRepository: SettingsRepository
+    val profileRepository: ProfileRepository
     val locationSource: LocationSource
     val pressureSource: PressureSource
     val batteryLevelSource: BatteryLevelSource

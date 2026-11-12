@@ -46,6 +46,11 @@ public class RideMetricsAccumulator {
     private var previousFix: LocationFix? = null
     private var tentativeMovingMs: Long = 0
 
+    // Wheel sensor (05-DATA-MODEL §3.1): when active it is the distance and speed source, GPS the fallback.
+    private var wheelSpeedMps: Double? = null
+    private var wheelDistanceM = 0.0
+    private var tentativeWheelM = 0.0
+
     /** Last accepted fix. */
     public var latestFix: LocationFix? = null
         private set
@@ -53,7 +58,12 @@ public class RideMetricsAccumulator {
         private set
     public var maxSpeedMps: Double = 0.0
         private set
-    public val distanceM: Double get() = distance.totalM
+    public val distanceM: Double get() = distance.totalM + wheelDistanceM
+
+    /** Wheel-sensor speed of this second (null = no fresh wheel data). Call before [onTickInterval]. */
+    public fun updateWheel(speedMps: Double?) {
+        wheelSpeedMps = speedMps
+    }
 
     public fun restore(totals: RecoveredTotals) {
         distance.restore(totals.distanceM)
@@ -65,7 +75,8 @@ public class RideMetricsAccumulator {
     public fun onFix(fix: LocationFix, mode: CountingMode): GpsRejection? {
         val rejection = filter.check(fix)
         if (rejection == null) {
-            when (mode) {
+            // With a wheel sensor GPS only moves its anchor; distance comes from the wheel.
+            when (if (wheelSpeedMps != null) CountingMode.NONE else mode) {
                 CountingMode.COUNT -> distance.add(fix, isCounting = true)
                 CountingMode.TENTATIVE -> distance.addTentative(fix)
                 CountingMode.NONE -> distance.add(fix, isCounting = false)
@@ -87,21 +98,33 @@ public class RideMetricsAccumulator {
      */
     public fun onTickInterval(intervalMs: Long, mode: CountingMode): Boolean {
         val isGap = intervalMs > RecordingConfig.MAX_TICK_INTERVAL_MS
-        if (!isGap && intervalMs > 0) {
-            when (mode) {
-                CountingMode.COUNT -> movingMs += intervalMs
-                CountingMode.TENTATIVE -> tentativeMovingMs += intervalMs
-                CountingMode.NONE -> Unit
-            }
-        }
+        if (!isGap && intervalMs > 0) countInterval(intervalMs, mode)
         return isGap
+    }
+
+    private fun countInterval(intervalMs: Long, mode: CountingMode) {
+        val wheelM = (wheelSpeedMps ?: 0.0) * intervalMs / Units.MS_PER_SECOND
+        when (mode) {
+            CountingMode.COUNT -> {
+                movingMs += intervalMs
+                wheelDistanceM += wheelM
+                wheelSpeedMps?.let { maxSpeedMps = maxOf(maxSpeedMps, it) }
+            }
+            CountingMode.TENTATIVE -> {
+                tentativeMovingMs += intervalMs
+                tentativeWheelM += wheelM
+            }
+            CountingMode.NONE -> Unit
+        }
     }
 
     /** Auto-resume confirmed: movement measured during the confirmation becomes real. */
     public fun commitTentative() {
         distance.commitTentative()
         movingMs += tentativeMovingMs
+        wheelDistanceM += tentativeWheelM
         tentativeMovingMs = 0
+        tentativeWheelM = 0.0
     }
 
     /** Removes moving time counted while the rider had in fact already stopped (auto-pause delay). */
@@ -113,10 +136,15 @@ public class RideMetricsAccumulator {
     public fun discardTentative() {
         distance.discardTentative()
         tentativeMovingMs = 0
+        tentativeWheelM = 0.0
     }
 
     /** Smoothed speed, or null when the last fix is older than [RecordingConfig.SAMPLE_MAX_AGE_MS]. */
-    public fun currentSpeedMps(nowMs: Long): Double? = speedSmoother.value?.takeIf { isFixFresh(nowMs) }
+    public fun currentSpeedMps(nowMs: Long): Double? =
+        wheelSpeedMps ?: speedSmoother.value?.takeIf { isFixFresh(nowMs) }
+
+    /** True when this second's speed comes from a wheel sensor (reliable at standstill). */
+    public val isWheelSpeed: Boolean get() = wheelSpeedMps != null
 
     /** True when the last accepted fix is recent enough to use. */
     public fun isFixFresh(nowMs: Long): Boolean =
@@ -124,7 +152,7 @@ public class RideMetricsAccumulator {
 
     /** distance / moving time (05-DATA-MODEL §3.2). */
     public fun averageSpeedMps(): Double =
-        if (movingMs > 0) distance.totalM / (movingMs.toDouble() / Units.MS_PER_SECOND) else 0.0
+        if (movingMs > 0) distanceM / (movingMs.toDouble() / Units.MS_PER_SECOND) else 0.0
 
     /** After a long pause, forget the old fix so the first new one is not treated as a spike. */
     public fun resetGpsHistory() {

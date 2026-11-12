@@ -1,0 +1,115 @@
+package com.ridecomp.core.engine.sensors
+
+import com.ridecomp.core.config.RecordingConfig
+
+/** The three BLE sensor profiles (04-INTEGRATIONS §A). */
+public enum class SensorKind { HEART_RATE, SPEED_CADENCE, POWER }
+
+/** Which sensor provides cadence when both do (03-ARCHITECTURE §4.3; default power meter). */
+public enum class CadencePriority { POWER_METER, SPEED_CADENCE }
+
+/** Data from the BLE layer, already parsed. [receivedAtMs] uses the same clock as the ride ticks. */
+public sealed interface SensorReading {
+    public val receivedAtMs: Long
+
+    public data class HeartRate(val measurement: HeartRateMeasurement, override val receivedAtMs: Long) : SensorReading
+
+    public data class SpeedCadence(val measurement: CscMeasurement, override val receivedAtMs: Long) : SensorReading
+
+    public data class Power(val measurement: PowerMeasurement, override val receivedAtMs: Long) : SensorReading
+
+    public data class Battery(val kind: SensorKind, val percent: Int, override val receivedAtMs: Long) : SensorReading
+
+    public data class Connection(val kind: SensorKind, val isConnected: Boolean, override val receivedAtMs: Long) :
+        SensorReading
+}
+
+/** Status of one sensor for the status bar and alerts (T2.9). */
+public data class SensorState(val isConnected: Boolean, val batteryPercent: Int?)
+
+/** Sensor values usable for this second (null = missing or older than 3 s). */
+public data class SensorSnapshot(
+    val heartRateBpm: Int? = null,
+    val cadenceRpm: Int? = null,
+    val powerW: Int? = null,
+    val wheelSpeedMps: Double? = null,
+    val hasCadenceSensor: Boolean = false,
+    val hasPowerMeter: Boolean = false,
+    val states: Map<SensorKind, SensorState> = emptyMap(),
+)
+
+/**
+ * Merges sensor notifications into one value per second (03-ARCHITECTURE §4.3): a value is used only when
+ * it is at most 3 s old; speed = wheel sensor > GPS; cadence = power meter > CSC (configurable); power from
+ * the power meter only. Confine to one coroutine (CONC-01).
+ */
+public class SensorFusion(
+    wheelCircumferenceM: Double,
+    private val cadencePriority: CadencePriority = CadencePriority.POWER_METER,
+) {
+    private val wheelSpeed = WheelSpeedCalculator(wheelCircumferenceM)
+    private val cscCadence = CadenceCalculator()
+    private val powerCadence = CadenceCalculator()
+    private var heartRate: Pair<Int, Long>? = null
+    private var power: Pair<Int, Long>? = null
+    private var lastWheelAtMs: Long? = null
+    private var lastCscCrankAtMs: Long? = null
+    private var lastPowerCrankAtMs: Long? = null
+    private val states = mutableMapOf<SensorKind, SensorState>()
+
+    public fun onReading(reading: SensorReading) {
+        val at = reading.receivedAtMs
+        when (reading) {
+            is SensorReading.HeartRate -> heartRate = reading.measurement.bpm to at
+            is SensorReading.SpeedCadence -> {
+                reading.measurement.wheel?.let { wheelSpeed.add(it, at).also { lastWheelAtMs = at } }
+                reading.measurement.crank?.let { cscCadence.add(it, at).also { lastCscCrankAtMs = at } }
+            }
+            is SensorReading.Power -> {
+                power = reading.measurement.powerW to at
+                reading.measurement.crank?.let { powerCadence.add(it, at).also { lastPowerCrankAtMs = at } }
+            }
+            is SensorReading.Battery -> states[reading.kind] =
+                state(reading.kind).copy(batteryPercent = reading.percent)
+            is SensorReading.Connection -> onConnection(reading)
+        }
+    }
+
+    public fun snapshot(nowMs: Long): SensorSnapshot {
+        val csc = cscCadence.current(nowMs)?.takeIf { lastCscCrankAtMs.isFresh(nowMs) }
+        val pm = powerCadence.current(nowMs)?.takeIf { lastPowerCrankAtMs.isFresh(nowMs) }
+        val cadence = when (cadencePriority) {
+            CadencePriority.POWER_METER -> pm ?: csc
+            CadencePriority.SPEED_CADENCE -> csc ?: pm
+        }
+        return SensorSnapshot(
+            heartRateBpm = heartRate?.takeIf { it.second.isFresh(nowMs) }?.first,
+            cadenceRpm = cadence?.toInt(),
+            powerW = power?.takeIf { it.second.isFresh(nowMs) }?.first,
+            wheelSpeedMps = wheelSpeed.current(nowMs)?.takeIf { lastWheelAtMs.isFresh(nowMs) },
+            hasCadenceSensor = lastCscCrankAtMs != null || lastPowerCrankAtMs != null,
+            hasPowerMeter = power != null,
+            states = states.toMap(),
+        )
+    }
+
+    private fun onConnection(reading: SensorReading.Connection) {
+        states[reading.kind] = state(reading.kind).copy(isConnected = reading.isConnected)
+        // Counters may restart after a reconnect: never compute a rate across the gap.
+        if (!reading.isConnected) {
+            when (reading.kind) {
+                SensorKind.HEART_RATE -> Unit
+                SensorKind.SPEED_CADENCE -> {
+                    wheelSpeed.reset()
+                    cscCadence.reset()
+                }
+                SensorKind.POWER -> powerCadence.reset()
+            }
+        }
+    }
+
+    private fun state(kind: SensorKind): SensorState =
+        states[kind] ?: SensorState(isConnected = false, batteryPercent = null)
+
+    private fun Long?.isFresh(nowMs: Long): Boolean = this != null && nowMs - this <= RecordingConfig.SAMPLE_MAX_AGE_MS
+}
