@@ -36,6 +36,11 @@
     <string name="ride_status_rec">REC</string>
     <string name="ride_status_pause">JEDA</string>
     <string name="ride_gps_lost">Sinyal GPS hilang · tetap merekam</string>
+    <string name="ride_sensor_lost">%1$s terputus · menyambung ulang…</string>
+    <string name="ride_sensor_battery_low">Baterai %1$s lemah (%2$d%%)</string>
+    <string name="ride_sensor_hr">Sensor detak jantung</string>
+    <string name="ride_sensor_csc">Sensor speed/cadence</string>
+    <string name="ride_sensor_power">Power meter</string>
     <string name="ride_idle_prompt">Selesai ride?</string>
     <string name="ride_idle_save">Simpan</string>
     <string name="ride_idle_continue">Lanjutkan</string>

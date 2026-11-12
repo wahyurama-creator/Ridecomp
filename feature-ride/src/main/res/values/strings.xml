@@ -36,6 +36,11 @@
     <string name="ride_status_rec">REC</string>
     <string name="ride_status_pause">PAUSE</string>
     <string name="ride_gps_lost">GPS signal lost · still recording</string>
+    <string name="ride_sensor_lost">%1$s disconnected · reconnecting…</string>
+    <string name="ride_sensor_battery_low">%1$s battery low (%2$d%%)</string>
+    <string name="ride_sensor_hr">Heart rate sensor</string>
+    <string name="ride_sensor_csc">Speed/cadence sensor</string>
+    <string name="ride_sensor_power">Power meter</string>
     <string name="ride_idle_prompt">Finish ride?</string>
     <string name="ride_idle_save">Save</string>
     <string name="ride_idle_continue">Continue</string>

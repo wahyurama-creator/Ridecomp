@@ -107,7 +107,14 @@ fun RideScreen(
     var areBarsVisible by rememberSaveable { mutableStateOf(true) }
     val status = live.value.status
     Column(modifier = modifier.fillMaxSize().background(RideCompTheme.colors.bg)) {
-        if (areBarsVisible) RideStatusBar(status, live.value.hasGpsFix, live.value.batteryMode)
+        if (areBarsVisible) {
+            RideStatusBar(
+                status = status,
+                hasGpsFix = live.value.hasGpsFix,
+                batteryMode = live.value.batteryMode,
+                sensors = live.value.sensors.snapshot.states,
+            )
+        }
         RideBanners(live.value, onAction)
         if (status == RideStatus.PAUSED) {
             PauseContent(live.value, formatter, onAction, Modifier.weight(1f))
