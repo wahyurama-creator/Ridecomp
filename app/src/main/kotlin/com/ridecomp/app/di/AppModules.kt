@@ -1,10 +1,23 @@
 package com.ridecomp.app.di
 
+import com.ridecomp.app.AppViewModel
+import com.ridecomp.feature.ride.di.rideFeatureModule
+import com.ridecomp.feature.settings.di.settingsFeatureModule
 import org.koin.core.module.Module
+import org.koin.core.module.dsl.viewModel
+import org.koin.dsl.module
+
+/** App-level ViewModels. */
+val appModule = module {
+    viewModel { AppViewModel(get()) }
+}
 
 /** Every Koin module of the app, wired once in the composition root (ARCH-02). */
 val appModules: List<Module> = listOf(
     platformModule,
     dataModule,
     useCaseModule,
+    appModule,
+    rideFeatureModule,
+    settingsFeatureModule,
 )

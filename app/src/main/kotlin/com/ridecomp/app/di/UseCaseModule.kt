@@ -9,17 +9,23 @@ import com.ridecomp.core.usecase.ExportGpxUseCase
 import com.ridecomp.core.usecase.ExportedFileHandler
 import com.ridecomp.core.usecase.GetLapsUseCase
 import com.ridecomp.core.usecase.GetRecoverableRideUseCase
+import com.ridecomp.core.usecase.HandleRecoveredRideUseCase
 import com.ridecomp.core.usecase.HasProfileUseCase
 import com.ridecomp.core.usecase.LoadRideChartUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
+import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
 import com.ridecomp.core.usecase.ObserveHistoryCountUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
+import com.ridecomp.core.usecase.ObserveLiveRideUseCase
 import com.ridecomp.core.usecase.ObserveOnboardingDoneUseCase
 import com.ridecomp.core.usecase.ObserveProfileUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
+import com.ridecomp.core.usecase.PerformRideActionUseCase
+import com.ridecomp.core.usecase.ReadBatteryUseCase
 import com.ridecomp.core.usecase.RenameActivityUseCase
 import com.ridecomp.core.usecase.SaveProfileUseCase
 import com.ridecomp.core.usecase.SaveRideSettingsUseCase
+import com.ridecomp.core.usecase.StartRideUseCase
 import com.ridecomp.platform.export.AndroidExportFileStore
 import com.ridecomp.platform.export.AndroidExportedFileHandler
 import java.time.ZoneId
@@ -50,4 +56,10 @@ val useCaseModule = module {
     factory { SaveRideSettingsUseCase(get()) }
     factory { ObserveOnboardingDoneUseCase(get()) }
     factory { CompleteOnboardingUseCase(get()) }
+    factory { StartRideUseCase(get()) }
+    factory { PerformRideActionUseCase(get()) }
+    factory { ObserveLiveRideUseCase(get()) }
+    factory { HandleRecoveredRideUseCase(get(), get()) }
+    factory { ObserveGpsStatusUseCase(get()) }
+    factory { ReadBatteryUseCase(get()) }
 }

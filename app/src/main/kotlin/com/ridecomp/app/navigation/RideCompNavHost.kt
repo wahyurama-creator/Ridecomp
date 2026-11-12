@@ -1,34 +1,61 @@
 package com.ridecomp.app.navigation
 
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import android.provider.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.net.toUri
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.ridecomp.feature.history.ui.HistoryRoute
 import com.ridecomp.feature.ride.ui.HomeRoute
+import com.ridecomp.feature.ride.ui.PreRideRoute
+import com.ridecomp.feature.ride.ui.RideRoute
+import com.ridecomp.feature.ride.ui.SummaryRoute
 import com.ridecomp.feature.routes.ui.RoutesRoute
 import com.ridecomp.feature.sensors.ui.SensorsRoute
+import com.ridecomp.feature.settings.ui.BatteryHelpRoute
+import com.ridecomp.feature.settings.ui.OnboardingRoute
+import com.ridecomp.feature.settings.ui.ProfileRoute
+import com.ridecomp.feature.settings.ui.RideSettingsRoute
 import com.ridecomp.feature.settings.ui.SettingsRoute
+import com.ridecomp.feature.settings.ui.SettingsSection
+
+/** Routes that are not bottom-bar tabs, in one place. */
+object AppRoutes {
+    const val ONBOARDING = "onboarding"
+    const val PRE_RIDE = "pre_ride"
+    const val RIDE = "ride"
+    const val SUMMARY = "summary"
+    const val PROFILE = "profile"
+    const val RIDE_SETTINGS = "ride_settings"
+    const val BATTERY_HELP = "battery_help"
+
+    /** Full-screen routes where the bottom bar is hidden (ride flow, onboarding). */
+    val FULL_SCREEN: Set<String> = setOf(ONBOARDING, PRE_RIDE, RIDE, SUMMARY)
+}
+
+private const val PACKAGE_SCHEME = "package:"
 
 /**
  * App navigation graph. Feature screens only expose callbacks; navigation decisions live here
  * (ARCH-07: ViewModels and screens never hold a NavController).
  */
 @Composable
-fun RideCompNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
-    val navigateHome = { navController.navigateToTopLevel(TopLevelDestination.HOME) }
-    NavHost(
-        navController = navController,
-        startDestination = TopLevelDestination.START.route,
-        modifier = modifier,
-    ) {
-        composable(TopLevelDestination.HOME.route) {
-            // TODO(T1.3): open the pre-ride check / ride screen.
-            HomeRoute(onStartRide = {})
+fun RideCompNavHost(navController: NavHostController, startDestination: String, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    NavHost(navController = navController, startDestination = startDestination, modifier = modifier) {
+        composable(AppRoutes.ONBOARDING) {
+            OnboardingRoute(onDone = { navController.navigateClearingBackStack(TopLevelDestination.HOME.route) })
         }
+        rideGraph(navController)
         composable(TopLevelDestination.HISTORY.route) {
-            HistoryRoute(onStartRide = navigateHome)
+            HistoryRoute(onStartRide = { navController.navigate(AppRoutes.PRE_RIDE) })
         }
         composable(TopLevelDestination.ROUTES.route) {
             // TODO(T3.1): open the GPX file picker.
@@ -39,9 +66,58 @@ fun RideCompNavHost(navController: NavHostController, modifier: Modifier = Modif
             SensorsRoute(onScan = {})
         }
         composable(TopLevelDestination.SETTINGS.route) {
-            // TODO(T1.2): open the selected settings section.
-            SettingsRoute(onSectionClick = {})
+            SettingsRoute(onSectionClick = { section -> openSection(section, navController, context) })
         }
+        composable(AppRoutes.PROFILE) { ProfileRoute(onSaved = { navController.popBackStack() }) }
+        composable(AppRoutes.RIDE_SETTINGS) { RideSettingsRoute() }
+        composable(AppRoutes.BATTERY_HELP) { BatteryHelpRoute() }
+    }
+}
+
+private fun NavGraphBuilder.rideGraph(navController: NavHostController) {
+    composable(TopLevelDestination.HOME.route) {
+        HomeRoute(
+            onOpenPreRide = { navController.navigate(AppRoutes.PRE_RIDE) },
+            onOpenRide = { navController.navigate(AppRoutes.RIDE) { launchSingleTop = true } },
+        )
+    }
+    composable(AppRoutes.PRE_RIDE) {
+        PreRideRoute(
+            onStarted = {
+                navController.navigate(AppRoutes.RIDE) {
+                    popUpTo(AppRoutes.PRE_RIDE) { inclusive = true }
+                }
+            },
+        )
+    }
+    composable(AppRoutes.RIDE) {
+        RideRoute(
+            onFinished = {
+                navController.navigate(AppRoutes.SUMMARY) { popUpTo(AppRoutes.RIDE) { inclusive = true } }
+            },
+            onClosed = { navController.navigateClearingBackStack(TopLevelDestination.HOME.route) },
+        )
+    }
+    composable(AppRoutes.SUMMARY) {
+        SummaryRoute(
+            // TODO(T1.13): open the activity detail of the saved ride.
+            onSaved = { navController.navigateClearingBackStack(TopLevelDestination.HISTORY.route) },
+            onDiscarded = { navController.navigateClearingBackStack(TopLevelDestination.HOME.route) },
+        )
+    }
+}
+
+private fun openSection(section: SettingsSection, navController: NavHostController, context: Context) {
+    when (section) {
+        SettingsSection.PROFILE -> navController.navigate(AppRoutes.PROFILE)
+        SettingsSection.RIDE_SCREEN_BATTERY -> navController.navigate(AppRoutes.RIDE_SETTINGS)
+        SettingsSection.BATTERY_HELP -> navController.navigate(AppRoutes.BATTERY_HELP)
+        SettingsSection.LANGUAGE -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            context.startActivity(
+                Intent(Settings.ACTION_APP_LOCALE_SETTINGS, (PACKAGE_SCHEME + context.packageName).toUri()),
+            )
+        }
+        SettingsSection.DATA_PAGES, SettingsSection.SAFETY, SettingsSection.BACKUP, SettingsSection.OFFLINE_MAPS -> Unit
     }
 }
 
@@ -51,5 +127,13 @@ fun NavHostController.navigateToTopLevel(destination: TopLevelDestination) {
         popUpTo(graph.startDestinationId) { saveState = true }
         launchSingleTop = true
         restoreState = true
+    }
+}
+
+/** Navigates to [route] and removes everything before it (end of a flow). */
+fun NavHostController.navigateClearingBackStack(route: String) {
+    navigate(route) {
+        popUpTo(graph.id) { inclusive = true }
+        launchSingleTop = true
     }
 }
