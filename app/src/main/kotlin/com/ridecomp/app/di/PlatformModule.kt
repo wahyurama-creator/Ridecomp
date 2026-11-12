@@ -13,6 +13,7 @@ import com.ridecomp.core.source.Logger
 import com.ridecomp.core.source.PressureSource
 import com.ridecomp.core.source.RideController
 import com.ridecomp.core.source.RideNameProvider
+import com.ridecomp.core.usecase.ExportFitUseCase
 import com.ridecomp.platform.crash.CrashLogConfig
 import com.ridecomp.platform.crash.CrashLogStore
 import com.ridecomp.platform.device.AlertPlayer
@@ -61,6 +62,7 @@ class KoinRecordingDependencies(private val koin: Koin) : RecordingDependencies 
     override val logger get() = koin.get<Logger>()
     override val stateHolder get() = koin.get<RideStateHolder>()
     override val alertPlayer get() = koin.get<AlertPlayer>()
+    override val exportFit get() = koin.get<ExportFitUseCase>()
 
     override fun newSession(): RecordingSession = koin.get()
 }

@@ -47,6 +47,7 @@ style:
     active: true
     ignorePropertyDeclaration: true
     ignoreCompanionObjectPropertyDeclaration: true
+    ignoreEnums: true          # enum entries name their protocol values (e.g. FIT base types)
     ignoreAnnotated: ['Preview', 'ThemePreviews']
     excludes: ['**/test/**', '**/androidTest/**', '**/*Test.kt']
   ForbiddenComment:      # KT-10: TODO needs a task id, e.g. TODO(T2.5)

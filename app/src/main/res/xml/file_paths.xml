@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SEC-PLT-04: the FileProvider exposes only the export folder (filesDir/exports), nothing else. -->
+<paths>
+    <files-path
+        name="exports"
+        path="exports/" />
+</paths>
