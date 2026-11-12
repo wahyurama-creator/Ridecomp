@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ride_name_morning">Morning ride</string>
+    <string name="ride_name_noon">Midday ride</string>
+    <string name="ride_name_afternoon">Afternoon ride</string>
+    <string name="ride_name_evening">Evening ride</string>
+    <string name="notification_channel_recording">Ride recording</string>
+    <string name="notification_channel_recording_description">Shows the ride while it is being recorded.</string>
+    <string name="notification_title_recording">Recording ride</string>
+    <string name="notification_title_paused">Ride paused</string>
+    <string name="notification_title_auto_paused">Auto paused</string>
+    <string name="notification_title_finished">Ride finished · save or discard</string>
+    <string name="notification_title_starting">Starting ride…</string>
+    <string name="notification_action_pause">Pause</string>
+    <string name="notification_action_resume">Resume</string>
+    <string name="notification_battery_saver">Battery saver on</string>
+    <string name="notification_battery_critical">Battery critical</string>
+</resources>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ride_name_morning">Gowes Pagi</string>
+    <string name="ride_name_noon">Gowes Siang</string>
+    <string name="ride_name_afternoon">Gowes Sore</string>
+    <string name="ride_name_evening">Gowes Malam</string>
+    <string name="notification_channel_recording">Perekaman ride</string>
+    <string name="notification_channel_recording_description">Menampilkan ride selama sedang direkam.</string>
+    <string name="notification_title_recording">Merekam ride</string>
+    <string name="notification_title_paused">Ride dijeda</string>
+    <string name="notification_title_auto_paused">Jeda otomatis</string>
+    <string name="notification_title_finished">Ride selesai · simpan atau buang</string>
+    <string name="notification_title_starting">Memulai ride…</string>
+    <string name="notification_action_pause">Jeda</string>
+    <string name="notification_action_resume">Lanjutkan</string>
+    <string name="notification_battery_saver">Mode hemat aktif</string>
+    <string name="notification_battery_critical">Mode kritis</string>
+</resources>
