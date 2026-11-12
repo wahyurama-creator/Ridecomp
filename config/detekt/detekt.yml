@@ -5,7 +5,7 @@ complexity:
   LongMethod:            # KT-05: functions max ~40 lines
     active: true
     threshold: 40
-    ignoreAnnotated: ['Composable', 'Preview']
+    ignoreAnnotated: ['Composable', 'Preview', 'ThemePreviews']
   LargeClass:            # KT-05: classes max ~300 lines
     active: true
     threshold: 300
@@ -23,6 +23,8 @@ complexity:
     thresholdInInterfaces: 20
 
 naming:
+  MatchingDeclarationName:  # NAME-06 is enforced by ktlint's filename rule, which understands Compose files
+    active: false
   FunctionNaming:        # NAME-07: Composables are PascalCase
     active: true
     ignoreAnnotated: ['Composable']
@@ -45,7 +47,7 @@ style:
     active: true
     ignorePropertyDeclaration: true
     ignoreCompanionObjectPropertyDeclaration: true
-    ignoreAnnotated: ['Preview']
+    ignoreAnnotated: ['Preview', 'ThemePreviews']
     excludes: ['**/test/**', '**/androidTest/**', '**/*Test.kt']
   ForbiddenComment:      # KT-10: TODO needs a task id, e.g. TODO(T2.5)
     active: true
@@ -67,7 +69,7 @@ style:
         value: 'kotlin.io.println'
   UnusedPrivateMember:
     active: true
-    ignoreAnnotated: ['Preview']
+    ignoreAnnotated: ['Preview', 'ThemePreviews']
 
 coroutines:
   GlobalCoroutineUsage:  # CO-01
