@@ -20,6 +20,7 @@ dependencies {
     implementation(libs.koin.androidx.compose)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
+    testImplementation(testFixtures(project(":core")))
     testImplementation(libs.kotlin.test.junit)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
