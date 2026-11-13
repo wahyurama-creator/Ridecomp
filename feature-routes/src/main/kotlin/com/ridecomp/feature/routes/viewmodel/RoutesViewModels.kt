@@ -11,7 +11,7 @@ import com.ridecomp.core.engine.route.RoutePoint
 import com.ridecomp.core.model.UnitSystem
 import com.ridecomp.core.source.DispatcherProvider
 import com.ridecomp.core.usecase.DeleteRouteUseCase
-import com.ridecomp.core.usecase.GetRouteClimbsUseCase
+import com.ridecomp.core.usecase.GetRouteGuidanceUseCase
 import com.ridecomp.core.usecase.GetRoutePointsUseCase
 import com.ridecomp.core.usecase.ImportGpxUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
@@ -91,7 +91,7 @@ class RoutesViewModel(
 data class RouteDetailUseCases(
     val observeRoute: ObserveRouteUseCase,
     val getPoints: GetRoutePointsUseCase,
-    val getClimbs: GetRouteClimbsUseCase,
+    val getGuidance: GetRouteGuidanceUseCase,
     val observeSettings: ObserveRideSettingsUseCase,
     val rename: RenameRouteUseCase,
     val reverse: ReverseRouteUseCase,
@@ -145,7 +145,7 @@ class RouteDetailViewModel(
             updateState { copy(elevation = chart) }
         }
         viewModelScope.launch {
-            val climbs = useCases.getClimbs(routeId).toImmutableList()
+            val climbs = useCases.getGuidance(routeId).climbs.toImmutableList()
             updateState { copy(climbs = climbs) }
         }
     }

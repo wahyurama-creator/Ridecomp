@@ -19,7 +19,7 @@ import com.ridecomp.core.usecase.ForgetSensorUseCase
 import com.ridecomp.core.usecase.GetLapsUseCase
 import com.ridecomp.core.usecase.GetRecoverableRideUseCase
 import com.ridecomp.core.usecase.GetRideProfileUseCase
-import com.ridecomp.core.usecase.GetRouteClimbsUseCase
+import com.ridecomp.core.usecase.GetRouteGuidanceUseCase
 import com.ridecomp.core.usecase.GetRoutePointsUseCase
 import com.ridecomp.core.usecase.HandleRecoveredRideUseCase
 import com.ridecomp.core.usecase.HasProfileUseCase
@@ -120,10 +120,10 @@ val useCaseModule = module {
     factory { ObserveRoutesUseCase(get()) }
     factory { ObserveRouteUseCase(get()) }
     factory { GetRoutePointsUseCase(get()) }
-    factory { GetRouteClimbsUseCase(get()) }
+    factory { GetRouteGuidanceUseCase(get(), get()) }
     factory { RenameRouteUseCase(get()) }
     factory { DeleteRouteUseCase(get()) }
-    factory { ReverseRouteUseCase(get(), get()) }
+    factory { ReverseRouteUseCase(get(), get(), get()) }
     factory { ExportActivityUseCase(get(), get()) }
     factory { ShareActivityFileUseCase(get(), get()) }
     factory { SaveActivityFileUseCase(get(), get()) }

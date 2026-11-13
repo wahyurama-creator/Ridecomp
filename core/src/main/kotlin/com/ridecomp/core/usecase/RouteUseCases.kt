@@ -1,5 +1,6 @@
 package com.ridecomp.core.usecase
 
+import com.ridecomp.core.engine.route.ClimbDetector
 import com.ridecomp.core.engine.route.GpxError
 import com.ridecomp.core.engine.route.GpxParser
 import com.ridecomp.core.engine.route.NewRoute
@@ -8,6 +9,8 @@ import com.ridecomp.core.engine.route.RouteBuilder
 import com.ridecomp.core.engine.route.RouteClimb
 import com.ridecomp.core.engine.route.RouteConfig
 import com.ridecomp.core.engine.route.RoutePoint
+import com.ridecomp.core.engine.route.RouteTurn
+import com.ridecomp.core.engine.route.TurnDetector
 import com.ridecomp.core.repository.RouteRepository
 import com.ridecomp.core.source.Clock
 import com.ridecomp.core.source.DispatcherProvider
@@ -44,7 +47,10 @@ public class ImportGpxUseCase(
                 is Outcome.Success -> {
                     val label = documents.displayName(uri)
                     val name = parsed.value.name ?: label?.substringBeforeLast('.')?.ifBlank { null } ?: fallbackName
-                    val route = RouteBuilder.build(parsed.value.points, name, label, clock.nowMs()).withDetections()
+                    // Simplification and detection are CPU work.
+                    val route = withContext(dispatchers.default) {
+                        RouteBuilder.build(parsed.value.points, name, label, clock.nowMs()).withDetections()
+                    }
                     routes.save(route).asSuccess()
                 }
             }
@@ -63,9 +69,24 @@ public class GetRoutePointsUseCase(private val routes: RouteRepository) {
     public suspend operator fun invoke(id: Long): List<RoutePoint> = routes.getPoints(id)
 }
 
-/** Climbs detected at import (T3.11), in route order. */
-public class GetRouteClimbsUseCase(private val routes: RouteRepository) {
-    public suspend operator fun invoke(id: Long): List<RouteClimb> = routes.getClimbs(id)
+/** Climbs and turns of a route, in route order (T3.11, T3.12). */
+public data class RouteGuidance(val climbs: List<RouteClimb>, val turns: List<RouteTurn>)
+
+/**
+ * Climbs and turns stored at import. Routes imported before T3.11 have none stored: they are detected
+ * from the points now (CPU work, off the caller's thread). A route that truly has neither is detected
+ * again on each call, which is cheap and gives the same empty result.
+ */
+public class GetRouteGuidanceUseCase(private val routes: RouteRepository, private val dispatchers: DispatcherProvider) {
+    public suspend operator fun invoke(id: Long): RouteGuidance {
+        val climbs = routes.getClimbs(id)
+        val turns = routes.getTurns(id)
+        if (climbs.isNotEmpty() || turns.isNotEmpty()) return RouteGuidance(climbs, turns)
+        val points = routes.getPoints(id)
+        return withContext(dispatchers.default) {
+            RouteGuidance(ClimbDetector.detect(points), TurnDetector.detect(points))
+        }
+    }
 }
 
 public class RenameRouteUseCase(private val routes: RouteRepository) {
@@ -82,12 +103,17 @@ public class DeleteRouteUseCase(private val routes: RouteRepository) {
 }
 
 /** "Balik arah" (T3.2): saves the route reversed as a new route named [reversedName]. */
-public class ReverseRouteUseCase(private val routes: RouteRepository, private val clock: Clock) {
+public class ReverseRouteUseCase(
+    private val routes: RouteRepository,
+    private val clock: Clock,
+    private val dispatchers: DispatcherProvider,
+) {
     public suspend operator fun invoke(id: Long, reversedName: String): Long? {
         val points = routes.getPoints(id)
         if (points.size < 2) return null
-        val reversed = RouteBuilder.reversed(points)
-        return routes.save(
+        // Called from the UI: reversing and detection run off the main thread.
+        val route = withContext(dispatchers.default) {
+            val reversed = RouteBuilder.reversed(points)
             NewRoute(
                 name = reversedName.trim().take(RouteConfig.MAX_NAME_LENGTH),
                 sourceLabel = null,
@@ -95,7 +121,8 @@ public class ReverseRouteUseCase(private val routes: RouteRepository, private va
                 distanceM = reversed.last().cumDistanceM,
                 ascentM = RouteBuilder.ascent(reversed.mapNotNull { it.elevationM }),
                 createdAtMs = clock.nowMs(),
-            ).withDetections(),
-        )
+            ).withDetections()
+        }
+        return routes.save(route)
     }
 }

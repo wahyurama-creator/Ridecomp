@@ -17,6 +17,7 @@ import com.ridecomp.core.source.Logger
 import com.ridecomp.core.source.PressureSource
 import com.ridecomp.core.usecase.ExportFitUseCase
 import com.ridecomp.core.usecase.GetRideProfileUseCase
+import com.ridecomp.core.usecase.GetRouteGuidanceUseCase
 import com.ridecomp.platform.device.AlertPlayer
 
 /**
@@ -51,6 +52,9 @@ interface RecordingDependencies {
 
     /** Points of the followed route (T3.6). */
     val routeRepository: RouteRepository
+
+    /** Climbs and turns of the followed route (T3.11, T3.12). */
+    val getRouteGuidance: GetRouteGuidanceUseCase
 
     /** A new session per service instance. */
     fun newSession(): RecordingSession

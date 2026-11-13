@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.ridecomp.core.engine.route.ClimbConfig
@@ -84,6 +85,7 @@ private fun ClimbAheadBanner(next: NextClimb, formatter: UnitFormatter) {
 @Composable
 fun ClimbPanel(climb: ClimbStatus, formatter: UnitFormatter, modifier: Modifier = Modifier) {
     val average = formatter.grade(climb.climb.avgGradePercent)
+    val grades = remember(climb.climb) { climb.climb.gradeProfilePercent.toImmutableList() }
     Column(modifier = modifier.fillMaxWidth().padding(horizontal = RideCompDimens.spacingS)) {
         Text(
             text = stringResource(
@@ -99,8 +101,8 @@ fun ClimbPanel(climb: ClimbStatus, formatter: UnitFormatter, modifier: Modifier 
         )
         GradeProfile(
             title = stringResource(R.string.ride_climb_title, climb.number, climb.total),
-            gradesPercent = climb.climb.gradeProfilePercent.toImmutableList(),
-            bandUpperBoundsPercent = ClimbConfig.GRADE_BANDS_PERCENT.toImmutableList(),
+            gradesPercent = grades,
+            bandUpperBoundsPercent = GRADE_BANDS,
             summary = stringResource(R.string.ride_climb_profile_description, average),
             markerFraction = climb.progressFraction,
         )
@@ -123,6 +125,8 @@ fun NextClimbInfo(next: NextClimb, formatter: UnitFormatter, modifier: Modifier 
         modifier = modifier.padding(horizontal = RideCompDimens.spacingS),
     )
 }
+
+private val GRADE_BANDS = ClimbConfig.GRADE_BANDS_PERCENT.toImmutableList()
 
 private val PREVIEW_CLIMB = RouteClimb(
     index = 1,

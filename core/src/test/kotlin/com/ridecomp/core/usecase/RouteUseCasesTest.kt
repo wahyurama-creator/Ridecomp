@@ -1,9 +1,11 @@
 package com.ridecomp.core.usecase
 
 import com.ridecomp.core.engine.route.GpxError
+import com.ridecomp.core.engine.route.GpxPoint
 import com.ridecomp.core.engine.route.PolylineSimplifier
 import com.ridecomp.core.engine.route.RouteBuilder
 import com.ridecomp.core.engine.route.RoutePoint
+import com.ridecomp.core.engine.route.TurnDirection
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeGpxDocumentSource
 import com.ridecomp.core.testing.FakeRouteRepository
@@ -66,7 +68,7 @@ class RouteUseCasesTest {
                 (ImportGpxUseCase(documents, repository, clock, dispatchers)("u", "Route") as? Outcome.Success)?.value,
             )
 
-        val reversedId = assertNotNull(ReverseRouteUseCase(repository, clock)(id, "Route (reverse)"))
+        val reversedId = assertNotNull(ReverseRouteUseCase(repository, clock, dispatchers)(id, "Route (reverse)"))
         val reversed = repository.getPoints(reversedId)
         assertEquals(0.03, reversed.first().latDeg)
         assertEquals(0.0, reversed.first().cumDistanceM)
@@ -90,5 +92,25 @@ class RouteUseCasesTest {
         assertEquals(3, simplified.size)
         assertEquals(corner[49], simplified[1])
         assertEquals(0.0, RouteBuilder.ascent(emptyList()))
+    }
+
+    @Test
+    fun `routes saved without climbs and turns get them detected when read`() = runTest {
+        // ~600 m north then ~600 m east in 0.0001° (~11 m) steps: one right turn, no elevation.
+        val points =
+            (0..54).map { GpxPoint(it * 0.0001, 0.0, null) } + (1..54).map { GpxPoint(0.0054, it * 0.0001, null) }
+        val legacyId = repository.save(RouteBuilder.build(points, "Old", null, 0))
+        val guidance =
+            GetRouteGuidanceUseCase(repository, TestDispatcherProvider(StandardTestDispatcher(testScheduler)))
+
+        val detected = guidance(legacyId)
+
+        assertTrue(detected.climbs.isEmpty())
+        assertEquals(TurnDirection.RIGHT, detected.turns.single().direction)
+        // Stored detections are used as they are.
+        val storedId = repository.save(
+            RouteBuilder.build(points, "New", null, 0).withDetections(),
+        )
+        assertEquals(guidance(storedId), detected)
     }
 }
