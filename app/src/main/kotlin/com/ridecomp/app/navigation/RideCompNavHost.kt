@@ -35,6 +35,7 @@ import com.ridecomp.feature.settings.ui.BackupRoute
 import com.ridecomp.feature.settings.ui.BatteryHelpRoute
 import com.ridecomp.feature.settings.ui.OfflineMapsRoute
 import com.ridecomp.feature.settings.ui.OnboardingRoute
+import com.ridecomp.feature.settings.ui.OssLicensesRoute
 import com.ridecomp.feature.settings.ui.ProfileRoute
 import com.ridecomp.feature.settings.ui.RideSettingsRoute
 import com.ridecomp.feature.settings.ui.SafetyRoute
@@ -60,6 +61,7 @@ object AppRoutes {
     const val SAFETY = "safety"
     const val BACKUP = "backup"
     const val OFFLINE_MAPS = "offline_maps"
+    const val LICENSES = "licenses"
     const val ROUTE_DETAIL = "route/{$ARG_ROUTE_ID}"
 
     fun routeDetail(routeId: Long): String = "route/$routeId"
@@ -154,6 +156,7 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
         }
         composable(AppRoutes.SAFETY) { SafetyRoute(onBack = { navController.popBackStack() }) }
         composable(AppRoutes.OFFLINE_MAPS) { OfflineMapsRoute(onBack = { navController.popBackStack() }) }
+        composable(AppRoutes.LICENSES) { OssLicensesRoute(onBack = { navController.popBackStack() }) }
         composable(AppRoutes.BACKUP) { BackupRoute(onBack = { navController.popBackStack() }) }
         composable(AppRoutes.ACTIVITY_PROFILES) {
             ActivityProfilesRoute(onOpen = { navController.navigate(AppRoutes.activityProfile(it)) })
@@ -240,6 +243,7 @@ private fun openSection(section: SettingsSection, navController: NavHostControll
         SettingsSection.SAFETY -> navController.navigate(AppRoutes.SAFETY)
         SettingsSection.BACKUP -> navController.navigate(AppRoutes.BACKUP)
         SettingsSection.OFFLINE_MAPS -> navController.navigate(AppRoutes.OFFLINE_MAPS)
+        SettingsSection.OPEN_SOURCE_LICENSES -> navController.navigate(AppRoutes.LICENSES)
     }
 }
 

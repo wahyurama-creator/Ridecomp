@@ -71,8 +71,10 @@ import com.ridecomp.feature.routes.viewmodel.RouteDetailViewModel
 import com.ridecomp.feature.routes.viewmodel.RoutesViewModel
 import com.ridecomp.feature.sensors.viewmodel.SensorsViewModel
 import com.ridecomp.feature.settings.viewmodel.BackupViewModel
+import com.ridecomp.feature.settings.viewmodel.LicenseTextReader
 import com.ridecomp.feature.settings.viewmodel.OfflineMapsViewModel
 import com.ridecomp.feature.settings.viewmodel.OnboardingViewModel
+import com.ridecomp.feature.settings.viewmodel.OssLicensesViewModel
 import com.ridecomp.feature.settings.viewmodel.ProfileViewModel
 import com.ridecomp.feature.settings.viewmodel.RideSettingsViewModel
 import com.ridecomp.feature.settings.viewmodel.SafetyViewModel
@@ -132,6 +134,7 @@ class AppModulesTest {
         single<RouteRepository> { FakeRouteRepository() }
         single<GpxDocumentSource> { FakeGpxDocumentSource() }
         single<OfflineMapRepository> { FakeOfflineMapRepository() }
+        factory<LicenseTextReader> { LicenseTextReader { "" } }
     }
 
     @BeforeTest
@@ -161,6 +164,7 @@ class AppModulesTest {
         assertNotNull(koin.get<ProfileViewModel>())
         assertNotNull(koin.get<SettingsViewModel>())
         assertNotNull(koin.get<OfflineMapsViewModel>())
+        assertNotNull(koin.get<OssLicensesViewModel>())
         assertNotNull(koin.get<RideSettingsViewModel>())
         assertNotNull(koin.get<OnboardingViewModel>())
         assertNotNull(koin.get<HistoryViewModel>())
