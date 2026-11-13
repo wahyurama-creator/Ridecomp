@@ -8,25 +8,22 @@
   - Selesai dan di-merge:
     - T3.1–T3.2: import GPX (parser milik sendiri, D-43), daftar dan detail rute.
     - T3.6–T3.10: route tracker (D-46), off-route, halaman navigasi breadcrumb, profil elevasi (D-47).
-  - **Dalam pengerjaan** di branch `feature/T3.11-T3.13-climbs-turns` (commit WIP, belum di-merge):
-    - Selesai: `ClimbDetector`, `TurnDetector`, dan `ClimbTurnTracker` (alert belokan 150/30 m, tanjakan 500 m), beserta test; disimpan di DB (`route_climbs`, `route_turns`) saat import/balik arah; diteruskan ke `RideContext`/`RouteProgress`.
-    - Belum:
-      1. `RecordingService` memuat climbs/turns (`deps.routeRepository.getClimbs/getTurns`) ke `RideSetup`, lalu menggetarkan `RouteProgress.alert`.
-      2. UI: banner belokan/tanjakan, field "Belokan berikutnya", info "Tanjakan 2 dari 4", daftar tanjakan di detail rute.
-      3. Update test `RouteRepository`/ViewModel bila perlu, verifikasi penuh, D-48 (aturan gabung tanjakan) ke `DECISIONS.md`, centang T3.11–T3.13, merge.
+    - T3.11–T3.13: deteksi tanjakan & belokan, alert getar, banner, field "Belokan berikutnya", panel tanjakan (profil pita grade), daftar tanjakan di detail rute (D-49, D-50). Diuji di realme RMX3830 dengan GPS simulasi + GPX uji: banner belokan & tanjakan, panel tanjakan, pola getar, service berhenti setelah simpan, LeakCanary 0 leak.
+    - Fix T3.1: picker Import menerima `.gpx` bertipe `application/octet-stream` (D-51; ditemukan saat uji perangkat).
   - **Menunggu keputusan pemilik:** T3.3–T3.5 (MapLibre + sumber tile offline, DEP-02). Opsi:
     - (a) file region PMTiles/MBTiles (saran);
     - (b) penyedia tile yang mengizinkan offline;
     - (c) tunda, pakai breadcrumb.
+- **Temuan StrictMode (sudah ada sejak fase sebelumnya, belum diperbaiki):** disk read/write di main thread saat startup karena Koin membuat objek di `Application.onCreate`/saat pertama di-resolve: `PlatformModule.kt:66`, `DevTools.developerPreferences` (debug), `AndroidExportFileStore.<init>`, `PendingRestore.applyIfPresent` di `RideCompDatabase.build` (DB dibuka di main thread). ROM realme tidak mencetak stack StrictMode; untuk melihatnya pasang sementara `penaltyListener` yang me-log `Violation` (jangan di-commit). Perlu task fix tersendiri (urutan restore → Room harus tetap terjaga, D-39).
 - Setelah itu: laporan Fase 3, scan OSV (`scripts/osv-scan.ps1`), lalu Fase 4.
 
 ## Yang perlu ditinjau pemilik
 - D-41: enkripsi backup per segmen di atas AES-GCM.
 - D-32: nilai FIT `sub_sport`, cek dengan FitCSVTool.
-- **Semua uji perangkat/lapangan belum dilakukan.**
+- **Uji lapangan belum dilakukan** (hanya uji perangkat singkat dengan GPS simulasi, lihat atas). GPX uji simulasi: segi-7 r=527 m di pusat loop simulator (−7.7829, 110.3671) dengan tanjakan 6 % di km 1,0–1,9.
 
 ## Konvensi kerja (penting untuk agent berikutnya)
-- Baca `CLAUDE.md` dan `docs/` terlebih dulu. Keputusan tercatat di `docs/reports/DECISIONS.md` (D-01…D-47).
+- Baca `CLAUDE.md` dan `docs/` terlebih dulu. Keputusan tercatat di `docs/reports/DECISIONS.md` (D-01…D-51).
 - Satu branch per task (`feature/<TaskID>-<slug>`), Conventional Commit + ID task, merge `--no-ff` ke `main`.
 - Verifikasi sebelum commit: `./gradlew ktlintCheck detekt lint test koverVerify assembleDebug`.
 - Daemon Gradle memakai JDK 21. Bila dependency berubah: `--write-locks --write-verification-metadata sha256`.
