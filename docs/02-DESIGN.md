@@ -142,6 +142,8 @@ Setiap layar data punya state berikut (wajib ada di Preview, UI-06):
 
 Warna zona (HR/power) 1–5/7: abu, biru, hijau, kuning, oranye, merah, ungu.
 
+Token tambahan dari desain canvas (`surfaceAlt`, `surfaceRaised`, `textTertiary`, `disabled`, `indicatorInactive`, `accentTint`, `okTint`, `warnTint`, `dangerDeep`, pita grade) ada di `13-UI-SCREENS.md` §1.2 dan `RideCompColors` (D-54).
+
 Tema terang opsional (untuk layar LCD di bawah matahari terik): kontras ≥ 7:1.
 
 | Token | Gelap | Terang |

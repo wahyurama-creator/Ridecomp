@@ -1,7 +1,10 @@
 package com.ridecomp.ui.component
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -9,24 +12,26 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.KeyboardType
@@ -41,7 +46,10 @@ import kotlinx.collections.immutable.persistentListOf
 @Immutable
 data class Choice<T>(val value: T, val label: String)
 
-/** Single choice from a few options (auto-pause delay, units, screen mode…), glove-friendly height. */
+/**
+ * OptionChips (13-UI-SCREENS §2): single choice from a few options (activity profile, screen mode,
+ * hand position…). Selected = 2 dp `accent` border on `accentTint`. Glove-friendly height (UI-07).
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun <T> ChoiceChips(
@@ -51,22 +59,62 @@ fun <T> ChoiceChips(
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier.fillMaxWidth().padding(horizontal = RideCompDimens.spacingM)) {
-        Text(text = label, style = RideCompTheme.typography.body, color = RideCompTheme.colors.textPrimary)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS)) {
+    val colors = RideCompTheme.colors
+    val shape = RoundedCornerShape(RideCompDimens.cornerRadiusSmall)
+    Column(
+        modifier = modifier.fillMaxWidth().padding(horizontal = RideCompDimens.spacingM),
+        verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS),
+    ) {
+        Text(text = label.uppercase(), style = RideCompTheme.typography.dataLabel, color = colors.textSecondary)
+        FlowRow(
+            modifier = Modifier.selectableGroup(),
+            horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS),
+            verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS),
+        ) {
             choices.forEach { choice ->
-                FilterChip(
-                    selected = choice.value == selected,
-                    onClick = { onSelect(choice.value) },
-                    label = { Text(choice.label) },
-                    modifier = Modifier.heightIn(min = RideCompDimens.touchTargetMin),
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = RideCompTheme.colors.accent,
-                        selectedLabelColor = RideCompTheme.colors.onAccent,
-                    ),
-                )
+                val isSelected = choice.value == selected
+                Box(
+                    modifier = Modifier
+                        .heightIn(min = RideCompDimens.touchTargetMin)
+                        .clip(shape)
+                        .background(if (isSelected) colors.accentTint else colors.surface)
+                        .border(
+                            width = RideCompDimens.borderSelected,
+                            color = if (isSelected) colors.accent else colors.surface,
+                            shape = shape,
+                        )
+                        .selectable(selected = isSelected, role = Role.RadioButton) { onSelect(choice.value) }
+                        .padding(horizontal = RideCompDimens.spacingM),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = choice.label,
+                        style = RideCompTheme.typography.buttonSmall,
+                        color = if (isSelected) colors.textPrimary else colors.textTertiary,
+                    )
+                }
             }
         }
+    }
+}
+
+/** Toggle (13-UI-SCREENS §1.4, §2): 56 × 34; on = `ok` track with the dark knob on the right. */
+@Composable
+fun RideCompToggle(isChecked: Boolean, modifier: Modifier = Modifier) {
+    val colors = RideCompTheme.colors
+    Box(
+        modifier = modifier
+            .size(width = RideCompDimens.toggleWidth, height = RideCompDimens.toggleHeight)
+            .clip(CircleShape)
+            .background(if (isChecked) colors.ok else colors.divider)
+            .padding(RideCompDimens.toggleKnobInset),
+        contentAlignment = if (isChecked) Alignment.CenterEnd else Alignment.CenterStart,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(RideCompDimens.toggleKnobSize)
+                .background(if (isChecked) colors.bg else colors.textSecondary, CircleShape),
+        )
     }
 }
 
@@ -83,25 +131,22 @@ fun SwitchRow(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = RideCompDimens.touchTargetMin)
-            .padding(horizontal = RideCompDimens.spacingM)
-            .semantics { role = Role.Switch },
+            .toggleable(value = isChecked, role = Role.Switch, onValueChange = onCheckedChange)
+            .padding(horizontal = RideCompDimens.spacingM, vertical = RideCompDimens.spacingS),
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm),
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = label, style = RideCompTheme.typography.body, color = RideCompTheme.colors.textPrimary)
+            Text(text = label, style = RideCompTheme.typography.bodyStrong, color = RideCompTheme.colors.textPrimary)
             if (description != null) {
                 Text(
                     text = description,
-                    style = RideCompTheme.typography.dataLabel,
+                    style = RideCompTheme.typography.caption,
                     color = RideCompTheme.colors.textSecondary,
                 )
             }
         }
-        Switch(
-            checked = isChecked,
-            onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(checkedTrackColor = RideCompTheme.colors.accent),
-        )
+        RideCompToggle(isChecked = isChecked)
     }
 }
 

@@ -76,12 +76,12 @@ fun ListRow(
 @Composable
 fun SectionHeader(text: String, modifier: Modifier = Modifier) {
     Text(
-        text = text,
+        text = text.uppercase(),
         style = RideCompTheme.typography.dataLabel,
         color = RideCompTheme.colors.textSecondary,
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = RideCompDimens.spacingM, vertical = RideCompDimens.spacingS)
+            .padding(horizontal = RideCompDimens.screenPaddingHorizontal, vertical = RideCompDimens.spacingS)
             .semantics { heading() },
     )
 }
