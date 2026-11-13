@@ -109,7 +109,7 @@ object PendingRestore {
         if (!staging.renameTo(File(live.path + PENDING_SUFFIX))) error("Cannot stage restored database")
     }
 
-    /** Called once at startup, before the database is opened. Returns true when a restore was applied. */
+    /** Called once before the database is first opened (`RestoringOpenHelperFactory`). True when applied. */
     fun applyIfPresent(context: Context): Boolean {
         val live = context.getDatabasePath(DbNames.DATABASE_FILE)
         val pending = File(live.path + PENDING_SUFFIX)

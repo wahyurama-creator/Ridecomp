@@ -23,7 +23,7 @@ public class ShareActivityFileUseCase(
     private val handler: ExportedFileHandler,
 ) {
     public suspend operator fun invoke(activityId: Long, format: ExportFormat): Outcome<ExportedFile, ExportError> =
-        export(activityId, format).onSuccess(handler::share)
+        export(activityId, format).onSuccess { handler.share(it) }
 }
 
 /** Exports and copies the file to a place the user picked ("Save to Downloads", SAF). */

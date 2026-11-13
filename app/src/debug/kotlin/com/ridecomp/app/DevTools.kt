@@ -1,7 +1,6 @@
 package com.ridecomp.app
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.os.StrictMode
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
@@ -10,14 +9,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.edit
 import com.ridecomp.core.source.LocationSource
 import com.ridecomp.platform.location.AndroidLocationSource
 import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.component.SwitchRow
+import java.util.concurrent.Executors
 import org.koin.android.ext.koin.androidContext
+import org.koin.compose.koinInject
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
@@ -53,16 +53,17 @@ object DevTools {
                 DebugLocationSource(
                     real = AndroidLocationSource(androidContext(), get()),
                     simulated = SimulatedLocationSource(get()),
-                    preferences = androidContext().developerPreferences(),
+                    settings = get(),
                 )
             }
+            single { DeveloperSettings(androidContext()) }
         },
     )
 
     @Composable
     fun DeveloperScreen(modifier: Modifier = Modifier) {
-        val preferences = LocalContext.current.developerPreferences()
-        var isSimulating by remember { mutableStateOf(preferences.getBoolean(KEY_SIMULATE_GPS, false)) }
+        val settings = koinInject<DeveloperSettings>()
+        var isSimulating by remember { mutableStateOf(settings.isSimulatingGps) }
         ScreenScaffold(modifier = modifier, title = stringResource(R.string.developer_title)) {
             Column {
                 SwitchRow(
@@ -71,7 +72,7 @@ object DevTools {
                     isChecked = isSimulating,
                     onCheckedChange = { checked ->
                         isSimulating = checked
-                        preferences.edit { putBoolean(KEY_SIMULATE_GPS, checked) }
+                        settings.isSimulatingGps = checked
                     },
                 )
             }
@@ -79,5 +80,35 @@ object DevTools {
     }
 }
 
-private fun Context.developerPreferences(): SharedPreferences =
-    getSharedPreferences(DevTools.PREFERENCES, Context.MODE_PRIVATE)
+/**
+ * Developer switches, kept in memory and read from / written to SharedPreferences on a background thread:
+ * opening preferences touches the disk, and the switch is read on the main thread (StrictMode, STB-01).
+ */
+class DeveloperSettings(context: Context) {
+    private val io = Executors.newSingleThreadExecutor()
+    private val preferences by lazy {
+        context.applicationContext.getSharedPreferences(DevTools.PREFERENCES, Context.MODE_PRIVATE)
+    }
+
+    @Volatile
+    private var isSimulating = false
+
+    /** Set once the switch is changed here: the initial load must not overwrite it. */
+    @Volatile
+    private var isChanged = false
+
+    init {
+        io.execute {
+            val stored = preferences.getBoolean(DevTools.KEY_SIMULATE_GPS, false)
+            if (!isChanged) isSimulating = stored
+        }
+    }
+
+    var isSimulatingGps: Boolean
+        get() = isSimulating
+        set(value) {
+            isChanged = true
+            isSimulating = value
+            io.execute { preferences.edit { putBoolean(DevTools.KEY_SIMULATE_GPS, value) } }
+        }
+}

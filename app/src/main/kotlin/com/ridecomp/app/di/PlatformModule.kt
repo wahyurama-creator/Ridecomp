@@ -64,7 +64,10 @@ val platformModule = module {
     single<Clock> { AndroidClock() }
     single<DispatcherProvider> { StandardDispatcherProvider() }
     single<Logger> { AndroidLogger(isDebugEnabled = BuildConfig.DEBUG) }
-    single { CrashLogStore(File(androidContext().filesDir, CrashLogConfig.DIRECTORY_NAME), get()) }
+    single {
+        val context = androidContext()
+        CrashLogStore({ File(context.filesDir, CrashLogConfig.DIRECTORY_NAME) }, get())
+    }
     single<LocationSource> { AndroidLocationSource(androidContext(), get()) }
     single<PressureSource> { AndroidPressureSource(androidContext(), get()) }
     single<BatteryLevelSource> { AndroidBatteryLevelSource(androidContext()) }
