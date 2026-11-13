@@ -5,17 +5,18 @@ import android.os.StrictMode
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.edit
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.source.LocationSource
 import com.ridecomp.platform.location.AndroidLocationSource
 import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.component.SwitchRow
 import java.util.concurrent.Executors
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.koin.android.ext.koin.androidContext
 import org.koin.compose.koinInject
 import org.koin.core.module.Module
@@ -63,17 +64,14 @@ object DevTools {
     @Composable
     fun DeveloperScreen(modifier: Modifier = Modifier) {
         val settings = koinInject<DeveloperSettings>()
-        var isSimulating by remember { mutableStateOf(settings.isSimulatingGps) }
+        val isSimulating by settings.isSimulatingGpsFlow.collectAsStateWithLifecycle()
         ScreenScaffold(modifier = modifier, title = stringResource(R.string.developer_title)) {
             Column {
                 SwitchRow(
                     label = stringResource(R.string.developer_simulate_gps),
                     description = stringResource(R.string.developer_simulate_gps_description),
                     isChecked = isSimulating,
-                    onCheckedChange = { checked ->
-                        isSimulating = checked
-                        settings.isSimulatingGps = checked
-                    },
+                    onCheckedChange = { checked -> settings.isSimulatingGps = checked },
                 )
             }
         }
@@ -90,8 +88,10 @@ class DeveloperSettings(context: Context) {
         context.applicationContext.getSharedPreferences(DevTools.PREFERENCES, Context.MODE_PRIVATE)
     }
 
-    @Volatile
-    private var isSimulating = false
+    private val simulating = MutableStateFlow(false)
+
+    /** Observed by the developer screen, so it shows the stored value once loaded. */
+    val isSimulatingGpsFlow: StateFlow<Boolean> = simulating.asStateFlow()
 
     /** Set once the switch is changed here: the initial load must not overwrite it. */
     @Volatile
@@ -100,15 +100,15 @@ class DeveloperSettings(context: Context) {
     init {
         io.execute {
             val stored = preferences.getBoolean(DevTools.KEY_SIMULATE_GPS, false)
-            if (!isChanged) isSimulating = stored
+            if (!isChanged) simulating.value = stored
         }
     }
 
     var isSimulatingGps: Boolean
-        get() = isSimulating
+        get() = simulating.value
         set(value) {
             isChanged = true
-            isSimulating = value
+            simulating.value = value
             io.execute { preferences.edit { putBoolean(DevTools.KEY_SIMULATE_GPS, value) } }
         }
 }
