@@ -3,6 +3,7 @@ package com.ridecomp.core.source
 import com.ridecomp.core.engine.recording.BatteryStatus
 import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RideAction
+import com.ridecomp.core.engine.safety.AccelSample
 import com.ridecomp.core.model.LocationFix
 import com.ridecomp.core.model.PressureReading
 import kotlinx.coroutines.flow.Flow
@@ -88,4 +89,12 @@ public data class PickedContact(val displayName: String, val phone: String) {
 public interface PickedContactReader {
     /** Reads the contact the picker returned as [uri]; null when it has no phone number. */
     public suspend fun read(uri: String): PickedContact?
+}
+
+/** Accelerometer magnitude for incident detection (12-FEATURE-SPECS §5.2). Collected only while recording. */
+public interface AccelerometerSource {
+    public val hasAccelerometer: Boolean
+
+    /** About 50 Hz while collected; the sensor listener is removed when collection stops (09 §1). */
+    public fun samples(): Flow<AccelSample>
 }
