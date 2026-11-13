@@ -6,13 +6,14 @@ import com.ridecomp.feature.ride.di.rideFeatureModule
 import com.ridecomp.feature.routes.di.routesFeatureModule
 import com.ridecomp.feature.sensors.di.sensorsFeatureModule
 import com.ridecomp.feature.settings.di.settingsFeatureModule
+import com.ridecomp.feature.training.di.trainingFeatureModule
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 /** App-level ViewModels. */
 val appModule = module {
-    viewModel { AppViewModel(get()) }
+    viewModel { AppViewModel(get(), get(), get()) }
 }
 
 /** Every Koin module of the app, wired once in the composition root (ARCH-02). */
@@ -24,6 +25,7 @@ val appModules: List<Module> = listOf(
     rideFeatureModule,
     historyFeatureModule,
     settingsFeatureModule,
+    trainingFeatureModule,
     sensorsFeatureModule,
     routesFeatureModule,
 )

@@ -51,6 +51,16 @@ interface ActivityDao {
     )
     fun observeTotalsSince(sinceMs: Long): Flow<PeriodTotalsRow>
 
+    /** Saved rides analyzed below [version], oldest first (D-67). */
+    @Query(
+        "SELECT * FROM ${DbNames.TABLE_ACTIVITIES} WHERE status = '${DbNames.ActivityStatus.FINISHED}' " +
+            "AND analysis_version < :version ORDER BY started_at ASC LIMIT :limit",
+    )
+    suspend fun getPendingAnalysis(version: Int, limit: Int): List<ActivityEntity>
+
+    @Query("UPDATE ${DbNames.TABLE_ACTIVITIES} SET analysis_version = :version WHERE id = :id")
+    suspend fun setAnalysisVersion(id: Long, version: Int)
+
     /** Deletes the ride; track points, events and laps follow through `ON DELETE CASCADE`. */
     @Query("DELETE FROM ${DbNames.TABLE_ACTIVITIES} WHERE id = :id")
     suspend fun deleteById(id: Long)

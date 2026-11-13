@@ -106,6 +106,13 @@ Spesifikasi detail fitur tambahan: `../12-FEATURE-SPECS.md`.
 
 **DoD:** PR dan segmen terdeteksi benar pada 3 ride uji di rute yang sama; grafik latihan konsisten setelah menambah/menghapus ride; kartu share tidak memuat awal/akhir rute saat opsi privasi aktif.
 
+## Fase 4G — Panduan pengguna (permintaan pemilik 2026-11-13; dikerjakan setelah fitur inti selesai)
+- [ ] TG.1 Pilihan level saat onboarding: **pemula / menengah / profesional**, dengan keterangan lama bersepeda; level menentukan seberapa banyak penjelasan yang ditampilkan.
+- [ ] TG.2 Panduan "cara pakai" untuk pengguna awam: apa itu & cara import GPX, menyambungkan sensor, backup & restore, export FIT/upload Strava, peta offline, segmen, rekor, beban latihan, keselamatan.
+- [ ] TG.3 Petunjuk kontekstual di layar terkait (kartu/tips yang bisa ditutup) + halaman Bantuan di Setelan; tanpa internet.
+
+**DoD:** pengguna baru (pemula) bisa menjelaskan & melakukan import GPX, sambung sensor, backup, dan export tanpa bantuan.
+
 ## Fase 5 — Strava API (opsional; hanya bila disetujui)
 - [ ] T5.0 Baca dokumentasi & changelog Strava terbaru; laporkan perbedaan dengan `04-INTEGRATIONS.md` §E.2.
 - [ ] T5.1 Layar setup: input Client ID/Secret + panduan membuat app API.

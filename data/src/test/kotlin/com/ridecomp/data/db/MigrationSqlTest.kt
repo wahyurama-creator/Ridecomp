@@ -77,6 +77,27 @@ class MigrationSqlTest {
     }
 
     @Test
+    fun `migration 5 to 6 adds the analysis version and matches the exported Phase 4 tables`() {
+        val executed = executedSql { RideCompMigrations.MIGRATION_5_6.migrate(it) }
+        val (alters, creates) = executed.partition { it.startsWith(ALTER) }
+
+        assertEquals(1, alters.size)
+        assertTrue(alters.single().contains("`analysis_version` INTEGER NOT NULL DEFAULT 0"))
+        val schema = File(SCHEMA_DIR, "6.json").readText()
+        assertTrue(schema.contains("\"columnName\": \"analysis_version\""))
+        assertEquals(
+            listOf(
+                DbNames.TABLE_BEST_EFFORTS,
+                DbNames.TABLE_SEGMENTS,
+                DbNames.TABLE_SEGMENT_POINTS,
+                DbNames.TABLE_SEGMENT_EFFORTS,
+                DbNames.TABLE_DAILY_TRAINING,
+            ).flatMap { exportedCreateSql(6, it) },
+            creates,
+        )
+    }
+
+    @Test
     fun `every schema version has a migration path`() {
         val versions = File(SCHEMA_DIR).listFiles().orEmpty().mapNotNull { it.nameWithoutExtension.toIntOrNull() }
 
@@ -86,6 +107,7 @@ class MigrationSqlTest {
 
     private companion object {
         const val CREATE = "CREATE"
+        const val ALTER = "ALTER"
         const val SCHEMA_DIR = "schemas/com.ridecomp.data.db.RideCompDatabase"
     }
 }

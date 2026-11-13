@@ -5,8 +5,10 @@ import com.ridecomp.core.engine.backup.BackupManifestCodec
 import com.ridecomp.core.engine.safety.IncidentManager
 import com.ridecomp.core.engine.sensors.BleScanner
 import com.ridecomp.core.engine.sensors.SensorRepository
+import com.ridecomp.core.repository.ActivityAnalysisRepository
 import com.ridecomp.core.repository.ActivityProfileRepository
 import com.ridecomp.core.repository.ActivityRepository
+import com.ridecomp.core.repository.BestEffortRepository
 import com.ridecomp.core.repository.IncidentRepository
 import com.ridecomp.core.repository.OfflineMapRepository
 import com.ridecomp.core.repository.ProfileRepository
@@ -26,6 +28,7 @@ import com.ridecomp.core.source.RideController
 import com.ridecomp.core.source.SafetyMessages
 import com.ridecomp.core.source.SmsGateway
 import com.ridecomp.core.testing.FakeAccelerometerSource
+import com.ridecomp.core.testing.FakeActivityAnalysisRepository
 import com.ridecomp.core.testing.FakeActivityProfileRepository
 import com.ridecomp.core.testing.FakeActivityRepository
 import com.ridecomp.core.testing.FakeAppRestarter
@@ -34,6 +37,7 @@ import com.ridecomp.core.testing.FakeBackupFiles
 import com.ridecomp.core.testing.FakeBackupManifestCodec
 import com.ridecomp.core.testing.FakeBackupStateRepository
 import com.ridecomp.core.testing.FakeBatteryLevelSource
+import com.ridecomp.core.testing.FakeBestEffortRepository
 import com.ridecomp.core.testing.FakeBleScanner
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeExportFileStore
@@ -79,6 +83,8 @@ import com.ridecomp.feature.settings.viewmodel.ProfileViewModel
 import com.ridecomp.feature.settings.viewmodel.RideSettingsViewModel
 import com.ridecomp.feature.settings.viewmodel.SafetyViewModel
 import com.ridecomp.feature.settings.viewmodel.SettingsViewModel
+import com.ridecomp.feature.training.viewmodel.NewRecordsViewModel
+import com.ridecomp.feature.training.viewmodel.RecordsViewModel
 import java.io.File
 import java.nio.file.Files
 import kotlin.test.AfterTest
@@ -134,6 +140,8 @@ class AppModulesTest {
         single<RouteRepository> { FakeRouteRepository() }
         single<GpxDocumentSource> { FakeGpxDocumentSource() }
         single<OfflineMapRepository> { FakeOfflineMapRepository() }
+        single<BestEffortRepository> { FakeBestEffortRepository(get()) }
+        single<ActivityAnalysisRepository> { FakeActivityAnalysisRepository(FakeActivityRepository()) }
         factory<LicenseTextReader> { LicenseTextReader { "" } }
     }
 
@@ -165,6 +173,8 @@ class AppModulesTest {
         assertNotNull(koin.get<SettingsViewModel>())
         assertNotNull(koin.get<OfflineMapsViewModel>())
         assertNotNull(koin.get<OssLicensesViewModel>())
+        assertNotNull(koin.get<RecordsViewModel>())
+        assertNotNull(koin.get<NewRecordsViewModel> { parametersOf(1L) })
         assertNotNull(koin.get<RideSettingsViewModel>())
         assertNotNull(koin.get<OnboardingViewModel>())
         assertNotNull(koin.get<HistoryViewModel>())

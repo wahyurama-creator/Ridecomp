@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="history_tab_activities">Aktivitas</string>
+    <string name="history_tab_records">Rekor</string>
     <string name="history_title">Riwayat</string>
     <string name="history_empty">Ride pertamamu akan muncul di sini, lengkap dengan statistik dan file FIT.</string>
     <string name="history_empty_action">MULAI RIDE PERTAMA</string>

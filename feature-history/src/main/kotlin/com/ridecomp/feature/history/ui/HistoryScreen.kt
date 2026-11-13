@@ -1,5 +1,6 @@
 package com.ridecomp.feature.history.ui
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,7 +18,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -43,6 +47,7 @@ import com.ridecomp.ui.component.BigButtonSize
 import com.ridecomp.ui.component.LinkText
 import com.ridecomp.ui.component.RideCompCard
 import com.ridecomp.ui.component.ScreenScaffold
+import com.ridecomp.ui.component.SegmentedTabs
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
 import com.ridecomp.ui.theme.RideCompDimens
@@ -53,6 +58,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.time.format.TextStyle
 import java.time.temporal.ChronoUnit
+import kotlinx.collections.immutable.toImmutableList
 import org.koin.androidx.compose.koinViewModel
 
 /** Loads the next page when this many rows remain below the visible ones. */
@@ -65,6 +71,7 @@ fun HistoryRoute(
     onOpenActivity: (Long) -> Unit,
     modifier: Modifier = Modifier,
     onRestore: () -> Unit = {},
+    recordsContent: (@Composable () -> Unit)? = null,
     viewModel: HistoryViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -74,13 +81,20 @@ fun HistoryRoute(
         onOpenActivity = onOpenActivity,
         onLoadMore = { viewModel.onEvent(HistoryUiEvent.LoadMore) },
         onRestore = onRestore,
+        recordsContent = recordsContent,
         modifier = modifier,
     )
 }
 
+/** Tabs of History (13-UI-SCREENS #11); Segments and Training arrive with T4.2 and T4.4. */
+private enum class HistoryTab(@param:StringRes val titleRes: Int) {
+    ACTIVITIES(R.string.history_tab_activities),
+    RECORDS(R.string.history_tab_records),
+}
+
 /**
- * The Rekor · Segmen · Latihan tabs of the design arrive with Phase 4; until then the list has no tabs
- * (CLAUDE.md: no features of a later phase, D-57).
+ * History with the design's tabs. [recordsContent] comes from the training feature through the app (feature
+ * modules never depend on each other, ARCH-02); without it the tabs are hidden.
  */
 @Composable
 fun HistoryScreen(
@@ -90,33 +104,61 @@ fun HistoryScreen(
     onLoadMore: () -> Unit,
     modifier: Modifier = Modifier,
     onRestore: () -> Unit = {},
+    recordsContent: (@Composable () -> Unit)? = null,
 ) {
+    var tab by rememberSaveable { mutableStateOf(HistoryTab.ACTIVITIES) }
     ScreenScaffold(modifier = modifier, title = stringResource(R.string.history_title)) {
-        if (state.isLoaded && state.rides.isEmpty()) {
-            EmptyHistory(onStartRide, onRestore)
-        } else {
-            val listState = rememberLazyListState()
-            val isNearEnd by remember {
-                derivedStateOf {
-                    val last = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-                    last >= listState.layoutInfo.totalItemsCount - LOAD_MORE_THRESHOLD
-                }
-            }
-            LaunchedEffect(isNearEnd, state.rides.size) { if (isNearEnd && state.hasMore) onLoadMore() }
-            val formatter = remember(state.unitSystem) { UnitFormatter(state.unitSystem) }
-            LazyColumn(
-                state = listState,
-                contentPadding = PaddingValues(
+        if (recordsContent != null) {
+            SegmentedTabs(
+                tabs = HistoryTab.entries.map { stringResource(it.titleRes) }.toImmutableList(),
+                selectedIndex = tab.ordinal,
+                onSelect = { tab = HistoryTab.entries[it] },
+                modifier = Modifier.padding(
                     start = RideCompDimens.screenPaddingHorizontal,
                     end = RideCompDimens.screenPaddingHorizontal,
-                    bottom = RideCompDimens.screenPaddingBottom,
+                    bottom = RideCompDimens.cardGap,
                 ),
-                verticalArrangement = Arrangement.spacedBy(RideCompDimens.cardGap),
-            ) {
-                item { MonthCard(state.month, formatter) }
-                items(state.rides, key = { it.id }) { ride ->
-                    ActivityCard(ride, formatter, state.nowMs, onClick = { onOpenActivity(ride.id) })
-                }
+            )
+        }
+        when (tab) {
+            HistoryTab.ACTIVITIES -> ActivitiesTab(state, onStartRide, onOpenActivity, onLoadMore, onRestore)
+            HistoryTab.RECORDS -> recordsContent?.invoke()
+        }
+    }
+}
+
+@Composable
+private fun ActivitiesTab(
+    state: HistoryUiState,
+    onStartRide: () -> Unit,
+    onOpenActivity: (Long) -> Unit,
+    onLoadMore: () -> Unit,
+    onRestore: () -> Unit,
+) {
+    if (state.isLoaded && state.rides.isEmpty()) {
+        EmptyHistory(onStartRide, onRestore)
+    } else {
+        val listState = rememberLazyListState()
+        val isNearEnd by remember {
+            derivedStateOf {
+                val last = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+                last >= listState.layoutInfo.totalItemsCount - LOAD_MORE_THRESHOLD
+            }
+        }
+        LaunchedEffect(isNearEnd, state.rides.size) { if (isNearEnd && state.hasMore) onLoadMore() }
+        val formatter = remember(state.unitSystem) { UnitFormatter(state.unitSystem) }
+        LazyColumn(
+            state = listState,
+            contentPadding = PaddingValues(
+                start = RideCompDimens.screenPaddingHorizontal,
+                end = RideCompDimens.screenPaddingHorizontal,
+                bottom = RideCompDimens.screenPaddingBottom,
+            ),
+            verticalArrangement = Arrangement.spacedBy(RideCompDimens.cardGap),
+        ) {
+            item { MonthCard(state.month, formatter) }
+            items(state.rides, key = { it.id }) { ride ->
+                ActivityCard(ride, formatter, state.nowMs, onClick = { onOpenActivity(ride.id) })
             }
         }
     }
