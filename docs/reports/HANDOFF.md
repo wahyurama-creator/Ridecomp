@@ -15,7 +15,9 @@
 - **Implementasi desain canvas (13-UI-SCREENS) — prioritas pemilik sebelum peta offline:**
   - Selesai & di-merge: U0 design system (D-54), U1a layar ride (D-55), U1b Home/Pre-ride/Cari GPS (D-56), U1c Ringkasan/Riwayat/Detail (D-57), U1d onboarding & profil (D-58), U1e Setelan & editor halaman data (D-59), U2a Sensor (D-60), U2b Keselamatan & insiden (D-61), U2c Backup (D-62), U3a tanjakan/belokan/halaman peta (D-63). Diuji di realme RMX3830 kecuali onboarding (butuh hapus data app) dan hitung mundur insiden (akan mengirim SMS nyata).
   - #7/#12/#26 dengan peta bertile: selesai bersama T3.3–T3.5. Layar Fase 4 (#17, #20, #21, kartu PR, tab Rekor/Segmen/Latihan) dikerjakan bersama fiturnya.
-- Setelah itu: laporan Fase 3, scan OSV (`scripts/osv-scan.ps1`), lalu Fase 4.
+- **Akhir Fase 3:** laporan `docs/reports/T3-phase3-route-navigation.md` (menunggu review pemilik); OSV `security/phase3-osv-scan.txt` (0 temuan di APK; 14 High/Critical hanya tool build, sama dengan Fase 2); `org.json` (test) diperbarui ke 20260814; threat model §E ditambah GPX & PMTiles. `pwsh` tidak ada di Mac: scan dijalankan dengan port Python dari logika `osv-scan.ps1` (tidak di-commit).
+- **Menunggu keputusan pemilik:** layar "Lisensi open source" (BSD-2 MapLibre + Apache NOTICE) sebelum rilis; MobSF & NVD API key; uji lapangan DoD Fase 3 (L7, peta di mode pesawat).
+- Berikutnya: Fase 4 (`docs/06-ROADMAP.md`).
 
 ## Yang perlu ditinjau pemilik
 - D-41: enkripsi backup per segmen di atas AES-GCM.
