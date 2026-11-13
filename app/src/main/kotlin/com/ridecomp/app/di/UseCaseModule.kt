@@ -7,6 +7,7 @@ import com.ridecomp.core.usecase.CompleteOnboardingUseCase
 import com.ridecomp.core.usecase.CreateBackupUseCase
 import com.ridecomp.core.usecase.DeleteActivityProfileUseCase
 import com.ridecomp.core.usecase.DeleteActivityUseCase
+import com.ridecomp.core.usecase.DeleteRouteUseCase
 import com.ridecomp.core.usecase.DuplicateActivityProfileUseCase
 import com.ridecomp.core.usecase.EstimateHrMaxUseCase
 import com.ridecomp.core.usecase.ExportActivityUseCase
@@ -18,8 +19,10 @@ import com.ridecomp.core.usecase.ForgetSensorUseCase
 import com.ridecomp.core.usecase.GetLapsUseCase
 import com.ridecomp.core.usecase.GetRecoverableRideUseCase
 import com.ridecomp.core.usecase.GetRideProfileUseCase
+import com.ridecomp.core.usecase.GetRoutePointsUseCase
 import com.ridecomp.core.usecase.HandleRecoveredRideUseCase
 import com.ridecomp.core.usecase.HasProfileUseCase
+import com.ridecomp.core.usecase.ImportGpxUseCase
 import com.ridecomp.core.usecase.LoadRideChartUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfileUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
@@ -35,6 +38,8 @@ import com.ridecomp.core.usecase.ObserveOnboardingDoneUseCase
 import com.ridecomp.core.usecase.ObserveProfileChoiceUseCase
 import com.ridecomp.core.usecase.ObserveProfileUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
+import com.ridecomp.core.usecase.ObserveRouteUseCase
+import com.ridecomp.core.usecase.ObserveRoutesUseCase
 import com.ridecomp.core.usecase.ObserveSafetyUseCase
 import com.ridecomp.core.usecase.ObserveSavedSensorsUseCase
 import com.ridecomp.core.usecase.PairSensorUseCase
@@ -44,9 +49,11 @@ import com.ridecomp.core.usecase.ReadBackupSummaryUseCase
 import com.ridecomp.core.usecase.ReadBatteryUseCase
 import com.ridecomp.core.usecase.RemoveEmergencyContactUseCase
 import com.ridecomp.core.usecase.RenameActivityUseCase
+import com.ridecomp.core.usecase.RenameRouteUseCase
 import com.ridecomp.core.usecase.ResetDataPagesUseCase
 import com.ridecomp.core.usecase.RestartAfterRestoreUseCase
 import com.ridecomp.core.usecase.RestoreBackupUseCase
+import com.ridecomp.core.usecase.ReverseRouteUseCase
 import com.ridecomp.core.usecase.SaveActivityFileUseCase
 import com.ridecomp.core.usecase.SaveActivityProfileUseCase
 import com.ridecomp.core.usecase.SaveDataPagesUseCase
@@ -108,6 +115,13 @@ val useCaseModule = module {
     factory { RestartAfterRestoreUseCase(get()) }
     factory { SuggestBackupFileNameUseCase(get(), get()) }
     factory { ObserveLastBackupUseCase(get()) }
+    factory { ImportGpxUseCase(get(), get(), get(), get()) }
+    factory { ObserveRoutesUseCase(get()) }
+    factory { ObserveRouteUseCase(get()) }
+    factory { GetRoutePointsUseCase(get()) }
+    factory { RenameRouteUseCase(get()) }
+    factory { DeleteRouteUseCase(get()) }
+    factory { ReverseRouteUseCase(get(), get()) }
     factory { ExportActivityUseCase(get(), get()) }
     factory { ShareActivityFileUseCase(get(), get()) }
     factory { SaveActivityFileUseCase(get(), get()) }

@@ -15,6 +15,7 @@ import com.ridecomp.core.source.AppRestarter
 import com.ridecomp.core.source.BatteryLevelSource
 import com.ridecomp.core.source.Clock
 import com.ridecomp.core.source.DispatcherProvider
+import com.ridecomp.core.source.GpxDocumentSource
 import com.ridecomp.core.source.IdGenerator
 import com.ridecomp.core.source.LocationSource
 import com.ridecomp.core.source.Logger
@@ -40,6 +41,7 @@ import com.ridecomp.platform.device.AndroidRideNameProvider
 import com.ridecomp.platform.device.UuidIdGenerator
 import com.ridecomp.platform.location.AndroidLocationSource
 import com.ridecomp.platform.location.AndroidPressureSource
+import com.ridecomp.platform.route.AndroidGpxDocumentSource
 import com.ridecomp.platform.safety.AndroidAccelerometerSource
 import com.ridecomp.platform.safety.AndroidPickedContactReader
 import com.ridecomp.platform.safety.AndroidSafetyMessages
@@ -78,6 +80,7 @@ val platformModule = module {
     single<BackupFiles> { AndroidBackupFiles(androidContext()) }
     single<BackupManifestCodec> { JsonBackupManifestCodec() }
     single<AppRestarter> { AndroidAppRestarter(androidContext()) }
+    single<GpxDocumentSource> { AndroidGpxDocumentSource(androidContext()) }
     single<RideController> { ServiceRideController(androidContext(), get()) }
     factory { RecordingSession(get(), get(), get(), get()) }
 }

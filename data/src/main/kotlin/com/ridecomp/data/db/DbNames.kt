@@ -14,6 +14,10 @@ object DbNames {
     const val TABLE_ACTIVITY_PROFILES = "activity_profiles"
     const val TABLE_EMERGENCY_CONTACTS = "emergency_contacts"
     const val TABLE_INCIDENTS = "incidents"
+    const val TABLE_ROUTES = "routes"
+    const val TABLE_ROUTE_POINTS = "route_points"
+    const val TABLE_ROUTE_CLIMBS = "route_climbs"
+    const val TABLE_ROUTE_TURNS = "route_turns"
 
     /** The profile table always holds exactly one row with this id. */
     const val SINGLE_PROFILE_ID = 1

@@ -1,5 +1,8 @@
 package com.ridecomp.core.repository
 
+import com.ridecomp.core.engine.route.NewRoute
+import com.ridecomp.core.engine.route.Route
+import com.ridecomp.core.engine.route.RoutePoint
 import com.ridecomp.core.model.ActivityProfile
 import com.ridecomp.core.model.DataPagesLayout
 import com.ridecomp.core.model.EmergencyContact
@@ -85,4 +88,20 @@ public interface IncidentRepository {
     public suspend fun save(incident: IncidentRecord): Long
 
     public suspend fun getForActivity(activityId: Long): List<IncidentRecord>
+}
+
+/** Imported routes and their points (05-DATA-MODEL `routes`, `route_points`). */
+public interface RouteRepository {
+    public fun observeAll(): Flow<List<Route>>
+
+    public fun observe(id: Long): Flow<Route?>
+
+    public suspend fun getPoints(id: Long): List<RoutePoint>
+
+    /** Saves route and points in one transaction; returns the id. */
+    public suspend fun save(route: NewRoute): Long
+
+    public suspend fun rename(id: Long, name: String)
+
+    public suspend fun delete(id: Long)
 }

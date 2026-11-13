@@ -14,6 +14,7 @@ import com.ridecomp.data.db.dao.EventDao
 import com.ridecomp.data.db.dao.IncidentDao
 import com.ridecomp.data.db.dao.LapDao
 import com.ridecomp.data.db.dao.ProfileDao
+import com.ridecomp.data.db.dao.RouteDao
 import com.ridecomp.data.db.dao.SensorDao
 import com.ridecomp.data.db.dao.SettingsDao
 import com.ridecomp.data.db.dao.TrackPointDao
@@ -24,6 +25,10 @@ import com.ridecomp.data.db.entity.EventEntity
 import com.ridecomp.data.db.entity.IncidentEntity
 import com.ridecomp.data.db.entity.LapEntity
 import com.ridecomp.data.db.entity.ProfileEntity
+import com.ridecomp.data.db.entity.RouteClimbEntity
+import com.ridecomp.data.db.entity.RouteEntity
+import com.ridecomp.data.db.entity.RoutePointEntity
+import com.ridecomp.data.db.entity.RouteTurnEntity
 import com.ridecomp.data.db.entity.SensorEntity
 import com.ridecomp.data.db.entity.SettingEntity
 import com.ridecomp.data.db.entity.TrackPointEntity
@@ -44,6 +49,10 @@ import com.ridecomp.data.db.entity.TrackPointEntity
         ActivityProfileEntity::class,
         EmergencyContactEntity::class,
         IncidentEntity::class,
+        RouteEntity::class,
+        RoutePointEntity::class,
+        RouteClimbEntity::class,
+        RouteTurnEntity::class,
     ],
     version = RideCompDatabase.VERSION,
     exportSchema = true,
@@ -69,8 +78,10 @@ abstract class RideCompDatabase : RoomDatabase() {
 
     abstract fun incidentDao(): IncidentDao
 
+    abstract fun routeDao(): RouteDao
+
     companion object {
-        const val VERSION = 4
+        const val VERSION = 5
 
         /**
          * Builds the database in internal storage (SEC-STO-01). Destructive migration is never enabled:
@@ -144,7 +155,42 @@ object RideCompMigrations {
         }
     }
 
-    val ALL: List<Migration> = listOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+    /** v5: imported routes, their points, climbs and turns (T3.1, T3.11, T3.12). */
+    val MIGRATION_4_5: Migration = object : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            val cascade = "REFERENCES `${DbNames.TABLE_ROUTES}`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )"
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `${DbNames.TABLE_ROUTES}` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `source_file` TEXT, " +
+                    "`distance_m` REAL NOT NULL, `ascent_m` REAL NOT NULL, `created_at` INTEGER NOT NULL)",
+            )
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `${DbNames.TABLE_ROUTE_POINTS}` (" +
+                    "`route_id` INTEGER NOT NULL, `seq` INTEGER NOT NULL, `lat` REAL NOT NULL, `lon` REAL NOT NULL, " +
+                    "`ele` REAL, `cum_dist_m` REAL NOT NULL, PRIMARY KEY(`route_id`, `seq`), " +
+                    "FOREIGN KEY(`route_id`) $cascade",
+            )
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `${DbNames.TABLE_ROUTE_CLIMBS}` (" +
+                    "`route_id` INTEGER NOT NULL, `idx` INTEGER NOT NULL, `start_dist_m` REAL NOT NULL, " +
+                    "`end_dist_m` REAL NOT NULL, `length_m` REAL NOT NULL, `gain_m` REAL NOT NULL, " +
+                    "`avg_grade` REAL NOT NULL, `max_grade` REAL NOT NULL, `grade_profile_json` TEXT NOT NULL, " +
+                    "PRIMARY KEY(`route_id`, `idx`), FOREIGN KEY(`route_id`) $cascade",
+            )
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `${DbNames.TABLE_ROUTE_TURNS}` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `route_id` INTEGER NOT NULL, " +
+                    "`dist_m` REAL NOT NULL, `angle_deg` REAL NOT NULL, `direction` TEXT NOT NULL, " +
+                    "`severity` TEXT NOT NULL, `source` TEXT NOT NULL, FOREIGN KEY(`route_id`) $cascade",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_route_turns_route_id_dist_m` " +
+                    "ON `${DbNames.TABLE_ROUTE_TURNS}` (`route_id`, `dist_m`)",
+            )
+        }
+    }
+
+    val ALL: List<Migration> = listOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
 }
 
 /** New installs get the built-in profiles too (existing ones get them from MIGRATION_2_3). */

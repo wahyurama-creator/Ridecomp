@@ -9,6 +9,7 @@ import com.ridecomp.core.repository.ActivityProfileRepository
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.IncidentRepository
 import com.ridecomp.core.repository.ProfileRepository
+import com.ridecomp.core.repository.RouteRepository
 import com.ridecomp.core.repository.SafetyRepository
 import com.ridecomp.core.repository.SettingsRepository
 import com.ridecomp.core.source.AccelerometerSource
@@ -16,6 +17,7 @@ import com.ridecomp.core.source.AppRestarter
 import com.ridecomp.core.source.BatteryLevelSource
 import com.ridecomp.core.source.Clock
 import com.ridecomp.core.source.DispatcherProvider
+import com.ridecomp.core.source.GpxDocumentSource
 import com.ridecomp.core.source.LocationSource
 import com.ridecomp.core.source.Logger
 import com.ridecomp.core.source.PickedContactReader
@@ -35,11 +37,13 @@ import com.ridecomp.core.testing.FakeBleScanner
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeExportFileStore
 import com.ridecomp.core.testing.FakeExportedFileHandler
+import com.ridecomp.core.testing.FakeGpxDocumentSource
 import com.ridecomp.core.testing.FakeIncidentRepository
 import com.ridecomp.core.testing.FakeLocationSource
 import com.ridecomp.core.testing.FakePickedContactReader
 import com.ridecomp.core.testing.FakeProfileRepository
 import com.ridecomp.core.testing.FakeRideController
+import com.ridecomp.core.testing.FakeRouteRepository
 import com.ridecomp.core.testing.FakeSafetyMessages
 import com.ridecomp.core.testing.FakeSafetyRepository
 import com.ridecomp.core.testing.FakeSensorRepository
@@ -61,6 +65,8 @@ import com.ridecomp.feature.ride.viewmodel.HomeViewModel
 import com.ridecomp.feature.ride.viewmodel.PreRideViewModel
 import com.ridecomp.feature.ride.viewmodel.RideViewModel
 import com.ridecomp.feature.ride.viewmodel.SummaryViewModel
+import com.ridecomp.feature.routes.viewmodel.RouteDetailViewModel
+import com.ridecomp.feature.routes.viewmodel.RoutesViewModel
 import com.ridecomp.feature.sensors.viewmodel.SensorsViewModel
 import com.ridecomp.feature.settings.viewmodel.BackupViewModel
 import com.ridecomp.feature.settings.viewmodel.OnboardingViewModel
@@ -119,6 +125,8 @@ class AppModulesTest {
         single<BackupStateRepository> { FakeBackupStateRepository() }
         single<BackupManifestCodec> { FakeBackupManifestCodec() }
         single<AppRestarter> { FakeAppRestarter() }
+        single<RouteRepository> { FakeRouteRepository() }
+        single<GpxDocumentSource> { FakeGpxDocumentSource() }
     }
 
     @BeforeTest
@@ -156,6 +164,8 @@ class AppModulesTest {
         assertNotNull(koin.get<ActivityProfilesViewModel>())
         assertNotNull(koin.get<SafetyViewModel>())
         assertNotNull(koin.get<BackupViewModel>())
+        assertNotNull(koin.get<RoutesViewModel>())
+        assertNotNull(koin.get<RouteDetailViewModel> { parametersOf(1L) })
         assertNotNull(koin.get<IncidentManager>())
         assertNotNull(koin.get<ActivityProfileEditorViewModel> { parametersOf(1L) })
     }
