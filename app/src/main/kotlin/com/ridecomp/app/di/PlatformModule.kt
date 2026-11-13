@@ -9,6 +9,7 @@ import com.ridecomp.core.engine.sensors.SensorConnector
 import com.ridecomp.core.engine.sensors.SensorRepository
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.ProfileRepository
+import com.ridecomp.core.repository.RouteRepository
 import com.ridecomp.core.repository.SettingsRepository
 import com.ridecomp.core.source.AccelerometerSource
 import com.ridecomp.core.source.AppRestarter
@@ -102,6 +103,7 @@ class KoinRecordingDependencies(private val koin: Koin) : RecordingDependencies 
     override val getRideProfile get() = koin.get<GetRideProfileUseCase>()
     override val incidentManager get() = koin.get<IncidentManager>()
     override val accelerometerSource get() = koin.get<AccelerometerSource>()
+    override val routeRepository get() = koin.get<RouteRepository>()
     override val sensorRepository get() = koin.get<SensorRepository>()
     override val sensorConnector get() = koin.get<SensorConnector>()
 

@@ -62,6 +62,7 @@ public class FakeActivityRepository : ActivityRepository {
                 totals = RideTotals(),
                 lastCheckpointAtMs = activity.startedAtMs,
                 profileId = activity.profileId,
+                routeId = activity.routeId,
             ),
         )
         return id

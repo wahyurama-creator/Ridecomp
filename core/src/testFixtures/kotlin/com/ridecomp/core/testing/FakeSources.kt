@@ -27,8 +27,12 @@ public class FakeRideController : RideController {
     public var startedProfileId: Long? = null
         private set
 
-    override fun start(profileId: Long?) {
+    public var startedRouteId: Long? = null
+        private set
+
+    override fun start(profileId: Long?, routeId: Long?) {
         startedProfileId = profileId
+        startedRouteId = routeId
         commands += START
     }
 

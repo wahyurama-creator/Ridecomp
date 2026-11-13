@@ -18,9 +18,9 @@ import com.ridecomp.core.usecase.ObserveRoutesUseCase
 import com.ridecomp.core.usecase.RenameRouteUseCase
 import com.ridecomp.core.usecase.ReverseRouteUseCase
 import com.ridecomp.core.util.Outcome
+import com.ridecomp.core.util.downsample
 import com.ridecomp.ui.component.ChartValue
 import com.ridecomp.ui.udf.UdfViewModel
-import kotlin.math.ceil
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -161,8 +161,7 @@ internal fun List<RoutePoint>.elevationChart(units: UnitSystem): ImmutableList<C
     val isMetric = units == UnitSystem.METRIC
     val distanceDivisor = if (isMetric) Units.METERS_PER_KM else Units.METERS_PER_MILE
     val elevationDivisor = if (isMetric) 1.0 else Units.METERS_PER_FOOT
-    val stride = ceil(size.toDouble() / ActivityConfig.CHART_MAX_POINTS).toInt().coerceAtLeast(1)
-    return filterIndexed { index, _ -> index % stride == 0 }
+    return downsample(ActivityConfig.CHART_MAX_POINTS)
         .map { ChartValue(it.cumDistanceM / distanceDivisor, it.elevationM?.div(elevationDivisor)) }
         .toImmutableList()
 }

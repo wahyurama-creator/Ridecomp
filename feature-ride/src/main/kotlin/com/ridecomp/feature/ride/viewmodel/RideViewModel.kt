@@ -7,6 +7,8 @@ import com.ridecomp.core.engine.safety.IncidentAction
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RideStatus
 import com.ridecomp.core.model.withProfile
+import com.ridecomp.core.source.DispatcherProvider
+import com.ridecomp.core.usecase.GetRoutePointsUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveDataPagesUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
@@ -17,6 +19,7 @@ import com.ridecomp.core.usecase.PerformRideActionUseCase
 import com.ridecomp.feature.ride.model.DataPage
 import com.ridecomp.feature.ride.model.DefaultDataPages
 import com.ridecomp.feature.ride.model.RideMetricKeys
+import com.ridecomp.feature.ride.model.RouteView
 import com.ridecomp.feature.ride.model.toDataPages
 import com.ridecomp.ui.udf.UdfViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -25,9 +28,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 sealed interface RideEffect {
     /** Ride finished: show the summary (02-DESIGN §3.6). */
@@ -50,10 +56,12 @@ data class RideUseCases(
     val observeSafety: ObserveSafetyUseCase,
     val performAction: PerformRideActionUseCase,
     val performIncident: PerformIncidentActionUseCase,
+    val getRoutePoints: GetRoutePointsUseCase,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class RideViewModel(private val useCases: RideUseCases) : UdfViewModel<Unit, RideAction, RideEffect>(Unit) {
+class RideViewModel(private val useCases: RideUseCases, private val dispatchers: DispatcherProvider) :
+    UdfViewModel<Unit, RideAction, RideEffect>(Unit) {
     val liveRide: StateFlow<LiveRide> = useCases.observeLive()
 
     /** Manual SOS is offered only when someone can be alerted (12-FEATURE-SPECS §5.3). */
@@ -73,6 +81,22 @@ class RideViewModel(private val useCases: RideUseCases) : UdfViewModel<Unit, Rid
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), RideSettings())
 
     /** The ride profile's pages (T2.13), else the general pages (T2.8), else the defaults. */
+    /** The followed route, simplified for drawing (T3.8, T3.9); null without a route. */
+    val route: StateFlow<RouteView?> = liveRide
+        .map { it.routeId }
+        .distinctUntilChanged()
+        .flatMapLatest { id ->
+            if (id == null) {
+                flowOf<RouteView?>(null)
+            } else {
+                flow {
+                    val points = useCases.getRoutePoints(id)
+                    emit(withContext(dispatchers.default) { RouteView.of(points, settings.value.unitSystem) })
+                }
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), null)
+
     val pages: StateFlow<List<DataPage>> = liveRide
         .map { it.profileId }
         .distinctUntilChanged()

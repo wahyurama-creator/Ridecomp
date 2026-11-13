@@ -15,6 +15,8 @@ public data class NewActivity(
     val startedAtMs: Long,
     /** Activity profile used (12-FEATURE-SPECS §4); null for rides recorded before profiles. */
     val profileId: Long? = null,
+    /** Route followed during the ride (T3.6). */
+    val routeId: Long? = null,
 )
 
 /** Rides and their track, events and laps (05-DATA-MODEL §1). Implemented in :data (ARCH-03). */

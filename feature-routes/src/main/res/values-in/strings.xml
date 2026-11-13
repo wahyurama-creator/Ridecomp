@@ -21,6 +21,7 @@
     <string name="route_name">Nama rute</string>
     <string name="route_rename">Simpan nama</string>
     <string name="route_reverse">Balik arah</string>
+    <string name="route_ride">Ride rute ini</string>
     <string name="route_reversed_name">%1$s (balik arah)</string>
     <string name="route_delete">Hapus rute</string>
     <string name="route_delete_title">Hapus %1$s?</string>

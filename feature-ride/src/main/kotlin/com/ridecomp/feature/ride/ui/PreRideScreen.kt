@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -23,6 +24,7 @@ import com.ridecomp.ui.component.BigButton
 import com.ridecomp.ui.component.BigButtonStyle
 import com.ridecomp.ui.component.Choice
 import com.ridecomp.ui.component.ChoiceChips
+import com.ridecomp.ui.component.ListRow
 import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
@@ -32,10 +34,17 @@ import com.ridecomp.ui.udf.ObserveEffects
 import kotlin.math.roundToInt
 import kotlinx.collections.immutable.toImmutableList
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 /** Pre-ride check (02-DESIGN §3.3): GPS fix, battery; START or start without waiting. */
 @Composable
-fun PreRideRoute(onStarted: () -> Unit, modifier: Modifier = Modifier, viewModel: PreRideViewModel = koinViewModel()) {
+fun PreRideRoute(
+    onStarted: () -> Unit,
+    modifier: Modifier = Modifier,
+    /** Route chosen in the route detail ("Ride this route"), or null. */
+    routeId: Long? = null,
+    viewModel: PreRideViewModel = koinViewModel(key = routeId?.toString()) { parametersOf(routeId) },
+) {
     val gps by viewModel.gpsStatus.collectAsStateWithLifecycle()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     ObserveEffects(viewModel.effects) { effect ->
@@ -60,6 +69,17 @@ fun PreRideScreen(
             verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingM),
         ) {
             ProfilePicker(state, onEvent)
+            state.route?.let { route ->
+                ListRow(
+                    title = stringResource(R.string.pre_ride_route, route.name),
+                    subtitle = stringResource(R.string.pre_ride_route_hint),
+                    trailing = {
+                        TextButton(onClick = { onEvent(PreRideUiEvent.ClearRoute) }) {
+                            Text(stringResource(R.string.pre_ride_route_clear))
+                        }
+                    },
+                )
+            }
             val colors = RideCompTheme.colors
             val (gpsText, gpsColor) = when (gps) {
                 GpsStatus.NoPermission -> stringResource(R.string.pre_ride_gps_no_permission) to colors.danger

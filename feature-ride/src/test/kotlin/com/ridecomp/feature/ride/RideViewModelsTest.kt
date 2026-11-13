@@ -18,9 +18,12 @@ import com.ridecomp.core.testing.FakeBatteryLevelSource
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeLocationSource
 import com.ridecomp.core.testing.FakeRideController
+import com.ridecomp.core.testing.FakeRouteRepository
 import com.ridecomp.core.testing.FakeSafetyRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
+import com.ridecomp.core.testing.TestDispatcherProvider
 import com.ridecomp.core.usecase.GetRecoverableRideUseCase
+import com.ridecomp.core.usecase.GetRoutePointsUseCase
 import com.ridecomp.core.usecase.GpsStatus
 import com.ridecomp.core.usecase.HandleRecoveredRideUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
@@ -32,6 +35,7 @@ import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
 import com.ridecomp.core.usecase.ObserveProfileChoiceUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
+import com.ridecomp.core.usecase.ObserveRouteUseCase
 import com.ridecomp.core.usecase.ObserveSafetyUseCase
 import com.ridecomp.core.usecase.PerformIncidentActionUseCase
 import com.ridecomp.core.usecase.PerformRideActionUseCase
@@ -50,6 +54,7 @@ import com.ridecomp.feature.ride.viewmodel.HomeUseCases
 import com.ridecomp.feature.ride.viewmodel.HomeViewModel
 import com.ridecomp.feature.ride.viewmodel.PreRideEffect
 import com.ridecomp.feature.ride.viewmodel.PreRideUiEvent
+import com.ridecomp.feature.ride.viewmodel.PreRideUseCases
 import com.ridecomp.feature.ride.viewmodel.PreRideViewModel
 import com.ridecomp.feature.ride.viewmodel.RideEffect
 import com.ridecomp.feature.ride.viewmodel.RideUseCases
@@ -131,11 +136,15 @@ class RideViewModelsTest {
     fun `pre ride start launches the ride with the chosen profile`() = runTest {
         val location = FakeLocationSource()
         val viewModel = PreRideViewModel(
-            ObserveGpsStatusUseCase(location),
-            ReadBatteryUseCase(FakeBatteryLevelSource()),
-            ObserveProfileChoiceUseCase(profiles),
-            SelectActivityProfileUseCase(profiles),
-            StartRideUseCase(controller),
+            routeId = null,
+            PreRideUseCases(
+                ObserveGpsStatusUseCase(location),
+                ReadBatteryUseCase(FakeBatteryLevelSource()),
+                ObserveProfileChoiceUseCase(profiles),
+                SelectActivityProfileUseCase(profiles),
+                ObserveRouteUseCase(FakeRouteRepository()),
+                StartRideUseCase(controller),
+            ),
         )
         assertEquals(ActivityKind.ROAD, viewModel.uiState.value.selected?.kind)
         viewModel.onEvent(PreRideUiEvent.SelectProfile(INDOOR_ID))
@@ -167,7 +176,9 @@ class RideViewModelsTest {
                 ObserveSafetyUseCase(safety),
                 PerformRideActionUseCase(controller),
                 PerformIncidentActionUseCase(controller),
+                GetRoutePointsUseCase(FakeRouteRepository()),
             ),
+            TestDispatcherProvider(UnconfinedTestDispatcher()),
         )
         // SOS only with the feature on and a contact (12-FEATURE-SPECS §5.3).
         viewModel.isSosAvailable.test {

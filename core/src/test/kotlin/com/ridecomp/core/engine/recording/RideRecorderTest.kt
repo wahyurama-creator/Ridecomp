@@ -2,6 +2,8 @@ package com.ridecomp.core.engine.recording
 
 import com.ridecomp.core.config.GpsConfig
 import com.ridecomp.core.engine.metrics.AltitudeSource
+import com.ridecomp.core.engine.route.GpxPoint
+import com.ridecomp.core.engine.route.RouteBuilder
 import com.ridecomp.core.model.BatteryMode
 import com.ridecomp.core.model.LocationFix
 import com.ridecomp.core.model.RideEventType
@@ -12,6 +14,7 @@ import com.ridecomp.core.util.Outcome
 import com.ridecomp.core.util.getOrNull
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -21,8 +24,11 @@ private const val METER_IN_LAT_DEG = 1.0 / 111_195.0
 private const val START_MS = 1_767_225_600_000L
 
 /** Drives a [RideRecorder] like the service would: one fix and one tick per second. */
-private class RideSimulator(settings: RideSettings = RideSettings(drinkIntervalMin = null, eatIntervalMin = null)) {
-    val recorder = RideRecorder(settings, AltitudeSource.GPS)
+private class RideSimulator(
+    settings: RideSettings = RideSettings(drinkIntervalMin = null, eatIntervalMin = null),
+    context: RideContext = RideContext(),
+) {
+    val recorder = RideRecorder(settings, AltitudeSource.GPS, context = context)
     var second = 0L
     var northM = 0.0
     val events = mutableListOf<RideEventType>()
@@ -57,6 +63,26 @@ private class RideSimulator(settings: RideSettings = RideSettings(drinkIntervalM
 }
 
 class RideRecorderTest {
+    @Test
+    fun `following a route reports distance to go and an off route event when the rider leaves it`() {
+        // Route: 1 km north from the start, then 1 km east. The rider keeps going north.
+        val north = (0..10).map { GpxPoint(-7.0 + it * 100 * METER_IN_LAT_DEG, 110.0, null) }
+        val east = (1..10).map { GpxPoint(north.last().latDeg, 110.0 + it * 100 * METER_IN_LAT_DEG, null) }
+        val route = RouteBuilder.build(north + east, "r", null, START_MS).points
+        val ride = RideSimulator(context = RideContext(routeId = 7, routePoints = route))
+        ride.action(RideAction.START)
+
+        ride.ride(seconds = 90, kmh = 20.0)
+        val onRoute = assertNotNull(ride.live().route)
+        assertFalse(onRoute.isOffRoute)
+        assertTrue(onRoute.distanceRemainingM in 1_450.0..1_550.0, "to go ${onRoute.distanceRemainingM}")
+        assertEquals(7, ride.live().routeId)
+
+        ride.ride(seconds = 120, kmh = 20.0)
+        assertTrue(RideEventType.OFF_ROUTE in ride.events)
+        assertTrue(assertNotNull(ride.live().route).isOffRoute)
+    }
+
     @Test
     fun `a ride with a traffic light auto pauses and resumes without hands`() {
         val sim = RideSimulator()

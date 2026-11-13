@@ -85,11 +85,11 @@ Spesifikasi detail fitur tambahan: `../12-FEATURE-SPECS.md`.
 - [ ] T3.3 **Ajukan pilihan sumber tile offline** (`04-INTEGRATIONS.md` §D) ke pemilik → implementasi MapLibre + atribusi.
 - [ ] T3.4 Manajer peta offline (unduh/impor area, hapus, ukuran).
 - [ ] T3.5 Halaman peta di layar ride: rute, posisi, jejak, north-up, follow mode.
-- [ ] T3.6 Route tracker: proyeksi ke rute, jarak tersisa, ETA, sisa tanjakan.
-- [ ] T3.7 Off-route & back-on-route alert (getar + suara + banner).
-- [ ] T3.8 Mode breadcrumb tanpa tile.
-- [ ] T3.9 Profil elevasi dengan penanda posisi di halaman tanjakan.
-- [ ] T3.10 Unit test: proyeksi titik ke polyline, rute bersilangan/berputar, off-route timing.
+- [x] T3.6 Route tracker: proyeksi ke rute, jarak tersisa, ETA, sisa tanjakan.
+- [x] T3.7 Off-route & back-on-route alert (getar + suara + banner).
+- [x] T3.8 Mode breadcrumb tanpa tile.
+- [x] T3.9 Profil elevasi dengan penanda posisi di halaman tanjakan.
+- [x] T3.10 Unit test: proyeksi titik ke polyline, rute bersilangan/berputar, off-route timing.
 - [ ] T3.11 `ClimbDetector` saat import + daftar tanjakan + halaman tanjakan ala ClimbPro + peringatan 500 m (§6).
 - [ ] T3.12 `TurnDetector` saat import + peringatan belokan 150/30 m + field "Belokan berikutnya" (§7).
 - [ ] T3.13 Unit test tanjakan & belokan dengan GPX referensi (belok 90°, hairpin, tikungan landai tanpa alert, noise GPS, rute tanpa elevasi).

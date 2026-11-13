@@ -45,6 +45,7 @@ fun RouteDetailRoute(
     routeId: Long,
     onOpenRoute: (Long) -> Unit,
     onDeleted: () -> Unit,
+    onRideRoute: (Long) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: RouteDetailViewModel = koinViewModel(key = routeId.toString()) { parametersOf(routeId) },
 ) {
@@ -55,22 +56,37 @@ fun RouteDetailRoute(
             RouteDetailEffect.Deleted -> onDeleted()
         }
     }
-    RouteDetailScreen(state = state, onEvent = viewModel::onEvent, modifier = modifier)
+    RouteDetailScreen(
+        state = state,
+        onEvent = viewModel::onEvent,
+        onRide = { onRideRoute(routeId) },
+        modifier = modifier,
+    )
 }
 
 @Composable
-fun RouteDetailScreen(state: RouteDetailUiState, onEvent: (RouteDetailUiEvent) -> Unit, modifier: Modifier = Modifier) {
+fun RouteDetailScreen(
+    state: RouteDetailUiState,
+    onEvent: (RouteDetailUiEvent) -> Unit,
+    onRide: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val route = state.route
     ScreenScaffold(modifier = modifier, title = route?.name ?: stringResource(R.string.routes_title)) {
         when {
             state.isMissing -> EmptyState(message = stringResource(R.string.route_missing))
-            route != null -> RouteContent(route, state, onEvent)
+            route != null -> RouteContent(route, state, onEvent, onRide)
         }
     }
 }
 
 @Composable
-private fun RouteContent(route: Route, state: RouteDetailUiState, onEvent: (RouteDetailUiEvent) -> Unit) {
+private fun RouteContent(
+    route: Route,
+    state: RouteDetailUiState,
+    onEvent: (RouteDetailUiEvent) -> Unit,
+    onRide: () -> Unit,
+) {
     val format = remember(state.unitSystem) { UnitFormatter(state.unitSystem) }
     var name by rememberSaveable(route.id) { mutableStateOf(route.name) }
     var isDeleteDialogShown by remember { mutableStateOf(false) }
@@ -79,6 +95,11 @@ private fun RouteContent(route: Route, state: RouteDetailUiState, onEvent: (Rout
         modifier = Modifier.verticalScroll(rememberScrollState()).padding(bottom = RideCompDimens.spacingL),
         verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingM),
     ) {
+        BigButton(
+            text = stringResource(R.string.route_ride),
+            onClick = onRide,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = RideCompDimens.spacingM),
+        )
         StatRow(stringResource(R.string.route_distance), "${format.distance(route.distanceM)} ${format.distanceUnit}")
         StatRow(stringResource(R.string.route_ascent), "${format.elevation(route.ascentM)} ${format.elevationUnit}")
         route.sourceLabel?.let { StatRow(stringResource(R.string.route_source), it) }
@@ -146,6 +167,7 @@ private fun RouteDetailPreview() {
         RouteDetailScreen(
             state = RouteDetailUiState(route = Route(1, "Kaliurang loop", "kaliurang.gpx", 42_300.0, 780.0, 0)),
             onEvent = {},
+            onRide = {},
         )
     }
 }

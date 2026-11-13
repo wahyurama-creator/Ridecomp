@@ -8,6 +8,9 @@ import com.ridecomp.core.engine.geo.GpsRejection
 import com.ridecomp.core.engine.metrics.AltitudeSource
 import com.ridecomp.core.engine.metrics.ElevationSnapshot
 import com.ridecomp.core.engine.metrics.ElevationTracker
+import com.ridecomp.core.engine.route.RouteFollower
+import com.ridecomp.core.engine.route.RoutePoint
+import com.ridecomp.core.engine.route.RouteProgress
 import com.ridecomp.core.engine.safety.IncidentState
 import com.ridecomp.core.engine.sensors.SensorReading
 import com.ridecomp.core.engine.sensors.SensorSnapshot
@@ -65,10 +68,22 @@ public data class LiveRide(
     val profileId: Long? = null,
     /** Incident countdown / alert state, merged in by the recording service (T2.16). */
     val incident: IncidentState = IncidentState.None,
+    /** Followed route (T3.6), null without a route or before the first fix. */
+    val route: RouteProgress? = null,
+    /** Current position for the breadcrumb page (fresh fix only); stays in memory, never logged. */
+    val latDeg: Double? = null,
+    val lonDeg: Double? = null,
+    val routeId: Long? = null,
 )
 
 /** Ride facts that do not change during the ride. */
-public data class RideContext(val profileId: Long? = null, val isGpsEnabled: Boolean = true)
+public data class RideContext(
+    val profileId: Long? = null,
+    val isGpsEnabled: Boolean = true,
+    val routeId: Long? = null,
+    /** Points of the followed route; tracking starts when there are at least two. */
+    val routePoints: List<RoutePoint> = emptyList(),
+)
 
 /** Result of a tick or an action: new state plus what must be persisted. */
 public data class RecorderOutput(
@@ -95,6 +110,7 @@ public class RideRecorder(
     private val context: RideContext = RideContext(),
 ) {
     private val metrics = RideMetricsAccumulator()
+    private val route = RouteFollower(context.routePoints)
     private val sensors = SensorRideMetrics(profile, ageYears)
     private var sensorSnapshot = SensorSnapshot()
     private var estimatedPowerW: Int? = null
@@ -222,6 +238,12 @@ public class RideRecorder(
         if (isGap && RideStateMachine.isActive(status)) pendingEvents += RideEvent(nowMs, RideEventType.GAP)
         lastTickMs = nowMs
         evaluateAutoPause(nowMs)
+        val isRiding = status == RideStatus.RECORDING || status == RideStatus.AUTO_PAUSED
+        val freshFix = metrics.latestFix?.takeIf { metrics.isFixFresh(nowMs) }
+        route.onSecond(isRiding, freshFix, nowMs, metrics.averageSpeedMps())?.let {
+            pendingEvents +=
+                RideEvent(nowMs, it)
+        }
         val elevationSnapshot = updateElevation(nowMs)
         estimatedPowerW = null
         if (status == RideStatus.RECORDING) {
@@ -398,6 +420,10 @@ public class RideRecorder(
             sensors = sensors.live(sensorSnapshot),
             isGpsEnabled = context.isGpsEnabled,
             profileId = context.profileId,
+            route = route.progress,
+            routeId = context.routeId,
+            latDeg = fix?.latDeg,
+            lonDeg = fix?.lonDeg,
         )
     }
 

@@ -2,6 +2,7 @@ package com.ridecomp.core.engine.recording
 
 import com.ridecomp.core.config.Units
 import com.ridecomp.core.engine.metrics.AltitudeSource
+import com.ridecomp.core.engine.route.RoutePoint
 import com.ridecomp.core.engine.sensors.SensorReading
 import com.ridecomp.core.model.Activity
 import com.ridecomp.core.model.ActivityStatus
@@ -29,6 +30,9 @@ public data class RideSetup(
     val profileId: Long? = null,
     /** False for Indoor: no GPS, speed and distance from the wheel sensor. */
     val isGpsEnabled: Boolean = true,
+    /** Followed route (T3.6); stored on the activity. */
+    val routeId: Long? = null,
+    val routePoints: List<RoutePoint> = emptyList(),
 )
 
 /** Why a session command could not run. */
@@ -71,7 +75,10 @@ public class RecordingSession(
         val output = newRecorder.handle(RideAction.START, nowMs)
         return output.mapErrorToSession().onSuccess { started ->
             recorder = newRecorder
-            activityId = repository.create(NewActivity(ids.newId(), names.defaultName(nowMs), nowMs, setup.profileId))
+            activityId =
+                repository.create(
+                    NewActivity(ids.newId(), names.defaultName(nowMs), nowMs, setup.profileId, setup.routeId),
+                )
             persist(started, nowMs)
         }
     }
@@ -192,8 +199,13 @@ public class RecordingSession(
         }
     }
 
-    private fun RideSetup.newRecorder() =
-        RideRecorder(settings, altitudeSource, profile, ageYears, RideContext(profileId, isGpsEnabled))
+    private fun RideSetup.newRecorder() = RideRecorder(
+        settings,
+        altitudeSource,
+        profile,
+        ageYears,
+        RideContext(profileId, isGpsEnabled, routeId, routePoints),
+    )
 
     private fun RideStatus.toActivityStatus(): ActivityStatus = when (this) {
         RideStatus.RECORDING, RideStatus.AUTO_PAUSED -> ActivityStatus.RECORDING

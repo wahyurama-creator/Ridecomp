@@ -6,6 +6,7 @@ import com.ridecomp.core.engine.sensors.SensorConnector
 import com.ridecomp.core.engine.sensors.SensorRepository
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.ProfileRepository
+import com.ridecomp.core.repository.RouteRepository
 import com.ridecomp.core.repository.SettingsRepository
 import com.ridecomp.core.source.AccelerometerSource
 import com.ridecomp.core.source.BatteryLevelSource
@@ -47,6 +48,9 @@ interface RecordingDependencies {
     /** Incident countdown and emergency SMS (single instance, T2.16). */
     val incidentManager: IncidentManager
     val accelerometerSource: AccelerometerSource
+
+    /** Points of the followed route (T3.6). */
+    val routeRepository: RouteRepository
 
     /** A new session per service instance. */
     fun newSession(): RecordingSession
