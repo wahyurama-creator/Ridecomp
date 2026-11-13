@@ -14,6 +14,9 @@ import com.ridecomp.core.engine.route.RoutePoint
 import com.ridecomp.core.engine.route.RouteProgress
 import com.ridecomp.core.engine.route.RouteTurn
 import com.ridecomp.core.engine.safety.IncidentState
+import com.ridecomp.core.engine.segments.LiveSegment
+import com.ridecomp.core.engine.segments.LiveSegmentFollower
+import com.ridecomp.core.engine.segments.LiveSegmentState
 import com.ridecomp.core.engine.sensors.SensorReading
 import com.ridecomp.core.engine.sensors.SensorSnapshot
 import com.ridecomp.core.model.BatteryMode
@@ -76,6 +79,8 @@ public data class LiveRide(
     val incident: IncidentState = IncidentState.None,
     /** Followed route (T3.6), null without a route or before the first fix. */
     val route: RouteProgress? = null,
+    /** Live personal segment (T4.3); null without segments nearby. */
+    val segment: LiveSegmentState? = null,
     /** Current position for the breadcrumb page (fresh fix only); stays in memory, never logged. */
     val latDeg: Double? = null,
     val lonDeg: Double? = null,
@@ -91,6 +96,8 @@ public data class RideContext(
     val routePoints: List<RoutePoint> = emptyList(),
     val routeClimbs: List<RouteClimb> = emptyList(),
     val routeTurns: List<RouteTurn> = emptyList(),
+    /** Personal segments with their records, for live segments (T4.3). */
+    val segments: List<LiveSegment> = emptyList(),
 )
 
 /** Result of a tick or an action: new state plus what must be persisted. */
@@ -119,6 +126,7 @@ public class RideRecorder(
 ) {
     private val metrics = RideMetricsAccumulator()
     private val route = RouteFollower(context.routePoints, context.routeClimbs, context.routeTurns)
+    private val segments = LiveSegmentFollower(context.segments)
     private val sensors = SensorRideMetrics(profile, ageYears)
     private var sensorSnapshot = SensorSnapshot()
     private var estimatedPowerW: Int? = null
@@ -132,13 +140,12 @@ public class RideRecorder(
             idlePromptMin = settings.idlePromptMin,
         ),
     )
-    private val reminders = ReminderScheduler(
+    private val reminders = RideReminders(
         mapOf(ReminderType.DRINK to settings.drinkIntervalMin, ReminderType.EAT to settings.eatIntervalMin),
     )
     private val battery = BatteryModePolicy(settings.isBatterySaverEnabled)
     private val pendingEvents = mutableListOf<RideEvent>()
     private var pendingBatteryChange: BatteryModeChange? = null
-    private var reminder: ActiveReminder? = null
     private var status = RideStatus.IDLE
     private var startedAtMs: Long? = null
     private var lastTickMs: Long? = null
@@ -227,8 +234,12 @@ public class RideRecorder(
                 closed += it
                 pendingEvents += RideEvent(nowMs, RideEventType.LAP)
             }
-            RideAction.ACK_REMINDER -> acknowledgeReminder(nowMs)
-            RideAction.SNOOZE_REMINDER -> snoozeReminder()
+            RideAction.ACK_REMINDER ->
+                if (reminders.acknowledge(metrics.movingMs)) {
+                    pendingEvents +=
+                        RideEvent(nowMs, RideEventType.REMINDER_ACK)
+                }
+            RideAction.SNOOZE_REMINDER -> reminders.snooze(metrics.movingMs)
             RideAction.KEEP_RIDING -> isIdlePromptDismissed = true
             RideAction.START, RideAction.PAUSE, RideAction.RESUME, RideAction.FINISH, RideAction.SAVE,
             RideAction.DISCARD,
@@ -248,13 +259,7 @@ public class RideRecorder(
         if (isGap && RideStateMachine.isActive(status)) pendingEvents += RideEvent(nowMs, RideEventType.GAP)
         lastTickMs = nowMs
         evaluateAutoPause(nowMs)
-        val isRiding = status == RideStatus.RECORDING || status == RideStatus.AUTO_PAUSED
-        val freshFix = metrics.latestFix?.takeIf { metrics.isFixFresh(nowMs) }
-        val speed = metrics.currentSpeedMps(nowMs) ?: 0.0
-        route.onSecond(isRiding, freshFix, nowMs, speed, metrics.averageSpeedMps())?.let {
-            pendingEvents +=
-                RideEvent(nowMs, it)
-        }
+        updateGuidance(nowMs)
         val elevationSnapshot = updateElevation(nowMs)
         estimatedPowerW = null
         if (status == RideStatus.RECORDING) {
@@ -271,10 +276,23 @@ public class RideRecorder(
                 pendingEvents += RideEvent(nowMs, RideEventType.LAP)
             }
         }
-        if (RideStateMachine.isActive(status)) updateReminders(nowMs)
+        if (RideStateMachine.isActive(status)) {
+            reminders.onTick(nowMs, metrics.movingMs)?.let { pendingEvents += RideEvent(nowMs, it) }
+        }
         val sample = buildSample(nowMs, elevationSnapshot)
         val batteryChange = pendingBatteryChange.also { pendingBatteryChange = null }
         return RecorderOutput(live(nowMs), drainEvents(), closed.toList(), sample, batteryChange)
+    }
+
+    /** Route following and live segments, from the fresh fix while riding. */
+    private fun updateGuidance(nowMs: Long) {
+        val isRiding = status == RideStatus.RECORDING || status == RideStatus.AUTO_PAUSED
+        val freshFix = metrics.latestFix?.takeIf { metrics.isFixFresh(nowMs) }
+        val speed = metrics.currentSpeedMps(nowMs) ?: 0.0
+        route.onSecond(isRiding, freshFix, nowMs, speed, metrics.averageSpeedMps())?.let {
+            pendingEvents += RideEvent(nowMs, it)
+        }
+        segments.onSecond(isRiding, freshFix?.latDeg, freshFix?.lonDeg, nowMs)
     }
 
     /** Totals for the activity checkpoint and the saved ride. */
@@ -370,22 +388,6 @@ public class RideRecorder(
         )
     }
 
-    private fun updateReminders(nowMs: Long) {
-        val tick = reminders.onTick(nowMs, metrics.movingMs)
-        reminder = tick.active
-        tick.shown?.let { pendingEvents += RideEvent(nowMs, it.event) }
-    }
-
-    private fun acknowledgeReminder(nowMs: Long) {
-        reminders.acknowledge(metrics.movingMs)?.let { pendingEvents += RideEvent(nowMs, RideEventType.REMINDER_ACK) }
-        reminder = null
-    }
-
-    private fun snoozeReminder() {
-        reminders.snooze(metrics.movingMs)
-        reminder = null
-    }
-
     /** SampleMerger: one record per whole second, only while the timer runs (03-ARCHITECTURE §4.3). */
     private fun buildSample(nowMs: Long, elevationSnapshot: ElevationSnapshot): RideSample? {
         val second = nowMs / Units.MS_PER_SECOND
@@ -426,7 +428,7 @@ public class RideRecorder(
             batteryMode = battery.mode,
             phoneBatteryPercent = phoneBatteryPercent,
             pausedSinceMs = pausedSinceMs,
-            reminder = reminder,
+            reminder = reminders.active,
             isIdlePromptVisible = status == RideStatus.AUTO_PAUSED &&
                 !isIdlePromptDismissed &&
                 autoPause.isIdlePromptDue(nowMs),
@@ -434,6 +436,7 @@ public class RideRecorder(
             isGpsEnabled = context.isGpsEnabled,
             profileId = context.profileId,
             route = route.progress,
+            segment = segments.state,
             routeId = context.routeId,
             latDeg = fix?.latDeg,
             lonDeg = fix?.lonDeg,

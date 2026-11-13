@@ -287,4 +287,15 @@
     <string name="ride_climb_summary">%1$s %2$s · %3$s%% · ↑ %4$s %5$s</string>
     <string name="ride_climb_section">per %1$s %2$s</string>
     <string name="ride_map_follow">Ikuti posisi</string>
+    <!-- Segmen live (T4.3) -->
+    <string name="ride_segment_approaching">Segmen: %1$s · mulai</string>
+    <string name="ride_segment_result_pr">%1$s · PR baru!</string>
+    <string name="ride_segment_result_slower">%1$s · %2$s dari PR</string>
+    <string name="ride_segment_label">Segmen · %1$s</string>
+    <string name="ride_segment_ahead">lebih cepat dari rekor</string>
+    <string name="ride_segment_behind">lebih lambat dari rekor</string>
+    <string name="ride_segment_first">effort pertama</string>
+    <string name="ride_segment_time">Waktu segmen</string>
+    <string name="ride_segment_pr">PR segmen</string>
+    <string name="ride_segment_remaining">%1$s %2$s lagi</string>
 </resources>

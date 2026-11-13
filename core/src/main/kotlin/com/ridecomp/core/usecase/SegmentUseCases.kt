@@ -3,6 +3,7 @@ package com.ridecomp.core.usecase
 import com.ridecomp.core.config.ActivityConfig
 import com.ridecomp.core.engine.route.RouteClimb
 import com.ridecomp.core.engine.route.RoutePoint
+import com.ridecomp.core.engine.segments.LiveSegment
 import com.ridecomp.core.engine.segments.Segment
 import com.ridecomp.core.engine.segments.SegmentBuilder
 import com.ridecomp.core.engine.segments.SegmentError
@@ -139,5 +140,12 @@ public class LoadTrackOutlineUseCase(
                 )
             }
         }
+    }
+}
+
+/** Every segment with the rider's record over it, loaded once when a ride starts (live segments, T4.3). */
+public class GetLiveSegmentsUseCase(private val segments: SegmentRepository) {
+    public suspend operator fun invoke(): List<LiveSegment> = segments.getAll().map { segment ->
+        LiveSegment(segment, segments.bestBefore(segment.id, Long.MAX_VALUE))
     }
 }

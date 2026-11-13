@@ -291,4 +291,15 @@
     <string name="ride_climb_summary">%1$s %2$s · %3$s%% · ↑ %4$s %5$s</string>
     <string name="ride_climb_section">per %1$s %2$s</string>
     <string name="ride_map_follow">Follow position</string>
+    <!-- Live segments (T4.3, 13-UI-SCREENS #17) -->
+    <string name="ride_segment_approaching">Segment: %1$s · start ahead</string>
+    <string name="ride_segment_result_pr">%1$s · new record!</string>
+    <string name="ride_segment_result_slower">%1$s · %2$s from your record</string>
+    <string name="ride_segment_label">Segment · %1$s</string>
+    <string name="ride_segment_ahead">ahead of record</string>
+    <string name="ride_segment_behind">behind record</string>
+    <string name="ride_segment_first">first effort</string>
+    <string name="ride_segment_time">Segment time</string>
+    <string name="ride_segment_pr">Segment record</string>
+    <string name="ride_segment_remaining">%1$s %2$s to go</string>
 </resources>
