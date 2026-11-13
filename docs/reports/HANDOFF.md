@@ -14,7 +14,7 @@
     - (a) file region PMTiles/MBTiles (saran);
     - (b) penyedia tile yang mengizinkan offline;
     - (c) tunda, pakai breadcrumb.
-- **Temuan StrictMode (sudah ada sejak fase sebelumnya, belum diperbaiki):** disk read/write di main thread saat startup karena Koin membuat objek di `Application.onCreate`/saat pertama di-resolve: `PlatformModule.kt:66`, `DevTools.developerPreferences` (debug), `AndroidExportFileStore.<init>`, `PendingRestore.applyIfPresent` di `RideCompDatabase.build` (DB dibuka di main thread). ROM realme tidak mencetak stack StrictMode; untuk melihatnya pasang sementara `penaltyListener` yang me-log `Violation` (jangan di-commit). Perlu task fix tersendiri (urutan restore → Room harus tetap terjaga, D-39).
+- **StrictMode startup: diperbaiki** (D-53, branch `fix/T3-strictmode-startup`). Di realme hanya tersisa pelanggaran dari `com.android.server.cabc.CabcService` (vendor). Untuk melihat stack di ROM yang tidak mencetaknya: pasang sementara `penaltyListener` yang me-log `Violation` (jangan di-commit).
 - Setelah itu: laporan Fase 3, scan OSV (`scripts/osv-scan.ps1`), lalu Fase 4.
 
 ## Yang perlu ditinjau pemilik
@@ -23,7 +23,7 @@
 - **Uji lapangan belum dilakukan** (hanya uji perangkat singkat dengan GPS simulasi, lihat atas). GPX uji simulasi: segi-7 r=527 m di pusat loop simulator (−7.7829, 110.3671) dengan tanjakan 6 % di km 1,0–1,9.
 
 ## Konvensi kerja (penting untuk agent berikutnya)
-- Baca `CLAUDE.md` dan `docs/` terlebih dulu. Keputusan tercatat di `docs/reports/DECISIONS.md` (D-01…D-52).
+- Baca `CLAUDE.md` dan `docs/` terlebih dulu. Keputusan tercatat di `docs/reports/DECISIONS.md` (D-01…D-53).
 - Satu branch per task (`feature/<TaskID>-<slug>`), Conventional Commit + ID task, merge `--no-ff` ke `main`.
 - Verifikasi sebelum commit: `./gradlew ktlintCheck detekt lint test koverVerify assembleDebug`.
 - Daemon Gradle memakai JDK 21. Bila dependency berubah: `--write-locks --write-verification-metadata sha256`.
