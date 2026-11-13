@@ -188,6 +188,7 @@ object DefaultDataPages {
             RideMetric.HEART_RATE,
             RideMetric.CADENCE,
             RideMetric.POWER_3S,
+            RideMetric.AVG_SPEED,
         ),
         isFirstFullWidth = true,
     )
@@ -197,10 +198,10 @@ object DefaultDataPages {
             RideMetric.LAP_TIME,
             RideMetric.LAP_DISTANCE,
             RideMetric.LAP_AVG_SPEED,
-            RideMetric.LAP_AVG_POWER,
             RideMetric.LAP_AVG_HR,
-            RideMetric.CLOCK,
+            RideMetric.LAP_AVG_POWER,
         ),
+        isFirstFullWidth = true,
     )
     val ALL: List<DataPage> = listOf(MAIN, CLIMB, LAP)
 

@@ -5,6 +5,7 @@ import com.ridecomp.core.engine.metrics.AverageMax
 import com.ridecomp.core.model.Lap
 import com.ridecomp.core.model.LapTrigger
 import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 
 /** Cumulative ride values at one moment; laps are differences between two of these. */
 public data class RideProgress(val timeMs: Long, val distanceM: Double, val movingMs: Long, val ascentM: Double)
@@ -19,7 +20,43 @@ public data class LapStatus(
     val avgSpeedMps: Double,
     val avgHeartRateBpm: Int? = null,
     val avgPowerW: Int? = null,
-)
+    /** Duration and distance of the lap before this one (13-UI-SCREENS #25), null for the first lap. */
+    val previousLapMs: Long? = null,
+    val previousLapDistanceM: Double? = null,
+    /** Auto-lap distance, null for manual laps only. */
+    val autoLapM: Double? = null,
+) {
+    /**
+     * Time this lap will take at the current pace, for distance auto-laps only (13-UI-SCREENS #25);
+     * null until the lap has covered [LapConfig.MIN_PROJECTION_DISTANCE_M].
+     */
+    val projectedLapMs: Long?
+        get() {
+            val lapM = autoLapM ?: return null
+            if (distanceM < LapConfig.MIN_PROJECTION_DISTANCE_M) return null
+            return (elapsedMs * lapM / distanceM).roundToLong()
+        }
+
+    /** Projection minus the previous lap: negative = faster. Only when the previous lap was a full auto-lap. */
+    val projectedDeltaMs: Long?
+        get() {
+            val projected = projectedLapMs ?: return null
+            val previous = previousLapMs ?: return null
+            val isComparable = previousLapDistanceM?.let {
+                autoLapM != null && it >= autoLapM * LapConfig.FULL_LAP_RATIO
+            }
+            return if (isComparable == true) projected - previous else null
+        }
+}
+
+/** Lap projection limits (13-UI-SCREENS #25). */
+public object LapConfig {
+    /** Too early, the pace is noise. */
+    public const val MIN_PROJECTION_DISTANCE_M: Double = 200.0
+
+    /** A previous lap this close to the auto-lap distance counts as a full lap. */
+    public const val FULL_LAP_RATIO: Double = 0.99
+}
 
 /**
  * Manual laps and auto laps every [autoLapM] meters (01-PRD F-12). Auto laps are cut exactly at each
@@ -35,6 +72,7 @@ public class LapTracker(private val autoLapM: Double? = null) {
     private var powerSum = 0.0
     private var powerSeconds = 0L
     private var maxPowerW: Int? = null
+    private var lastLap: Lap? = null
 
     /** Adds one moving second of sensor data to the running lap (power counts coasting zeros). */
     public fun onSensorSecond(heartRateBpm: Int?, cadenceRpm: Int?, powerW: Int?, hasPowerMeter: Boolean) {
@@ -89,6 +127,9 @@ public class LapTracker(private val autoLapM: Double? = null) {
             avgSpeedMps = averageSpeedMps(distance, moving),
             avgHeartRateBpm = heartRate.average(),
             avgPowerW = if (powerSeconds > 0) (powerSum / powerSeconds).roundToInt() else null,
+            previousLapMs = lastLap?.let { it.endTimeMs - it.startTimeMs },
+            previousLapDistanceM = lastLap?.distanceM,
+            autoLapM = autoLapM,
         )
     }
 
@@ -114,6 +155,7 @@ public class LapTracker(private val autoLapM: Double? = null) {
         )
         index++
         start = end
+        lastLap = lap
         resetLapAggregates()
         return lap
     }

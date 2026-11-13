@@ -1,20 +1,26 @@
 package com.ridecomp.feature.ride.ui.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -22,6 +28,7 @@ import com.ridecomp.core.config.Units
 import com.ridecomp.core.engine.safety.IncidentAction
 import com.ridecomp.core.engine.safety.IncidentState
 import com.ridecomp.feature.ride.R
+import com.ridecomp.ui.R as UiR
 import com.ridecomp.ui.component.AlertBanner
 import com.ridecomp.ui.component.AlertSeverity
 import com.ridecomp.ui.component.BannerAction
@@ -102,20 +109,25 @@ fun IncidentAlertedBanner(state: IncidentState.Alerted, onIncident: (IncidentAct
 /** Hold-for-3-seconds SOS on the pause screen; a tap does nothing, so it cannot fire by accident. */
 @Composable
 fun SosButton(onIncident: (IncidentAction) -> Unit, modifier: Modifier = Modifier) {
-    Box(
+    val colors = RideCompTheme.colors
+    val shape = RoundedCornerShape(RideCompDimens.cornerRadiusCard)
+    val label = stringResource(R.string.incident_sos_hold)
+    Row(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = RideCompDimens.touchTargetPrimary)
-            .background(RideCompTheme.colors.danger)
-            .semantics { role = Role.Button }
+            .heightIn(min = RideCompDimens.buttonHeightTertiary)
+            .clip(shape)
+            .border(RideCompDimens.borderSelected, colors.danger, shape)
+            .semantics {
+                role = Role.Button
+                contentDescription = label
+            }
             .holdToConfirm(SOS_HOLD_MS) { onIncident(IncidentAction.SOS) },
-        contentAlignment = Alignment.Center,
+        horizontalArrangement = Arrangement.spacedBy(RideCompDimens.cardGap, Alignment.CenterHorizontally),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            text = stringResource(R.string.incident_sos_hold),
-            style = RideCompTheme.typography.button,
-            color = RideCompTheme.colors.onDanger,
-        )
+        Icon(painterResource(UiR.drawable.ic_warning), contentDescription = null, tint = colors.danger)
+        Text(text = label, style = RideCompTheme.typography.buttonSmall, color = colors.danger)
     }
 }
 

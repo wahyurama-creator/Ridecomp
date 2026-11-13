@@ -23,11 +23,11 @@
     <string name="pre_ride_start">MULAI</string>
     <string name="pre_ride_start_without_fix">Mulai tanpa menunggu</string>
 
-    <string name="ride_pause">JEDA</string>
+    <string name="ride_pause">PAUSE</string>
     <string name="ride_resume">LANJUTKAN</string>
     <string name="ride_lap">LAP</string>
     <string name="ride_finish_save">SELESAI &amp; SIMPAN</string>
-    <string name="ride_discard">BUANG</string>
+    <string name="ride_discard">Buang ride</string>
     <string name="ride_discard_title">Buang ride ini?</string>
     <string name="ride_discard_message">Semua yang terekam di ride ini akan dihapus.</string>
     <string name="ride_cancel">Batal</string>
@@ -36,7 +36,7 @@
     <string name="ride_status_rec">REC</string>
     <string name="ride_status_pause">JEDA</string>
     <string name="ride_gps_lost">Sinyal GPS hilang · tetap merekam</string>
-    <string name="ride_sensor_lost">%1$s terputus · menyambung ulang…</string>
+    <string name="ride_sensor_lost">Menyambung ulang… · rekaman tetap jalan</string>
     <string name="ride_sensor_battery_low">Baterai %1$s lemah (%2$d%%)</string>
     <string name="ride_sensor_hr">Sensor detak jantung</string>
     <string name="ride_sensor_csc">Sensor speed/cadence</string>
@@ -184,4 +184,25 @@
     <string name="ride_climb_remaining">Sisa %1$s %2$s · ↑ %3$s %4$s · rata-rata %5$s%%</string>
     <string name="ride_climb_profile_description">Profil tanjakan per grade, rata-rata %1$s%%</string>
     <string name="ride_next_climb">Tanjakan berikutnya (%1$d dari %2$d): %3$s %4$s lagi</string>
+    <string name="ride_tag_lost">terputus</string>
+    <string name="ride_tag_estimate">EST</string>
+    <string name="ride_tag_stopped">berhenti</string>
+    <string name="ride_tag_running">berjalan</string>
+    <string name="ride_tag_zone">Z%1$d</string>
+    <string name="ride_status_gps">GPS</string>
+    <string name="ride_status_battery">%1$d%%</string>
+    <string name="ride_auto_paused_detail">Lanjut sendiri saat kamu bergerak · diam %1$s</string>
+    <string name="ride_reminder_drink_detail">Ketuk Sudah setelah minum</string>
+    <string name="ride_reminder_eat_detail">Ketuk Sudah setelah makan</string>
+    <string name="ride_sensor_lost_title">%1$s terputus</string>
+    <string name="ride_paused_label">DIJEDA</string>
+    <string name="ride_moving_total">waktu bergerak · total %1$s</string>
+    <string name="ride_discard_note">Buang butuh konfirmasi 2 langkah · tombol Stop hanya ada di sini</string>
+    <string name="ride_page_indicator">Halaman %1$d dari %2$d</string>
+    <string name="ride_lap_title">LAP %1$d</string>
+    <string name="ride_lap_auto">auto-lap tiap %1$s %2$s</string>
+    <string name="ride_lap_manual">lap manual</string>
+    <string name="ride_lap_previous">LAP %1$d (%2$s %3$s)</string>
+    <string name="ride_lap_projection">PROYEKSI LAP %1$d</string>
+    <string name="ride_lap_projection_value">%1$s · %2$s</string>
 </resources>

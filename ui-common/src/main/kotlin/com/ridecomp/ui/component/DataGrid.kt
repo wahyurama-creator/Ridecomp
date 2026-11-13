@@ -27,17 +27,23 @@ fun DataGrid(
     count: Int,
     modifier: Modifier = Modifier,
     isFirstFullWidth: Boolean = false,
+    /** Height of a full-width first row relative to the others (hero field: 1.5, 13-UI-SCREENS #6). */
+    firstRowWeight: Float = 1f,
     cell: @Composable (index: Int, modifier: Modifier) -> Unit,
 ) {
     val rows = gridRows(count, isFirstFullWidth)
+    // Light theme: 2 dp dividers stay visible in sunlight (13-UI-SCREENS #31).
+    val divider =
+        if (RideCompTheme.colors.isDark) RideCompDimens.dividerThickness else RideCompDimens.dividerThicknessLight
     Column(
         modifier = modifier.fillMaxSize().background(RideCompTheme.colors.divider),
-        verticalArrangement = Arrangement.spacedBy(RideCompDimens.dividerThickness),
+        verticalArrangement = Arrangement.spacedBy(divider),
     ) {
-        rows.forEach { row ->
+        rows.forEachIndexed { rowIndex, row ->
+            val isHeroRow = rowIndex == 0 && isFirstFullWidth && row.size == 1
             Row(
-                modifier = Modifier.fillMaxWidth().weight(1f),
-                horizontalArrangement = Arrangement.spacedBy(RideCompDimens.dividerThickness),
+                modifier = Modifier.fillMaxWidth().weight(if (isHeroRow) firstRowWeight else 1f),
+                horizontalArrangement = Arrangement.spacedBy(divider),
             ) {
                 row.forEach { index -> cell(index, Modifier.weight(1f).fillMaxHeight()) }
             }
