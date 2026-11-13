@@ -61,6 +61,12 @@ enum class BigButtonStyle {
 
     /** Light fill on a dark danger screen (SAYA BAIK-BAIK SAJA). */
     INVERSE,
+
+    /** White fill, black text: always light on the deep-red incident screen, in both themes. */
+    INVERSE_LIGHT,
+
+    /** White outline: on the deep-red incident screen, in both themes. */
+    OUTLINE_LIGHT,
 }
 
 /** Heights from 13-UI-SCREENS §1.4; every size stays ≥ 56 dp (UI-07). */
@@ -157,6 +163,8 @@ private fun BigButtonStyle.look(colors: RideCompColors): ButtonLook = when (this
     BigButtonStyle.WARN -> ButtonLook(colors.warn, colors.onWarn)
     BigButtonStyle.WARN_OUTLINE -> ButtonLook(Color.Transparent, colors.warnText, colors.warn)
     BigButtonStyle.INVERSE -> ButtonLook(colors.textPrimary, colors.bg)
+    BigButtonStyle.INVERSE_LIGHT -> ButtonLook(colors.onDanger, colors.dangerDeep)
+    BigButtonStyle.OUTLINE_LIGHT -> ButtonLook(Color.Transparent, colors.onDanger, colors.onDanger)
 }
 
 private fun BigButtonStyle.defaultSize(): BigButtonSize = when (this) {

@@ -275,4 +275,10 @@
     <string name="metric_category_elevation">Elevasi</string>
     <string name="metric_category_lap">Lap</string>
     <string name="metric_category_navigation">Navigasi</string>
+    <string name="incident_title">Terdeteksi benturan keras</string>
+    <string name="incident_title_manual">SOS akan dikirim</string>
+    <string name="incident_seconds">detik</string>
+    <string name="incident_recipients">Jika tidak dibatalkan, SMS berisi lokasimu akan dikirim ke %1$s.</string>
+    <string name="incident_and">" dan "</string>
+    <string name="incident_alarm_note">Alarm berbunyi &amp; HP bergetar · rekaman ride tetap berjalan</string>
 </resources>

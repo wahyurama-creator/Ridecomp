@@ -148,7 +148,7 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
                 profileId = entry.optionalId(AppRoutes.ARG_PROFILE_ID),
             )
         }
-        composable(AppRoutes.SAFETY) { SafetyRoute() }
+        composable(AppRoutes.SAFETY) { SafetyRoute(onBack = { navController.popBackStack() }) }
         composable(AppRoutes.BACKUP) { BackupRoute() }
         composable(AppRoutes.ACTIVITY_PROFILES) {
             ActivityProfilesRoute(onOpen = { navController.navigate(AppRoutes.activityProfile(it)) })

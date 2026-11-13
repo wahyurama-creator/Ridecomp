@@ -59,6 +59,9 @@ object RideCompDimens {
     val dividerThicknessLight = 2.dp
     val iconSize = 24.dp
     val iconSizeLarge = 48.dp
+    val avatarSize = 36.dp
+    val countdownRing = 210.dp
+    val countdownRingStroke = 10.dp
     val bannerMinHeight = 56.dp
     val bannerIconSize = 32.dp
     val contentMaxWidth = 600.dp

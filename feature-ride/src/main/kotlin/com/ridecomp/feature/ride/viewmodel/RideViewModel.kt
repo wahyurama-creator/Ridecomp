@@ -22,6 +22,9 @@ import com.ridecomp.feature.ride.model.RideMetricKeys
 import com.ridecomp.feature.ride.model.RouteView
 import com.ridecomp.feature.ride.model.toDataPages
 import com.ridecomp.ui.udf.UdfViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -68,6 +71,11 @@ class RideViewModel(private val useCases: RideUseCases, private val dispatchers:
     val isSosAvailable: StateFlow<Boolean> = useCases.observeSafety()
         .map { it.settings.isEnabled && it.contacts.isNotEmpty() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), false)
+
+    /** Who gets the alert SMS, named on the countdown screen (13-UI-SCREENS #18). */
+    val contactNames: StateFlow<ImmutableList<String>> = useCases.observeSafety()
+        .map { safety -> safety.contacts.map { it.displayName }.toImmutableList() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), persistentListOf())
 
     /** General settings with the ride profile's overrides (screen mode, auto pause…). */
     val settings: StateFlow<RideSettings> = combine(useCases.observeSettings(), useCases.observeProfiles(), liveRide) {
