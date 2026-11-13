@@ -10,6 +10,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -39,8 +40,11 @@ fun LineChart(
     summary: String? = null,
     /** Vertical marker at this x (current position on a route profile, T3.9); null for none. */
     markerX: Double? = null,
+    /** Shaded x range (part chosen for a new segment, T4.2); null for none. */
+    rangeX: ClosedFloatingPointRange<Double>? = null,
 ) {
     val markerColor = RideCompTheme.colors.textPrimary
+    val rangeColor = RideCompTheme.colors.accentTint
     val bounds = remember(values) { values.bounds() }
     Column(modifier = modifier.fillMaxWidth()) {
         Text(text = title, style = RideCompTheme.typography.dataLabel, color = RideCompTheme.colors.textSecondary)
@@ -51,6 +55,11 @@ fun LineChart(
                 .semantics { contentDescription = summary ?: title },
         ) {
             val box = bounds ?: return@Canvas
+            rangeX?.let { range ->
+                val from = ((range.start - box.minX) / box.width * size.width).toFloat().coerceIn(0f, size.width)
+                val to = ((range.endInclusive - box.minX) / box.width * size.width).toFloat().coerceIn(0f, size.width)
+                drawRect(color = rangeColor, topLeft = Offset(from, 0f), size = Size(to - from, size.height))
+            }
             val path = Path()
             var isDrawing = false
             values.forEach { point ->

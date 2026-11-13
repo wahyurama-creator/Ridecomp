@@ -2,15 +2,20 @@ package com.ridecomp.app.di
 
 import com.ridecomp.core.usecase.AddEmergencyContactUseCase
 import com.ridecomp.core.usecase.AddPickedContactUseCase
+import com.ridecomp.core.usecase.AnalysisRequests
 import com.ridecomp.core.usecase.AnalyzeActivitiesUseCase
 import com.ridecomp.core.usecase.BackupWriter
+import com.ridecomp.core.usecase.BestEffortsStep
 import com.ridecomp.core.usecase.CheckGpsAvailabilityUseCase
 import com.ridecomp.core.usecase.CompleteOnboardingUseCase
 import com.ridecomp.core.usecase.CreateBackupUseCase
+import com.ridecomp.core.usecase.CreateSegmentFromActivityUseCase
+import com.ridecomp.core.usecase.CreateSegmentFromClimbUseCase
 import com.ridecomp.core.usecase.DeleteActivityProfileUseCase
 import com.ridecomp.core.usecase.DeleteActivityUseCase
 import com.ridecomp.core.usecase.DeleteOfflineMapUseCase
 import com.ridecomp.core.usecase.DeleteRouteUseCase
+import com.ridecomp.core.usecase.DeleteSegmentUseCase
 import com.ridecomp.core.usecase.DuplicateActivityProfileUseCase
 import com.ridecomp.core.usecase.EstimateHrMaxUseCase
 import com.ridecomp.core.usecase.EvaluateBestEffortsUseCase
@@ -32,6 +37,7 @@ import com.ridecomp.core.usecase.HasProfileUseCase
 import com.ridecomp.core.usecase.ImportGpxUseCase
 import com.ridecomp.core.usecase.ImportOfflineMapUseCase
 import com.ridecomp.core.usecase.LoadRideChartUseCase
+import com.ridecomp.core.usecase.LoadTrackOutlineUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfileUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
@@ -54,15 +60,20 @@ import com.ridecomp.core.usecase.ObserveRouteUseCase
 import com.ridecomp.core.usecase.ObserveRoutesUseCase
 import com.ridecomp.core.usecase.ObserveSafetyUseCase
 import com.ridecomp.core.usecase.ObserveSavedSensorsUseCase
+import com.ridecomp.core.usecase.ObserveSegmentEffortsUseCase
+import com.ridecomp.core.usecase.ObserveSegmentUseCase
+import com.ridecomp.core.usecase.ObserveSegmentsUseCase
 import com.ridecomp.core.usecase.PairSensorUseCase
 import com.ridecomp.core.usecase.PerformIncidentActionUseCase
 import com.ridecomp.core.usecase.PerformRideActionUseCase
 import com.ridecomp.core.usecase.PreviewNewRecordsUseCase
 import com.ridecomp.core.usecase.ReadBackupSummaryUseCase
 import com.ridecomp.core.usecase.ReadBatteryUseCase
+import com.ridecomp.core.usecase.ReadRideTrackUseCase
 import com.ridecomp.core.usecase.RemoveEmergencyContactUseCase
 import com.ridecomp.core.usecase.RenameActivityUseCase
 import com.ridecomp.core.usecase.RenameRouteUseCase
+import com.ridecomp.core.usecase.RequestReanalysisUseCase
 import com.ridecomp.core.usecase.ResetDataPagesUseCase
 import com.ridecomp.core.usecase.RestartAfterRestoreUseCase
 import com.ridecomp.core.usecase.RestoreBackupUseCase
@@ -74,6 +85,7 @@ import com.ridecomp.core.usecase.SaveProfileUseCase
 import com.ridecomp.core.usecase.SaveRideSettingsUseCase
 import com.ridecomp.core.usecase.SaveRiderNameUseCase
 import com.ridecomp.core.usecase.ScanSensorsUseCase
+import com.ridecomp.core.usecase.SegmentsStep
 import com.ridecomp.core.usecase.SelectActivityProfileUseCase
 import com.ridecomp.core.usecase.SendTestSmsUseCase
 import com.ridecomp.core.usecase.SetSafetyEnabledUseCase
@@ -169,10 +181,27 @@ val useCaseModule = module {
     factory { RemoveEmergencyContactUseCase(get()) }
     factory { SendTestSmsUseCase(get(), get(), get(), get()) }
     factory { GetActivityKindUseCase(get()) }
-    factory { EvaluateBestEffortsUseCase(get(), get(), get(), get()) }
-    // Single: its mutex keeps one analysis running at a time.
-    single { AnalyzeActivitiesUseCase(get(), get(), get(), get(), get()) }
-    factory { PreviewNewRecordsUseCase(get(), get()) }
+    factory { ReadRideTrackUseCase(get(), get()) }
+    factory { EvaluateBestEffortsUseCase(get(), get(), get()) }
+    // Singles: one request channel and one mutex keep a single analysis running at a time.
+    single { AnalysisRequests() }
+    factory { RequestReanalysisUseCase(get(), get()) }
+    single {
+        AnalyzeActivitiesUseCase(
+            analysis = get(),
+            readTrack = get(),
+            steps = listOf(BestEffortsStep(get(), get(), get()), SegmentsStep(get(), get())),
+            logger = get(),
+        )
+    }
+    factory { PreviewNewRecordsUseCase(get(), get(), get()) }
     factory { ObservePersonalRecordsUseCase(get()) }
     factory { ObserveRecordKindsUseCase(get()) }
+    factory { CreateSegmentFromActivityUseCase(get(), get(), get(), get()) }
+    factory { CreateSegmentFromClimbUseCase(get(), get(), get(), get()) }
+    factory { DeleteSegmentUseCase(get()) }
+    factory { LoadTrackOutlineUseCase(get(), get()) }
+    factory { ObserveSegmentsUseCase(get()) }
+    factory { ObserveSegmentUseCase(get()) }
+    factory { ObserveSegmentEffortsUseCase(get()) }
 }

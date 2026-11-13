@@ -43,6 +43,9 @@ import com.ridecomp.feature.settings.ui.SettingsRoute
 import com.ridecomp.feature.settings.ui.SettingsSection
 import com.ridecomp.feature.training.ui.NewRecordsCard
 import com.ridecomp.feature.training.ui.RecordsRoute
+import com.ridecomp.feature.training.ui.SegmentDetailRoute
+import com.ridecomp.feature.training.ui.SegmentEditorRoute
+import com.ridecomp.feature.training.ui.SegmentsRoute
 
 /** Routes that are not bottom-bar tabs, in one place. */
 object AppRoutes {
@@ -85,6 +88,14 @@ object AppRoutes {
 
     fun activityDetail(activityId: Long): String = "activity/$activityId"
 
+    const val ARG_SEGMENT_ID = "segmentId"
+    const val SEGMENT_DETAIL = "segment/{$ARG_SEGMENT_ID}"
+    const val NEW_SEGMENT = "segment_new/{$ARG_ACTIVITY_ID}"
+
+    fun segmentDetail(segmentId: Long): String = "segment/$segmentId"
+
+    fun newSegment(activityId: Long): String = "segment_new/$activityId"
+
     /** Full-screen routes where the bottom bar is hidden (ride flow, onboarding). */
     val FULL_SCREEN: Set<String> = setOf(ONBOARDING, PRE_RIDE, RIDE, SUMMARY)
 }
@@ -107,6 +118,7 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
         }
         rideGraph(navController)
         historyGraph(navController)
+        segmentGraph(navController)
         composable(TopLevelDestination.ROUTES.route) {
             val incoming by IncomingGpx.uri.collectAsStateWithLifecycle()
             RoutesRoute(
@@ -216,6 +228,9 @@ private fun NavGraphBuilder.historyGraph(navController: NavHostController) {
             recordsContent = {
                 RecordsRoute(onOpenActivity = { id -> navController.navigate(AppRoutes.activityDetail(id)) })
             },
+            segmentsContent = {
+                SegmentsRoute(onOpenSegment = { id -> navController.navigate(AppRoutes.segmentDetail(id)) })
+            },
         )
     }
     composable(
@@ -227,9 +242,12 @@ private fun NavGraphBuilder.historyGraph(navController: NavHostController) {
             onDeleted = { navController.popBackStack() },
             onOpenStravaHelp = { navController.navigate(AppRoutes.STRAVA_HELP) },
             onBack = { navController.popBackStack() },
+            onCreateSegment = {
+                val id = entry.arguments?.getLong(AppRoutes.ARG_ACTIVITY_ID) ?: AppRoutes.NO_ACTIVITY
+                navController.navigate(AppRoutes.newSegment(id))
+            },
         )
     }
-    composable(AppRoutes.STRAVA_HELP) { StravaHelpRoute() }
 }
 
 private fun openSection(section: SettingsSection, navController: NavHostController, context: Context) {
@@ -295,3 +313,31 @@ private fun optionalIdArgument(name: String) = navArgument(name) {
 /** The optional id argument, or null when absent. */
 private fun NavBackStackEntry.optionalId(name: String): Long? =
     arguments?.getLong(name)?.takeIf { it != AppRoutes.NO_ID }
+
+/** Segment detail and editor (T4.2). */
+private fun NavGraphBuilder.segmentGraph(navController: NavHostController) {
+    composable(
+        AppRoutes.SEGMENT_DETAIL,
+        arguments = listOf(navArgument(AppRoutes.ARG_SEGMENT_ID) { type = NavType.LongType }),
+    ) { entry ->
+        SegmentDetailRoute(
+            segmentId = entry.arguments?.getLong(AppRoutes.ARG_SEGMENT_ID) ?: AppRoutes.NO_ID,
+            onBack = { navController.popBackStack() },
+            onOpenActivity = { id -> navController.navigate(AppRoutes.activityDetail(id)) },
+        )
+    }
+    composable(
+        AppRoutes.NEW_SEGMENT,
+        arguments = listOf(navArgument(AppRoutes.ARG_ACTIVITY_ID) { type = NavType.LongType }),
+    ) { entry ->
+        SegmentEditorRoute(
+            activityId = entry.arguments?.getLong(AppRoutes.ARG_ACTIVITY_ID) ?: AppRoutes.NO_ACTIVITY,
+            onCreated = { id ->
+                navController.popBackStack()
+                navController.navigate(AppRoutes.segmentDetail(id))
+            },
+            onBack = { navController.popBackStack() },
+        )
+    }
+    composable(AppRoutes.STRAVA_HELP) { StravaHelpRoute() }
+}

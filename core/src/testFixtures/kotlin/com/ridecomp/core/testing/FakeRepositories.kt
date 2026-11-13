@@ -16,6 +16,7 @@ import com.ridecomp.core.repository.ActivityAnalysisRepository
 import com.ridecomp.core.repository.ActivityProfileRepository
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.NewActivity
+import com.ridecomp.core.repository.PendingAnalysis
 import com.ridecomp.core.repository.ProfileRepository
 import com.ridecomp.core.repository.SettingsRepository
 import com.ridecomp.core.source.IdGenerator
@@ -156,13 +157,18 @@ public class FakeActivityRepository : ActivityRepository {
 /** [ActivityAnalysisRepository] over the rides of a [FakeActivityRepository]. */
 public class FakeActivityAnalysisRepository(private val activities: FakeActivityRepository) :
     ActivityAnalysisRepository {
-    override suspend fun getPendingAnalysis(version: Int, limit: Int): List<Activity> = activities.all()
+    override suspend fun getPendingAnalysis(version: Int, limit: Int): List<PendingAnalysis> = activities.all()
         .filter { it.status == ActivityStatus.FINISHED && (activities.analyzedVersions[it.id] ?: 0) < version }
         .sortedBy { it.startedAtMs }
         .take(limit)
+        .map { PendingAnalysis(it, activities.analyzedVersions[it.id] ?: 0) }
 
     override suspend fun markAnalyzed(activityId: Long, version: Int) {
         activities.analyzedVersions[activityId] = version
+    }
+
+    override suspend fun resetAnalysis(toVersion: Int) {
+        activities.analyzedVersions.replaceAll { _, version -> minOf(version, toVersion) }
     }
 }
 

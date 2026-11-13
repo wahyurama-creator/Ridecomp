@@ -36,4 +36,7 @@
     <string name="route_map_missing_title">No map for this area yet</string>
     <string name="route_map_missing">You can still follow the route with the breadcrumb line. Import a map file of this region to see the roads.</string>
     <string name="route_map_import">Open Offline maps</string>
+    <string name="route_climb_make_segment">Make segment</string>
+    <string name="route_climb_segment_made">Segment made · see History → Segments</string>
+    <string name="route_climb_segment_name">%1$s · climb %2$d</string>
 </resources>

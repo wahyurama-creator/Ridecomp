@@ -36,4 +36,7 @@
     <string name="route_map_missing_title">Peta area ini belum ada</string>
     <string name="route_map_missing">Rute tetap bisa diikuti dengan garis breadcrumb. Impor file peta wilayah ini untuk melihat jalan.</string>
     <string name="route_map_import">Buka Peta offline</string>
+    <string name="route_climb_make_segment">Jadikan segmen</string>
+    <string name="route_climb_segment_made">Segmen dibuat · lihat Riwayat → Segmen</string>
+    <string name="route_climb_segment_name">%1$s · tanjakan %2$d</string>
 </resources>

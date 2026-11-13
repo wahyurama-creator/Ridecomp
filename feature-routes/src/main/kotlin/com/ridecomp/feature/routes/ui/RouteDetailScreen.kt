@@ -35,6 +35,7 @@ import com.ridecomp.ui.component.CardTone
 import com.ridecomp.ui.component.ConfirmDialog
 import com.ridecomp.ui.component.EmptyState
 import com.ridecomp.ui.component.LineChart
+import com.ridecomp.ui.component.LinkText
 import com.ridecomp.ui.component.RideCompCard
 import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.component.StatRow
@@ -174,7 +175,7 @@ private fun RouteContent(
                 color = RideCompTheme.colors.track,
                 modifier = Modifier.padding(horizontal = RideCompDimens.spacingM),
             )
-            ClimbList(state.climbs, format)
+            ClimbList(state, format) { climb, name -> onEvent(RouteDetailUiEvent.MakeSegment(climb, name)) }
         }
         OutlinedTextField(
             value = name,
@@ -220,7 +221,8 @@ private fun RouteContent(
 
 /** "Climb 2 of 4 · 2.1 km · 6.3% · ↑ 132 m" (12-FEATURE-SPECS §6.2). */
 @Composable
-private fun ClimbList(climbs: List<RouteClimb>, format: UnitFormatter) {
+private fun ClimbList(state: RouteDetailUiState, format: UnitFormatter, onMakeSegment: (RouteClimb, String) -> Unit) {
+    val climbs = state.climbs
     Text(
         text = if (climbs.isEmpty()) {
             stringResource(R.string.route_no_climbs)
@@ -243,6 +245,17 @@ private fun ClimbList(climbs: List<RouteClimb>, format: UnitFormatter) {
                 format.elevationUnit,
             ),
         )
+        if (climb.index in state.segmentClimbs) {
+            Text(
+                text = stringResource(R.string.route_climb_segment_made),
+                style = RideCompTheme.typography.caption,
+                color = RideCompTheme.colors.ok,
+                modifier = Modifier.padding(horizontal = RideCompDimens.spacingM),
+            )
+        } else {
+            val name = stringResource(R.string.route_climb_segment_name, state.route?.name.orEmpty(), index + 1)
+            LinkText(stringResource(R.string.route_climb_make_segment), onClick = { onMakeSegment(climb, name) })
+        }
     }
 }
 

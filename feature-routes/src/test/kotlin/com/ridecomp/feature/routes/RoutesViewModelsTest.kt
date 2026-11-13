@@ -3,12 +3,17 @@ package com.ridecomp.feature.routes
 import app.cash.turbine.test
 import com.ridecomp.core.engine.route.GpxError
 import com.ridecomp.core.model.UnitSystem
+import com.ridecomp.core.testing.FakeActivityAnalysisRepository
+import com.ridecomp.core.testing.FakeActivityRepository
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeGpxDocumentSource
 import com.ridecomp.core.testing.FakeOfflineMapRepository
 import com.ridecomp.core.testing.FakeRouteRepository
+import com.ridecomp.core.testing.FakeSegmentRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.testing.TestDispatcherProvider
+import com.ridecomp.core.usecase.AnalysisRequests
+import com.ridecomp.core.usecase.CreateSegmentFromClimbUseCase
 import com.ridecomp.core.usecase.DeleteRouteUseCase
 import com.ridecomp.core.usecase.GetRouteGuidanceUseCase
 import com.ridecomp.core.usecase.GetRoutePointsUseCase
@@ -18,6 +23,7 @@ import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveRouteUseCase
 import com.ridecomp.core.usecase.ObserveRoutesUseCase
 import com.ridecomp.core.usecase.RenameRouteUseCase
+import com.ridecomp.core.usecase.RequestReanalysisUseCase
 import com.ridecomp.core.usecase.ReverseRouteUseCase
 import com.ridecomp.core.util.Outcome
 import com.ridecomp.feature.routes.viewmodel.RouteDetailEffect
@@ -100,6 +106,15 @@ class RoutesViewModelsTest {
                 RenameRouteUseCase(routes),
                 ReverseRouteUseCase(routes, clock, TestDispatcherProvider(dispatcher)),
                 DeleteRouteUseCase(routes),
+                CreateSegmentFromClimbUseCase(
+                    routes,
+                    FakeSegmentRepository(FakeActivityRepository()),
+                    RequestReanalysisUseCase(
+                        FakeActivityAnalysisRepository(FakeActivityRepository()),
+                        AnalysisRequests(),
+                    ),
+                    clock,
+                ),
             ),
             TestDispatcherProvider(dispatcher),
         )

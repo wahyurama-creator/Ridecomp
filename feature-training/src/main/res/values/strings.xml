@@ -24,4 +24,35 @@
         <item quantity="one">%1$d new record</item>
         <item quantity="other">%1$d new records</item>
     </plurals>
+    <!-- Segments (T4.2, 12-FEATURE-SPECS §9) -->
+    <string name="segments_empty">No segments yet. Make one from part of a saved ride (Activity detail → Create segment) or from a route climb (Make segment).</string>
+    <string name="segment_title">Segment</string>
+    <string name="segment_back">Back</string>
+    <string name="segment_missing">This segment was deleted.</string>
+    <string name="segment_facts">%1$s · %2$s%% · %3$d×</string>
+    <string name="segment_length">Length</string>
+    <string name="segment_gain">Climb</string>
+    <string name="segment_grade">Avg grade</string>
+    <string name="segment_record">Your record</string>
+    <string name="segment_no_efforts">No ride over this segment yet. Rides are matched automatically after saving.</string>
+    <string name="segment_best_efforts">Fastest efforts</string>
+    <string name="segment_effort_ride">%1$s · %2$s</string>
+    <string name="segment_trend">Time per ride (min)</string>
+    <plurals name="segment_trend_summary">
+        <item quantity="one">%1$d effort, record %2$s</item>
+        <item quantity="other">%1$d efforts, record %2$s</item>
+    </plurals>
+    <string name="segment_delete">Delete segment</string>
+    <string name="segment_delete_title">Delete \"%1$s\"?</string>
+    <string name="segment_delete_message">Its efforts are removed too. Your rides stay.</string>
+    <string name="segment_cancel">Cancel</string>
+    <string name="segment_new_title">New segment</string>
+    <string name="segment_new_hint">Drag the two handles to the start and end of the stretch you want to time. Later rides over it in the same direction are matched automatically.</string>
+    <string name="segment_track">Ride track with the chosen part highlighted</string>
+    <string name="segment_profile">Elevation</string>
+    <string name="segment_range">From %1$s to %2$s · length %3$s</string>
+    <string name="segment_error_length">A segment must be 200 m to 50 km long.</string>
+    <string name="segment_error_position">This part of the ride has no GPS position.</string>
+    <string name="segment_name">Segment name</string>
+    <string name="segment_save">Save segment</string>
 </resources>

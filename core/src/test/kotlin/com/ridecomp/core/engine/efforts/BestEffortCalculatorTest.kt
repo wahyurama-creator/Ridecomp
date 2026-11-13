@@ -1,5 +1,6 @@
 package com.ridecomp.core.engine.efforts
 
+import com.ridecomp.core.engine.track.RideTrack
 import com.ridecomp.core.model.RideSample
 import com.ridecomp.core.model.RideTotals
 import kotlin.test.Test
@@ -11,8 +12,8 @@ import kotlin.test.assertTrue
 /** Best efforts with synthetic 1 Hz tracks (T4.6, 07-TEST-PLAN). */
 class BestEffortCalculatorTest {
     /** Builds a 1 Hz track from per-second speeds (m/s) and optional power; null speed = paused second. */
-    private fun track(speeds: List<Double?>, power: (Int) -> Int? = { null }, estPower: Int? = null): EffortTrack {
-        val track = EffortTrack()
+    private fun track(speeds: List<Double?>, power: (Int) -> Int? = { null }, estPower: Int? = null): RideTrack {
+        val track = RideTrack()
         var distance = 0.0
         speeds.forEachIndexed { second, speed ->
             if (speed == null) return@forEachIndexed
@@ -82,14 +83,14 @@ class BestEffortCalculatorTest {
     @Test
     fun `whole-ride records need data, average speed needs 20 km`() {
         val short = BestEffortCalculator.calculate(
-            EffortTrack(),
+            RideTrack(),
             RideTotals(distanceM = 15_000.0, ascentM = 120.0, avgSpeedMps = 8.0),
         )
         assertEquals(15_000.0, short.of(BestEffortKey.LONGEST_RIDE)?.value)
         assertEquals(120.0, short.of(BestEffortKey.MOST_ASCENT)?.value)
         assertNull(short.of(BestEffortKey.FASTEST_AVG_SPEED))
 
-        val long = BestEffortCalculator.calculate(EffortTrack(), RideTotals(distanceM = 25_000.0, avgSpeedMps = 8.0))
+        val long = BestEffortCalculator.calculate(RideTrack(), RideTotals(distanceM = 25_000.0, avgSpeedMps = 8.0))
         assertEquals(8.0, long.of(BestEffortKey.FASTEST_AVG_SPEED)?.value)
         assertNull(long.of(BestEffortKey.MOST_ASCENT))
     }
