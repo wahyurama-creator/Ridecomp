@@ -85,3 +85,34 @@ public class ReminderScheduler(intervalsMin: Map<ReminderType, Int?>) {
         const val SNOOZE_MS: Long = ReminderConfig.SNOOZE_MIN * Units.MS_PER_MINUTE
     }
 }
+
+/** The recorder side of [ReminderScheduler]: the reminder shown on the ride screen and the events to log. */
+public class RideReminders(intervalsMin: Map<ReminderType, Int?>) {
+    private val scheduler = ReminderScheduler(intervalsMin)
+
+    public var active: ActiveReminder? = null
+        private set
+
+    public fun restore(movingMs: Long) {
+        scheduler.restore(movingMs)
+    }
+
+    /** The event of a reminder shown this second, if any. */
+    public fun onTick(nowMs: Long, movingMs: Long): RideEventType? {
+        val tick = scheduler.onTick(nowMs, movingMs)
+        active = tick.active
+        return tick.shown?.event
+    }
+
+    /** True when a shown reminder was acknowledged (logged as REMINDER_ACK). */
+    public fun acknowledge(movingMs: Long): Boolean {
+        val type = scheduler.acknowledge(movingMs)
+        active = null
+        return type != null
+    }
+
+    public fun snooze(movingMs: Long) {
+        scheduler.snooze(movingMs)
+        active = null
+    }
+}

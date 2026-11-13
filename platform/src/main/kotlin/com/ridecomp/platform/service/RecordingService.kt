@@ -18,6 +18,7 @@ import com.ridecomp.core.engine.recording.RideAction
 import com.ridecomp.core.engine.recording.RideSetup
 import com.ridecomp.core.engine.route.RouteAlert
 import com.ridecomp.core.engine.safety.IncidentAction
+import com.ridecomp.core.engine.segments.SegmentAlert
 import com.ridecomp.core.engine.sensors.SensorReading
 import com.ridecomp.core.model.ActivityStatus
 import com.ridecomp.core.model.RideEventType
@@ -261,6 +262,7 @@ class RecordingService : LifecycleService() {
         // Off route: vibration and a beep (N-04), heard with the phone in a pocket or bag.
         if (output.events.any { it.type == RideEventType.OFF_ROUTE }) deps.alertPlayer.beep()
         output.live.route?.alert?.let { deps.alertPlayer.play(alertFor(it)) }
+        output.live.segment?.alert?.let { deps.alertPlayer.play(alertFor(it)) }
         val change = output.batteryChange ?: return
         if (!BatteryModePolicy.isBarometerAllowed(change.mode)) {
             pressureJob?.cancel()
@@ -286,6 +288,12 @@ class RecordingService : LifecycleService() {
         RideEventType.LAP, RideEventType.REMINDER_ACK, RideEventType.INCIDENT_DETECTED,
         RideEventType.INCIDENT_CANCELLED, RideEventType.SOS_SENT, RideEventType.SMS_FAILED,
         -> null
+    }
+
+    /** Live segment cues (§9.3): a new record buzzes twice. */
+    private fun alertFor(alert: SegmentAlert): AlertPattern = when (alert) {
+        SegmentAlert.STARTED, SegmentAlert.FINISHED -> AlertPattern.SHORT
+        SegmentAlert.NEW_RECORD -> AlertPattern.DOUBLE
     }
 
     /** Turn and climb alerts (12-FEATURE-SPECS §6.2, §7.2): the near turn buzzes twice. */
@@ -351,6 +359,8 @@ class RecordingService : LifecycleService() {
             routePoints = followedId?.let { deps.routeRepository.getPoints(it) }.orEmpty(),
             routeClimbs = guidance?.climbs.orEmpty(),
             routeTurns = guidance?.turns.orEmpty(),
+            // Indoor rides have no position to cross a segment with.
+            segments = if (isGpsEnabled) deps.getLiveSegments() else emptyList(),
         )
     }
 

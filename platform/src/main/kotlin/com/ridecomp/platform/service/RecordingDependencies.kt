@@ -16,6 +16,7 @@ import com.ridecomp.core.source.LocationSource
 import com.ridecomp.core.source.Logger
 import com.ridecomp.core.source.PressureSource
 import com.ridecomp.core.usecase.ExportFitUseCase
+import com.ridecomp.core.usecase.GetLiveSegmentsUseCase
 import com.ridecomp.core.usecase.GetRideProfileUseCase
 import com.ridecomp.core.usecase.GetRouteGuidanceUseCase
 import com.ridecomp.platform.device.AlertPlayer
@@ -55,6 +56,9 @@ interface RecordingDependencies {
 
     /** Climbs and turns of the followed route (T3.11, T3.12). */
     val getRouteGuidance: GetRouteGuidanceUseCase
+
+    /** Personal segments with their records, for live segments (T4.3). */
+    val getLiveSegments: GetLiveSegmentsUseCase
 
     /** A new session per service instance. */
     fun newSession(): RecordingSession

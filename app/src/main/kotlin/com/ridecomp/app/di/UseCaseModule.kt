@@ -28,6 +28,7 @@ import com.ridecomp.core.usecase.ForgetSensorUseCase
 import com.ridecomp.core.usecase.GetActivityKindUseCase
 import com.ridecomp.core.usecase.GetFreeStorageUseCase
 import com.ridecomp.core.usecase.GetLapsUseCase
+import com.ridecomp.core.usecase.GetLiveSegmentsUseCase
 import com.ridecomp.core.usecase.GetRecoverableRideUseCase
 import com.ridecomp.core.usecase.GetRideProfileUseCase
 import com.ridecomp.core.usecase.GetRouteGuidanceUseCase
@@ -201,6 +202,7 @@ val useCaseModule = module {
     factory { CreateSegmentFromClimbUseCase(get(), get(), get(), get()) }
     factory { DeleteSegmentUseCase(get()) }
     factory { LoadTrackOutlineUseCase(get(), get()) }
+    factory { GetLiveSegmentsUseCase(get()) }
     factory { ObserveSegmentsUseCase(get()) }
     factory { ObserveSegmentUseCase(get()) }
     factory { ObserveSegmentEffortsUseCase(get()) }

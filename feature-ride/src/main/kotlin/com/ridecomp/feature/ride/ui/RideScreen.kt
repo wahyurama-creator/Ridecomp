@@ -62,6 +62,8 @@ import com.ridecomp.feature.ride.ui.component.RideField
 import com.ridecomp.feature.ride.ui.component.RideScreenModeEffect
 import com.ridecomp.feature.ride.ui.component.RideStatusBar
 import com.ridecomp.feature.ride.ui.component.RouteGuidanceBanners
+import com.ridecomp.feature.ride.ui.component.SegmentBanners
+import com.ridecomp.feature.ride.ui.component.SegmentPage
 import com.ridecomp.feature.ride.ui.component.SosButton
 import com.ridecomp.feature.ride.ui.component.rememberMetricUnitLabels
 import com.ridecomp.feature.ride.viewmodel.RideEffect
@@ -181,8 +183,7 @@ fun RideScreen(
             return@Column
         }
         RideBanners(live.value, formatter, onAction)
-        live.value.route?.takeIf { it.isOffRoute }?.let { OffRouteBanner(it.distanceFromRouteM, formatter) }
-        live.value.route?.let { RouteGuidanceBanners(it, formatter) }
+        GuidanceBanners(live.value, formatter)
         val screens = remember(pages, route != null) { ridePages(pages, hasRoute = route != null) }
         val pagerState = rememberPagerState { screens.size }
         HorizontalPager(
@@ -193,7 +194,8 @@ fun RideScreen(
         ) { index ->
             when (val screen = screens[index]) {
                 RidePage.Navigation -> route?.let { NavigationPage(it, mapRegions, live, formatter, labels) }
-                is RidePage.Data -> DataPageContent(screen.page, live, formatter, labels, route)
+                is RidePage.Data ->
+                    DataPageContent(screen.page, live, formatter, labels, route, isMain = screen.page == pages.first())
             }
         }
         if (screens.size > 1) {
@@ -231,7 +233,14 @@ private fun DataPageContent(
     formatter: UnitFormatter,
     labels: MetricUnitLabels,
     route: RouteView?,
+    isMain: Boolean,
 ) {
+    // While riding a segment its page replaces the main page (13-UI-SCREENS #17, 12-FEATURE-SPECS §9.3).
+    val segment = live.value.segment?.active.takeIf { isMain }
+    if (segment != null) {
+        SegmentPage(segment, live.value.sensors.heartRateBpm, live.value.speedMps, formatter)
+        return
+    }
     // The climb page gets the route elevation profile with the rider's position (T3.9).
     val showsProfile = route?.hasElevation == true && RideMetric.GRADE in page.metrics
     val isLapPage = RideMetric.LAP_TIME in page.metrics
@@ -365,6 +374,14 @@ private fun RouteProfile(route: RouteView, live: State<LiveRide>) {
         markerX = live.value.route?.distanceAlongM?.div(route.distanceDivisor),
         modifier = Modifier.padding(horizontal = RideCompDimens.spacingS),
     )
+}
+
+/** Off route, turn and climb (route) and live segment banners. */
+@Composable
+private fun GuidanceBanners(live: LiveRide, formatter: UnitFormatter) {
+    live.route?.takeIf { it.isOffRoute }?.let { OffRouteBanner(it.distanceFromRouteM, formatter) }
+    live.route?.let { RouteGuidanceBanners(it, formatter) }
+    live.segment?.let { SegmentBanners(it, formatter) }
 }
 
 @Composable
