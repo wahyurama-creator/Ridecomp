@@ -178,10 +178,7 @@
     <string name="ride_turn_sharp_left">Belok kiri tajam</string>
     <string name="ride_turn_sharp_right">Belok kanan tajam</string>
     <string name="ride_turn_uturn">Putar balik</string>
-    <string name="ride_turn_banner">%1$s %2$s · %3$s %4$s</string>
     <string name="ride_climb_ahead">Tanjakan dimulai %1$s %2$s lagi · %3$s %4$s · %5$s%%</string>
-    <string name="ride_climb_title">TANJAKAN %1$d DARI %2$d</string>
-    <string name="ride_climb_remaining">Sisa %1$s %2$s · ↑ %3$s %4$s · rata-rata %5$s%%</string>
     <string name="ride_climb_profile_description">Profil tanjakan per grade, rata-rata %1$s%%</string>
     <string name="ride_next_climb">Tanjakan berikutnya (%1$d dari %2$d): %3$s %4$s lagi</string>
     <string name="ride_tag_lost">terputus</string>
@@ -281,4 +278,12 @@
     <string name="incident_recipients">Jika tidak dibatalkan, SMS berisi lokasimu akan dikirim ke %1$s.</string>
     <string name="incident_and">" dan "</string>
     <string name="incident_alarm_note">Alarm berbunyi &amp; HP bergetar · rekaman ride tetap berjalan</string>
+    <string name="ride_turn_distance">%1$s %2$s</string>
+    <string name="ride_climb_hero">Tanjakan %1$d / %2$d</string>
+    <string name="ride_climb_hero_tag">sisa jarak · %1$s</string>
+    <string name="ride_climb_gain_left">Sisa gain</string>
+    <string name="ride_climb_avg_left">avg sisa %1$s%%</string>
+    <string name="ride_climb_profile">Profil tanjakan</string>
+    <string name="ride_climb_summary">%1$s %2$s · %3$s%% · ↑ %4$s %5$s</string>
+    <string name="ride_climb_section">per %1$s %2$s</string>
 </resources>

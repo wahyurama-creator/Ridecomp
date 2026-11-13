@@ -41,6 +41,12 @@ data class RideCompTypography(
         fontFeatureSettings = TABULAR_NUMBERS,
         fontSize = RideCompDimens.titleSize,
     ),
+    /** Distance on the turn card (13-UI-SCREENS #16). */
+    val turnDistance: TextStyle = TextStyle(
+        fontWeight = FontWeight.Black,
+        fontFeatureSettings = TABULAR_NUMBERS,
+        fontSize = RideCompDimens.turnDistanceSize,
+    ),
     val screenTitle: TextStyle =
         TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = RideCompDimens.screenTitleSize),
     val title: TextStyle = TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = RideCompDimens.titleSize),

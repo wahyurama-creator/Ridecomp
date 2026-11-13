@@ -19,6 +19,9 @@ public object ClimbConfig {
     public const val MIN_AVG_GRADE_PERCENT: Double = 3.0
     public const val PROFILE_STEP_M: Double = 100.0
 
+    /** At most this many bars on the climb page, so grade numbers fit (13-UI-SCREENS #8). */
+    public const val MAX_PROFILE_BARS: Int = 12
+
     /** Warning before a climb starts (§6.2). */
     public const val WARNING_DISTANCE_M: Double = 500.0
 
@@ -38,7 +41,21 @@ public data class RouteClimb(
     val gradeProfilePercent: List<Double>,
 ) {
     val lengthM: Double get() = endDistanceM - startDistanceM
+
+    /**
+     * The grade profile merged into at most [maxBars] bars of equal sections (100, 200, 300 m…), so each
+     * bar is wide enough to carry its grade number (13-UI-SCREENS #8). Returns the section length too.
+     */
+    public fun displayProfile(maxBars: Int = ClimbConfig.MAX_PROFILE_BARS): DisplayProfile {
+        if (gradeProfilePercent.isEmpty()) return DisplayProfile(emptyList(), ClimbConfig.PROFILE_STEP_M)
+        val group = (gradeProfilePercent.size + maxBars - 1) / maxBars
+        val bars = gradeProfilePercent.chunked(group) { it.average() }
+        return DisplayProfile(bars, ClimbConfig.PROFILE_STEP_M * group)
+    }
 }
+
+/** Bars of a climb profile and the length each bar covers. */
+public data class DisplayProfile(val gradesPercent: List<Double>, val sectionM: Double)
 
 /** Turn detection thresholds (12-FEATURE-SPECS §7.1). */
 public object TurnConfig {
