@@ -40,6 +40,10 @@ public class UnitFormatter(private val unitSystem: UnitSystem, private val local
     public fun grade(gradePercent: Double?): String =
         gradePercent?.takeIf { it.isFinite() }?.roundToInt()?.toString() ?: NO_VALUE
 
+    /** A time difference with its sign ("−0:13" faster, "+0:08" slower); the sign carries the meaning. */
+    public fun signedDuration(deltaMs: Long): String =
+        (if (deltaMs < 0) MINUS_SIGN else PLUS_SIGN) + duration(kotlin.math.abs(deltaMs))
+
     /** Integer metrics (HR, cadence, power, calories). */
     public fun integer(value: Int?): String = value?.toString() ?: NO_VALUE
 
@@ -72,6 +76,8 @@ public class UnitFormatter(private val unitSystem: UnitSystem, private val local
         public const val M: String = "m"
         public const val FT: String = "ft"
         public const val PERCENT_SIGN: String = "%"
+        public const val MINUS_SIGN: String = "\u2212"
+        public const val PLUS_SIGN: String = "+"
         private const val ONE_DECIMAL = "%.1f"
         private const val TWO_DECIMALS = "%.2f"
         private const val HOURS_FORMAT = "%d:%02d:%02d"

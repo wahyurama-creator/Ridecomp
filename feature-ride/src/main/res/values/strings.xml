@@ -27,7 +27,7 @@
     <string name="ride_resume">RESUME</string>
     <string name="ride_lap">LAP</string>
     <string name="ride_finish_save">FINISH &amp; SAVE</string>
-    <string name="ride_discard">DISCARD</string>
+    <string name="ride_discard">Discard ride</string>
     <string name="ride_discard_title">Discard this ride?</string>
     <string name="ride_discard_message">Everything recorded in this ride will be deleted.</string>
     <string name="ride_cancel">Cancel</string>
@@ -36,7 +36,7 @@
     <string name="ride_status_rec">REC</string>
     <string name="ride_status_pause">PAUSE</string>
     <string name="ride_gps_lost">GPS signal lost · still recording</string>
-    <string name="ride_sensor_lost">%1$s disconnected · reconnecting…</string>
+    <string name="ride_sensor_lost">Reconnecting… · still recording</string>
     <string name="ride_sensor_battery_low">%1$s battery low (%2$d%%)</string>
     <string name="ride_sensor_hr">Heart rate sensor</string>
     <string name="ride_sensor_csc">Speed/cadence sensor</string>
@@ -188,4 +188,25 @@
     <string name="ride_climb_remaining">%1$s %2$s · ↑ %3$s %4$s to go · avg %5$s%%</string>
     <string name="ride_climb_profile_description">Climb profile by grade, %1$s%% average</string>
     <string name="ride_next_climb">Next climb (%1$d of %2$d): %3$s %4$s away</string>
+    <string name="ride_tag_lost">lost</string>
+    <string name="ride_tag_estimate">EST</string>
+    <string name="ride_tag_stopped">stopped</string>
+    <string name="ride_tag_running">running</string>
+    <string name="ride_tag_zone">Z%1$d</string>
+    <string name="ride_status_gps">GPS</string>
+    <string name="ride_status_battery">%1$d%%</string>
+    <string name="ride_auto_paused_detail">Resumes when you move · still %1$s</string>
+    <string name="ride_reminder_drink_detail">Tap Done after drinking</string>
+    <string name="ride_reminder_eat_detail">Tap Done after eating</string>
+    <string name="ride_sensor_lost_title">%1$s lost</string>
+    <string name="ride_paused_label">PAUSED</string>
+    <string name="ride_moving_total">moving time · total %1$s</string>
+    <string name="ride_discard_note">Discarding needs 2-step confirmation · Stop is only here</string>
+    <string name="ride_page_indicator">Page %1$d of %2$d</string>
+    <string name="ride_lap_title">LAP %1$d</string>
+    <string name="ride_lap_auto">auto-lap every %1$s %2$s</string>
+    <string name="ride_lap_manual">manual laps</string>
+    <string name="ride_lap_previous">LAP %1$d (%2$s %3$s)</string>
+    <string name="ride_lap_projection">LAP %1$d PROJECTION</string>
+    <string name="ride_lap_projection_value">%1$s · %2$s</string>
 </resources>

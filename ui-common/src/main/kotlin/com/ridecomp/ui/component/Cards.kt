@@ -174,6 +174,28 @@ fun ListCardRow(
     }
 }
 
+/** Small statistic card (pause screen, summary): uppercase label, big value with its unit. */
+@Composable
+fun StatCard(label: String, value: String, modifier: Modifier = Modifier, unit: String? = null) {
+    val colors = RideCompTheme.colors
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(RideCompDimens.cornerRadiusCard))
+            .background(colors.surface)
+            .padding(horizontal = RideCompDimens.cardPaddingHorizontal, vertical = RideCompDimens.cardPaddingVertical),
+        verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingXs),
+    ) {
+        Text(text = label.uppercase(), style = RideCompTheme.typography.dataLabel, color = colors.textSecondary)
+        Row(
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingXs),
+        ) {
+            Text(text = value, style = RideCompTheme.typography.statValue, color = colors.textPrimary)
+            if (unit != null) Text(text = unit, style = RideCompTheme.typography.caption, color = colors.textSecondary)
+        }
+    }
+}
+
 /** Decorative chevron of a clickable row or card (its text is the label). */
 @Composable
 private fun ChevronIcon() {

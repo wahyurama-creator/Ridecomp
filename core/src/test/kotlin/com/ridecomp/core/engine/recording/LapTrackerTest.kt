@@ -107,4 +107,23 @@ class LapTrackerTest {
 
         assertEquals(0.0, requireNotNull(tracker.manualLap(progress(10, 0.0, movingSec = 0))).avgSpeedMps)
     }
+
+    @Test
+    fun `auto lap projection compares the pace with the previous full lap`() {
+        val tracker = LapTracker(autoLapM = 1_000.0)
+        tracker.start(progress(0, 0.0))
+        (1L..100L).forEach { tracker.onTick(progress(it, it * 10.0), speedMps = 10.0) }
+
+        // Second lap: 500 m in 40 s → 80 s at this pace, 20 s faster than the 100 s first lap.
+        val running = requireNotNull(tracker.status(progress(140, 1_500.0)))
+
+        assertEquals(2, running.number)
+        assertEquals(100_000L, running.previousLapMs)
+        assertEquals(80_000L, running.projectedLapMs)
+        assertEquals(-20_000L, running.projectedDeltaMs)
+        // Too early to project; manual laps have no projection.
+        assertNull(requireNotNull(tracker.status(progress(105, 1_050.0))).projectedLapMs)
+        val manual = LapTracker().apply { start(progress(0, 0.0)) }
+        assertNull(requireNotNull(manual.status(progress(60, 600.0))).projectedLapMs)
+    }
 }

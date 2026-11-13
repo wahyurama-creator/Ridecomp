@@ -234,7 +234,8 @@ class RideViewModelsTest {
         assertEquals("1:02:03", RideMetric.MOVING_TIME.value(live, formatter))
         assertEquals(UnitFormatter.NO_VALUE, RideMetric.SPEED.value(live, formatter))
         assertEquals(UnitFormatter.NO_VALUE, RideMetric.HEART_RATE.value(live, formatter))
-        assertEquals(6, DefaultDataPages.MAIN.metrics.size)
+        // Hero + 6 fields (13-UI-SCREENS #6, D-54).
+        assertEquals(7, DefaultDataPages.MAIN.metrics.size)
     }
 
     private companion object {

@@ -124,10 +124,10 @@ Satuan, bahasa, sumber cadence prioritas, ambang mode baterai (§BM), setting ke
 ```json
 {
   "pages": [
-    {"id": "main", "layout": 6, "fields": ["speed","distance","moving_time","hr","cadence","power_3s"]},
+    {"id": "main", "layout": 7, "fields": ["speed","distance","moving_time","hr","cadence","power_3s","avg_speed"]},
     {"id": "map", "type": "map", "fields": ["distance_remaining","speed"]},
     {"id": "climb", "layout": 4, "fields": ["grade","altitude","ascent","elevation_profile"]},
-    {"id": "lap", "layout": 6, "fields": ["lap_time","lap_distance","lap_avg_speed","lap_avg_power","lap_avg_hr","clock"]}
+    {"id": "lap", "layout": 5, "fields": ["lap_time","lap_distance","lap_avg_speed","lap_avg_hr","lap_avg_power"]}
   ]
 }
 ```

@@ -61,6 +61,10 @@ public data class LiveRide(
     val hasGpsFix: Boolean = false,
     val gpsAccuracyM: Double? = null,
     val batteryMode: BatteryMode = BatteryMode.NORMAL,
+    /** Last phone battery reading (status strip, 13-UI-SCREENS §2); null before the first one. */
+    val phoneBatteryPercent: Int? = null,
+    /** Start of the current manual or auto pause ("diam 1:42", 13-UI-SCREENS #14). */
+    val pausedSinceMs: Long? = null,
     val reminder: ActiveReminder? = null,
     val isIdlePromptVisible: Boolean = false,
     /** Heart rate, cadence, power, estimates and sensor states (Phase 2). */
@@ -144,6 +148,7 @@ public class RideRecorder(
     private var isIdlePromptDismissed = false
 
     private var pausedSinceMs: Long? = null
+    private var phoneBatteryPercent: Int? = null
     private val idlePromptMs: Long = settings.idlePromptMin * Units.MS_PER_MINUTE
     private val resumeSpeedMps: Double = settings.autoPauseSpeedMps + AutoPauseConfig.RESUME_HYSTERESIS_MPS
 
@@ -196,6 +201,7 @@ public class RideRecorder(
 
     /** New battery reading (≤ every 30 s). The change is reported with the next tick. */
     public fun onBattery(batteryStatus: BatteryStatus, nowMs: Long) {
+        phoneBatteryPercent = batteryStatus.percent
         battery.update(batteryStatus)?.let { change ->
             pendingBatteryChange = change
             if (startedAtMs != null) change.event?.let { pendingEvents += RideEvent(nowMs, it) }
@@ -418,6 +424,8 @@ public class RideRecorder(
             hasGpsFix = fix != null,
             gpsAccuracyM = fix?.accuracyM,
             batteryMode = battery.mode,
+            phoneBatteryPercent = phoneBatteryPercent,
+            pausedSinceMs = pausedSinceMs,
             reminder = reminder,
             isIdlePromptVisible = status == RideStatus.AUTO_PAUSED &&
                 !isIdlePromptDismissed &&

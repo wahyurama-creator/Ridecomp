@@ -84,6 +84,7 @@ object RideCompDimens {
 
     // Text sizes (13-UI-SCREENS §1.3)
     val hugeNumberSize = 96.sp
+    val pauseTimeSize = 64.sp
     val screenTitleSize = 26.sp
     val titleSize = 22.sp
     val cardTitleSize = 16.sp
