@@ -10,6 +10,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.drawText
@@ -61,8 +63,7 @@ fun GradeProfile(
             val barWidth = size.width / gradesPercent.size
             val plotHeight = size.height - labelHeight
             gradesPercent.forEachIndexed { index, grade ->
-                val band = bandUpperBoundsPercent.indexOfFirst { grade < it }
-                    .takeIf { it >= 0 } ?: bandUpperBoundsPercent.size
+                val band = bandIndex(grade, bandUpperBoundsPercent)
                 val height = (grade.coerceAtLeast(0.0) / maxGrade * plotHeight).toFloat()
                     .coerceAtLeast(RideCompDimens.chartStroke.toPx())
                 val left = index * barWidth
@@ -84,16 +85,39 @@ fun GradeProfile(
             }
             markerFraction?.let { fraction ->
                 val x = (fraction.coerceIn(0.0, 1.0) * size.width).toFloat()
+                // The ridden part is dimmed, the position is a dashed line with a dot (13-UI-SCREENS #8).
+                drawRect(color = colors.bg.copy(alpha = PASSED_DIM_ALPHA), size = Size(x, size.height))
+                val dash = RideCompDimens.chartStroke.toPx() * DASH_FACTOR
                 drawLine(
                     color = colors.textPrimary,
                     start = Offset(x, 0f),
                     end = Offset(x, size.height),
                     strokeWidth = RideCompDimens.chartStroke.toPx(),
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(dash, dash)),
+                )
+                drawCircle(
+                    color = colors.textPrimary,
+                    radius = RideCompDimens.markerDotRadius.toPx(),
+                    center = Offset(x, size.height - RideCompDimens.markerDotRadius.toPx()),
                 )
             }
         }
     }
 }
+
+/** Band of [grade]: the index of the first upper bound above it, or the last band. */
+private fun bandIndex(grade: Double, bounds: List<Double>): Int =
+    bounds.indexOfFirst { grade < it }.takeIf { it >= 0 } ?: bounds.size
+
+/** Color of [gradePercent]'s band, e.g. for the current grade value (13-UI-SCREENS #8). */
+@Composable
+fun gradeBandColor(gradePercent: Double?, bandUpperBoundsPercent: List<Double>): Color? {
+    val bands = RideCompTheme.colors.gradeBands
+    return gradePercent?.let { bands[bandIndex(it, bandUpperBoundsPercent).coerceAtMost(bands.lastIndex)] }
+}
+
+private const val PASSED_DIM_ALPHA = 0.5f
+private const val DASH_FACTOR = 2f
 
 /** A flat climb still gets visible bars. */
 private const val MIN_SCALE_PERCENT = 1.0

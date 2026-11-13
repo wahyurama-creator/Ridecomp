@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -47,7 +48,7 @@ import com.ridecomp.feature.ride.model.RideMetric
 import com.ridecomp.feature.ride.model.RouteView
 import com.ridecomp.feature.ride.model.rideAction
 import com.ridecomp.feature.ride.ui.component.BreadcrumbMap
-import com.ridecomp.feature.ride.ui.component.ClimbPanel
+import com.ridecomp.feature.ride.ui.component.ClimbPage
 import com.ridecomp.feature.ride.ui.component.IncidentAlertedBanner
 import com.ridecomp.feature.ride.ui.component.IncidentCountdown
 import com.ridecomp.feature.ride.ui.component.NextClimbInfo
@@ -223,6 +224,12 @@ private fun DataPageContent(
     // The climb page gets the route elevation profile with the rider's position (T3.9).
     val showsProfile = route?.hasElevation == true && RideMetric.GRADE in page.metrics
     val isLapPage = RideMetric.LAP_TIME in page.metrics
+    // On a climb the climb page replaces the grid (13-UI-SCREENS #8, 12-FEATURE-SPECS §6.2).
+    val climb = live.value.route?.climb.takeIf { showsProfile }
+    if (climb != null) {
+        ClimbPage(climb, live.value.elevation.gradePercent, formatter)
+        return
+    }
     Column(modifier = Modifier.fillMaxSize()) {
         if (isLapPage) LapHeader(live, formatter)
         DataGrid(
@@ -249,13 +256,8 @@ private fun DataPageContent(
 @Composable
 private fun ClimbSection(route: RouteView, live: State<LiveRide>, formatter: UnitFormatter) {
     val progress = live.value.route
-    val climb = progress?.climb
-    if (climb != null) {
-        ClimbPanel(climb, formatter)
-    } else {
-        progress?.nextClimb?.let { NextClimbInfo(it, formatter) }
-        RouteProfile(route, live)
-    }
+    progress?.nextClimb?.let { NextClimbInfo(it, formatter) }
+    RouteProfile(route, live)
 }
 
 /** Navigation page (T3.5/T3.8): breadcrumb map plus distance to go and speed (02-DESIGN §3.4). */
@@ -273,18 +275,27 @@ private fun NavigationPage(
             distanceAlongM = current.route?.distanceAlongM,
             latDeg = current.latDeg,
             lonDeg = current.lonDeg,
-            modifier = Modifier.fillMaxWidth().weight(2f),
+            modifier = Modifier.fillMaxWidth().weight(1f),
         )
-        DataGrid(count = NAVIGATION_FIELDS.size, modifier = Modifier.weight(1f)) { index, cellModifier ->
-            RideField(
-                live = live,
-                metric = NAVIGATION_FIELDS[index],
-                formatter = formatter,
-                labels = labels,
-                modifier = cellModifier,
-            )
+        // Two fixed-height fields side by side, the map takes the rest (13-UI-SCREENS #7); the elevation
+        // profile lives on the climb page.
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(RideCompDimens.navigationFieldHeight)
+                .background(RideCompTheme.colors.divider),
+            horizontalArrangement = Arrangement.spacedBy(RideCompDimens.dividerThickness),
+        ) {
+            NAVIGATION_FIELDS.forEach { metric ->
+                RideField(
+                    live = live,
+                    metric = metric,
+                    formatter = formatter,
+                    labels = labels,
+                    modifier = Modifier.weight(1f),
+                )
+            }
         }
-        if (route.hasElevation) RouteProfile(route, live)
     }
 }
 

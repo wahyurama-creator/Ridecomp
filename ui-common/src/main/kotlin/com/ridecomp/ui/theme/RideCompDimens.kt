@@ -81,6 +81,11 @@ object RideCompDimens {
     /** Width / height of the data page preview in the editor (portrait phone data area). */
     const val DATA_PAGE_PREVIEW_ASPECT_RATIO = 3f / 4f
     val chartStroke = 2.dp
+    val markerDotRadius = 6.dp
+    val turnArrowSize = 64.dp
+    val previewPageHeight = 600.dp
+    val navigationFieldHeight = 92.dp
+    val turnDistanceSize = 44.sp
 
     // Data field typography (02-DESIGN §4.2)
     val dataValueMinSize = 32.sp

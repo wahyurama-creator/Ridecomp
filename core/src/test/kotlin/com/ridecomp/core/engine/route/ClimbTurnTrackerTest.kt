@@ -86,4 +86,17 @@ class ClimbTurnTrackerTest {
         assertNull(after.climb)
         assertNull(after.nextClimb)
     }
+
+    @Test
+    fun `long climbs merge profile sections so at most twelve bars are drawn`() {
+        val long = climb.copy(gradeProfilePercent = List(30) { if (it < 15) 4.0 else 8.0 })
+
+        val profile = long.displayProfile()
+
+        assertEquals(10, profile.gradesPercent.size)
+        assertEquals(300.0, profile.sectionM)
+        assertEquals(4.0, profile.gradesPercent.first())
+        assertEquals(8.0, profile.gradesPercent.last())
+        assertEquals(climb.gradeProfilePercent, climb.displayProfile().gradesPercent)
+    }
 }
