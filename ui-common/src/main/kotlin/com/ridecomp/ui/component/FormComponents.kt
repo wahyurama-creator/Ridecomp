@@ -38,6 +38,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import com.ridecomp.ui.preview.RideCompPreview
@@ -212,6 +214,8 @@ fun RideCompTextField(
     error: String? = null,
     keyboardType: KeyboardType = KeyboardType.Text,
     isLarge: Boolean = false,
+    /** Hides the characters (backup password). */
+    isPassword: Boolean = false,
 ) {
     val colors = RideCompTheme.colors
     val shape = RoundedCornerShape(RideCompDimens.cornerRadiusSmall)
@@ -226,6 +230,7 @@ fun RideCompTextField(
             textStyle = textStyle,
             cursorBrush = SolidColor(colors.accent),
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
             modifier = Modifier
                 .fillMaxWidth()
                 .semantics {

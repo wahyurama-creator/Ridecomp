@@ -114,7 +114,7 @@
     </plurals>
     <string name="backup_restore_header">RESTORE</string>
     <string name="backup_restore_hint">Restore mengganti semua data di HP ini. Kontak darurat perlu diisi ulang sesudahnya.</string>
-    <string name="backup_restore_choose">Pilih file backup</string>
+    <string name="backup_restore_choose">Restore dari file</string>
     <string name="backup_encrypted_hint">Backup ini dilindungi. Masukkan kata sandinya.</string>
     <string name="backup_unlock">Buka backup</string>
     <plurals name="backup_summary">
@@ -197,4 +197,10 @@
     <string name="safety_sms_example_title">Contoh SMS</string>
     <string name="safety_sms_example">RideComp: %1$s mungkin mengalami kecelakaan saat bersepeda pada 07:12. Lokasi terakhir: maps.google.com/?q=… (akurasi ±6 m). Pesan otomatis.</string>
     <string name="safety_sms_rider_unknown">pesepeda</string>
+    <string name="backup_included_title">Termasuk</string>
+    <string name="backup_included">Aktivitas &amp; file FIT · rute GPX · profil &amp; pengaturan · sensor tersimpan</string>
+    <string name="backup_excluded_title">Tidak termasuk</string>
+    <string name="backup_excluded">Kontak darurat · peta offline</string>
+    <string name="backup_password_recommended">Disarankan: berisi lokasi &amp; data HR</string>
+    <string name="backup_create_hint">Simpan ke Google Drive, WhatsApp, atau folder HP</string>
 </resources>
