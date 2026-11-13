@@ -227,4 +227,12 @@
     <plurals name="settings_offline_maps_value">
         <item quantity="other">%1$d area · %2$s</item>
     </plurals>
+    <!-- Lisensi open source (D-65). -->
+    <string name="settings_licenses">Lisensi open source</string>
+    <string name="licenses_title">Lisensi open source</string>
+    <string name="licenses_intro">RideComp dibangun dengan proyek open source dan data peta berikut. Ketuk untuk membaca lisensinya.</string>
+    <string name="licenses_maplibre_components">Komponen bawaan MapLibre Native</string>
+    <string name="licenses_apache_libraries">AndroidX, Jetpack Compose, Room, Kotlin, kotlinx, Koin, MapLibre Java, OkHttp, Okio, Gson, Timber</string>
+    <string name="licenses_openstreetmap">Data peta OpenStreetMap</string>
+    <string name="licenses_various">BSD, MIT, Boost, FreeType, dan lainnya</string>
 </resources>

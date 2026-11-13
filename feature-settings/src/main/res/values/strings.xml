@@ -235,4 +235,17 @@
         <item quantity="one">%1$d area · %2$s</item>
         <item quantity="other">%1$d areas · %2$s</item>
     </plurals>
+    <!-- Open source licenses (D-65). Component and license names are proper names. -->
+    <string name="settings_licenses">Open source licenses</string>
+    <string name="licenses_title">Open source licenses</string>
+    <string name="licenses_intro">RideComp is built with these open source projects and map data. Tap one to read its license.</string>
+    <string name="licenses_maplibre_native" translatable="false">MapLibre Native (Android SDK)</string>
+    <string name="licenses_maplibre_components">MapLibre Native bundled components</string>
+    <string name="licenses_maplibre_gestures" translatable="false">MapLibre Android Gestures</string>
+    <string name="licenses_apache_libraries">AndroidX, Jetpack Compose, Room, Kotlin, kotlinx, Koin, MapLibre Java, OkHttp, Okio, Gson, Timber</string>
+    <string name="licenses_openstreetmap">OpenStreetMap map data</string>
+    <string name="licenses_bsd_2" translatable="false">BSD 2-Clause License</string>
+    <string name="licenses_apache_2" translatable="false">Apache License 2.0</string>
+    <string name="licenses_odbl" translatable="false">Open Database License (ODbL) 1.0</string>
+    <string name="licenses_various">BSD, MIT, Boost, FreeType and others</string>
 </resources>
