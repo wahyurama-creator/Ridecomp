@@ -2,8 +2,10 @@ package com.ridecomp.core.repository
 
 import com.ridecomp.core.model.ActivityProfile
 import com.ridecomp.core.model.DataPagesLayout
+import com.ridecomp.core.model.EmergencyContact
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RiderProfile
+import com.ridecomp.core.model.SafetySettings
 import kotlinx.coroutines.flow.Flow
 
 /** Rider profile, single row (05-DATA-MODEL `profile`). */
@@ -53,4 +55,25 @@ public interface ActivityProfileRepository {
     public fun observeLastUsedId(): Flow<Long?>
 
     public suspend fun setLastUsedId(id: Long)
+}
+
+/** Safety settings and emergency contacts (05-DATA-MODEL `emergency_contacts`). */
+public interface SafetyRepository {
+    public fun observeSettings(): Flow<SafetySettings>
+
+    public suspend fun getSettings(): SafetySettings
+
+    public suspend fun saveSettings(settings: SafetySettings)
+
+    public fun observeContacts(): Flow<List<EmergencyContact>>
+
+    public suspend fun getContacts(): List<EmergencyContact>
+
+    public suspend fun addContact(contact: EmergencyContact)
+
+    public suspend fun removeContact(id: Long)
+
+    public suspend fun getLastTestSmsAtMs(): Long?
+
+    public suspend fun setLastTestSmsAtMs(atMs: Long)
 }

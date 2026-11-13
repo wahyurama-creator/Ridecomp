@@ -52,6 +52,16 @@ class MigrationSqlTest {
     }
 
     @Test
+    fun `migration 3 to 4 matches the exported contacts and incidents schema`() {
+        val executed = executedSql { RideCompMigrations.MIGRATION_3_4.migrate(it) }
+
+        assertEquals(
+            exportedCreateSql(4, DbNames.TABLE_EMERGENCY_CONTACTS) + exportedCreateSql(4, DbNames.TABLE_INCIDENTS),
+            executed,
+        )
+    }
+
+    @Test
     fun `every schema version has a migration path`() {
         val versions = File(SCHEMA_DIR).listFiles().orEmpty().mapNotNull { it.nameWithoutExtension.toIntOrNull() }
 

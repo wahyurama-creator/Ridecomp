@@ -86,4 +86,28 @@
     <string name="battery_help_samsung">Settings → Battery → Background usage limits → remove RideComp from sleeping apps. App battery: Unrestricted.</string>
     <string name="battery_help_generic">Settings → Apps → RideComp → Battery: Unrestricted / Do not optimise.</string>
     <string name="battery_help_more">MORE HELP FOR YOUR PHONE</string>
+    <string name="safety_title">Safety</string>
+    <string name="safety_disclaimer">Incident detection helps but cannot catch every accident and may raise false alarms. SMS needs mobile signal and credit. While riding, a 30 s countdown lets you cancel before anything is sent.</string>
+    <string name="safety_enabled">Incident detection</string>
+    <string name="safety_enabled_description">Needs at least one contact and the SMS permission.</string>
+    <string name="safety_rider_name">Your name (used in the SMS)</string>
+    <string name="safety_contacts">EMERGENCY CONTACTS (MAX 3)</string>
+    <string name="safety_pick_contact">Choose from contacts</string>
+    <string name="safety_contact_name">Contact name</string>
+    <string name="safety_contact_phone">Phone number</string>
+    <string name="safety_add_contact">Add number</string>
+    <string name="safety_remove">Remove</string>
+    <string name="safety_send_test">Send test SMS</string>
+    <plurals name="safety_test_sent">
+        <item quantity="one">Test SMS sent to %1$d contact.</item>
+        <item quantity="other">Test SMS sent to %1$d contacts.</item>
+    </plurals>
+    <string name="safety_ok">OK</string>
+    <string name="safety_error_no_contacts">Add an emergency contact first.</string>
+    <string name="safety_error_permission">SMS permission is needed for emergency messages.</string>
+    <string name="safety_error_phone">This phone number is not valid.</string>
+    <string name="safety_error_too_many">At most 3 contacts.</string>
+    <string name="safety_error_too_soon">Wait one minute before the next test SMS.</string>
+    <string name="safety_error_send_failed">SMS could not be sent. Check signal and credit.</string>
+    <string name="settings_safety_subtitle">Incident detection, emergency contacts</string>
 </resources>

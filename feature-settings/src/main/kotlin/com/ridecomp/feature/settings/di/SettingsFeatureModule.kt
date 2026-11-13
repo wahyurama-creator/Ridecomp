@@ -3,6 +3,8 @@ package com.ridecomp.feature.settings.di
 import com.ridecomp.feature.settings.viewmodel.OnboardingViewModel
 import com.ridecomp.feature.settings.viewmodel.ProfileViewModel
 import com.ridecomp.feature.settings.viewmodel.RideSettingsViewModel
+import com.ridecomp.feature.settings.viewmodel.SafetyUseCases
+import com.ridecomp.feature.settings.viewmodel.SafetyViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
@@ -11,4 +13,6 @@ val settingsFeatureModule = module {
     viewModel { ProfileViewModel(get(), get(), get()) }
     viewModel { RideSettingsViewModel(get(), get()) }
     viewModel { OnboardingViewModel(get()) }
+    factory { SafetyUseCases(get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { SafetyViewModel(get()) }
 }

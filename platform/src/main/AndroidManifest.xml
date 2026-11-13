@@ -48,6 +48,16 @@
         tools:targetApi="s" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
+    <!--
+        Emergency SMS (12-FEATURE-SPECS §5, SEC-SMS-01..07): requested at runtime only when the rider turns
+        incident detection on. Sideload distribution; to be reviewed before any Play Store release (SEC-SMS-07).
+        Phones without telephony can still install the app; the feature then reports send failures.
+    -->
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+
     <application>
         <!-- Not exported (SEC-PLT-01/02): only explicit intents from this app reach it. -->
         <service

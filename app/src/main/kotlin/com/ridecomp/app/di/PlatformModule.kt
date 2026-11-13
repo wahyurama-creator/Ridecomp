@@ -14,9 +14,12 @@ import com.ridecomp.core.source.DispatcherProvider
 import com.ridecomp.core.source.IdGenerator
 import com.ridecomp.core.source.LocationSource
 import com.ridecomp.core.source.Logger
+import com.ridecomp.core.source.PickedContactReader
 import com.ridecomp.core.source.PressureSource
 import com.ridecomp.core.source.RideController
 import com.ridecomp.core.source.RideNameProvider
+import com.ridecomp.core.source.SafetyMessages
+import com.ridecomp.core.source.SmsGateway
 import com.ridecomp.core.usecase.ExportFitUseCase
 import com.ridecomp.core.usecase.GetRideProfileUseCase
 import com.ridecomp.platform.ble.AndroidBleScanner
@@ -29,6 +32,9 @@ import com.ridecomp.platform.device.AndroidRideNameProvider
 import com.ridecomp.platform.device.UuidIdGenerator
 import com.ridecomp.platform.location.AndroidLocationSource
 import com.ridecomp.platform.location.AndroidPressureSource
+import com.ridecomp.platform.safety.AndroidPickedContactReader
+import com.ridecomp.platform.safety.AndroidSafetyMessages
+import com.ridecomp.platform.safety.AndroidSmsGateway
 import com.ridecomp.platform.service.RecordingDependencies
 import com.ridecomp.platform.service.RideStateHolder
 import com.ridecomp.platform.service.ServiceRideController
@@ -55,6 +61,9 @@ val platformModule = module {
     single { RideStateHolder() }
     single<BleScanner> { AndroidBleScanner(androidContext()) }
     single<SensorConnector> { AndroidSensorConnector(androidContext(), get(), get()) }
+    single<SmsGateway> { AndroidSmsGateway(androidContext(), get(), get()) }
+    single<SafetyMessages> { AndroidSafetyMessages(androidContext()) }
+    single<PickedContactReader> { AndroidPickedContactReader(androidContext(), get()) }
     single<RideController> { ServiceRideController(androidContext(), get()) }
     factory { RecordingSession(get(), get(), get(), get()) }
 }

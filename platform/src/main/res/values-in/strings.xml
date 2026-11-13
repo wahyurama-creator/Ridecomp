@@ -15,4 +15,11 @@
     <string name="notification_action_resume">Lanjutkan</string>
     <string name="notification_battery_saver">Mode hemat aktif</string>
     <string name="notification_battery_critical">Mode kritis</string>
+    <string name="sms_test">RideComp UJI: SMS darurat dari %1$s berfungsi. Tidak perlu tindakan.</string>
+    <string name="sms_incident">RideComp: %1$s mungkin mengalami kecelakaan saat bersepeda pada %2$s. %3$s Pesan otomatis.</string>
+    <string name="sms_location_accuracy">Lokasi terakhir: %1$s (akurasi ±%2$d m).</string>
+    <string name="sms_location">Lokasi terakhir: %1$s.</string>
+    <string name="sms_location_unknown">Lokasi tidak diketahui.</string>
+    <string name="sms_safe">RideComp: %1$s dalam keadaan aman. Terima kasih.</string>
+    <string name="sms_rider_unknown">pesepeda</string>
 </resources>

@@ -15,4 +15,11 @@
     <string name="notification_action_resume">Resume</string>
     <string name="notification_battery_saver">Battery saver on</string>
     <string name="notification_battery_critical">Battery critical</string>
+    <string name="sms_test">RideComp TEST: emergency SMS from %1$s works. No action needed.</string>
+    <string name="sms_incident">RideComp: %1$s may have had a cycling accident at %2$s. %3$s Automatic message.</string>
+    <string name="sms_location_accuracy">Last location: %1$s (accuracy ±%2$d m).</string>
+    <string name="sms_location">Last location: %1$s.</string>
+    <string name="sms_location_unknown">Location unknown.</string>
+    <string name="sms_safe">RideComp: %1$s is safe. Thank you.</string>
+    <string name="sms_rider_unknown">the rider</string>
 </resources>
