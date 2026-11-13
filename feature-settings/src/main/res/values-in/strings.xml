@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="settings_title">Pengaturan</string>
-    <string name="settings_profile">Profil</string>
+    <string name="settings_title">Setelan</string>
+    <string name="settings_profile">Profil pengendara</string>
     <string name="settings_profile_subtitle">Berat badan, sepeda, ukuran roda, HR max, FTP</string>
     <string name="settings_data_pages">Halaman data</string>
     <string name="settings_activity_profiles">Profil aktivitas</string>
     <string name="settings_activity_profiles_subtitle">Road, Gravel, MTB, Indoor, Commute</string>
-    <string name="settings_screen_battery">Ride, layar &amp; baterai</string>
-    <string name="settings_safety">Keselamatan</string>
+    <string name="settings_screen_battery">Layar &amp; baterai</string>
+    <string name="settings_safety">Keselamatan &amp; kontak darurat</string>
     <string name="settings_offline_maps">Peta offline</string>
     <string name="settings_units">Satuan</string>
-    <string name="settings_language">Bahasa</string>
-    <string name="settings_backup">Backup &amp; restore</string>
+    <string name="settings_language">Satuan &amp; bahasa</string>
+    <string name="settings_backup">Backup &amp; export data</string>
     <string name="settings_battery_help">HP saya mematikan app</string>
     <string name="settings_coming_soon">Tersedia di versi berikutnya</string>
 
@@ -173,4 +173,24 @@
     <string name="profile_later_note">Usia, HR istirahat, dan jenis kelamin bisa diisi nanti di Setelan.</string>
     <string name="profile_save_next">Simpan &amp; lanjut</string>
     <string name="onboarding_back_label">Kembali</string>
+    <string name="settings_auto_pause">Jeda &amp; lanjut otomatis</string>
+    <string name="settings_reminders">Pengingat minum &amp; makan</string>
+    <string name="settings_battery_help_brand">Panduan Autostart &amp; baterai untuk %1$s</string>
+    <string name="settings_battery_help_generic">Panduan agar rekaman tidak dihentikan HP</string>
+    <string name="settings_footer">RideComp · data tersimpan lokal, tanpa iklan &amp; tracking</string>
+    <string name="settings_profile_value">%1$s kg · FTP %2$s</string>
+    <string name="settings_none">—</string>
+    <string name="settings_auto_pause_on">Aktif · diam %1$d dtk</string>
+    <string name="settings_off">Nonaktif</string>
+    <string name="settings_reminders_value">%1$s / %2$s mnt</string>
+    <string name="settings_units_metric">Metrik</string>
+    <string name="settings_units_imperial">Imperial</string>
+    <string name="settings_backup_value">Semua di HP ini</string>
+    <string name="settings_screen_off">Mati</string>
+    <plurals name="settings_activity_profiles_value">
+        <item quantity="other">%1$d profil · halaman data</item>
+    </plurals>
+    <plurals name="settings_safety_on">
+        <item quantity="other">Aktif · %1$d kontak</item>
+    </plurals>
 </resources>

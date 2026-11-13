@@ -101,9 +101,9 @@
     <string name="unit_watts_per_kg">W/kg</string>
     <string name="unit_kcal">kcal</string>
     <string name="data_pages_title">Data pages</string>
-    <string name="data_pages_field_count">Fields per page</string>
+    <string name="data_pages_field_count">Number of fields</string>
     <string name="data_pages_first_full_width">First field full width</string>
-    <string name="data_pages_tap_hint">Tap a field to choose its metric.</string>
+    <string name="data_pages_tap_hint">Tap a field to change its metric</string>
     <string name="data_pages_page">Page</string>
     <string name="data_pages_save">Save</string>
     <string name="data_pages_add">Add page</string>
@@ -269,4 +269,14 @@
     <string name="summary_laps_caption">laps</string>
     <string name="summary_export_hint">Export FIT and share are on the activity detail after saving</string>
     <string name="summary_strava_help">How to upload a FIT file to Strava</string>
+    <string name="data_pages_change_field">Change field %1$d</string>
+    <string name="data_pages_current">Selected</string>
+    <string name="metric_category_speed">Speed</string>
+    <string name="metric_category_distance_time">Distance &amp; time</string>
+    <string name="metric_category_cadence">Cadence</string>
+    <string name="metric_category_power">Power</string>
+    <string name="metric_category_heart_rate">Heart rate</string>
+    <string name="metric_category_elevation">Elevation</string>
+    <string name="metric_category_lap">Lap</string>
+    <string name="metric_category_navigation">Navigation</string>
 </resources>

@@ -145,6 +145,8 @@ fun ListCardRow(
     hasDivider: Boolean = true,
     trailing: (@Composable () -> Unit)? = null,
     leading: (@Composable () -> Unit)? = null,
+    /** False for pick lists, where the row selects instead of opening a screen. */
+    hasChevron: Boolean = true,
 ) {
     val colors = RideCompTheme.colors
     Column(modifier = modifier.fillMaxWidth()) {
@@ -177,7 +179,7 @@ fun ListCardRow(
                 )
             }
             trailing?.invoke()
-            if (onClick != null) ChevronIcon()
+            if (onClick != null && hasChevron) ChevronIcon()
         }
         if (hasDivider) HorizontalDivider(thickness = RideCompDimens.dividerThickness, color = colors.divider)
     }

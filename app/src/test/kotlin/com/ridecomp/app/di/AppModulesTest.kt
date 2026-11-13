@@ -73,6 +73,7 @@ import com.ridecomp.feature.settings.viewmodel.OnboardingViewModel
 import com.ridecomp.feature.settings.viewmodel.ProfileViewModel
 import com.ridecomp.feature.settings.viewmodel.RideSettingsViewModel
 import com.ridecomp.feature.settings.viewmodel.SafetyViewModel
+import com.ridecomp.feature.settings.viewmodel.SettingsViewModel
 import java.io.File
 import java.nio.file.Files
 import kotlin.test.AfterTest
@@ -154,6 +155,7 @@ class AppModulesTest {
         assertNotNull(koin.get<RideViewModel>())
         assertNotNull(koin.get<SummaryViewModel>())
         assertNotNull(koin.get<ProfileViewModel>())
+        assertNotNull(koin.get<SettingsViewModel>())
         assertNotNull(koin.get<RideSettingsViewModel>())
         assertNotNull(koin.get<OnboardingViewModel>())
         assertNotNull(koin.get<HistoryViewModel>())

@@ -2,34 +2,53 @@ package com.ridecomp.feature.settings.ui
 
 import android.os.Build
 import androidx.annotation.StringRes
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ridecomp.core.model.RideSettings
+import com.ridecomp.core.model.ScreenMode
+import com.ridecomp.core.model.UnitSystem
 import com.ridecomp.feature.settings.R
-import com.ridecomp.ui.component.ListRow
+import com.ridecomp.feature.settings.viewmodel.SettingsUiState
+import com.ridecomp.feature.settings.viewmodel.SettingsViewModel
+import com.ridecomp.ui.component.ListCard
+import com.ridecomp.ui.component.ListCardRow
 import com.ridecomp.ui.component.ScreenScaffold
+import com.ridecomp.ui.component.ValueTone
+import com.ridecomp.ui.component.WarningCard
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
+import com.ridecomp.ui.theme.RideCompDimens
+import com.ridecomp.ui.theme.RideCompTheme
+import org.koin.androidx.compose.koinViewModel
 
 /**
- * Settings sections (02-DESIGN §3.10) in screen order. [taskId] marks sections delivered in a later
- * roadmap task; they are listed but not yet openable.
+ * Settings sections (02-DESIGN §3.10, 13-UI-SCREENS #13). [taskId] marks sections delivered in a later
+ * roadmap task; they are listed but not yet openable. Upload to Strava (Phase 5) is not listed.
  */
-enum class SettingsSection(
-    @param:StringRes val titleRes: Int,
-    @param:StringRes val subtitleRes: Int? = null,
-    val taskId: String? = null,
-) {
-    PROFILE(R.string.settings_profile, R.string.settings_profile_subtitle),
+enum class SettingsSection(@param:StringRes val titleRes: Int, val taskId: String? = null) {
+    PROFILE(R.string.settings_profile),
+    ACTIVITY_PROFILES(R.string.settings_activity_profiles),
     RIDE_SCREEN_BATTERY(R.string.settings_screen_battery),
-    ACTIVITY_PROFILES(R.string.settings_activity_profiles, R.string.settings_activity_profiles_subtitle),
+    AUTO_PAUSE(R.string.settings_auto_pause),
+    REMINDERS(R.string.settings_reminders),
+    SAFETY(R.string.settings_safety),
     DATA_PAGES(R.string.settings_data_pages),
-    SAFETY(R.string.settings_safety, R.string.settings_safety_subtitle),
-    BACKUP(R.string.settings_backup, R.string.settings_backup_subtitle),
     OFFLINE_MAPS(R.string.settings_offline_maps, taskId = "T3.4"),
     LANGUAGE(R.string.settings_language),
+    BACKUP(R.string.settings_backup),
     BATTERY_HELP(R.string.settings_battery_help),
 
     /** Debug builds only (simulated GPS, 07-TEST-PLAN §2). */
@@ -41,51 +60,185 @@ enum class SettingsSection(
         get() = taskId == null && (this != LANGUAGE || Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
 }
 
+/** The design's two cards (13-UI-SCREENS #13). */
+private val RIDE_SECTIONS = listOf(
+    SettingsSection.PROFILE,
+    SettingsSection.ACTIVITY_PROFILES,
+    SettingsSection.RIDE_SCREEN_BATTERY,
+    SettingsSection.AUTO_PAUSE,
+    SettingsSection.REMINDERS,
+    SettingsSection.SAFETY,
+)
+private val APP_SECTIONS = listOf(
+    SettingsSection.DATA_PAGES,
+    SettingsSection.OFFLINE_MAPS,
+    SettingsSection.LANGUAGE,
+    SettingsSection.BACKUP,
+    SettingsSection.DEVELOPER,
+)
+
 /** Settings entry point (UI-01). */
 @Composable
 fun SettingsRoute(
     onSectionClick: (SettingsSection) -> Unit,
     modifier: Modifier = Modifier,
     isDeveloperMenuVisible: Boolean = false,
+    viewModel: SettingsViewModel = koinViewModel(),
 ) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     SettingsScreen(
+        state = state,
         onSectionClick = onSectionClick,
         modifier = modifier,
         isDeveloperMenuVisible = isDeveloperMenuVisible,
     )
 }
 
-/** Stateless list of settings sections. */
+/** Stateless settings overview. */
 @Composable
 fun SettingsScreen(
+    state: SettingsUiState,
     onSectionClick: (SettingsSection) -> Unit,
     modifier: Modifier = Modifier,
     isDeveloperMenuVisible: Boolean = false,
 ) {
-    val sections = SettingsSection.entries.filter { it != SettingsSection.DEVELOPER || isDeveloperMenuVisible }
+    val brand = remember { PhoneBrand.of(Build.MANUFACTURER) }
     ScreenScaffold(modifier = modifier, title = stringResource(R.string.settings_title)) {
-        LazyColumn {
-            items(sections, key = { it.name }) { section ->
-                ListRow(
-                    title = stringResource(section.titleRes),
-                    subtitle = if (section.isAvailable) {
-                        section.subtitleRes?.let { stringResource(it) }
-                    } else {
-                        stringResource(R.string.settings_coming_soon)
-                    },
-                    onClick = if (section.isAvailable) {
-                        { onSectionClick(section) }
-                    } else {
-                        null
-                    },
-                )
-            }
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(
+                    start = RideCompDimens.screenPaddingHorizontal,
+                    end = RideCompDimens.screenPaddingHorizontal,
+                    bottom = RideCompDimens.screenPaddingBottom,
+                ),
+            verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
+        ) {
+            WarningCard(
+                title = stringResource(R.string.settings_battery_help),
+                message = if (brand == PhoneBrand.OTHER) {
+                    stringResource(R.string.settings_battery_help_generic)
+                } else {
+                    stringResource(R.string.settings_battery_help_brand, Build.MANUFACTURER)
+                },
+                onClick = { onSectionClick(SettingsSection.BATTERY_HELP) },
+            )
+            SectionCard(RIDE_SECTIONS, state, onSectionClick)
+            SectionCard(
+                APP_SECTIONS.filter {
+                    it != SettingsSection.DEVELOPER || isDeveloperMenuVisible
+                },
+                state,
+                onSectionClick,
+            )
+            Text(
+                text = stringResource(R.string.settings_footer),
+                style = RideCompTheme.typography.caption,
+                color = RideCompTheme.colors.disabled,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
     }
 }
 
+@Composable
+private fun SectionCard(
+    sections: List<SettingsSection>,
+    state: SettingsUiState,
+    onSectionClick: (SettingsSection) -> Unit,
+) {
+    ListCard {
+        sections.forEachIndexed { index, section ->
+            val (value, tone) = section.summary(state)
+            ListCardRow(
+                title = stringResource(section.titleRes),
+                value = if (section.isAvailable) value else stringResource(R.string.settings_coming_soon),
+                valueTone = tone,
+                onClick = if (section.isAvailable) {
+                    { onSectionClick(section) }
+                } else {
+                    null
+                },
+                hasDivider = index < sections.lastIndex,
+            )
+        }
+    }
+}
+
+/** Short current value of a section ("68 kg · FTP —", "Aktif · 2 kontak"). */
+@Composable
+private fun SettingsSection.summary(state: SettingsUiState): Pair<String?, ValueTone> {
+    val settings = state.rideSettings
+    return when (this) {
+        SettingsSection.PROFILE -> profileSummary(state) to ValueTone.NORMAL
+        SettingsSection.ACTIVITY_PROFILES -> pluralStringResource(
+            R.plurals.settings_activity_profiles_value,
+            state.activityProfileCount,
+            state.activityProfileCount,
+        ) to ValueTone.NORMAL
+        SettingsSection.RIDE_SCREEN_BATTERY -> stringResource(settings.screenMode.labelRes()) to ValueTone.NORMAL
+        SettingsSection.AUTO_PAUSE -> autoPauseSummary(settings)
+        SettingsSection.REMINDERS -> stringResource(
+            R.string.settings_reminders_value,
+            settings.drinkIntervalMin?.toString() ?: stringResource(R.string.settings_none),
+            settings.eatIntervalMin?.toString() ?: stringResource(R.string.settings_none),
+        ) to ValueTone.NORMAL
+        SettingsSection.SAFETY -> safetySummary(state)
+        SettingsSection.LANGUAGE -> stringResource(
+            if (settings.unitSystem ==
+                UnitSystem.METRIC
+            ) {
+                R.string.settings_units_metric
+            } else {
+                R.string.settings_units_imperial
+            },
+        ) to ValueTone.NORMAL
+        SettingsSection.BACKUP -> stringResource(R.string.settings_backup_value) to ValueTone.NORMAL
+        SettingsSection.DATA_PAGES, SettingsSection.OFFLINE_MAPS, SettingsSection.BATTERY_HELP,
+        SettingsSection.DEVELOPER,
+        -> null to ValueTone.NORMAL
+    }
+}
+
+@Composable
+private fun profileSummary(state: SettingsUiState): String? = state.profile?.let { profile ->
+    stringResource(
+        R.string.settings_profile_value,
+        profile.weightKg.plain(),
+        profile.ftpW?.toString() ?: stringResource(R.string.settings_none),
+    )
+}
+
+@Composable
+private fun autoPauseSummary(settings: RideSettings): Pair<String, ValueTone> = if (settings.isAutoPauseEnabled) {
+    stringResource(R.string.settings_auto_pause_on, settings.autoPauseDelayS) to ValueTone.OK
+} else {
+    stringResource(R.string.settings_off) to ValueTone.NORMAL
+}
+
+@Composable
+private fun safetySummary(state: SettingsUiState): Pair<String?, ValueTone> {
+    val safety = state.safety ?: return null to ValueTone.NORMAL
+    return if (safety.settings.isEnabled) {
+        pluralStringResource(R.plurals.settings_safety_on, safety.contacts.size, safety.contacts.size) to ValueTone.OK
+    } else {
+        stringResource(R.string.settings_off) to ValueTone.NORMAL
+    }
+}
+
+@StringRes
+private fun ScreenMode.labelRes(): Int = when (this) {
+    ScreenMode.ALWAYS_ON -> R.string.ride_settings_screen_always_on
+    ScreenMode.AUTO_DIM -> R.string.ride_settings_screen_auto_dim
+    ScreenMode.OFF -> R.string.settings_screen_off
+}
+
+/** "68" or "68.5" without a trailing ".0". */
+private fun Double.plain(): String = if (this % 1.0 == 0.0) toLong().toString() else toString()
+
 @ThemePreviews
 @Composable
 private fun SettingsScreenPreview() {
-    RideCompPreview { SettingsScreen(onSectionClick = {}) }
+    RideCompPreview { SettingsScreen(state = SettingsUiState(activityProfileCount = 5), onSectionClick = {}) }
 }

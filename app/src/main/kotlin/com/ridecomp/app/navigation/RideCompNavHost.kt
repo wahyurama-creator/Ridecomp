@@ -221,7 +221,8 @@ private fun NavGraphBuilder.historyGraph(navController: NavHostController) {
 private fun openSection(section: SettingsSection, navController: NavHostController, context: Context) {
     when (section) {
         SettingsSection.PROFILE -> navController.navigate(AppRoutes.PROFILE)
-        SettingsSection.RIDE_SCREEN_BATTERY -> navController.navigate(AppRoutes.RIDE_SETTINGS)
+        SettingsSection.RIDE_SCREEN_BATTERY, SettingsSection.AUTO_PAUSE, SettingsSection.REMINDERS ->
+            navController.navigate(AppRoutes.RIDE_SETTINGS)
         SettingsSection.BATTERY_HELP -> navController.navigate(AppRoutes.BATTERY_HELP)
         SettingsSection.DEVELOPER -> navController.navigate(AppRoutes.DEVELOPER)
         SettingsSection.LANGUAGE -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

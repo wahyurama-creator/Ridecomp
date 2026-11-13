@@ -100,9 +100,9 @@
     <string name="unit_watts_per_kg">W/kg</string>
     <string name="unit_kcal">kkal</string>
     <string name="data_pages_title">Halaman data</string>
-    <string name="data_pages_field_count">Jumlah field per halaman</string>
+    <string name="data_pages_field_count">Jumlah kotak</string>
     <string name="data_pages_first_full_width">Field pertama lebar penuh</string>
-    <string name="data_pages_tap_hint">Ketuk field untuk memilih metriknya.</string>
+    <string name="data_pages_tap_hint">Tap kotak untuk mengganti metriknya</string>
     <string name="data_pages_page">Halaman</string>
     <string name="data_pages_save">Simpan</string>
     <string name="data_pages_add">Tambah halaman</string>
@@ -265,4 +265,14 @@
     <string name="summary_laps_caption">lap</string>
     <string name="summary_export_hint">Export FIT dan bagikan ada di detail aktivitas setelah disimpan</string>
     <string name="summary_strava_help">Cara upload file FIT ke Strava</string>
+    <string name="data_pages_change_field">Ganti metrik kotak %1$d</string>
+    <string name="data_pages_current">Dipilih</string>
+    <string name="metric_category_speed">Kecepatan</string>
+    <string name="metric_category_distance_time">Jarak &amp; waktu</string>
+    <string name="metric_category_cadence">Cadence</string>
+    <string name="metric_category_power">Power</string>
+    <string name="metric_category_heart_rate">Heart rate</string>
+    <string name="metric_category_elevation">Elevasi</string>
+    <string name="metric_category_lap">Lap</string>
+    <string name="metric_category_navigation">Navigasi</string>
 </resources>
