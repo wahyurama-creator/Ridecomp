@@ -43,7 +43,7 @@ public class ImportGpxUseCase(
                 is Outcome.Success -> {
                     val label = documents.displayName(uri)
                     val name = parsed.value.name ?: label?.substringBeforeLast('.')?.ifBlank { null } ?: fallbackName
-                    val route = RouteBuilder.build(parsed.value.points, name, label, clock.nowMs())
+                    val route = RouteBuilder.build(parsed.value.points, name, label, clock.nowMs()).withDetections()
                     routes.save(route).asSuccess()
                 }
             }
@@ -89,7 +89,7 @@ public class ReverseRouteUseCase(private val routes: RouteRepository, private va
                 distanceM = reversed.last().cumDistanceM,
                 ascentM = RouteBuilder.ascent(reversed.mapNotNull { it.elevationM }),
                 createdAtMs = clock.nowMs(),
-            ),
+            ).withDetections(),
         )
     }
 }

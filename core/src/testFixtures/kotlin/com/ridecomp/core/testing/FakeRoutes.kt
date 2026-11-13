@@ -2,7 +2,9 @@ package com.ridecomp.core.testing
 
 import com.ridecomp.core.engine.route.NewRoute
 import com.ridecomp.core.engine.route.Route
+import com.ridecomp.core.engine.route.RouteClimb
 import com.ridecomp.core.engine.route.RoutePoint
+import com.ridecomp.core.engine.route.RouteTurn
 import com.ridecomp.core.repository.RouteRepository
 import com.ridecomp.core.source.GpxDocumentSource
 import java.io.ByteArrayInputStream
@@ -13,6 +15,7 @@ import kotlinx.coroutines.flow.map
 
 public class FakeRouteRepository : RouteRepository {
     private val routes = MutableStateFlow<Map<Long, Pair<Route, List<RoutePoint>>>>(emptyMap())
+    private val details = HashMap<Long, NewRoute>()
     private var nextId = 1L
 
     override fun observeAll(): Flow<List<Route>> = routes.map { all ->
@@ -27,8 +30,13 @@ public class FakeRouteRepository : RouteRepository {
         val id = nextId++
         val saved = Route(id, route.name, route.sourceLabel, route.distanceM, route.ascentM, route.createdAtMs)
         routes.value = routes.value + (id to (saved to route.points))
+        details[id] = route
         return id
     }
+
+    override suspend fun getClimbs(id: Long): List<RouteClimb> = details[id]?.climbs.orEmpty()
+
+    override suspend fun getTurns(id: Long): List<RouteTurn> = details[id]?.turns.orEmpty()
 
     override suspend fun rename(id: Long, name: String) {
         val (route, points) = routes.value[id] ?: return

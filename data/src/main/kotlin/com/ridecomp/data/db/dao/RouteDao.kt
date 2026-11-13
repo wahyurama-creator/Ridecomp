@@ -5,9 +5,18 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import com.ridecomp.data.db.DbNames
+import com.ridecomp.data.db.entity.RouteClimbEntity
 import com.ridecomp.data.db.entity.RouteEntity
 import com.ridecomp.data.db.entity.RoutePointEntity
+import com.ridecomp.data.db.entity.RouteTurnEntity
 import kotlinx.coroutines.flow.Flow
+
+/** Rows that belong to one route, created once its id is known. */
+class RouteChildren(
+    val points: List<RoutePointEntity>,
+    val climbs: List<RouteClimbEntity>,
+    val turns: List<RouteTurnEntity>,
+)
 
 @Dao
 interface RouteDao {
@@ -20,17 +29,32 @@ interface RouteDao {
     @Query("SELECT * FROM ${DbNames.TABLE_ROUTE_POINTS} WHERE route_id = :routeId ORDER BY seq ASC")
     suspend fun getPoints(routeId: Long): List<RoutePointEntity>
 
+    @Query("SELECT * FROM ${DbNames.TABLE_ROUTE_CLIMBS} WHERE route_id = :routeId ORDER BY idx ASC")
+    suspend fun getClimbs(routeId: Long): List<RouteClimbEntity>
+
+    @Query("SELECT * FROM ${DbNames.TABLE_ROUTE_TURNS} WHERE route_id = :routeId ORDER BY dist_m ASC")
+    suspend fun getTurns(routeId: Long): List<RouteTurnEntity>
+
     @Insert
     suspend fun insertRoute(route: RouteEntity): Long
 
     @Insert
     suspend fun insertPoints(points: List<RoutePointEntity>)
 
-    /** Route and points together (DATA-03): never a route without its points. */
+    @Insert
+    suspend fun insertClimbs(climbs: List<RouteClimbEntity>)
+
+    @Insert
+    suspend fun insertTurns(turns: List<RouteTurnEntity>)
+
+    /** Route, points, climbs and turns together (DATA-03): never a route without its points. */
     @Transaction
-    suspend fun insertWithPoints(route: RouteEntity, points: (Long) -> List<RoutePointEntity>): Long {
+    suspend fun insertWithChildren(route: RouteEntity, children: (Long) -> RouteChildren): Long {
         val id = insertRoute(route)
-        insertPoints(points(id))
+        val rows = children(id)
+        insertPoints(rows.points)
+        insertClimbs(rows.climbs)
+        insertTurns(rows.turns)
         return id
     }
 
