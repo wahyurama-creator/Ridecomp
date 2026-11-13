@@ -70,6 +70,7 @@ fun ActivityDetailRoute(
     onOpenStravaHelp: () -> Unit,
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
+    onCreateSegment: (() -> Unit)? = null,
     viewModel: ActivityDetailViewModel = koinViewModel { parametersOf(activityId) },
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -90,6 +91,7 @@ fun ActivityDetailRoute(
         },
         onOpenStravaHelp = onOpenStravaHelp,
         onBack = onBack,
+        onCreateSegment = onCreateSegment,
         modifier = modifier,
     )
 }
@@ -102,6 +104,8 @@ fun ActivityDetailScreen(
     onOpenStravaHelp: () -> Unit,
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
+    /** Opens the segment editor (T4.2); null hides the action. */
+    onCreateSegment: (() -> Unit)? = null,
 ) {
     val activity = state.activity
     ScreenScaffold(
@@ -132,7 +136,7 @@ fun ActivityDetailScreen(
                 Totals(activity.totals, format)
                 Charts(state)
                 Laps(state, format)
-                Actions(state, onEvent, onSaveFit, onOpenStravaHelp)
+                Actions(state, onEvent, onSaveFit, onOpenStravaHelp, onCreateSegment)
             }
         }
     }
@@ -261,6 +265,7 @@ private fun Actions(
     onEvent: (ActivityDetailUiEvent) -> Unit,
     onSaveFit: () -> Unit,
     onOpenStravaHelp: () -> Unit,
+    onCreateSegment: (() -> Unit)?,
 ) {
     var isDeleteDialogShown by remember { mutableStateOf(false) }
     Column(verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS)) {
@@ -288,6 +293,7 @@ private fun Actions(
             onEvent(ActivityDetailUiEvent.Share(ExportFormat.GPX))
         })
         LinkText(stringResource(R.string.detail_strava_help), onClick = onOpenStravaHelp)
+        onCreateSegment?.let { LinkText(stringResource(R.string.detail_create_segment), onClick = it) }
         BigButton(
             text = stringResource(R.string.detail_delete),
             onClick = { isDeleteDialogShown = true },

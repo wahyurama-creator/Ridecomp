@@ -36,9 +36,16 @@ class BestEffortUseCasesTest {
     )
     private val logger = RecordingLogger()
     private val kindOf = GetActivityKindUseCase(profiles)
-    private val evaluate = EvaluateBestEffortsUseCase(activities, efforts, kindOf, TestDispatcherProvider(dispatcher))
+    private val dispatchers = TestDispatcherProvider(dispatcher)
+    private val readTrack = ReadRideTrackUseCase(activities, dispatchers)
+    private val evaluate = EvaluateBestEffortsUseCase(efforts, kindOf, dispatchers)
     private val analysis = FakeActivityAnalysisRepository(activities)
-    private val analyze = AnalyzeActivitiesUseCase(analysis, efforts, evaluate, kindOf, logger)
+    private val analyze = AnalyzeActivitiesUseCase(
+        analysis,
+        readTrack,
+        listOf(BestEffortsStep(efforts, evaluate, kindOf)),
+        logger,
+    )
 
     /** A finished ride of 1.2 km at a constant [speedMps]. */
     private fun ride(id: Long, startedAtMs: Long, speedMps: Double, profileId: Long? = ROAD_ID) {
@@ -97,16 +104,16 @@ class BestEffortUseCasesTest {
     fun `a failing ride is logged and skipped, the others are analyzed`() = runTest(dispatcher) {
         ride(id = 1, startedAtMs = 1 * DAY_MS, speedMps = 10.0)
         ride(id = 2, startedAtMs = 2 * DAY_MS, speedMps = 10.0)
+        val failingRepository = object : BestEffortRepository by efforts {
+            override suspend fun replace(activityId: Long, kind: ActivityKind, efforts: List<RideEffort>) {
+                if (activityId == 1L) error("disk full")
+                this@BestEffortUseCasesTest.efforts.replace(activityId, kind, efforts)
+            }
+        }
         val failingAnalyze = AnalyzeActivitiesUseCase(
             analysis,
-            object : BestEffortRepository by efforts {
-                override suspend fun replace(activityId: Long, kind: ActivityKind, efforts: List<RideEffort>) {
-                    if (activityId == 1L) error("disk full")
-                    this@BestEffortUseCasesTest.efforts.replace(activityId, kind, efforts)
-                }
-            },
-            evaluate,
-            kindOf,
+            readTrack,
+            listOf(BestEffortsStep(failingRepository, evaluate, kindOf)),
             logger,
         )
 
@@ -123,7 +130,7 @@ class BestEffortUseCasesTest {
         analyze()
         ride(id = 2, startedAtMs = 2 * DAY_MS, speedMps = 10.0)
 
-        val preview = PreviewNewRecordsUseCase(activities, evaluate)(2)
+        val preview = PreviewNewRecordsUseCase(activities, readTrack, evaluate)(2)
 
         assertTrue(preview.any { it.effort.key == BestEffortKey.FASTEST_1_KM })
         assertFalse(preview.any { it.effort.key == BestEffortKey.MOST_ASCENT })

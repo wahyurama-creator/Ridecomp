@@ -23,4 +23,34 @@
     <plurals name="records_new">
         <item quantity="other">%1$d PR baru</item>
     </plurals>
+    <!-- Segmen (T4.2) -->
+    <string name="segments_empty">Belum ada segmen. Buat dari sebagian ride tersimpan (Detail aktivitas → Buat segmen) atau dari tanjakan rute (Jadikan segmen).</string>
+    <string name="segment_title">Segmen</string>
+    <string name="segment_back">Kembali</string>
+    <string name="segment_missing">Segmen ini sudah dihapus.</string>
+    <string name="segment_facts">%1$s · %2$s%% · %3$d×</string>
+    <string name="segment_length">Panjang</string>
+    <string name="segment_gain">Tanjakan</string>
+    <string name="segment_grade">Grade rata-rata</string>
+    <string name="segment_record">Rekormu</string>
+    <string name="segment_no_efforts">Belum ada ride yang melewati segmen ini. Ride dicocokkan otomatis setelah disimpan.</string>
+    <string name="segment_best_efforts">Effort tercepat</string>
+    <string name="segment_effort_ride">%1$s · %2$s</string>
+    <string name="segment_trend">Waktu per ride (menit)</string>
+    <plurals name="segment_trend_summary">
+        <item quantity="other">%1$d effort, rekor %2$s</item>
+    </plurals>
+    <string name="segment_delete">Hapus segmen</string>
+    <string name="segment_delete_title">Hapus \"%1$s\"?</string>
+    <string name="segment_delete_message">Effort-nya ikut terhapus. Ride-mu tetap ada.</string>
+    <string name="segment_cancel">Batal</string>
+    <string name="segment_new_title">Segmen baru</string>
+    <string name="segment_new_hint">Geser dua pegangan ke awal dan akhir bagian yang ingin diukur waktunya. Ride berikutnya yang melewatinya searah akan dicocokkan otomatis.</string>
+    <string name="segment_track">Jejak ride dengan bagian terpilih disorot</string>
+    <string name="segment_profile">Elevasi</string>
+    <string name="segment_range">Dari %1$s sampai %2$s · panjang %3$s</string>
+    <string name="segment_error_length">Panjang segmen harus 200 m sampai 50 km.</string>
+    <string name="segment_error_position">Bagian ride ini tidak punya posisi GPS.</string>
+    <string name="segment_name">Nama segmen</string>
+    <string name="segment_save">Simpan segmen</string>
 </resources>

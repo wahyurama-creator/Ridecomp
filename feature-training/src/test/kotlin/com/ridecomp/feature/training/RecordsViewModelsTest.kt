@@ -19,6 +19,7 @@ import com.ridecomp.core.usecase.ObservePersonalRecordsUseCase
 import com.ridecomp.core.usecase.ObserveRecordKindsUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.PreviewNewRecordsUseCase
+import com.ridecomp.core.usecase.ReadRideTrackUseCase
 import com.ridecomp.feature.training.viewmodel.NewRecordsViewModel
 import com.ridecomp.feature.training.viewmodel.RecordsUiEvent
 import com.ridecomp.feature.training.viewmodel.RecordsViewModel
@@ -103,14 +104,15 @@ class RecordsViewModelsTest {
         put(1, 1_000)
         activities.samples[1] = (0..100).map { RideSample(timeMs = 1_000L + it * 1_000L, distanceM = it * 10.0) }
             .toMutableList()
+        val dispatchers = TestDispatcherProvider(dispatcher)
         val evaluate = EvaluateBestEffortsUseCase(
-            activities,
             efforts,
             GetActivityKindUseCase(FakeActivityProfileRepository()),
-            TestDispatcherProvider(dispatcher),
+            dispatchers,
         )
+        val preview = PreviewNewRecordsUseCase(activities, ReadRideTrackUseCase(activities, dispatchers), evaluate)
 
-        val viewModel = NewRecordsViewModel(1, PreviewNewRecordsUseCase(activities, evaluate), settings)
+        val viewModel = NewRecordsViewModel(1, preview, settings)
 
         assertEquals(
             listOf(BestEffortKey.FASTEST_1_KM, BestEffortKey.LONGEST_RIDE),

@@ -1,7 +1,7 @@
 package com.ridecomp.core.engine.efforts
 
 import com.ridecomp.core.config.Units
-import com.ridecomp.core.model.RideSample
+import com.ridecomp.core.engine.track.RideTrack
 import com.ridecomp.core.model.RideTotals
 
 /** Best effort limits (12-FEATURE-SPECS §8). */
@@ -17,12 +17,6 @@ public object BestEffortConfig {
 
     /** "Highest average speed" only counts rides at least this long. */
     public const val MIN_AVG_SPEED_DISTANCE_M: Double = 20_000.0
-
-    /** Upper bound of samples read for one ride (24 h at 1 Hz): keeps memory bounded (MEM-01). */
-    public const val MAX_SAMPLES: Int = 86_400
-
-    /** Samples read per database page. */
-    public const val PAGE_SIZE: Int = 2_000
 }
 
 /** Group of a record (05-DATA-MODEL `best_efforts.type`). Stable strings: stored on users' phones. */
@@ -78,59 +72,11 @@ public enum class BestEffortKey(
 public data class BestEffort(val key: BestEffortKey, val value: Double, val startMs: Long?, val endMs: Long?)
 
 /**
- * The parts of a ride's track that best efforts need, in primitive arrays (about 20 bytes per second
- * instead of a [RideSample] object). Filled page by page, bounded by [BestEffortConfig.MAX_SAMPLES].
- */
-public class EffortTrack(capacity: Int = INITIAL_CAPACITY) {
-    private var times = LongArray(capacity)
-    private var distances = DoubleArray(capacity)
-    private var powers = IntArray(capacity)
-
-    public var size: Int = 0
-        private set
-
-    /** True when at least one sample carries power-meter data (estimated power never counts). */
-    public var hasPower: Boolean = false
-        private set
-
-    public val isFull: Boolean get() = size >= BestEffortConfig.MAX_SAMPLES
-
-    public fun add(sample: RideSample) {
-        if (isFull) return
-        if (size == times.size) grow()
-        times[size] = sample.timeMs
-        distances[size] = sample.distanceM
-        val power = sample.powerW
-        powers[size] = power ?: 0
-        if (power != null) hasPower = true
-        size++
-    }
-
-    internal fun timeMs(index: Int): Long = times[index]
-
-    internal fun distanceM(index: Int): Double = distances[index]
-
-    internal fun powerW(index: Int): Int = powers[index]
-
-    private fun grow() {
-        val newSize = minOf(times.size * GROWTH_FACTOR, BestEffortConfig.MAX_SAMPLES)
-        times = times.copyOf(newSize)
-        distances = distances.copyOf(newSize)
-        powers = powers.copyOf(newSize)
-    }
-
-    private companion object {
-        const val INITIAL_CAPACITY = 1_024
-        const val GROWTH_FACTOR = 2
-    }
-}
-
-/**
  * Best efforts of one ride (12-FEATURE-SPECS §8): sliding windows (two pointers) over cumulative distance and
  * **moving** time, so pauses never count. Runs after the ride is saved, on the default dispatcher.
  */
 public object BestEffortCalculator {
-    public fun calculate(track: EffortTrack, totals: RideTotals): List<BestEffort> {
+    public fun calculate(track: RideTrack, totals: RideTotals): List<BestEffort> {
         val moving = movingSeconds(track)
         val keys = BestEffortKey.entries
         val distances = keys.filter { it.type == BestEffortType.DISTANCE }
@@ -144,7 +90,7 @@ public object BestEffortCalculator {
     }
 
     /** Moving seconds at each sample: gaps longer than a pause threshold count as one interval. */
-    private fun movingSeconds(track: EffortTrack): DoubleArray {
+    private fun movingSeconds(track: RideTrack): DoubleArray {
         val moving = DoubleArray(track.size)
         for (i in 1 until track.size) {
             val gapS = (track.timeMs(i) - track.timeMs(i - 1)).toDouble() / Units.MS_PER_SECOND
@@ -155,7 +101,7 @@ public object BestEffortCalculator {
     }
 
     /** Shortest moving time over [key]'s distance; the window start is interpolated between samples. */
-    private fun fastestDistance(track: EffortTrack, moving: DoubleArray, key: BestEffortKey): BestEffort? {
+    private fun fastestDistance(track: RideTrack, moving: DoubleArray, key: BestEffortKey): BestEffort? {
         val target = key.target
         var start = 0
         var best: BestEffort? = null
@@ -176,7 +122,7 @@ public object BestEffortCalculator {
     }
 
     /** Highest average power over [key]'s moving duration; missing power-meter samples count as 0 W. */
-    private fun bestPower(track: EffortTrack, moving: DoubleArray, key: BestEffortKey): BestEffort? {
+    private fun bestPower(track: RideTrack, moving: DoubleArray, key: BestEffortKey): BestEffort? {
         val energy = DoubleArray(track.size)
         for (i in 1 until track.size) {
             energy[i] = energy[i - 1] + track.powerW(i) * (moving[i] - moving[i - 1])

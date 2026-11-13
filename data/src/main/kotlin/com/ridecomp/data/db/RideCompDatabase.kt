@@ -15,6 +15,7 @@ import com.ridecomp.data.db.dao.IncidentDao
 import com.ridecomp.data.db.dao.LapDao
 import com.ridecomp.data.db.dao.ProfileDao
 import com.ridecomp.data.db.dao.RouteDao
+import com.ridecomp.data.db.dao.SegmentDao
 import com.ridecomp.data.db.dao.SensorDao
 import com.ridecomp.data.db.dao.SettingsDao
 import com.ridecomp.data.db.dao.TrackPointDao
@@ -91,6 +92,8 @@ abstract class RideCompDatabase : RoomDatabase() {
     abstract fun routeDao(): RouteDao
 
     abstract fun bestEffortDao(): BestEffortDao
+
+    abstract fun segmentDao(): SegmentDao
 
     companion object {
         const val VERSION = 6

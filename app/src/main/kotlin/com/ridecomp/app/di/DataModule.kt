@@ -9,6 +9,7 @@ import com.ridecomp.core.repository.IncidentRepository
 import com.ridecomp.core.repository.ProfileRepository
 import com.ridecomp.core.repository.RouteRepository
 import com.ridecomp.core.repository.SafetyRepository
+import com.ridecomp.core.repository.SegmentRepository
 import com.ridecomp.core.repository.SettingsRepository
 import com.ridecomp.core.usecase.BackupDatabase
 import com.ridecomp.core.usecase.BackupStateRepository
@@ -23,6 +24,7 @@ import com.ridecomp.data.repository.IncidentRepositoryImpl
 import com.ridecomp.data.repository.ProfileRepositoryImpl
 import com.ridecomp.data.repository.RouteRepositoryImpl
 import com.ridecomp.data.repository.SafetyRepositoryImpl
+import com.ridecomp.data.repository.SegmentRepositoryImpl
 import com.ridecomp.data.repository.SensorRepositoryImpl
 import com.ridecomp.data.repository.SettingsRepositoryImpl
 import org.koin.android.ext.koin.androidContext
@@ -43,6 +45,7 @@ val dataModule = module {
     single { get<RideCompDatabase>().incidentDao() }
     single { get<RideCompDatabase>().routeDao() }
     single { get<RideCompDatabase>().bestEffortDao() }
+    single { get<RideCompDatabase>().segmentDao() }
     single<ActivityRepository> { ActivityRepositoryImpl(get(), get(), get(), get(), get()) }
     single<ProfileRepository> { ProfileRepositoryImpl(get()) }
     single<SettingsRepository> { SettingsRepositoryImpl(get()) }
@@ -53,6 +56,7 @@ val dataModule = module {
     single<RouteRepository> { RouteRepositoryImpl(get()) }
     single<BestEffortRepository> { BestEffortRepositoryImpl(get()) }
     single<ActivityAnalysisRepository> { ActivityAnalysisRepositoryImpl(get()) }
+    single<SegmentRepository> { SegmentRepositoryImpl(get()) }
     single<BackupDatabase> { RoomBackupDatabase(androidContext(), get(), get(), get()) }
     single<BackupStateRepository> { BackupStateRepositoryImpl(get()) }
 }

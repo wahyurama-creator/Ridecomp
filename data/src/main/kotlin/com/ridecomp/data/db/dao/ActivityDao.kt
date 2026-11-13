@@ -61,6 +61,9 @@ interface ActivityDao {
     @Query("UPDATE ${DbNames.TABLE_ACTIVITIES} SET analysis_version = :version WHERE id = :id")
     suspend fun setAnalysisVersion(id: Long, version: Int)
 
+    @Query("UPDATE ${DbNames.TABLE_ACTIVITIES} SET analysis_version = :version WHERE analysis_version > :version")
+    suspend fun lowerAnalysisVersion(version: Int)
+
     /** Deletes the ride; track points, events and laps follow through `ON DELETE CASCADE`. */
     @Query("DELETE FROM ${DbNames.TABLE_ACTIVITIES} WHERE id = :id")
     suspend fun deleteById(id: Long)

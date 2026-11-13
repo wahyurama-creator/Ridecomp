@@ -12,6 +12,7 @@ import com.ridecomp.core.engine.route.RouteClimb
 import com.ridecomp.core.engine.route.RoutePoint
 import com.ridecomp.core.model.UnitSystem
 import com.ridecomp.core.source.DispatcherProvider
+import com.ridecomp.core.usecase.CreateSegmentFromClimbUseCase
 import com.ridecomp.core.usecase.DeleteRouteUseCase
 import com.ridecomp.core.usecase.GetRouteGuidanceUseCase
 import com.ridecomp.core.usecase.GetRoutePointsUseCase
@@ -28,8 +29,11 @@ import com.ridecomp.ui.component.ChartValue
 import com.ridecomp.ui.map.MapPoint
 import com.ridecomp.ui.udf.UdfViewModel
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -101,6 +105,7 @@ data class RouteDetailUseCases(
     val rename: RenameRouteUseCase,
     val reverse: ReverseRouteUseCase,
     val delete: DeleteRouteUseCase,
+    val makeSegment: CreateSegmentFromClimbUseCase,
 )
 
 @Immutable
@@ -117,6 +122,8 @@ data class RouteDetailUiState(
     val mapRegions: ImmutableList<String> = persistentListOf(),
     val isAreaOffline: Boolean = false,
     val unitSystem: UnitSystem = UnitSystem.METRIC,
+    /** Climbs already turned into a segment on this screen ("Jadikan segmen", T4.2). */
+    val segmentClimbs: ImmutableSet<Int> = persistentSetOf(),
 )
 
 sealed interface RouteDetailUiEvent {
@@ -126,6 +133,9 @@ sealed interface RouteDetailUiEvent {
     data class Reverse(val reversedName: String) : RouteDetailUiEvent
 
     data object Delete : RouteDetailUiEvent
+
+    /** "Jadikan segmen" on a climb (T4.2); [name] is the localized default name. */
+    data class MakeSegment(val climb: RouteClimb, val name: String) : RouteDetailUiEvent
 }
 
 sealed interface RouteDetailEffect {
@@ -182,6 +192,11 @@ class RouteDetailViewModel(
             RouteDetailUiEvent.Delete -> viewModelScope.launch {
                 useCases.delete(routeId)
                 sendEffect(RouteDetailEffect.Deleted)
+            }
+            is RouteDetailUiEvent.MakeSegment -> viewModelScope.launch {
+                if (useCases.makeSegment(routeId, event.climb, event.name) is Outcome.Success) {
+                    updateState { copy(segmentClimbs = (segmentClimbs + event.climb.index).toImmutableSet()) }
+                }
             }
         }
     }

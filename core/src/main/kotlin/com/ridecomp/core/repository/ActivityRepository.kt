@@ -73,10 +73,16 @@ public interface ActivityRepository {
 /** Which saved rides still need the post-ride analysis (D-67). Implemented in :data (ARCH-03). */
 public interface ActivityAnalysisRepository {
     /**
-     * Saved rides not yet analyzed at [version] (best efforts, later segments and training load), oldest
-     * first so "new record" flags follow the order the rides happened.
+     * Saved rides not yet analyzed at [version], with the version they reached, oldest first so "new
+     * record" flags follow the order the rides happened.
      */
-    public suspend fun getPendingAnalysis(version: Int, limit: Int): List<Activity>
+    public suspend fun getPendingAnalysis(version: Int, limit: Int): List<PendingAnalysis>
 
     public suspend fun markAnalyzed(activityId: Long, version: Int)
+
+    /** Lowers every ride above [toVersion] to it, so the later steps run again. */
+    public suspend fun resetAnalysis(toVersion: Int)
 }
+
+/** A ride waiting for analysis and the version it already reached. */
+public data class PendingAnalysis(val activity: Activity, val doneVersion: Int)
