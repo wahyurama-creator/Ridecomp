@@ -46,6 +46,7 @@ import com.ridecomp.feature.training.ui.RecordsRoute
 import com.ridecomp.feature.training.ui.SegmentDetailRoute
 import com.ridecomp.feature.training.ui.SegmentEditorRoute
 import com.ridecomp.feature.training.ui.SegmentsRoute
+import com.ridecomp.feature.training.ui.ShareCardRoute
 import com.ridecomp.feature.training.ui.TrainingRoute
 
 /** Routes that are not bottom-bar tabs, in one place. */
@@ -96,6 +97,10 @@ object AppRoutes {
     fun segmentDetail(segmentId: Long): String = "segment/$segmentId"
 
     fun newSegment(activityId: Long): String = "segment_new/$activityId"
+
+    const val SHARE_CARD = "share/{$ARG_ACTIVITY_ID}"
+
+    fun shareCard(activityId: Long): String = "share/$activityId"
 
     /** Full-screen routes where the bottom bar is hidden (ride flow, onboarding). */
     val FULL_SCREEN: Set<String> = setOf(ONBOARDING, PRE_RIDE, RIDE, SUMMARY)
@@ -248,6 +253,10 @@ private fun NavGraphBuilder.historyGraph(navController: NavHostController) {
                 val id = entry.arguments?.getLong(AppRoutes.ARG_ACTIVITY_ID) ?: AppRoutes.NO_ACTIVITY
                 navController.navigate(AppRoutes.newSegment(id))
             },
+            onShareCard = {
+                val id = entry.arguments?.getLong(AppRoutes.ARG_ACTIVITY_ID) ?: AppRoutes.NO_ACTIVITY
+                navController.navigate(AppRoutes.shareCard(id))
+            },
         )
     }
 }
@@ -316,8 +325,17 @@ private fun optionalIdArgument(name: String) = navArgument(name) {
 private fun NavBackStackEntry.optionalId(name: String): Long? =
     arguments?.getLong(name)?.takeIf { it != AppRoutes.NO_ID }
 
-/** Segment detail and editor (T4.2). */
+/** Segment detail and editor (T4.2), share card editor (T4.5). */
 private fun NavGraphBuilder.segmentGraph(navController: NavHostController) {
+    composable(
+        AppRoutes.SHARE_CARD,
+        arguments = listOf(navArgument(AppRoutes.ARG_ACTIVITY_ID) { type = NavType.LongType }),
+    ) { entry ->
+        ShareCardRoute(
+            activityId = entry.arguments?.getLong(AppRoutes.ARG_ACTIVITY_ID) ?: AppRoutes.NO_ACTIVITY,
+            onBack = { navController.popBackStack() },
+        )
+    }
     composable(
         AppRoutes.SEGMENT_DETAIL,
         arguments = listOf(navArgument(AppRoutes.ARG_SEGMENT_ID) { type = NavType.LongType }),

@@ -33,4 +33,7 @@ public interface BestEffortRepository {
 
     /** Profile kinds that have at least one record. */
     public fun observeKinds(): Flow<List<ActivityKind>>
+
+    /** Records a ride set when it was analyzed (share card "2 PR BARU"). */
+    public suspend fun countRecords(activityId: Long): Int
 }

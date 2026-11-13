@@ -52,4 +52,6 @@ class BestEffortRepositoryImpl(private val dao: BestEffortDao) : BestEffortRepos
     override fun observeKinds(): Flow<List<ActivityKind>> = dao.observeKinds().map { kinds ->
         kinds.mapNotNull { it.toEnumOrNull<ActivityKind>() }.sorted()
     }
+
+    override suspend fun countRecords(activityId: Long): Int = dao.countRecords(activityId)
 }

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ridecomp.core.usecase.AnalysisRequests
 import com.ridecomp.core.usecase.AnalyzeActivitiesUseCase
+import com.ridecomp.core.usecase.ClearShareCardsUseCase
 import com.ridecomp.core.usecase.ObserveHistoryCountUseCase
 import com.ridecomp.core.usecase.ObserveOnboardingDoneUseCase
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,12 +27,15 @@ class AppViewModel(
     observeRideCount: ObserveHistoryCountUseCase,
     analysisRequests: AnalysisRequests,
     analyze: AnalyzeActivitiesUseCase,
+    clearShareCards: ClearShareCardsUseCase,
 ) : ViewModel() {
     val isOnboardingDone: StateFlow<Boolean?> = observeOnboardingDone()
         .map<Boolean, Boolean?> { it }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), null)
 
     init {
+        // Share card images of earlier sessions (12-FEATURE-SPECS §11).
+        viewModelScope.launch { clearShareCards() }
         viewModelScope.launch {
             merge(observeRideCount().distinctUntilChanged(), analysisRequests.flow).collectLatest { analyze() }
         }

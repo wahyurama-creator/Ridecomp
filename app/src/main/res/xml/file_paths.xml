@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- SEC-PLT-04: the FileProvider exposes only the export folder (filesDir/exports), nothing else. -->
+<!--
+  SEC-PLT-04: the FileProvider exposes only the export folder (filesDir/exports) and the share card
+  images (cacheDir/share, deleted at the next app start), nothing else.
+-->
 <paths>
     <files-path
         name="exports"
         path="exports/" />
+    <cache-path
+        name="share"
+        path="share/" />
 </paths>

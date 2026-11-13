@@ -13,7 +13,7 @@ import org.koin.dsl.module
 
 /** App-level ViewModels. */
 val appModule = module {
-    viewModel { AppViewModel(get(), get(), get(), get()) }
+    viewModel { AppViewModel(get(), get(), get(), get(), get()) }
 }
 
 /** Every Koin module of the app, wired once in the composition root (ARCH-02). */

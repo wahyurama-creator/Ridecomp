@@ -78,4 +78,25 @@
     <string name="training_week_load">Beban</string>
     <string name="training_zones">Zona detak jantung minggu ini</string>
     <string name="training_zone">Z%1$d</string>
+    <!-- Kartu share (T4.5) -->
+    <string name="share_title">Bagikan</string>
+    <string name="share_missing">Ride ini sudah dihapus.</string>
+    <string name="share_format">Format</string>
+    <string name="share_format_story">Story 9:16</string>
+    <string name="share_format_square">Kotak 1:1</string>
+    <string name="share_hide_ends">Sembunyikan awal &amp; akhir rute</string>
+    <string name="share_hide_ends_hint">Melindungi lokasi rumah (500 m)</string>
+    <string name="share_show_track">Tampilkan jejak rute</string>
+    <string name="share_dark">Kartu gelap</string>
+    <string name="share_stats">Statistik (maks 4)</string>
+    <string name="share_stat_distance">Jarak</string>
+    <string name="share_stat_time">Waktu</string>
+    <string name="share_stat_ascent">Tanjakan</string>
+    <string name="share_stat_speed">Avg speed</string>
+    <string name="share_stat_heart_rate">Avg HR</string>
+    <string name="share_stat_power">Avg power</string>
+    <string name="share_send">Bagikan ke WhatsApp / Instagram</string>
+    <plurals name="share_footer_records">
+        <item quantity="other">%1$d PR BARU · RideComp</item>
+    </plurals>
 </resources>
