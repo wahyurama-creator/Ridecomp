@@ -4,18 +4,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -26,8 +19,10 @@ import com.ridecomp.app.navigation.IncomingGpx
 import com.ridecomp.app.navigation.RideCompNavHost
 import com.ridecomp.app.navigation.TopLevelDestination
 import com.ridecomp.app.navigation.navigateToTopLevel
-import com.ridecomp.ui.theme.RideCompDimens
+import com.ridecomp.ui.component.BottomNavItem
+import com.ridecomp.ui.component.RideCompBottomNav
 import com.ridecomp.ui.theme.RideCompTheme
+import kotlinx.collections.immutable.toImmutableList
 import org.koin.androidx.compose.koinViewModel
 
 /** Root composable: bottom navigation + navigation graph; first launch starts with onboarding. */
@@ -64,29 +59,11 @@ fun RideCompApp(modifier: Modifier = Modifier, viewModel: AppViewModel = koinVie
 @Composable
 private fun RideCompBottomBar(navController: NavHostController, route: String?) {
     val current = TopLevelDestination.fromRoute(route)
-    val colors = RideCompTheme.colors
-    NavigationBar(containerColor = colors.surface) {
-        TopLevelDestination.entries.forEach { destination ->
-            NavigationBarItem(
-                selected = destination == current,
-                onClick = { navController.navigateToTopLevel(destination) },
-                icon = {
-                    Icon(
-                        painter = painterResource(destination.iconRes),
-                        // The label below already names the tab for accessibility.
-                        contentDescription = null,
-                        modifier = Modifier.size(RideCompDimens.iconSize),
-                    )
-                },
-                label = { Text(text = stringResource(destination.labelRes)) },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = colors.accent,
-                    selectedTextColor = colors.accent,
-                    indicatorColor = colors.bg,
-                    unselectedIconColor = colors.textSecondary,
-                    unselectedTextColor = colors.textSecondary,
-                ),
-            )
-        }
-    }
+    val items = TopLevelDestination.entries.map { destination ->
+        BottomNavItem(stringResource(destination.labelRes), destination.iconRes, isSelected = destination == current)
+    }.toImmutableList()
+    RideCompBottomNav(
+        items = items,
+        onSelect = { index -> navController.navigateToTopLevel(TopLevelDestination.entries[index]) },
+    )
 }

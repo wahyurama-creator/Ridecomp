@@ -14,7 +14,7 @@ enum class TopLevelDestination(
     @param:StringRes val labelRes: Int,
     @param:DrawableRes val iconRes: Int,
 ) {
-    HOME(route = "home", labelRes = R.string.nav_home, iconRes = UiR.drawable.ic_nav_home),
+    HOME(route = "home", labelRes = R.string.nav_home, iconRes = UiR.drawable.ic_nav_ride),
     HISTORY(route = "history", labelRes = R.string.nav_history, iconRes = UiR.drawable.ic_nav_history),
     ROUTES(route = "routes", labelRes = R.string.nav_routes, iconRes = UiR.drawable.ic_nav_routes),
     SENSORS(route = "sensors", labelRes = R.string.nav_sensors, iconRes = UiR.drawable.ic_nav_sensors),

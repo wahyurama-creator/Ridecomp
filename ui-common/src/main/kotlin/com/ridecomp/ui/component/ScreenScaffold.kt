@@ -18,25 +18,43 @@ import com.ridecomp.ui.theme.RideCompDimens
 import com.ridecomp.ui.theme.RideCompTheme
 
 /**
- * Standard layout for non-ride screens: themed background, optional title, optional top banner,
- * then content. Keeps every screen consistent without copy-paste.
+ * Standard layout for non-ride screens: themed background, then either a large screen title (top-level
+ * screens) or a [TopBarBack] (secondary screens, when [onBack] is set), optional banner, then content.
  */
 @Composable
 fun ScreenScaffold(
     modifier: Modifier = Modifier,
     title: String? = null,
     banner: (@Composable () -> Unit)? = null,
+    subtitle: String? = null,
+    onBack: (() -> Unit)? = null,
+    backLabel: String? = null,
+    backIcon: TopBarIcon = TopBarIcon.BACK,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(modifier = modifier.fillMaxSize().background(RideCompTheme.colors.bg)) {
-        if (title != null) {
+        val headerModifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                start = RideCompDimens.screenPaddingHorizontal,
+                end = RideCompDimens.screenPaddingHorizontal,
+                top = RideCompDimens.screenPaddingTop,
+                bottom = RideCompDimens.blockGap,
+            )
+        if (title != null && onBack != null) {
+            TopBarBack(
+                title = title,
+                onBack = onBack,
+                backLabel = backLabel ?: title,
+                subtitle = subtitle,
+                icon = backIcon,
+                modifier = headerModifier,
+            )
+        } else if (title != null) {
             Text(
                 text = title,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = RideCompDimens.spacingM, vertical = RideCompDimens.spacingM)
-                    .semantics { heading() },
-                style = RideCompTheme.typography.title,
+                modifier = headerModifier.semantics { heading() },
+                style = RideCompTheme.typography.screenTitle,
                 color = RideCompTheme.colors.textPrimary,
             )
         }

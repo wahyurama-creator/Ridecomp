@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="nav_home">Beranda</string>
+    <string name="nav_home">Ride</string>
     <string name="nav_history">Riwayat</string>
     <string name="nav_routes">Rute</string>
     <string name="nav_sensors">Sensor</string>
-    <string name="nav_settings">Pengaturan</string>
+    <string name="nav_settings">Setelan</string>
 </resources>
