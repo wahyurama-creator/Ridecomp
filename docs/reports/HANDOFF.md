@@ -8,7 +8,7 @@
   - Selesai dan di-merge:
     - T3.1–T3.2: import GPX (parser milik sendiri, D-43), daftar dan detail rute.
     - T3.6–T3.10: route tracker (D-46), off-route, halaman navigasi breadcrumb, profil elevasi (D-47).
-    - T3.11–T3.13: deteksi tanjakan & belokan, alert getar, banner, field "Belokan berikutnya", panel tanjakan (profil pita grade), daftar tanjakan di detail rute (D-49, D-50). Diuji di realme RMX3830 dengan GPS simulasi + GPX uji: banner belokan & tanjakan, panel tanjakan, pola getar, service berhenti setelah simpan, LeakCanary 0 leak.
+    - T3.11–T3.13: deteksi tanjakan & belokan, alert getar, banner, field "Belokan berikutnya", panel tanjakan (profil pita grade), daftar tanjakan di detail rute (D-49, D-50); perbaikan hasil review: rute lama dideteksi saat dibaca, elevasi bolong diinterpolasi, balik arah di luar main thread (D-52). Diuji di realme RMX3830 dengan GPS simulasi + GPX uji: banner belokan & tanjakan, panel tanjakan, pola getar, service berhenti setelah simpan, LeakCanary 0 leak.
     - Fix T3.1: picker Import menerima `.gpx` bertipe `application/octet-stream` (D-51; ditemukan saat uji perangkat).
   - **Menunggu keputusan pemilik:** T3.3–T3.5 (MapLibre + sumber tile offline, DEP-02). Opsi:
     - (a) file region PMTiles/MBTiles (saran);
@@ -23,7 +23,7 @@
 - **Uji lapangan belum dilakukan** (hanya uji perangkat singkat dengan GPS simulasi, lihat atas). GPX uji simulasi: segi-7 r=527 m di pusat loop simulator (−7.7829, 110.3671) dengan tanjakan 6 % di km 1,0–1,9.
 
 ## Konvensi kerja (penting untuk agent berikutnya)
-- Baca `CLAUDE.md` dan `docs/` terlebih dulu. Keputusan tercatat di `docs/reports/DECISIONS.md` (D-01…D-51).
+- Baca `CLAUDE.md` dan `docs/` terlebih dulu. Keputusan tercatat di `docs/reports/DECISIONS.md` (D-01…D-52).
 - Satu branch per task (`feature/<TaskID>-<slug>`), Conventional Commit + ID task, merge `--no-ff` ke `main`.
 - Verifikasi sebelum commit: `./gradlew ktlintCheck detekt lint test koverVerify assembleDebug`.
 - Daemon Gradle memakai JDK 21. Bila dependency berubah: `--write-locks --write-verification-metadata sha256`.
