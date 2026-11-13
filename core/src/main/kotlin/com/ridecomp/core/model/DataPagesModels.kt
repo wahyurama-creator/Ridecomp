@@ -2,9 +2,10 @@ package com.ridecomp.core.model
 
 /** Limits of the data page editor (01-PRD F-04, 02-DESIGN §3.4). */
 public object DataPageLimits {
-    /** Field counts that have a grid layout (02-DESIGN §3.4 table). */
-    public val FIELD_COUNTS: List<Int> = listOf(1, 2, 3, 4, 6, 8)
     public const val MAX_FIELDS: Int = 8
+
+    /** Every count from 1 to [MAX_FIELDS]: a full-width hero counts as a field (D-54, e.g. 7 = hero + 6). */
+    public val FIELD_COUNTS: List<Int> = (1..MAX_FIELDS).toList()
     public const val MAX_PAGES: Int = 6
 }
 

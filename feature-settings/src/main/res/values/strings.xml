@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="settings_title">Settings</string>
-    <string name="settings_profile">Profile</string>
+    <string name="settings_profile">Rider profile</string>
     <string name="settings_profile_subtitle">Weight, bike, wheel size, HR max, FTP</string>
     <string name="settings_data_pages">Data pages</string>
     <string name="settings_activity_profiles">Activity profiles</string>
     <string name="settings_activity_profiles_subtitle">Road, Gravel, MTB, Indoor, Commute</string>
-    <string name="settings_screen_battery">Ride, screen &amp; battery</string>
-    <string name="settings_safety">Safety</string>
+    <string name="settings_screen_battery">Screen &amp; battery</string>
+    <string name="settings_safety">Safety &amp; emergency contacts</string>
     <string name="settings_offline_maps">Offline maps</string>
     <string name="settings_units">Units</string>
-    <string name="settings_language">Language</string>
-    <string name="settings_backup">Backup &amp; restore</string>
+    <string name="settings_language">Units &amp; language</string>
+    <string name="settings_backup">Backup &amp; export data</string>
     <string name="settings_battery_help">My phone kills the app</string>
     <string name="settings_developer" translatable="false">Developer</string>
     <string name="settings_coming_soon">Available in a later version</string>
@@ -178,4 +178,26 @@
     <string name="profile_later_note">Age, resting HR and sex can be added later in Settings.</string>
     <string name="profile_save_next">Save &amp; continue</string>
     <string name="onboarding_back_label">Back</string>
+    <string name="settings_auto_pause">Auto pause &amp; resume</string>
+    <string name="settings_reminders">Drink &amp; eat reminders</string>
+    <string name="settings_battery_help_brand">Autostart &amp; battery guide for %1$s</string>
+    <string name="settings_battery_help_generic">How to keep the phone from stopping rides</string>
+    <string name="settings_footer">RideComp · data stays on this phone, no ads or tracking</string>
+    <string name="settings_profile_value">%1$s kg · FTP %2$s</string>
+    <string name="settings_none">—</string>
+    <string name="settings_auto_pause_on">On · still %1$d s</string>
+    <string name="settings_off">Off</string>
+    <string name="settings_reminders_value">%1$s / %2$s min</string>
+    <string name="settings_units_metric">Metric</string>
+    <string name="settings_units_imperial">Imperial</string>
+    <string name="settings_backup_value">All on this phone</string>
+    <string name="settings_screen_off">Off</string>
+    <plurals name="settings_activity_profiles_value">
+        <item quantity="one">%1$d profile · data pages</item>
+        <item quantity="other">%1$d profiles · data pages</item>
+    </plurals>
+    <plurals name="settings_safety_on">
+        <item quantity="one">On · %1$d contact</item>
+        <item quantity="other">On · %1$d contacts</item>
+    </plurals>
 </resources>

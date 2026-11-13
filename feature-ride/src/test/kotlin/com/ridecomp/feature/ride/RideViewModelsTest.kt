@@ -51,6 +51,7 @@ import com.ridecomp.core.usecase.SnoozeBackupReminderUseCase
 import com.ridecomp.core.usecase.StartRideUseCase
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.ride.model.DefaultDataPages
+import com.ridecomp.feature.ride.model.MetricCategory
 import com.ridecomp.feature.ride.model.RideMetric
 import com.ridecomp.feature.ride.viewmodel.HomeDeviceUseCases
 import com.ridecomp.feature.ride.viewmodel.HomeEffect
@@ -239,6 +240,13 @@ class RideViewModelsTest {
         assertEquals("Kaliurang", repository.get(id)?.name)
         assertEquals(listOf("SAVE"), controller.commands)
         assertEquals(ActivityStatus.RECORDING, repository.get(id)?.status)
+    }
+
+    @Test
+    fun `every metric is offered in exactly one picker category`() {
+        val listed = MetricCategory.entries.flatMap { it.metrics }
+        assertEquals(RideMetric.entries.toSet(), listed.toSet())
+        assertEquals(listed.size, listed.toSet().size)
     }
 
     @Test
