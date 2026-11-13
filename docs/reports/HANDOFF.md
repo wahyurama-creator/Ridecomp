@@ -17,8 +17,8 @@
   - #7/#12/#26 dengan peta bertile: selesai bersama T3.3–T3.5. Layar Fase 4 (#17, #20, #21, kartu PR, tab Rekor/Segmen/Latihan) dikerjakan bersama fiturnya.
 - **Akhir Fase 3:** laporan `docs/reports/T3-phase3-route-navigation.md` (menunggu review pemilik); OSV `security/phase3-osv-scan.txt` (0 temuan di APK; 14 High/Critical hanya tool build, sama dengan Fase 2); `org.json` (test) diperbarui ke 20260814; threat model §E ditambah GPX & PMTiles. `pwsh` tidak ada di Mac: scan dijalankan dengan port Python dari logika `osv-scan.ps1` (tidak di-commit).
 - **Menunggu keputusan pemilik:** layar "Lisensi open source" (BSD-2 MapLibre + Apache NOTICE) sebelum rilis; MobSF & NVD API key; uji lapangan DoD Fase 3 (L7, peta di mode pesawat).
-- **Fase 4 (berjalan):** T4.0 layar lisensi open source (D-65) selesai; keputusan pemilik D-66 (satu migrasi v6), D-67 (hitung ulang ride lama sekali), D-68 (slider grafik untuk segmen). T4.1 rekor: branch `feature/T4.1-best-efforts`.
-- **Permintaan pemilik (2026-11-13), dikerjakan setelah fitur inti selesai:** panduan pemakaian untuk pengguna awam + pilihan level pesepeda (pemula/menengah/profesional, lama bersepeda) saat onboarding. Dicatat sebagai Fase 4G di roadmap.
+- **Fase 4 selesai** (T4.0–T4.6, D-65…D-73): lisensi open source, rekor, segmen + live segmen, beban latihan, kartu share. Laporan `docs/reports/T4-phase4-training-analysis.md` (menunggu review pemilik); OSV `security/phase4-osv-scan.txt` (0 temuan di APK). Skema DB v6.
+- **Berikutnya: Fase 4G** (permintaan pemilik 2026-11-13): panduan pemakaian untuk pengguna awam + pilihan level pesepeda (pemula/menengah/profesional, lama bersepeda) saat onboarding. Fase 5 (Strava API) opsional dan hanya dengan persetujuan eksplisit.
 
 ## Yang perlu ditinjau pemilik
 - D-41: enkripsi backup per segmen di atas AES-GCM.
@@ -26,7 +26,7 @@
 - **Uji lapangan belum dilakukan** (hanya uji perangkat singkat dengan GPS simulasi, lihat atas). GPX uji simulasi: segi-7 r=527 m di pusat loop simulator (−7.7829, 110.3671) dengan tanjakan 6 % di km 1,0–1,9.
 
 ## Konvensi kerja (penting untuk agent berikutnya)
-- Baca `CLAUDE.md` dan `docs/` terlebih dulu. Keputusan tercatat di `docs/reports/DECISIONS.md` (D-01…D-64).
+- Baca `CLAUDE.md` dan `docs/` terlebih dulu. Keputusan tercatat di `docs/reports/DECISIONS.md` (D-01…D-73).
 - Satu branch per task (`feature/<TaskID>-<slug>`), Conventional Commit + ID task, merge `--no-ff` ke `main`.
 - Verifikasi sebelum commit: `./gradlew ktlintCheck detekt lint test koverVerify assembleDebug`.
 - Daemon Gradle memakai JDK 21. Bila dependency berubah: `--write-locks --write-verification-metadata sha256`.
