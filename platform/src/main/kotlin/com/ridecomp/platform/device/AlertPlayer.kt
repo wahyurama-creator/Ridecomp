@@ -53,11 +53,19 @@ class AlertPlayer(context: Context) {
      */
     fun alarm() {
         play(AlertPattern.ALARM)
-        val generator = tones ?: runCatching { ToneGenerator(AudioManager.STREAM_ALARM, ToneGenerator.MAX_VOLUME) }
-            .getOrNull()
-            .also { tones = it }
-        generator?.startTone(ToneGenerator.TONE_CDMA_EMERGENCY_RINGBACK, ALARM_TONE_MS)
+        tone()?.startTone(ToneGenerator.TONE_CDMA_EMERGENCY_RINGBACK, ALARM_TONE_MS)
     }
+
+    /** Short notice tone (off route), on the alarm stream like [alarm]. */
+    fun beep() {
+        tone()?.startTone(ToneGenerator.TONE_PROP_BEEP2, BEEP_MS)
+    }
+
+    private fun tone(): ToneGenerator? = tones
+        ?: runCatching { ToneGenerator(AudioManager.STREAM_ALARM, ToneGenerator.MAX_VOLUME) }.getOrNull().also {
+            tones =
+                it
+        }
 
     fun cancel() {
         vibrator?.cancel()
@@ -70,5 +78,6 @@ class AlertPlayer(context: Context) {
 
         /** Slightly shorter than the 1 s tick so tones do not overlap. */
         const val ALARM_TONE_MS = 900
+        const val BEEP_MS = 300
     }
 }

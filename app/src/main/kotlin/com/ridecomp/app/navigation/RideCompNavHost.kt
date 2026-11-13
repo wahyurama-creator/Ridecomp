@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -42,7 +43,11 @@ import com.ridecomp.feature.settings.ui.SettingsSection
 /** Routes that are not bottom-bar tabs, in one place. */
 object AppRoutes {
     const val ONBOARDING = "onboarding"
-    const val PRE_RIDE = "pre_ride"
+    const val ARG_ROUTE_ID = "routeId"
+    const val PRE_RIDE = "pre_ride?$ARG_ROUTE_ID={$ARG_ROUTE_ID}"
+
+    /** Pre-ride with a route to follow (T3.6). */
+    fun preRide(routeId: Long? = null): String = if (routeId == null) "pre_ride" else "pre_ride?$ARG_ROUTE_ID=$routeId"
     const val RIDE = "ride"
     const val SUMMARY = "summary"
     const val PROFILE = "profile"
@@ -53,7 +58,6 @@ object AppRoutes {
     const val ACTIVITY_PROFILES = "activity_profiles"
     const val SAFETY = "safety"
     const val BACKUP = "backup"
-    const val ARG_ROUTE_ID = "routeId"
     const val ROUTE_DETAIL = "route/{$ARG_ROUTE_ID}"
 
     fun routeDetail(routeId: Long): String = "route/$routeId"
@@ -117,6 +121,7 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
                     }
                 },
                 onDeleted = { navController.popBackStack() },
+                onRideRoute = { navController.navigate(AppRoutes.preRide(it)) },
             )
         }
         composable(TopLevelDestination.SENSORS.route) {
@@ -133,15 +138,12 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
         composable(AppRoutes.BATTERY_HELP) { BatteryHelpRoute() }
         composable(
             AppRoutes.DATA_PAGES,
-            arguments = listOf(
-                navArgument(AppRoutes.ARG_PROFILE_ID) {
-                    type = NavType.LongType
-                    defaultValue = AppRoutes.NO_ID
-                },
-            ),
+            arguments = listOf(optionalIdArgument(AppRoutes.ARG_PROFILE_ID)),
         ) { entry ->
-            val profileId = entry.arguments?.getLong(AppRoutes.ARG_PROFILE_ID)?.takeIf { it != AppRoutes.NO_ID }
-            DataPagesEditorRoute(onDone = { navController.popBackStack() }, profileId = profileId)
+            DataPagesEditorRoute(
+                onDone = { navController.popBackStack() },
+                profileId = entry.optionalId(AppRoutes.ARG_PROFILE_ID),
+            )
         }
         composable(AppRoutes.SAFETY) { SafetyRoute() }
         composable(AppRoutes.BACKUP) { BackupRoute() }
@@ -165,20 +167,12 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
 private fun NavGraphBuilder.rideGraph(navController: NavHostController) {
     composable(TopLevelDestination.HOME.route) {
         HomeRoute(
-            onOpenPreRide = { navController.navigate(AppRoutes.PRE_RIDE) },
+            onOpenPreRide = { navController.navigate(AppRoutes.preRide()) },
             onOpenRide = { navController.navigate(AppRoutes.RIDE) { launchSingleTop = true } },
             onOpenBackup = { navController.navigate(AppRoutes.BACKUP) },
         )
     }
-    composable(AppRoutes.PRE_RIDE) {
-        PreRideRoute(
-            onStarted = {
-                navController.navigate(AppRoutes.RIDE) {
-                    popUpTo(AppRoutes.PRE_RIDE) { inclusive = true }
-                }
-            },
-        )
-    }
+    preRideDestination(navController)
     composable(AppRoutes.RIDE) {
         RideRoute(
             onFinished = {
@@ -201,7 +195,7 @@ private fun NavGraphBuilder.rideGraph(navController: NavHostController) {
 private fun NavGraphBuilder.historyGraph(navController: NavHostController) {
     composable(TopLevelDestination.HISTORY.route) {
         HistoryRoute(
-            onStartRide = { navController.navigate(AppRoutes.PRE_RIDE) },
+            onStartRide = { navController.navigate(AppRoutes.preRide()) },
             onOpenActivity = { id -> navController.navigate(AppRoutes.activityDetail(id)) },
         )
     }
@@ -253,3 +247,27 @@ fun NavHostController.navigateClearingBackStack(route: String) {
         launchSingleTop = true
     }
 }
+
+/** Pre-ride check, optionally with a route to follow (T3.6). */
+private fun NavGraphBuilder.preRideDestination(navController: NavHostController) {
+    composable(AppRoutes.PRE_RIDE, arguments = listOf(optionalIdArgument(AppRoutes.ARG_ROUTE_ID))) { entry ->
+        PreRideRoute(
+            routeId = entry.optionalId(AppRoutes.ARG_ROUTE_ID),
+            onStarted = {
+                navController.navigate(AppRoutes.RIDE) {
+                    popUpTo(AppRoutes.PRE_RIDE) { inclusive = true }
+                }
+            },
+        )
+    }
+}
+
+/** Optional Long id argument (`?name={name}`); absent = [AppRoutes.NO_ID]. */
+private fun optionalIdArgument(name: String) = navArgument(name) {
+    type = NavType.LongType
+    defaultValue = AppRoutes.NO_ID
+}
+
+/** The optional id argument, or null when absent. */
+private fun NavBackStackEntry.optionalId(name: String): Long? =
+    arguments?.getLong(name)?.takeIf { it != AppRoutes.NO_ID }

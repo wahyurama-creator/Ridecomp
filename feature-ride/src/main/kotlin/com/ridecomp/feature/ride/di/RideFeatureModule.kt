@@ -5,6 +5,7 @@ import com.ridecomp.feature.ride.viewmodel.ActivityProfilesViewModel
 import com.ridecomp.feature.ride.viewmodel.DataPagesEditorViewModel
 import com.ridecomp.feature.ride.viewmodel.HomeUseCases
 import com.ridecomp.feature.ride.viewmodel.HomeViewModel
+import com.ridecomp.feature.ride.viewmodel.PreRideUseCases
 import com.ridecomp.feature.ride.viewmodel.PreRideViewModel
 import com.ridecomp.feature.ride.viewmodel.RideUseCases
 import com.ridecomp.feature.ride.viewmodel.RideViewModel
@@ -16,9 +17,10 @@ import org.koin.dsl.module
 val rideFeatureModule = module {
     factory { HomeUseCases(get(), get(), get(), get(), get(), get(), get()) }
     viewModel { HomeViewModel(get()) }
-    viewModel { PreRideViewModel(get(), get(), get(), get(), get()) }
-    factory { RideUseCases(get(), get(), get(), get(), get(), get(), get()) }
-    viewModel { RideViewModel(get()) }
+    factory { PreRideUseCases(get(), get(), get(), get(), get(), get()) }
+    viewModel { params -> PreRideViewModel(params.getOrNull(), get()) }
+    factory { RideUseCases(get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { RideViewModel(get(), get()) }
     viewModel { SummaryViewModel(get(), get(), get(), get(), get()) }
     viewModel { params -> DataPagesEditorViewModel(params.getOrNull(), get(), get(), get()) }
     viewModel { ActivityProfilesViewModel(get(), get(), get()) }

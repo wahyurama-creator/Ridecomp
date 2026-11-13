@@ -39,6 +39,7 @@ class ActivityRepositoryImpl(
             startedAt = activity.startedAtMs,
             lastCheckpointAt = activity.startedAtMs,
             profileId = activity.profileId,
+            routeId = activity.routeId,
         ),
     )
 

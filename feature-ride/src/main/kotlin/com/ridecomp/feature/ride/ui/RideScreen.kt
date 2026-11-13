@@ -36,7 +36,9 @@ import com.ridecomp.feature.ride.model.DataPage
 import com.ridecomp.feature.ride.model.DefaultDataPages
 import com.ridecomp.feature.ride.model.MetricUnitLabels
 import com.ridecomp.feature.ride.model.RideMetric
+import com.ridecomp.feature.ride.model.RouteView
 import com.ridecomp.feature.ride.model.rideAction
+import com.ridecomp.feature.ride.ui.component.BreadcrumbMap
 import com.ridecomp.feature.ride.ui.component.IncidentAlertedBanner
 import com.ridecomp.feature.ride.ui.component.IncidentCountdown
 import com.ridecomp.feature.ride.ui.component.RideBanners
@@ -48,10 +50,13 @@ import com.ridecomp.feature.ride.ui.component.SosButton
 import com.ridecomp.feature.ride.ui.component.rememberMetricUnitLabels
 import com.ridecomp.feature.ride.viewmodel.RideEffect
 import com.ridecomp.feature.ride.viewmodel.RideViewModel
+import com.ridecomp.ui.component.AlertBanner
+import com.ridecomp.ui.component.AlertSeverity
 import com.ridecomp.ui.component.BigButton
 import com.ridecomp.ui.component.BigButtonStyle
 import com.ridecomp.ui.component.ConfirmDialog
 import com.ridecomp.ui.component.DataGrid
+import com.ridecomp.ui.component.LineChart
 import com.ridecomp.ui.component.StatRow
 import com.ridecomp.ui.theme.RideCompDimens
 import com.ridecomp.ui.theme.RideCompTheme
@@ -71,6 +76,7 @@ fun RideRoute(
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val pages by viewModel.pages.collectAsStateWithLifecycle()
     val isSosAvailable by viewModel.isSosAvailable.collectAsStateWithLifecycle()
+    val route by viewModel.route.collectAsStateWithLifecycle()
     ObserveEffects(viewModel.effects) { effect ->
         when (effect) {
             RideEffect.OpenSummary -> onFinished()
@@ -99,6 +105,7 @@ fun RideRoute(
         pages = pages,
         onIncident = viewModel::onIncident,
         isSosAvailable = isSosAvailable,
+        route = route,
         modifier = modifier
             .volumeKeys(settings.isVolumeButtonsEnabled) { key ->
                 interaction++
@@ -123,6 +130,7 @@ fun RideScreen(
     pages: List<DataPage> = DefaultDataPages.ALL,
     onIncident: (IncidentAction) -> Unit = {},
     isSosAvailable: Boolean = false,
+    route: RouteView? = null,
 ) {
     val incident = live.value.incident
     if (incident is IncidentState.Countdown) {
@@ -143,36 +151,113 @@ fun RideScreen(
             )
         }
         RideBanners(live.value, onAction)
+        live.value.route?.takeIf { it.isOffRoute }?.let { OffRouteBanner(it.distanceFromRouteM, formatter) }
         if (incident is IncidentState.Alerted) IncidentAlertedBanner(incident, onIncident)
         if (status == RideStatus.PAUSED) {
             PauseContent(live.value, formatter, onAction, Modifier.weight(1f)) {
                 if (isSosAvailable) SosButton(onIncident)
             }
         } else {
-            val pagerState = rememberPagerState { pages.size }
+            // With a route, the navigation page comes first (02-DESIGN §3.4 page 2, here first while following).
+            val pageCount = pages.size + if (route != null) 1 else 0
+            val pagerState = rememberPagerState { pageCount }
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.weight(1f).pointerInput(Unit) {
                     detectTapGestures(onDoubleTap = { areBarsVisible = !areBarsVisible })
                 },
-            ) { index -> DataPageContent(pages[index], live, formatter, labels) }
+            ) { index ->
+                val pageIndex = if (route != null) index - 1 else index
+                if (route != null && pageIndex < 0) {
+                    NavigationPage(route, live, formatter, labels)
+                } else {
+                    DataPageContent(pages[pageIndex], live, formatter, labels, route)
+                }
+            }
         }
         if (areBarsVisible || status == RideStatus.PAUSED) RideControlBar(status, onAction)
     }
 }
 
 @Composable
-private fun DataPageContent(page: DataPage, live: State<LiveRide>, formatter: UnitFormatter, labels: MetricUnitLabels) {
-    DataGrid(count = page.metrics.size, isFirstFullWidth = page.isFirstFullWidth) { index, cellModifier ->
-        RideField(
-            live = live,
-            metric = page.metrics[index],
-            formatter = formatter,
-            labels = labels,
-            modifier = cellModifier,
-        )
+private fun DataPageContent(
+    page: DataPage,
+    live: State<LiveRide>,
+    formatter: UnitFormatter,
+    labels: MetricUnitLabels,
+    route: RouteView?,
+) {
+    // The climb page gets the route elevation profile with the rider's position (T3.9).
+    val showsProfile = route?.hasElevation == true && RideMetric.GRADE in page.metrics
+    Column(modifier = Modifier.fillMaxSize()) {
+        DataGrid(
+            count = page.metrics.size,
+            isFirstFullWidth = page.isFirstFullWidth,
+            modifier = Modifier.weight(1f),
+        ) { index, cellModifier ->
+            RideField(
+                live = live,
+                metric = page.metrics[index],
+                formatter = formatter,
+                labels = labels,
+                modifier = cellModifier,
+            )
+        }
+        if (showsProfile) RouteProfile(route, live)
     }
 }
+
+/** Navigation page (T3.5/T3.8): breadcrumb map plus distance to go and speed (02-DESIGN §3.4). */
+@Composable
+private fun NavigationPage(
+    route: RouteView,
+    live: State<LiveRide>,
+    formatter: UnitFormatter,
+    labels: MetricUnitLabels,
+) {
+    val current = live.value
+    Column(modifier = Modifier.fillMaxSize()) {
+        BreadcrumbMap(
+            line = route.line,
+            distanceAlongM = current.route?.distanceAlongM,
+            latDeg = current.latDeg,
+            lonDeg = current.lonDeg,
+            modifier = Modifier.fillMaxWidth().weight(2f),
+        )
+        DataGrid(count = NAVIGATION_FIELDS.size, modifier = Modifier.weight(1f)) { index, cellModifier ->
+            RideField(
+                live = live,
+                metric = NAVIGATION_FIELDS[index],
+                formatter = formatter,
+                labels = labels,
+                modifier = cellModifier,
+            )
+        }
+        if (route.hasElevation) RouteProfile(route, live)
+    }
+}
+
+@Composable
+private fun RouteProfile(route: RouteView, live: State<LiveRide>) {
+    LineChart(
+        title = stringResource(R.string.metric_remaining_ascent),
+        values = route.elevation,
+        color = RideCompTheme.colors.track,
+        markerX = live.value.route?.distanceAlongM?.div(route.distanceDivisor),
+        modifier = Modifier.padding(horizontal = RideCompDimens.spacingS),
+    )
+}
+
+@Composable
+private fun OffRouteBanner(distanceM: Double, formatter: UnitFormatter) {
+    AlertBanner(
+        message = stringResource(R.string.ride_off_route, formatter.distance(distanceM), formatter.distanceUnit),
+        severity = AlertSeverity.DANGER,
+    )
+}
+
+/** Fields under the breadcrumb (02-DESIGN §3.4: "peta + 2 field"). */
+private val NAVIGATION_FIELDS = listOf(RideMetric.DISTANCE_REMAINING, RideMetric.SPEED)
 
 /** Pause screen (02-DESIGN §3.5): running summary + RESUME, FINISH & SAVE, DISCARD (2-step). */
 @Composable

@@ -100,7 +100,10 @@ class RecordingService : LifecycleService() {
 
     private suspend fun handle(intent: Intent?) {
         when (intent?.action) {
-            ServiceIntents.ACTION_START -> startRide(intent.profileIdExtra())
+            ServiceIntents.ACTION_START -> startRide(
+                intent.idExtra(ServiceIntents.EXTRA_PROFILE_ID),
+                intent.idExtra(ServiceIntents.EXTRA_ROUTE_ID),
+            )
             ServiceIntents.ACTION_RESUME_RECOVERED ->
                 resumeRide(intent.getLongExtra(ServiceIntents.EXTRA_ACTIVITY_ID, ServiceIntents.NO_ID), null)
             ServiceIntents.ACTION_PERFORM -> intent.getStringExtra(ServiceIntents.EXTRA_RIDE_ACTION)
@@ -116,10 +119,10 @@ class RecordingService : LifecycleService() {
         if (session == null) stopRide()
     }
 
-    private suspend fun startRide(profileId: Long?) = sessionLock.withLock {
+    private suspend fun startRide(profileId: Long?, routeId: Long?) = sessionLock.withLock {
         if (session != null) return@withLock
         val settings = deps.settingsRepository.getRideSettings()
-        val setup = rideSetup(settings, profileId)
+        val setup = rideSetup(settings, profileId, routeId)
         formatter = UnitFormatter(settings.unitSystem)
         val newSession = deps.newSession()
         newSession.start(setup, deps.clock.nowMs()).onSuccess { output ->
@@ -137,7 +140,12 @@ class RecordingService : LifecycleService() {
         formatter = UnitFormatter(settings.unitSystem)
         val resumeAs = if (storedStatus == ActivityStatus.RECORDING) RideStatus.RECORDING else RideStatus.PAUSED
         val restored = deps.newSession()
-        restored.resume(activity, rideSetup(settings, activity.profileId), resumeAs, deps.clock.nowMs())
+        restored.resume(
+            activity,
+            rideSetup(settings, activity.profileId, activity.routeId),
+            resumeAs,
+            deps.clock.nowMs(),
+        )
         session = restored
         restored.tick(deps.clock.nowMs())?.let(::publish)
         startPipeline()
@@ -249,6 +257,8 @@ class RecordingService : LifecycleService() {
 
     private suspend fun handleOutput(active: RecordingSession, output: RecorderOutput, now: Long) {
         output.events.forEach { event -> alertFor(event.type)?.let(deps.alertPlayer::play) }
+        // Off route: vibration and a beep (N-04), heard with the phone in a pocket or bag.
+        if (output.events.any { it.type == RideEventType.OFF_ROUTE }) deps.alertPlayer.beep()
         val change = output.batteryChange ?: return
         if (!BatteryModePolicy.isBarometerAllowed(change.mode)) {
             pressureJob?.cancel()
@@ -268,6 +278,8 @@ class RecordingService : LifecycleService() {
         -> AlertPattern.LONG
         RideEventType.SENSOR_LOST -> AlertPattern.DOUBLE
         RideEventType.SENSOR_BACK -> AlertPattern.SHORT
+        RideEventType.OFF_ROUTE -> AlertPattern.LONG
+        RideEventType.BACK_ON_ROUTE -> AlertPattern.DOUBLE
         RideEventType.START, RideEventType.PAUSE, RideEventType.RESUME, RideEventType.STOP, RideEventType.GAP,
         RideEventType.LAP, RideEventType.REMINDER_ACK, RideEventType.INCIDENT_DETECTED,
         RideEventType.INCIDENT_CANCELLED, RideEventType.SOS_SENT, RideEventType.SMS_FAILED,
@@ -313,7 +325,7 @@ class RecordingService : LifecycleService() {
     }
 
     /** General settings and rider with the activity profile applied (12-FEATURE-SPECS §4). */
-    private suspend fun rideSetup(settings: RideSettings, profileId: Long?): RideSetup {
+    private suspend fun rideSetup(settings: RideSettings, profileId: Long?, routeId: Long?): RideSetup {
         val rider = deps.profileRepository.get()
         val activityProfile = deps.getRideProfile(profileId)
         isGpsEnabled = activityProfile?.isGpsEnabled != false
@@ -324,14 +336,17 @@ class RecordingService : LifecycleService() {
             ageYears = rider.ageYears(deps.clock.nowMs()),
             profileId = activityProfile?.id,
             isGpsEnabled = isGpsEnabled,
+            routeId = routeId,
+            // Indoor rides have no position to follow a route with.
+            routePoints = routeId?.takeIf { isGpsEnabled }?.let { deps.routeRepository.getPoints(it) }.orEmpty(),
         )
     }
 
     private fun altitudeSource(): AltitudeSource =
         if (deps.pressureSource.hasBarometer) AltitudeSource.BAROMETER else AltitudeSource.GPS
 
-    private fun Intent.profileIdExtra(): Long? =
-        getLongExtra(ServiceIntents.EXTRA_PROFILE_ID, ServiceIntents.NO_ID).takeIf { it != ServiceIntents.NO_ID }
+    private fun Intent.idExtra(name: String): Long? =
+        getLongExtra(name, ServiceIntents.NO_ID).takeIf { it != ServiceIntents.NO_ID }
 
     private companion object {
         const val TAG = "RecordingService"

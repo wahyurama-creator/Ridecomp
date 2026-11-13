@@ -42,6 +42,8 @@ public enum class RideEventType {
     INCIDENT_CANCELLED,
     SOS_SENT,
     SMS_FAILED,
+    OFF_ROUTE,
+    BACK_ON_ROUTE,
 }
 
 public data class RideEvent(val timeMs: Long, val type: RideEventType)
@@ -117,4 +119,5 @@ public data class Activity(
     val fitPath: String? = null,
     val fitExportedAtMs: Long? = null,
     val profileId: Long? = null,
+    val routeId: Long? = null,
 )

@@ -69,6 +69,7 @@ internal fun ActivityEntity.toDomain(): Activity? = status.toActivityStatus()?.l
         lastCheckpointAtMs = lastCheckpointAt,
         fitPath = fitPath,
         profileId = profileId,
+        routeId = routeId,
         fitExportedAtMs = fitExportedAt,
     )
 }

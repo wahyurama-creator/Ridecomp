@@ -151,7 +151,7 @@ public class ExportFitUseCase(
         RideEventType.GAP, RideEventType.LAP, RideEventType.SENSOR_LOST, RideEventType.SENSOR_BACK,
         RideEventType.REMINDER_DRINK, RideEventType.REMINDER_EAT, RideEventType.REMINDER_ACK,
         RideEventType.INCIDENT_DETECTED, RideEventType.INCIDENT_CANCELLED, RideEventType.SOS_SENT,
-        RideEventType.SMS_FAILED,
+        RideEventType.SMS_FAILED, RideEventType.OFF_ROUTE, RideEventType.BACK_ON_ROUTE,
         RideEventType.BATTERY_MODE_SAVER, RideEventType.BATTERY_MODE_CRITICAL, RideEventType.BATTERY_MODE_EMERGENCY,
         -> null
     }

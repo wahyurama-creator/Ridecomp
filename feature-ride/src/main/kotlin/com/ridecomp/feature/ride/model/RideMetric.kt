@@ -119,6 +119,13 @@ enum class RideMetric(
     LAP_AVG_HR(R.string.metric_lap_avg_hr, MetricUnit.BPM, SensorKind.HEART_RATE, {
         format.integer(live.lap?.avgHeartRateBpm)
     }),
+    DISTANCE_REMAINING(R.string.metric_distance_remaining, MetricUnit.DISTANCE, null, {
+        format.distance(live.route?.distanceRemainingM)
+    }),
+    ROUTE_ETA(R.string.metric_route_eta, MetricUnit.NONE, null, { format.duration(live.route?.etaMs) }),
+    REMAINING_ASCENT(R.string.metric_remaining_ascent, MetricUnit.ELEVATION, null, {
+        format.elevation(live.route?.remainingAscentM)
+    }),
     ;
 
     /**

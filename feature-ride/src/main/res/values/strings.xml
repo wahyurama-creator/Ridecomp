@@ -74,6 +74,12 @@
     <string name="metric_lap_avg_speed">Lap avg speed</string>
     <string name="metric_lap_avg_power">Lap avg power</string>
     <string name="metric_lap_avg_hr">Lap avg HR</string>
+    <string name="metric_distance_remaining">To go</string>
+    <string name="metric_route_eta">Time to go</string>
+    <string name="metric_remaining_ascent">Climb to go</string>
+    <string name="breadcrumb_description">Route line with your position, north up</string>
+    <string name="breadcrumb_north" translatable="false">N ↑</string>
+    <string name="ride_off_route">Off route · %1$s %2$s from the route</string>
     <string name="metric_lap_number">Lap</string>
     <string name="unit_bpm">bpm</string>
     <string name="unit_rpm">rpm</string>
@@ -107,6 +113,9 @@
     <string name="data_pages_cancel">Cancel</string>
     <string name="pre_ride_profile">Activity profile</string>
     <string name="pre_ride_gps_not_used">GPS not used (Indoor): speed from the wheel sensor.</string>
+    <string name="pre_ride_route">Route: %1$s</string>
+    <string name="pre_ride_route_hint">Off-route alerts, distance to go and the route page are on.</string>
+    <string name="pre_ride_route_clear">Ride free</string>
     <string name="profile_kind_road">Road</string>
     <string name="profile_kind_gravel">Gravel</string>
     <string name="profile_kind_mtb">MTB</string>

@@ -3,10 +3,12 @@ package com.ridecomp.feature.ride.viewmodel
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.viewModelScope
 import com.ridecomp.core.engine.recording.BatteryStatus
+import com.ridecomp.core.engine.route.Route
 import com.ridecomp.core.model.ActivityProfile
 import com.ridecomp.core.usecase.GpsStatus
 import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
 import com.ridecomp.core.usecase.ObserveProfileChoiceUseCase
+import com.ridecomp.core.usecase.ObserveRouteUseCase
 import com.ridecomp.core.usecase.ReadBatteryUseCase
 import com.ridecomp.core.usecase.SelectActivityProfileUseCase
 import com.ridecomp.core.usecase.StartRideUseCase
@@ -30,10 +32,15 @@ data class PreRideUiState(
     val battery: BatteryStatus?,
     val profiles: ImmutableList<ActivityProfile> = persistentListOf(),
     val selected: ActivityProfile? = null,
+    /** Route to follow (T3.6), chosen from the route detail; null for a free ride. */
+    val route: Route? = null,
 )
 
 sealed interface PreRideUiEvent {
     data class SelectProfile(val id: Long) : PreRideUiEvent
+
+    /** Ride without the route. */
+    data object ClearRoute : PreRideUiEvent
 
     data object Start : PreRideUiEvent
 }
@@ -47,33 +54,42 @@ sealed interface PreRideEffect {
  * while the screen is visible and only for profiles that use GPS: [gpsStatus] is shared with
  * `WhileSubscribed`, so leaving the screen or choosing Indoor stops location updates (BAT-01, CO-07).
  */
+/** Use cases of the pre-ride check, grouped to keep the constructor short. */
+data class PreRideUseCases(
+    val observeGps: ObserveGpsStatusUseCase,
+    val readBattery: ReadBatteryUseCase,
+    val observeProfiles: ObserveProfileChoiceUseCase,
+    val selectProfile: SelectActivityProfileUseCase,
+    val observeRoute: ObserveRouteUseCase,
+    val startRide: StartRideUseCase,
+)
+
 @OptIn(ExperimentalCoroutinesApi::class)
-class PreRideViewModel(
-    observeGps: ObserveGpsStatusUseCase,
-    readBattery: ReadBatteryUseCase,
-    observeProfiles: ObserveProfileChoiceUseCase,
-    private val selectProfile: SelectActivityProfileUseCase,
-    private val startRide: StartRideUseCase,
-) : UdfViewModel<PreRideUiState, PreRideUiEvent, PreRideEffect>(PreRideUiState(readBattery())) {
-    private val choice = observeProfiles()
+class PreRideViewModel(routeId: Long?, private val useCases: PreRideUseCases) :
+    UdfViewModel<PreRideUiState, PreRideUiEvent, PreRideEffect>(PreRideUiState(useCases.readBattery())) {
+    private val choice = useCases.observeProfiles()
 
     val gpsStatus: StateFlow<GpsStatus> = choice
         .map { it.selected?.isGpsEnabled != false }
         .distinctUntilChanged()
-        .flatMapLatest { isGpsUsed -> if (isGpsUsed) observeGps() else flowOf(GpsStatus.NotUsed) }
+        .flatMapLatest { isGpsUsed -> if (isGpsUsed) useCases.observeGps() else flowOf(GpsStatus.NotUsed) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), GpsStatus.Searching)
 
     init {
         viewModelScope.launch {
             choice.collect { updateState { copy(profiles = it.profiles.toImmutableList(), selected = it.selected) } }
         }
+        routeId?.let { id ->
+            viewModelScope.launch { useCases.observeRoute(id).collect { updateState { copy(route = it) } } }
+        }
     }
 
     override fun onEvent(event: PreRideUiEvent) {
         when (event) {
-            is PreRideUiEvent.SelectProfile -> viewModelScope.launch { selectProfile(event.id) }
+            is PreRideUiEvent.SelectProfile -> viewModelScope.launch { useCases.selectProfile(event.id) }
+            PreRideUiEvent.ClearRoute -> updateState { copy(route = null) }
             PreRideUiEvent.Start -> {
-                startRide(currentState.selected?.id)
+                useCases.startRide(currentState.selected?.id, currentState.route?.id)
                 sendEffect(PreRideEffect.OpenRide)
             }
         }

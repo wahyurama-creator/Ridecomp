@@ -37,7 +37,10 @@ fun LineChart(
     modifier: Modifier = Modifier,
     color: Color = RideCompTheme.colors.accent,
     summary: String? = null,
+    /** Vertical marker at this x (current position on a route profile, T3.9); null for none. */
+    markerX: Double? = null,
 ) {
+    val markerColor = RideCompTheme.colors.textPrimary
     val bounds = remember(values) { values.bounds() }
     Column(modifier = modifier.fillMaxWidth()) {
         Text(text = title, style = RideCompTheme.typography.dataLabel, color = RideCompTheme.colors.textSecondary)
@@ -64,6 +67,15 @@ fun LineChart(
                 }
             }
             drawPath(path, color = color, style = Stroke(width = RideCompDimens.chartStroke.toPx()))
+            markerX?.let { x ->
+                val markerOffset = ((x - box.minX) / box.width * size.width).toFloat().coerceIn(0f, size.width)
+                drawLine(
+                    color = markerColor,
+                    start = Offset(markerOffset, 0f),
+                    end = Offset(markerOffset, size.height),
+                    strokeWidth = RideCompDimens.chartStroke.toPx(),
+                )
+            }
         }
     }
 }

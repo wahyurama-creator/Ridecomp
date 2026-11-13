@@ -21,6 +21,7 @@
     <string name="route_name">Route name</string>
     <string name="route_rename">Save name</string>
     <string name="route_reverse">Reverse direction</string>
+    <string name="route_ride">Ride this route</string>
     <string name="route_reversed_name">%1$s (reverse)</string>
     <string name="route_delete">Delete route</string>
     <string name="route_delete_title">Delete %1$s?</string>
