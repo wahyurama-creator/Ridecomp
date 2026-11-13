@@ -137,6 +137,7 @@ fun ListCardRow(
     onClick: (() -> Unit)? = null,
     hasDivider: Boolean = true,
     trailing: (@Composable () -> Unit)? = null,
+    leading: (@Composable () -> Unit)? = null,
 ) {
     val colors = RideCompTheme.colors
     Column(modifier = modifier.fillMaxWidth()) {
@@ -147,8 +148,9 @@ fun ListCardRow(
                 .thenIf(onClick != null) { clickable(role = Role.Button) { onClick?.invoke() } }
                 .padding(horizontal = RideCompDimens.cardPaddingHorizontal, vertical = RideCompDimens.spacingSm),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS),
+            horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm),
         ) {
+            leading?.invoke()
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = title, style = RideCompTheme.typography.bodyStrong, color = colors.textPrimary)
                 if (subtitle != null) {

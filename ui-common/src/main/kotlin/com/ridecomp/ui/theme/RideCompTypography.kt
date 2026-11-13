@@ -65,6 +65,8 @@ data class RideCompTypography(
         letterSpacing = RideCompDimens.buttonLetterSpacing,
     ),
     val buttonSmall: TextStyle = TextStyle(fontWeight = FontWeight.Bold, fontSize = RideCompDimens.buttonTextSizeSmall),
+    /** Equal-width option chips (five per row on a 360 dp phone). */
+    val chipCompact: TextStyle = TextStyle(fontWeight = FontWeight.Bold, fontSize = RideCompDimens.chipCompactTextSize),
 )
 
 val LocalRideCompTypography = staticCompositionLocalOf { RideCompTypography() }

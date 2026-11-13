@@ -67,13 +67,24 @@ class RideControlUseCasesTest {
     }
 
     @Test
+    fun `gps availability never starts the gps`() {
+        val source = FakeLocationSource()
+        assertEquals(GpsAvailability.READY, CheckGpsAvailabilityUseCase(source)())
+        assertEquals(
+            GpsAvailability.DISABLED,
+            CheckGpsAvailabilityUseCase(FakeLocationSource(isGpsEnabledValue = false))(),
+        )
+        assertEquals(0, source.activeCollectors)
+    }
+
+    @Test
     fun `gps status goes from searching to ready and stops gps when not collected`() = runTest {
         val source = FakeLocationSource()
 
         ObserveGpsStatusUseCase(source)().test {
-            assertEquals(GpsStatus.Searching, awaitItem())
+            assertEquals(GpsStatus.Searching(), awaitItem())
             source.fixesFlow.emit(LocationFix(0, -7.0, 110.0, null, 80.0, null))
-            assertEquals(GpsStatus.Searching, awaitItem())
+            assertEquals(GpsStatus.Searching(80.0), awaitItem())
             source.fixesFlow.emit(LocationFix(1, -7.0, 110.0, null, 6.0, null))
             assertEquals(GpsStatus.Ready(6.0), awaitItem())
             assertEquals(1, source.activeCollectors)

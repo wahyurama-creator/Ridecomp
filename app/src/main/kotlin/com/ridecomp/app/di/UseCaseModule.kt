@@ -3,6 +3,7 @@ package com.ridecomp.app.di
 import com.ridecomp.core.usecase.AddEmergencyContactUseCase
 import com.ridecomp.core.usecase.AddPickedContactUseCase
 import com.ridecomp.core.usecase.BackupWriter
+import com.ridecomp.core.usecase.CheckGpsAvailabilityUseCase
 import com.ridecomp.core.usecase.CompleteOnboardingUseCase
 import com.ridecomp.core.usecase.CreateBackupUseCase
 import com.ridecomp.core.usecase.DeleteActivityProfileUseCase
@@ -106,6 +107,7 @@ val useCaseModule = module {
     factory { HandleRecoveredRideUseCase(get(), get()) }
     factory { ObserveGpsStatusUseCase(get()) }
     factory { ReadBatteryUseCase(get()) }
+    factory { CheckGpsAvailabilityUseCase(get()) }
     factory { PerformIncidentActionUseCase(get()) }
     factory { BackupWriter(get(), get(), get(), get(), get()) }
     factory { CreateBackupUseCase(get(), get(), get(), get(), get(), get()) }

@@ -253,6 +253,8 @@ private fun NavGraphBuilder.preRideDestination(navController: NavHostController)
     composable(AppRoutes.PRE_RIDE, arguments = listOf(optionalIdArgument(AppRoutes.ARG_ROUTE_ID))) { entry ->
         PreRideRoute(
             routeId = entry.optionalId(AppRoutes.ARG_ROUTE_ID),
+            onCancel = { navController.popBackStack() },
+            onChooseRoute = { navController.navigateToTopLevel(TopLevelDestination.ROUTES) },
             onStarted = {
                 navController.navigate(AppRoutes.RIDE) {
                     popUpTo(AppRoutes.PRE_RIDE) { inclusive = true }

@@ -35,6 +35,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
 import com.ridecomp.ui.theme.RideCompDimens
@@ -58,43 +60,86 @@ fun <T> ChoiceChips(
     selected: T,
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
+    /** Zero inside a screen that already pads its content. */
+    horizontalPadding: Dp = RideCompDimens.spacingM,
+    /** Equal-width chips in rows of this many (13-UI-SCREENS #5: 5 profiles, 3 screen modes); null = wrap. */
+    columns: Int? = null,
 ) {
-    val colors = RideCompTheme.colors
-    val shape = RoundedCornerShape(RideCompDimens.cornerRadiusSmall)
     Column(
-        modifier = modifier.fillMaxWidth().padding(horizontal = RideCompDimens.spacingM),
+        modifier = modifier.fillMaxWidth().padding(horizontal = horizontalPadding),
         verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS),
     ) {
-        Text(text = label.uppercase(), style = RideCompTheme.typography.dataLabel, color = colors.textSecondary)
-        FlowRow(
-            modifier = Modifier.selectableGroup(),
-            horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS),
-            verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS),
-        ) {
-            choices.forEach { choice ->
-                val isSelected = choice.value == selected
-                Box(
-                    modifier = Modifier
-                        .heightIn(min = RideCompDimens.touchTargetMin)
-                        .clip(shape)
-                        .background(if (isSelected) colors.accentTint else colors.surface)
-                        .border(
-                            width = RideCompDimens.borderSelected,
-                            color = if (isSelected) colors.accent else colors.surface,
-                            shape = shape,
-                        )
-                        .selectable(selected = isSelected, role = Role.RadioButton) { onSelect(choice.value) }
-                        .padding(horizontal = RideCompDimens.spacingM),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = choice.label,
-                        style = RideCompTheme.typography.buttonSmall,
-                        color = if (isSelected) colors.textPrimary else colors.textTertiary,
-                    )
+        Text(
+            text = label.uppercase(),
+            style = RideCompTheme.typography.dataLabel,
+            color = RideCompTheme.colors.textSecondary,
+        )
+        if (columns == null) {
+            FlowRow(
+                modifier = Modifier.selectableGroup(),
+                horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS),
+                verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS),
+            ) {
+                choices.forEach { choice ->
+                    OptionChip(choice, choice.value == selected, onSelect, Modifier, isCompact = false)
+                }
+            }
+        } else {
+            Column(
+                modifier = Modifier.selectableGroup(),
+                verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS),
+            ) {
+                choices.chunked(columns).forEach { row ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS)) {
+                        row.forEach { choice ->
+                            OptionChip(
+                                choice,
+                                choice.value == selected,
+                                onSelect,
+                                Modifier.weight(1f),
+                                isCompact = true,
+                            )
+                        }
+                        // Keep the last row's chips the same width as the others.
+                        repeat(columns - row.size) { Box(modifier = Modifier.weight(1f)) }
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun <T> OptionChip(
+    choice: Choice<T>,
+    isSelected: Boolean,
+    onSelect: (T) -> Unit,
+    modifier: Modifier,
+    isCompact: Boolean,
+) {
+    val colors = RideCompTheme.colors
+    val shape = RoundedCornerShape(RideCompDimens.cornerRadiusSmall)
+    Box(
+        modifier = modifier
+            .heightIn(min = RideCompDimens.touchTargetMin)
+            .clip(shape)
+            .background(if (isSelected) colors.accentTint else colors.surface)
+            .border(
+                width = RideCompDimens.borderSelected,
+                color = if (isSelected) colors.accent else colors.surface,
+                shape = shape,
+            )
+            .selectable(selected = isSelected, role = Role.RadioButton) { onSelect(choice.value) }
+            .padding(horizontal = if (isCompact) RideCompDimens.spacingXs else RideCompDimens.spacingM),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = choice.label,
+            style = if (isCompact) RideCompTheme.typography.chipCompact else RideCompTheme.typography.buttonSmall,
+            color = if (isSelected) colors.textPrimary else colors.textTertiary,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+        )
     }
 }
 

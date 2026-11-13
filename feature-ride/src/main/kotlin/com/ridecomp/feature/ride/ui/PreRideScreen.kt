@@ -1,31 +1,59 @@
 package com.ridecomp.feature.ride.ui
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ridecomp.core.config.GpsConfig
 import com.ridecomp.core.engine.recording.BatteryStatus
+import com.ridecomp.core.engine.sensors.SavedSensor
+import com.ridecomp.core.engine.sensors.SensorKind
 import com.ridecomp.core.model.BuiltInProfiles
+import com.ridecomp.core.model.ScreenMode
 import com.ridecomp.core.usecase.GpsStatus
+import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.ride.R
 import com.ridecomp.feature.ride.model.displayName
 import com.ridecomp.feature.ride.viewmodel.PreRideEffect
 import com.ridecomp.feature.ride.viewmodel.PreRideUiEvent
 import com.ridecomp.feature.ride.viewmodel.PreRideUiState
 import com.ridecomp.feature.ride.viewmodel.PreRideViewModel
+import com.ridecomp.ui.R as UiR
 import com.ridecomp.ui.component.BigButton
+import com.ridecomp.ui.component.BigButtonSize
 import com.ridecomp.ui.component.BigButtonStyle
 import com.ridecomp.ui.component.Choice
 import com.ridecomp.ui.component.ChoiceChips
-import com.ridecomp.ui.component.ListRow
+import com.ridecomp.ui.component.LinkText
+import com.ridecomp.ui.component.ListCard
+import com.ridecomp.ui.component.ListCardRow
+import com.ridecomp.ui.component.RideCompCard
 import com.ridecomp.ui.component.ScreenScaffold
+import com.ridecomp.ui.component.SectionHeader
+import com.ridecomp.ui.component.TopBarIcon
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
 import com.ridecomp.ui.theme.RideCompDimens
@@ -36,13 +64,15 @@ import kotlinx.collections.immutable.toImmutableList
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
-/** Pre-ride check (02-DESIGN §3.3): GPS fix, battery; START or start without waiting. */
+/** Pre-ride check (02-DESIGN §3.3, 13-UI-SCREENS #5, #29): checks, profile, route, screen mode, MULAI. */
 @Composable
 fun PreRideRoute(
     onStarted: () -> Unit,
     modifier: Modifier = Modifier,
     /** Route chosen in the route detail ("Ride this route"), or null. */
     routeId: Long? = null,
+    onCancel: () -> Unit = {},
+    onChooseRoute: () -> Unit = {},
     viewModel: PreRideViewModel = koinViewModel(key = routeId?.toString()) { parametersOf(routeId) },
 ) {
     val gps by viewModel.gpsStatus.collectAsStateWithLifecycle()
@@ -52,7 +82,14 @@ fun PreRideRoute(
             PreRideEffect.OpenRide -> onStarted()
         }
     }
-    PreRideScreen(gps = gps, state = state, onEvent = viewModel::onEvent, modifier = modifier)
+    PreRideScreen(
+        gps = gps,
+        state = state,
+        onEvent = viewModel::onEvent,
+        onCancel = onCancel,
+        onChooseRoute = onChooseRoute,
+        modifier = modifier,
+    )
 }
 
 @Composable
@@ -61,58 +98,153 @@ fun PreRideScreen(
     state: PreRideUiState,
     onEvent: (PreRideUiEvent) -> Unit,
     modifier: Modifier = Modifier,
+    onCancel: () -> Unit = {},
+    onChooseRoute: () -> Unit = {},
 ) {
+    // While GPS searches, the waiting state is shown first (#29); "Pilihan ride" opens the check list.
+    var isChecklistShown by rememberSaveable { mutableStateOf(false) }
     val onStart = { onEvent(PreRideUiEvent.Start) }
-    ScreenScaffold(modifier = modifier, title = stringResource(R.string.pre_ride_title)) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(RideCompDimens.spacingM),
-            verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingM),
-        ) {
-            ProfilePicker(state, onEvent)
-            state.route?.let { route ->
-                ListRow(
-                    title = stringResource(R.string.pre_ride_route, route.name),
-                    subtitle = stringResource(R.string.pre_ride_route_hint),
-                    trailing = {
-                        TextButton(onClick = { onEvent(PreRideUiEvent.ClearRoute) }) {
-                            Text(stringResource(R.string.pre_ride_route_clear))
-                        }
-                    },
-                )
-            }
-            val colors = RideCompTheme.colors
-            val (gpsText, gpsColor) = when (gps) {
-                GpsStatus.NoPermission -> stringResource(R.string.pre_ride_gps_no_permission) to colors.danger
-                GpsStatus.Disabled -> stringResource(R.string.pre_ride_gps_disabled) to colors.danger
-                GpsStatus.Searching -> stringResource(R.string.pre_ride_gps_searching) to colors.warnText
-                GpsStatus.NotUsed -> stringResource(R.string.pre_ride_gps_not_used) to colors.ok
-                is GpsStatus.Ready -> (
-                    gps.accuracyM?.let { stringResource(R.string.pre_ride_gps_ready, it.roundToInt().toString()) }
-                        ?: stringResource(R.string.pre_ride_gps_ready_unknown)
-                    ) to colors.ok
-            }
-            Text(text = gpsText, style = RideCompTheme.typography.title, color = gpsColor)
-            state.battery?.let {
-                Text(
-                    text = stringResource(R.string.pre_ride_battery, it.percent),
-                    style = RideCompTheme.typography.body,
-                    color = RideCompTheme.colors.textSecondary,
-                )
-            }
-            if (gps is GpsStatus.Ready || gps == GpsStatus.NotUsed) {
-                BigButton(text = stringResource(R.string.pre_ride_start), onClick = onStart)
-            } else {
-                // Recording starts now; position follows once the GPS has a fix (02-DESIGN §3.13).
-                BigButton(
-                    text = stringResource(R.string.pre_ride_start_without_fix),
-                    onClick = onStart,
-                    style = BigButtonStyle.SECONDARY,
-                    isEnabled = gps != GpsStatus.NoPermission,
-                )
+    ScreenScaffold(
+        modifier = modifier,
+        title = stringResource(R.string.pre_ride_title),
+        onBack = onCancel,
+        backLabel = stringResource(R.string.ride_cancel),
+        backIcon = TopBarIcon.CLOSE,
+    ) {
+        BoxWithConstraints(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .heightIn(min = maxHeight)
+                    .padding(
+                        start = RideCompDimens.screenPaddingHorizontal,
+                        end = RideCompDimens.screenPaddingHorizontal,
+                        bottom = RideCompDimens.screenPaddingBottom,
+                    ),
+                verticalArrangement = Arrangement.SpaceBetween,
+            ) {
+                if (gps is GpsStatus.Searching && !isChecklistShown) {
+                    GpsWaiting(gps, onShowOptions = { isChecklistShown = true })
+                } else {
+                    Checklist(gps, state, onEvent, onChooseRoute)
+                }
+                StartButtons(gps, onStart)
             }
         }
     }
 }
+
+@Composable
+private fun Checklist(
+    gps: GpsStatus,
+    state: PreRideUiState,
+    onEvent: (PreRideUiEvent) -> Unit,
+    onChooseRoute: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap)) {
+        ListCard {
+            CheckRow(gpsCheck(gps))
+            SensorKind.entries.forEach { kind -> CheckRow(sensorCheck(state.sensors, kind)) }
+            state.battery?.let { CheckRow(batteryCheck(it), hasDivider = false) }
+        }
+        ProfilePicker(state, onEvent)
+        RoutePicker(state, onEvent, onChooseRoute)
+        ScreenModePicker(state, onEvent)
+    }
+}
+
+/** One check list line: state icon, name, status in the state color. */
+private data class Check(val title: String, val status: String, val level: CheckLevel)
+
+private enum class CheckLevel { OK, WARN, ERROR }
+
+@Composable
+private fun CheckRow(check: Check, hasDivider: Boolean = true) {
+    val color = check.level.color()
+    ListCardRow(
+        title = check.title,
+        hasDivider = hasDivider,
+        trailing = { Text(text = check.status, style = RideCompTheme.typography.bodyStrong, color = color) },
+        leading = {
+            Icon(
+                painterResource(
+                    if (check.level ==
+                        CheckLevel.OK
+                    ) {
+                        UiR.drawable.ic_check
+                    } else {
+                        UiR.drawable.ic_alert_circle
+                    },
+                ),
+                contentDescription = null,
+                tint = color,
+            )
+        },
+    )
+}
+
+@Composable
+private fun CheckLevel.color(): Color = when (this) {
+    CheckLevel.OK -> RideCompTheme.colors.ok
+    CheckLevel.WARN -> RideCompTheme.colors.warnText
+    CheckLevel.ERROR -> RideCompTheme.colors.danger
+}
+
+@Composable
+private fun gpsCheck(gps: GpsStatus): Check {
+    val title = stringResource(R.string.pre_ride_check_gps)
+    return when (gps) {
+        GpsStatus.NoPermission -> Check(title, stringResource(R.string.pre_ride_gps_no_permission), CheckLevel.ERROR)
+        GpsStatus.Disabled -> Check(title, stringResource(R.string.pre_ride_gps_disabled), CheckLevel.ERROR)
+        is GpsStatus.Searching -> Check(title, stringResource(R.string.pre_ride_gps_searching), CheckLevel.WARN)
+        GpsStatus.NotUsed -> Check(title, stringResource(R.string.pre_ride_gps_not_used), CheckLevel.OK)
+        is GpsStatus.Ready -> Check(
+            title,
+            gps.accuracyM?.let { stringResource(R.string.pre_ride_gps_ready, it.roundToInt().toString()) }
+                ?: stringResource(R.string.pre_ride_gps_ready_unknown),
+            CheckLevel.OK,
+        )
+    }
+}
+
+/** Saved sensors connect when the ride starts; here they show as saved, with their last battery. */
+@Composable
+private fun sensorCheck(sensors: List<SavedSensor>, kind: SensorKind): Check {
+    val sensor = sensors.firstOrNull { kind in it.kinds }
+    val title = stringResource(
+        when (kind) {
+            SensorKind.HEART_RATE -> R.string.pre_ride_check_hr
+            SensorKind.SPEED_CADENCE -> R.string.pre_ride_check_csc
+            SensorKind.POWER -> R.string.pre_ride_check_power
+        },
+    )
+    return when {
+        sensor != null -> Check(
+            title,
+            sensor.lastBatteryPercent?.let { stringResource(R.string.pre_ride_sensor_saved_battery, it) }
+                ?: stringResource(R.string.pre_ride_sensor_saved),
+            CheckLevel.OK,
+        )
+        kind == SensorKind.POWER -> Check(title, stringResource(R.string.pre_ride_power_estimate), CheckLevel.WARN)
+        else -> Check(title, stringResource(R.string.pre_ride_sensor_none), CheckLevel.WARN)
+    }
+}
+
+@Composable
+private fun batteryCheck(battery: BatteryStatus): Check = Check(
+    stringResource(R.string.pre_ride_check_battery),
+    stringResource(R.string.pre_ride_battery_value, battery.percent),
+    if (battery.percent > LOW_BATTERY_PERCENT) CheckLevel.OK else CheckLevel.WARN,
+)
+
+/** The five built-in profiles fit one row (13-UI-SCREENS #5); custom ones wrap to the next. */
+private const val PROFILE_COLUMNS = 5
+
+private val MAX_ACCURACY_M = GpsConfig.MAX_ACCURACY_M.roundToInt()
+
+/** Below this the ride will soon switch to the battery saver (12-FEATURE-SPECS §3). */
+private const val LOW_BATTERY_PERCENT = 20
 
 @Composable
 private fun ProfilePicker(state: PreRideUiState, onEvent: (PreRideUiEvent) -> Unit) {
@@ -122,7 +254,151 @@ private fun ProfilePicker(state: PreRideUiState, onEvent: (PreRideUiEvent) -> Un
         choices = state.profiles.map { Choice(it.id, it.displayName()) }.toImmutableList(),
         selected = selected.id,
         onSelect = { onEvent(PreRideUiEvent.SelectProfile(it)) },
+        horizontalPadding = RideCompDimens.none,
+        columns = PROFILE_COLUMNS,
     )
+}
+
+@Composable
+private fun RoutePicker(state: PreRideUiState, onEvent: (PreRideUiEvent) -> Unit, onChooseRoute: () -> Unit) {
+    val route = state.route
+    Column(verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS)) {
+        SectionHeader(stringResource(R.string.pre_ride_route_label), horizontalPadding = RideCompDimens.none)
+        RideCompCard {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                val format = UnitFormatter(state.settings.unitSystem)
+                Text(
+                    text = route?.let {
+                        stringResource(
+                            R.string.pre_ride_route_value,
+                            it.name,
+                            format.distance(it.distanceM),
+                            format.distanceUnit,
+                        )
+                    } ?: stringResource(R.string.pre_ride_route_none),
+                    style = RideCompTheme.typography.bodyStrong,
+                    color = RideCompTheme.colors.textPrimary,
+                    modifier = Modifier.weight(1f),
+                )
+                if (route != null) {
+                    LinkText(stringResource(R.string.pre_ride_route_clear), onClick = {
+                        onEvent(PreRideUiEvent.ClearRoute)
+                    })
+                } else {
+                    LinkText(stringResource(R.string.pre_ride_route_choose), onClick = onChooseRoute)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ScreenModePicker(state: PreRideUiState, onEvent: (PreRideUiEvent) -> Unit) {
+    ChoiceChips(
+        label = stringResource(R.string.pre_ride_screen_mode),
+        choices = listOf(
+            Choice(ScreenMode.ALWAYS_ON, stringResource(R.string.pre_ride_screen_always_on)),
+            Choice(ScreenMode.AUTO_DIM, stringResource(R.string.pre_ride_screen_auto_dim)),
+            Choice(ScreenMode.OFF, stringResource(R.string.pre_ride_screen_off)),
+        ).toImmutableList(),
+        selected = state.screenMode,
+        onSelect = { if (!state.isScreenModeFromProfile) onEvent(PreRideUiEvent.SelectScreenMode(it)) },
+        horizontalPadding = RideCompDimens.none,
+        columns = ScreenMode.entries.size,
+    )
+    if (state.isScreenModeFromProfile) {
+        Text(
+            text = stringResource(R.string.pre_ride_screen_mode_from_profile),
+            style = RideCompTheme.typography.caption,
+            color = RideCompTheme.colors.textSecondary,
+        )
+    }
+}
+
+/** Waiting for a GPS fix (13-UI-SCREENS #29): static indicator (no animation on low-end phones), tips. */
+@Composable
+private fun GpsWaiting(gps: GpsStatus.Searching, onShowOptions: () -> Unit) {
+    val colors = RideCompTheme.colors
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
+    ) {
+        Box(
+            modifier = Modifier
+                .padding(top = RideCompDimens.spacingL)
+                .size(RideCompDimens.gpsWaitOuter)
+                .border(RideCompDimens.borderSelected, colors.indicatorInactive, CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(RideCompDimens.gpsWaitInner)
+                    .border(RideCompDimens.borderSelected, colors.warn, CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painterResource(UiR.drawable.ic_location),
+                    contentDescription = null,
+                    tint = colors.warnText,
+                    modifier = Modifier.size(RideCompDimens.iconSizeLarge),
+                )
+            }
+        }
+        Text(
+            text = stringResource(R.string.pre_ride_gps_waiting),
+            style = RideCompTheme.typography.title,
+            color = colors.textPrimary,
+        )
+        Text(
+            text =
+            gps.accuracyM?.let { stringResource(R.string.pre_ride_gps_accuracy, it.roundToInt(), MAX_ACCURACY_M) }
+                ?: stringResource(R.string.pre_ride_gps_need, MAX_ACCURACY_M),
+            style = RideCompTheme.typography.body,
+            color = colors.textSecondary,
+            textAlign = TextAlign.Center,
+        )
+        RideCompCard {
+            Text(
+                text = stringResource(R.string.pre_ride_gps_tips_title),
+                style = RideCompTheme.typography.bodyStrong,
+                color = colors.textPrimary,
+            )
+            Text(
+                text = stringResource(R.string.pre_ride_gps_tips),
+                style = RideCompTheme.typography.body,
+                color = colors.textTertiary,
+            )
+        }
+        LinkText(stringResource(R.string.pre_ride_show_options), onClick = onShowOptions)
+    }
+}
+
+@Composable
+private fun StartButtons(gps: GpsStatus, onStart: () -> Unit) {
+    Column(
+        modifier = Modifier.padding(top = RideCompDimens.blockGap),
+        verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS),
+    ) {
+        if (gps is GpsStatus.Ready || gps == GpsStatus.NotUsed) {
+            BigButton(text = stringResource(R.string.pre_ride_start), onClick = onStart, size = BigButtonSize.HERO)
+        } else {
+            // Recording starts now; position follows once the GPS has a fix (02-DESIGN §3.13).
+            BigButton(
+                text = stringResource(R.string.pre_ride_start_without_fix),
+                onClick = onStart,
+                style = BigButtonStyle.OUTLINE,
+                isEnabled = gps != GpsStatus.NoPermission,
+            )
+            Text(
+                text = stringResource(R.string.pre_ride_start_without_fix_hint),
+                style = RideCompTheme.typography.caption,
+                color = RideCompTheme.colors.textSecondary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
 }
 
 private val previewProfiles = BuiltInProfiles.ALL.mapIndexed { index, profile -> profile.copy(id = index + 1L) }
@@ -135,7 +411,7 @@ private val previewState = PreRideUiState(
 @ThemePreviews
 @Composable
 private fun PreRideSearchingPreview() {
-    RideCompPreview { PreRideScreen(gps = GpsStatus.Searching, state = previewState, onEvent = {}) }
+    RideCompPreview { PreRideScreen(gps = GpsStatus.Searching(48.0), state = previewState, onEvent = {}) }
 }
 
 @ThemePreviews

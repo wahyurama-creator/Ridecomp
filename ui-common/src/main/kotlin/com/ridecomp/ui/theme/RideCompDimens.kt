@@ -6,6 +6,7 @@ import androidx.compose.ui.unit.sp
 /** Every size used by the UI, in one place (UI-05, 02-DESIGN §3–4, 13-UI-SCREENS §1). */
 object RideCompDimens {
     // Spacing scale
+    val none = 0.dp
     val spacingXs = 4.dp
     val spacingS = 8.dp
     val spacingSm = 12.dp
@@ -63,6 +64,8 @@ object RideCompDimens {
     val contentMaxWidth = 600.dp
     val chartHeight = 140.dp
     val onboardingProgressHeight = 4.dp
+    val gpsWaitOuter = 200.dp
+    val gpsWaitInner = 140.dp
 
     // Toggle (13-UI-SCREENS §1.4): 56 × 34
     val toggleWidth = 56.dp
@@ -96,5 +99,6 @@ object RideCompDimens {
     val buttonTextSize = 20.sp
     val buttonTextSizeLarge = 24.sp
     val buttonTextSizeSmall = 15.sp
+    val chipCompactTextSize = 13.sp
     val buttonLetterSpacing = 1.sp
 }
