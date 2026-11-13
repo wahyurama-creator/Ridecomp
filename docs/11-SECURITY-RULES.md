@@ -170,5 +170,7 @@ Agent meninjau **diff** task dan menjawab setiap poin (Ya / Tidak / N/A + catata
 | Komponen app | App lain memicu service/activity | `exported=false`, PendingIntent immutable, validasi intent |
 | Alur OAuth | Redirect palsu/CSRF | `state`, PKCE bila didukung, redirect dicocokkan persis, Custom Tabs |
 | SMS darurat | Bug/penyalahgunaan mengirim SMS massal (biaya), nomor kontak bocor | SEC-SMS-01..07 |
+| Sensor BLE (Fase 2) | Perangkat asing di sekitar diiklankan sebagai HR/CSC/CP; paket rusak/berlebihan | Hanya sensor yang dipasangkan pengguna yang disambung (alamat tersimpan); parser memvalidasi panjang & rentang (STB-09); operasi GATT bertimeout; data hanya dipakai untuk metrik (tidak ada perintah tulis ke sensor) |
+| Deteksi insiden (Fase 2) | Alarm palsu mengirim SMS; insiden nyata terlewat | Hitung mundur 30 dtk + tombol batal (juga di notifikasi), ambang di `IncidentConfig` dikalibrasi lewat L17, penjelasan keterbatasan di layar Keselamatan |
 | File backup | Arsip di Drive/WA dibaca orang lain; arsip berbahaya saat restore | Enkripsi kata sandi (SEC-BK-02), validasi arsip (SEC-BK-03) |
 | Kartu share | Gambar membocorkan lokasi rumah | Potong awal/akhir rute default aktif, tanpa teks koordinat, zona privasi |
