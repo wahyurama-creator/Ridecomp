@@ -8,6 +8,7 @@ import com.ridecomp.core.engine.sensors.SensorRepository
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.ProfileRepository
 import com.ridecomp.core.repository.SettingsRepository
+import com.ridecomp.core.source.AccelerometerSource
 import com.ridecomp.core.source.BatteryLevelSource
 import com.ridecomp.core.source.Clock
 import com.ridecomp.core.source.DispatcherProvider
@@ -32,6 +33,7 @@ import com.ridecomp.platform.device.AndroidRideNameProvider
 import com.ridecomp.platform.device.UuidIdGenerator
 import com.ridecomp.platform.location.AndroidLocationSource
 import com.ridecomp.platform.location.AndroidPressureSource
+import com.ridecomp.platform.safety.AndroidAccelerometerSource
 import com.ridecomp.platform.safety.AndroidPickedContactReader
 import com.ridecomp.platform.safety.AndroidSafetyMessages
 import com.ridecomp.platform.safety.AndroidSmsGateway
@@ -64,6 +66,7 @@ val platformModule = module {
     single<SmsGateway> { AndroidSmsGateway(androidContext(), get(), get()) }
     single<SafetyMessages> { AndroidSafetyMessages(androidContext()) }
     single<PickedContactReader> { AndroidPickedContactReader(androidContext(), get()) }
+    single<AccelerometerSource> { AndroidAccelerometerSource(androidContext(), get()) }
     single<RideController> { ServiceRideController(androidContext(), get()) }
     factory { RecordingSession(get(), get(), get(), get()) }
 }
