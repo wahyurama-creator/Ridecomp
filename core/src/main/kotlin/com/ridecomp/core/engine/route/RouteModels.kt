@@ -35,8 +35,14 @@ public data class NewRoute(
     val distanceM: Double,
     val ascentM: Double,
     val createdAtMs: Long,
+    val climbs: List<RouteClimb> = emptyList(),
+    val turns: List<RouteTurn> = emptyList(),
 ) {
     public val hasElevation: Boolean get() = points.any { it.elevationM != null }
+
+    /** Climbs and turns detected from the points (done once at import, T3.11/T3.12). */
+    public fun withDetections(): NewRoute =
+        copy(climbs = ClimbDetector.detect(points), turns = TurnDetector.detect(points))
 }
 
 public object RouteBuilder {

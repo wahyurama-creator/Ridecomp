@@ -2,7 +2,9 @@ package com.ridecomp.core.repository
 
 import com.ridecomp.core.engine.route.NewRoute
 import com.ridecomp.core.engine.route.Route
+import com.ridecomp.core.engine.route.RouteClimb
 import com.ridecomp.core.engine.route.RoutePoint
+import com.ridecomp.core.engine.route.RouteTurn
 import com.ridecomp.core.model.ActivityProfile
 import com.ridecomp.core.model.DataPagesLayout
 import com.ridecomp.core.model.EmergencyContact
@@ -97,6 +99,10 @@ public interface RouteRepository {
     public fun observe(id: Long): Flow<Route?>
 
     public suspend fun getPoints(id: Long): List<RoutePoint>
+
+    public suspend fun getClimbs(id: Long): List<RouteClimb>
+
+    public suspend fun getTurns(id: Long): List<RouteTurn>
 
     /** Saves route and points in one transaction; returns the id. */
     public suspend fun save(route: NewRoute): Long

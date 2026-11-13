@@ -44,6 +44,13 @@ public data class RouteProgress(
     /** Climbing still ahead (hysteresis), null when the route has no elevation. */
     val remainingAscentM: Double?,
     val event: RouteEvent? = null,
+    /** Next turn ahead, hidden while off route (12-FEATURE-SPECS §7.2). */
+    val nextTurn: UpcomingTurn? = null,
+    /** Climb being ridden, or the next one (§6.2). */
+    val climb: ClimbStatus? = null,
+    val nextClimb: NextClimb? = null,
+    /** One-shot alert of this second (vibration + banner). */
+    val alert: RouteAlert? = null,
 )
 
 /**
@@ -188,7 +195,12 @@ public class RouteTracker(private val points: List<RoutePoint>) {
  * Route following inside a ride (T3.6/T3.7): tracks progress while riding (auto pause included) and
  * reports off-route / back-on-route as ride events. Without a route it does nothing.
  */
-public class RouteFollower(points: List<RoutePoint>) {
+public class RouteFollower(
+    points: List<RoutePoint>,
+    climbs: List<RouteClimb> = emptyList(),
+    turns: List<RouteTurn> = emptyList(),
+) {
+    private val climbsAndTurns = ClimbTurnTracker(climbs, turns)
     private val tracker = points.takeIf { it.size >= RouteTrackerConfig.MIN_POINTS }?.let(::RouteTracker)
 
     /** Last known progress; kept while the fix is stale or the ride is paused. */
@@ -196,11 +208,25 @@ public class RouteFollower(points: List<RoutePoint>) {
         private set
 
     /** Returns the event to log, if any. [fix] must be fresh. */
-    public fun onSecond(isRiding: Boolean, fix: LocationFix?, nowMs: Long, avgSpeedMps: Double): RideEventType? {
+    public fun onSecond(
+        isRiding: Boolean,
+        fix: LocationFix?,
+        nowMs: Long,
+        speedMps: Double,
+        avgSpeedMps: Double,
+    ): RideEventType? {
+        // One-shot: an alert or event never repeats on a second without a new fix.
+        progress = progress?.copy(alert = null, event = null)
         val active = tracker?.takeIf { isRiding }
         if (active == null || fix == null) return null
         val update = active.update(fix.latDeg, fix.lonDeg, fix.accuracyM, nowMs, avgSpeedMps)
-        progress = update
+        val extras = climbsAndTurns.update(update.distanceAlongM, speedMps, update.isOffRoute)
+        progress = update.copy(
+            nextTurn = extras.nextTurn,
+            climb = extras.climb,
+            nextClimb = extras.nextClimb,
+            alert = extras.alert,
+        )
         return when (update.event) {
             RouteEvent.OFF_ROUTE -> RideEventType.OFF_ROUTE
             RouteEvent.BACK_ON_ROUTE -> RideEventType.BACK_ON_ROUTE

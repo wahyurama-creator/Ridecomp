@@ -16,6 +16,7 @@ import com.ridecomp.core.engine.recording.RecorderOutput
 import com.ridecomp.core.engine.recording.RecordingSession
 import com.ridecomp.core.engine.recording.RideAction
 import com.ridecomp.core.engine.recording.RideSetup
+import com.ridecomp.core.engine.route.RouteAlert
 import com.ridecomp.core.engine.safety.IncidentAction
 import com.ridecomp.core.engine.sensors.SensorReading
 import com.ridecomp.core.model.ActivityStatus
@@ -259,6 +260,7 @@ class RecordingService : LifecycleService() {
         output.events.forEach { event -> alertFor(event.type)?.let(deps.alertPlayer::play) }
         // Off route: vibration and a beep (N-04), heard with the phone in a pocket or bag.
         if (output.events.any { it.type == RideEventType.OFF_ROUTE }) deps.alertPlayer.beep()
+        output.live.route?.alert?.let { deps.alertPlayer.play(alertFor(it)) }
         val change = output.batteryChange ?: return
         if (!BatteryModePolicy.isBarometerAllowed(change.mode)) {
             pressureJob?.cancel()
@@ -284,6 +286,12 @@ class RecordingService : LifecycleService() {
         RideEventType.LAP, RideEventType.REMINDER_ACK, RideEventType.INCIDENT_DETECTED,
         RideEventType.INCIDENT_CANCELLED, RideEventType.SOS_SENT, RideEventType.SMS_FAILED,
         -> null
+    }
+
+    /** Turn and climb alerts (12-FEATURE-SPECS §6.2, §7.2): the near turn buzzes twice. */
+    private fun alertFor(alert: RouteAlert): AlertPattern = when (alert) {
+        RouteAlert.TURN_FAR, RouteAlert.CLIMB_AHEAD -> AlertPattern.SHORT
+        RouteAlert.TURN_NEAR -> AlertPattern.DOUBLE
     }
 
     private fun publish(output: RecorderOutput) {
@@ -329,6 +337,8 @@ class RecordingService : LifecycleService() {
         val rider = deps.profileRepository.get()
         val activityProfile = deps.getRideProfile(profileId)
         isGpsEnabled = activityProfile?.isGpsEnabled != false
+        // Indoor rides have no position to follow a route with.
+        val followedId = routeId?.takeIf { isGpsEnabled }
         return RideSetup(
             settings = activityProfile?.let(settings::withProfile) ?: settings,
             altitudeSource = altitudeSource(),
@@ -337,8 +347,9 @@ class RecordingService : LifecycleService() {
             profileId = activityProfile?.id,
             isGpsEnabled = isGpsEnabled,
             routeId = routeId,
-            // Indoor rides have no position to follow a route with.
-            routePoints = routeId?.takeIf { isGpsEnabled }?.let { deps.routeRepository.getPoints(it) }.orEmpty(),
+            routePoints = followedId?.let { deps.routeRepository.getPoints(it) }.orEmpty(),
+            routeClimbs = followedId?.let { deps.routeRepository.getClimbs(it) }.orEmpty(),
+            routeTurns = followedId?.let { deps.routeRepository.getTurns(it) }.orEmpty(),
         )
     }
 

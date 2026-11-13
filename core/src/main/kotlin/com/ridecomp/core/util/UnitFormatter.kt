@@ -33,6 +33,9 @@ public class UnitFormatter(private val unitSystem: UnitSystem, private val local
         (if (isMetric) it else it / Units.METERS_PER_FOOT).roundToInt().toString()
     } ?: NO_VALUE
 
+    /** Short distances (turn alerts) in whole m/ft, with [elevationUnit]. */
+    public fun shortDistance(distanceM: Double?): String = elevation(distanceM)
+
     /** Grade in whole percent (05-DATA-MODEL §3.5: shown with 0 decimals). */
     public fun grade(gradePercent: Double?): String =
         gradePercent?.takeIf { it.isFinite() }?.roundToInt()?.toString() ?: NO_VALUE

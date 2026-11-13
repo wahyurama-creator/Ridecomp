@@ -16,7 +16,7 @@
     <string name="route_distance">Distance</string>
     <string name="route_ascent">Climbing</string>
     <string name="route_source">File</string>
-    <string name="route_no_elevation">This route has no elevation data.</string>
+    <string name="route_no_elevation">This route has no elevation data, so climb info is off.</string>
     <string name="route_elevation_profile">ELEVATION</string>
     <string name="route_name">Route name</string>
     <string name="route_rename">Save name</string>
@@ -27,4 +27,8 @@
     <string name="route_delete_title">Delete %1$s?</string>
     <string name="route_delete_message">Rides recorded on this route are kept.</string>
     <string name="route_cancel">Cancel</string>
+    <string name="route_climbs_title">CLIMBS (%1$d)</string>
+    <string name="route_no_climbs">No climbs on this route.</string>
+    <string name="route_climb_label">Climb %1$d of %2$d</string>
+    <string name="route_climb_stats">%1$s %2$s · %3$s%% · ↑ %4$s %5$s</string>
 </resources>

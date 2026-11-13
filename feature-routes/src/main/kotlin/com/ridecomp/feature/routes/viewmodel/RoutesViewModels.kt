@@ -6,10 +6,12 @@ import com.ridecomp.core.config.ActivityConfig
 import com.ridecomp.core.config.Units
 import com.ridecomp.core.engine.route.GpxError
 import com.ridecomp.core.engine.route.Route
+import com.ridecomp.core.engine.route.RouteClimb
 import com.ridecomp.core.engine.route.RoutePoint
 import com.ridecomp.core.model.UnitSystem
 import com.ridecomp.core.source.DispatcherProvider
 import com.ridecomp.core.usecase.DeleteRouteUseCase
+import com.ridecomp.core.usecase.GetRouteClimbsUseCase
 import com.ridecomp.core.usecase.GetRoutePointsUseCase
 import com.ridecomp.core.usecase.ImportGpxUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
@@ -89,6 +91,7 @@ class RoutesViewModel(
 data class RouteDetailUseCases(
     val observeRoute: ObserveRouteUseCase,
     val getPoints: GetRoutePointsUseCase,
+    val getClimbs: GetRouteClimbsUseCase,
     val observeSettings: ObserveRideSettingsUseCase,
     val rename: RenameRouteUseCase,
     val reverse: ReverseRouteUseCase,
@@ -101,6 +104,8 @@ data class RouteDetailUiState(
     val isMissing: Boolean = false,
     /** Elevation (m or ft) against distance (km or mi); empty when the route has no elevation. */
     val elevation: ImmutableList<ChartValue> = persistentListOf(),
+    /** Climbs found at import (T3.11), in route order. */
+    val climbs: ImmutableList<RouteClimb> = persistentListOf(),
     val unitSystem: UnitSystem = UnitSystem.METRIC,
 )
 
@@ -138,6 +143,10 @@ class RouteDetailViewModel(
             // Conversion and downsampling are CPU work: off the main thread (02-DESIGN §6).
             val chart = withContext(dispatchers.default) { points.elevationChart(units) }
             updateState { copy(elevation = chart) }
+        }
+        viewModelScope.launch {
+            val climbs = useCases.getClimbs(routeId).toImmutableList()
+            updateState { copy(climbs = climbs) }
         }
     }
 

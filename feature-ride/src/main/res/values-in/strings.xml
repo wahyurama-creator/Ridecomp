@@ -172,4 +172,16 @@
     <string name="incident_failed">SMS darurat gagal dikirim.</string>
     <string name="incident_safe">SAYA AMAN</string>
     <string name="incident_sos_hold">SOS · TAHAN 3 DETIK</string>
+    <string name="metric_next_turn">Belokan berikutnya</string>
+    <string name="ride_turn_left">Belok kiri</string>
+    <string name="ride_turn_right">Belok kanan</string>
+    <string name="ride_turn_sharp_left">Belok kiri tajam</string>
+    <string name="ride_turn_sharp_right">Belok kanan tajam</string>
+    <string name="ride_turn_uturn">Putar balik</string>
+    <string name="ride_turn_banner">%1$s %2$s · %3$s %4$s</string>
+    <string name="ride_climb_ahead">Tanjakan dimulai %1$s %2$s lagi · %3$s %4$s · %5$s%%</string>
+    <string name="ride_climb_title">TANJAKAN %1$d DARI %2$d</string>
+    <string name="ride_climb_remaining">Sisa %1$s %2$s · ↑ %3$s %4$s · rata-rata %5$s%%</string>
+    <string name="ride_climb_profile_description">Profil tanjakan per grade, rata-rata %1$s%%</string>
+    <string name="ride_next_climb">Tanjakan berikutnya (%1$d dari %2$d): %3$s %4$s lagi</string>
 </resources>

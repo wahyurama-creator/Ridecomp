@@ -25,6 +25,8 @@ data class RideCompColors(
     val onDanger: Color,
     /** Zone colors 1..7 (HR uses the first 5, power all 7): grey, blue, green, yellow, orange, red, purple. */
     val zones: ImmutableList<Color>,
+    /** Climb grade bands 0–3, 3–6, 6–9, 9–12, > 12 % (12-FEATURE-SPECS §6.2): brightness falls as grade rises. */
+    val gradeBands: ImmutableList<Color>,
     val isDark: Boolean,
 )
 
@@ -49,7 +51,20 @@ private object Palette {
     val DangerLight = Color(0xFFB3261E)
     val ZoneGrey = Color(0xFF9E9E9E)
     val ZonePurple = Color(0xFFB388FF)
+    val GradeEasy = Color(0xFFA5E8B8)
+    val GradeModerate = Color(0xFFFFD54F)
+    val GradeHard = Color(0xFFFF8F00)
+    val GradeSteep = Color(0xFFD32F2F)
+    val GradeExtreme = Color(0xFF7B0A0A)
 }
+
+private val GradeBandColors = persistentListOf(
+    Palette.GradeEasy,
+    Palette.GradeModerate,
+    Palette.GradeHard,
+    Palette.GradeSteep,
+    Palette.GradeExtreme,
+)
 
 private val ZoneColors = persistentListOf(
     Palette.ZoneGrey,
@@ -78,6 +93,7 @@ val DarkRideCompColors = RideCompColors(
     danger = Palette.Danger,
     onDanger = Palette.White,
     zones = ZoneColors,
+    gradeBands = GradeBandColors,
     isDark = true,
 )
 
@@ -98,6 +114,7 @@ val LightRideCompColors = RideCompColors(
     danger = Palette.DangerLight,
     onDanger = Palette.White,
     zones = ZoneColors,
+    gradeBands = GradeBandColors,
     isDark = false,
 )
 

@@ -39,13 +39,16 @@ import com.ridecomp.feature.ride.model.RideMetric
 import com.ridecomp.feature.ride.model.RouteView
 import com.ridecomp.feature.ride.model.rideAction
 import com.ridecomp.feature.ride.ui.component.BreadcrumbMap
+import com.ridecomp.feature.ride.ui.component.ClimbPanel
 import com.ridecomp.feature.ride.ui.component.IncidentAlertedBanner
 import com.ridecomp.feature.ride.ui.component.IncidentCountdown
+import com.ridecomp.feature.ride.ui.component.NextClimbInfo
 import com.ridecomp.feature.ride.ui.component.RideBanners
 import com.ridecomp.feature.ride.ui.component.RideControlBar
 import com.ridecomp.feature.ride.ui.component.RideField
 import com.ridecomp.feature.ride.ui.component.RideScreenModeEffect
 import com.ridecomp.feature.ride.ui.component.RideStatusBar
+import com.ridecomp.feature.ride.ui.component.RouteGuidanceBanners
 import com.ridecomp.feature.ride.ui.component.SosButton
 import com.ridecomp.feature.ride.ui.component.rememberMetricUnitLabels
 import com.ridecomp.feature.ride.viewmodel.RideEffect
@@ -152,6 +155,7 @@ fun RideScreen(
         }
         RideBanners(live.value, onAction)
         live.value.route?.takeIf { it.isOffRoute }?.let { OffRouteBanner(it.distanceFromRouteM, formatter) }
+        live.value.route?.let { RouteGuidanceBanners(it, formatter) }
         if (incident is IncidentState.Alerted) IncidentAlertedBanner(incident, onIncident)
         if (status == RideStatus.PAUSED) {
             PauseContent(live.value, formatter, onAction, Modifier.weight(1f)) {
@@ -203,7 +207,20 @@ private fun DataPageContent(
                 modifier = cellModifier,
             )
         }
-        if (showsProfile) RouteProfile(route, live)
+        if (showsProfile) ClimbSection(route, live, formatter)
+    }
+}
+
+/** On a climb: the climb panel replaces the route profile (12-FEATURE-SPECS §6.2). */
+@Composable
+private fun ClimbSection(route: RouteView, live: State<LiveRide>, formatter: UnitFormatter) {
+    val progress = live.value.route
+    val climb = progress?.climb
+    if (climb != null) {
+        ClimbPanel(climb, formatter)
+    } else {
+        progress?.nextClimb?.let { NextClimbInfo(it, formatter) }
+        RouteProfile(route, live)
     }
 }
 

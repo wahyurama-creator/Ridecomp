@@ -8,9 +8,11 @@ import com.ridecomp.core.engine.geo.GpsRejection
 import com.ridecomp.core.engine.metrics.AltitudeSource
 import com.ridecomp.core.engine.metrics.ElevationSnapshot
 import com.ridecomp.core.engine.metrics.ElevationTracker
+import com.ridecomp.core.engine.route.RouteClimb
 import com.ridecomp.core.engine.route.RouteFollower
 import com.ridecomp.core.engine.route.RoutePoint
 import com.ridecomp.core.engine.route.RouteProgress
+import com.ridecomp.core.engine.route.RouteTurn
 import com.ridecomp.core.engine.safety.IncidentState
 import com.ridecomp.core.engine.sensors.SensorReading
 import com.ridecomp.core.engine.sensors.SensorSnapshot
@@ -83,6 +85,8 @@ public data class RideContext(
     val routeId: Long? = null,
     /** Points of the followed route; tracking starts when there are at least two. */
     val routePoints: List<RoutePoint> = emptyList(),
+    val routeClimbs: List<RouteClimb> = emptyList(),
+    val routeTurns: List<RouteTurn> = emptyList(),
 )
 
 /** Result of a tick or an action: new state plus what must be persisted. */
@@ -110,7 +114,7 @@ public class RideRecorder(
     private val context: RideContext = RideContext(),
 ) {
     private val metrics = RideMetricsAccumulator()
-    private val route = RouteFollower(context.routePoints)
+    private val route = RouteFollower(context.routePoints, context.routeClimbs, context.routeTurns)
     private val sensors = SensorRideMetrics(profile, ageYears)
     private var sensorSnapshot = SensorSnapshot()
     private var estimatedPowerW: Int? = null
@@ -240,7 +244,8 @@ public class RideRecorder(
         evaluateAutoPause(nowMs)
         val isRiding = status == RideStatus.RECORDING || status == RideStatus.AUTO_PAUSED
         val freshFix = metrics.latestFix?.takeIf { metrics.isFixFresh(nowMs) }
-        route.onSecond(isRiding, freshFix, nowMs, metrics.averageSpeedMps())?.let {
+        val speed = metrics.currentSpeedMps(nowMs) ?: 0.0
+        route.onSecond(isRiding, freshFix, nowMs, speed, metrics.averageSpeedMps())?.let {
             pendingEvents +=
                 RideEvent(nowMs, it)
         }

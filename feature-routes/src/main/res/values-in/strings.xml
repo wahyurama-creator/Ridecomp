@@ -16,7 +16,7 @@
     <string name="route_distance">Jarak</string>
     <string name="route_ascent">Total tanjakan</string>
     <string name="route_source">File</string>
-    <string name="route_no_elevation">Rute ini tidak punya data elevasi.</string>
+    <string name="route_no_elevation">Rute ini tidak punya data elevasi, jadi info tanjakan tidak tersedia.</string>
     <string name="route_elevation_profile">ELEVASI</string>
     <string name="route_name">Nama rute</string>
     <string name="route_rename">Simpan nama</string>
@@ -27,4 +27,8 @@
     <string name="route_delete_title">Hapus %1$s?</string>
     <string name="route_delete_message">Ride yang direkam di rute ini tetap tersimpan.</string>
     <string name="route_cancel">Batal</string>
+    <string name="route_climbs_title">TANJAKAN (%1$d)</string>
+    <string name="route_no_climbs">Tidak ada tanjakan di rute ini.</string>
+    <string name="route_climb_label">Tanjakan %1$d dari %2$d</string>
+    <string name="route_climb_stats">%1$s %2$s · %3$s%% · ↑ %4$s %5$s</string>
 </resources>

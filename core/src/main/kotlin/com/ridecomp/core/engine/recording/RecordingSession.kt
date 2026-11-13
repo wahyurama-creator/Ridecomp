@@ -2,7 +2,9 @@ package com.ridecomp.core.engine.recording
 
 import com.ridecomp.core.config.Units
 import com.ridecomp.core.engine.metrics.AltitudeSource
+import com.ridecomp.core.engine.route.RouteClimb
 import com.ridecomp.core.engine.route.RoutePoint
+import com.ridecomp.core.engine.route.RouteTurn
 import com.ridecomp.core.engine.sensors.SensorReading
 import com.ridecomp.core.model.Activity
 import com.ridecomp.core.model.ActivityStatus
@@ -33,6 +35,8 @@ public data class RideSetup(
     /** Followed route (T3.6); stored on the activity. */
     val routeId: Long? = null,
     val routePoints: List<RoutePoint> = emptyList(),
+    val routeClimbs: List<RouteClimb> = emptyList(),
+    val routeTurns: List<RouteTurn> = emptyList(),
 )
 
 /** Why a session command could not run. */
@@ -204,7 +208,7 @@ public class RecordingSession(
         altitudeSource,
         profile,
         ageYears,
-        RideContext(profileId, isGpsEnabled, routeId, routePoints),
+        RideContext(profileId, isGpsEnabled, routeId, routePoints, routeClimbs, routeTurns),
     )
 
     private fun RideStatus.toActivityStatus(): ActivityStatus = when (this) {
