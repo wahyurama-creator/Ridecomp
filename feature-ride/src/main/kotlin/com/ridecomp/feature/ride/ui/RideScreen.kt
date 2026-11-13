@@ -27,6 +27,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.engine.recording.BatteryModePolicy
 import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RideAction
+import com.ridecomp.core.engine.safety.IncidentAction
+import com.ridecomp.core.engine.safety.IncidentState
 import com.ridecomp.core.model.RideStatus
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.ride.R
@@ -35,11 +37,14 @@ import com.ridecomp.feature.ride.model.DefaultDataPages
 import com.ridecomp.feature.ride.model.MetricUnitLabels
 import com.ridecomp.feature.ride.model.RideMetric
 import com.ridecomp.feature.ride.model.rideAction
+import com.ridecomp.feature.ride.ui.component.IncidentAlertedBanner
+import com.ridecomp.feature.ride.ui.component.IncidentCountdown
 import com.ridecomp.feature.ride.ui.component.RideBanners
 import com.ridecomp.feature.ride.ui.component.RideControlBar
 import com.ridecomp.feature.ride.ui.component.RideField
 import com.ridecomp.feature.ride.ui.component.RideScreenModeEffect
 import com.ridecomp.feature.ride.ui.component.RideStatusBar
+import com.ridecomp.feature.ride.ui.component.SosButton
 import com.ridecomp.feature.ride.ui.component.rememberMetricUnitLabels
 import com.ridecomp.feature.ride.viewmodel.RideEffect
 import com.ridecomp.feature.ride.viewmodel.RideViewModel
@@ -65,6 +70,7 @@ fun RideRoute(
     val live = viewModel.liveRide.collectAsStateWithLifecycle()
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val pages by viewModel.pages.collectAsStateWithLifecycle()
+    val isSosAvailable by viewModel.isSosAvailable.collectAsStateWithLifecycle()
     ObserveEffects(viewModel.effects) { effect ->
         when (effect) {
             RideEffect.OpenSummary -> onFinished()
@@ -82,6 +88,8 @@ fun RideRoute(
             current.reminder,
             current.lap?.number,
             current.isIdlePromptVisible,
+            // An incident wakes and keeps the screen on (countdown, 12-FEATURE-SPECS §5.3).
+            current.incident,
         ),
     )
     RideScreen(
@@ -89,6 +97,8 @@ fun RideRoute(
         formatter = formatter,
         onAction = viewModel::onEvent,
         pages = pages,
+        onIncident = viewModel::onIncident,
+        isSosAvailable = isSosAvailable,
         modifier = modifier
             .volumeKeys(settings.isVolumeButtonsEnabled) { key ->
                 interaction++
@@ -111,7 +121,14 @@ fun RideScreen(
     onAction: (RideAction) -> Unit,
     modifier: Modifier = Modifier,
     pages: List<DataPage> = DefaultDataPages.ALL,
+    onIncident: (IncidentAction) -> Unit = {},
+    isSosAvailable: Boolean = false,
 ) {
+    val incident = live.value.incident
+    if (incident is IncidentState.Countdown) {
+        IncidentCountdown(incident, live.value.nowMs, onIncident, modifier)
+        return
+    }
     val labels = rememberMetricUnitLabels()
     var areBarsVisible by rememberSaveable { mutableStateOf(true) }
     val status = live.value.status
@@ -126,8 +143,11 @@ fun RideScreen(
             )
         }
         RideBanners(live.value, onAction)
+        if (incident is IncidentState.Alerted) IncidentAlertedBanner(incident, onIncident)
         if (status == RideStatus.PAUSED) {
-            PauseContent(live.value, formatter, onAction, Modifier.weight(1f))
+            PauseContent(live.value, formatter, onAction, Modifier.weight(1f)) {
+                if (isSosAvailable) SosButton(onIncident)
+            }
         } else {
             val pagerState = rememberPagerState { pages.size }
             HorizontalPager(
@@ -156,7 +176,13 @@ private fun DataPageContent(page: DataPage, live: State<LiveRide>, formatter: Un
 
 /** Pause screen (02-DESIGN §3.5): running summary + RESUME, FINISH & SAVE, DISCARD (2-step). */
 @Composable
-private fun PauseContent(live: LiveRide, formatter: UnitFormatter, onAction: (RideAction) -> Unit, modifier: Modifier) {
+private fun PauseContent(
+    live: LiveRide,
+    formatter: UnitFormatter,
+    onAction: (RideAction) -> Unit,
+    modifier: Modifier,
+    extra: @Composable () -> Unit,
+) {
     var isDiscardDialogShown by remember { mutableStateOf(false) }
     Column(
         modifier = modifier.fillMaxWidth().padding(RideCompDimens.spacingM),
@@ -180,6 +206,7 @@ private fun PauseContent(live: LiveRide, formatter: UnitFormatter, onAction: (Ri
             onClick = { isDiscardDialogShown = true },
             style = BigButtonStyle.DANGER,
         )
+        extra()
     }
     if (isDiscardDialogShown) {
         ConfirmDialog(

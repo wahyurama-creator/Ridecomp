@@ -4,6 +4,7 @@ import com.ridecomp.core.engine.recording.BatteryStatus
 import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RideAction
 import com.ridecomp.core.engine.safety.AccelSample
+import com.ridecomp.core.engine.safety.IncidentAction
 import com.ridecomp.core.model.LocationFix
 import com.ridecomp.core.model.PressureReading
 import kotlinx.coroutines.flow.Flow
@@ -60,6 +61,9 @@ public interface RideController {
 
     /** Any in-ride action (pause, lap, finish, save, discard, reminder buttons…). */
     public fun perform(action: RideAction)
+
+    /** Incident countdown buttons and manual SOS (12-FEATURE-SPECS §5.3). */
+    public fun performIncident(action: IncidentAction)
 }
 
 /**

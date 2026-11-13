@@ -4,6 +4,7 @@ import com.ridecomp.core.config.GpsConfig
 import com.ridecomp.core.engine.recording.BatteryStatus
 import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RideAction
+import com.ridecomp.core.engine.safety.IncidentAction
 import com.ridecomp.core.model.RideStatus
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.source.BatteryLevelSource
@@ -104,3 +105,10 @@ public class ReadBatteryUseCase(private val source: BatteryLevelSource) {
 
 /** True while a ride exists in the service (recording, paused or waiting for save/discard). */
 public fun LiveRide.isRideInProgress(): Boolean = status != RideStatus.IDLE
+
+/** "I am OK", "Send now", "I am safe" and manual SOS (12-FEATURE-SPECS §5.3). */
+public class PerformIncidentActionUseCase(private val controller: RideController) {
+    public operator fun invoke(action: IncidentAction) {
+        controller.performIncident(action)
+    }
+}

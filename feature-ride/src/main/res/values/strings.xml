@@ -145,4 +145,16 @@
     <string name="profile_pages_own">Own pages for this profile</string>
     <string name="profile_pages_general">Same as the general pages</string>
     <string name="profile_pages_use_general">Use the general pages</string>
+    <string name="incident_question">Are you OK?</string>
+    <string name="incident_countdown_hint">If you do not answer, your emergency contacts get an SMS with your location.</string>
+    <string name="incident_ok">I AM OK</string>
+    <string name="incident_send_now">SEND NOW</string>
+    <plurals name="incident_sent">
+        <item quantity="one">Emergency SMS sent to %1$d contact.</item>
+        <item quantity="other">Emergency SMS sent to %1$d contacts.</item>
+    </plurals>
+    <string name="incident_retrying">SMS not sent yet. Trying again every minute.</string>
+    <string name="incident_failed">Emergency SMS could not be sent.</string>
+    <string name="incident_safe">I AM SAFE</string>
+    <string name="incident_sos_hold">SOS · HOLD 3 SECONDS</string>
 </resources>

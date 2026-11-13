@@ -3,6 +3,7 @@ package com.ridecomp.feature.ride.viewmodel
 import androidx.lifecycle.viewModelScope
 import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RideAction
+import com.ridecomp.core.engine.safety.IncidentAction
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RideStatus
 import com.ridecomp.core.model.withProfile
@@ -10,6 +11,8 @@ import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveDataPagesUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
+import com.ridecomp.core.usecase.ObserveSafetyUseCase
+import com.ridecomp.core.usecase.PerformIncidentActionUseCase
 import com.ridecomp.core.usecase.PerformRideActionUseCase
 import com.ridecomp.feature.ride.model.DataPage
 import com.ridecomp.feature.ride.model.DefaultDataPages
@@ -38,18 +41,28 @@ sealed interface RideEffect {
  * Ride screen (T1.8). Live data comes straight from the service's StateFlow; each field derives its own
  * text so only changed fields recompose (UI-04). User input only goes out as [RideAction]s (ARCH-06).
  */
+/** Use cases of the ride screen, grouped to keep the constructor short. */
+data class RideUseCases(
+    val observeLive: ObserveLiveRideUseCase,
+    val observeSettings: ObserveRideSettingsUseCase,
+    val observeDataPages: ObserveDataPagesUseCase,
+    val observeProfiles: ObserveActivityProfilesUseCase,
+    val observeSafety: ObserveSafetyUseCase,
+    val performAction: PerformRideActionUseCase,
+    val performIncident: PerformIncidentActionUseCase,
+)
+
 @OptIn(ExperimentalCoroutinesApi::class)
-class RideViewModel(
-    observeLive: ObserveLiveRideUseCase,
-    observeSettings: ObserveRideSettingsUseCase,
-    observeDataPages: ObserveDataPagesUseCase,
-    observeProfiles: ObserveActivityProfilesUseCase,
-    private val performAction: PerformRideActionUseCase,
-) : UdfViewModel<Unit, RideAction, RideEffect>(Unit) {
-    val liveRide: StateFlow<LiveRide> = observeLive()
+class RideViewModel(private val useCases: RideUseCases) : UdfViewModel<Unit, RideAction, RideEffect>(Unit) {
+    val liveRide: StateFlow<LiveRide> = useCases.observeLive()
+
+    /** Manual SOS is offered only when someone can be alerted (12-FEATURE-SPECS §5.3). */
+    val isSosAvailable: StateFlow<Boolean> = useCases.observeSafety()
+        .map { it.settings.isEnabled && it.contacts.isNotEmpty() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), false)
 
     /** General settings with the ride profile's overrides (screen mode, auto pause…). */
-    val settings: StateFlow<RideSettings> = combine(observeSettings(), observeProfiles(), liveRide) {
+    val settings: StateFlow<RideSettings> = combine(useCases.observeSettings(), useCases.observeProfiles(), liveRide) {
             general,
             all,
             live,
@@ -63,7 +76,7 @@ class RideViewModel(
     val pages: StateFlow<List<DataPage>> = liveRide
         .map { it.profileId }
         .distinctUntilChanged()
-        .flatMapLatest { profileId -> observeDataPages(RideMetricKeys.ALL, profileId) }
+        .flatMapLatest { profileId -> useCases.observeDataPages(RideMetricKeys.ALL, profileId) }
         .map { layout -> layout?.toDataPages() ?: DefaultDataPages.ALL }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), DefaultDataPages.ALL)
 
@@ -81,7 +94,12 @@ class RideViewModel(
     }
 
     override fun onEvent(event: RideAction) {
-        performAction(event)
+        useCases.performAction(event)
+    }
+
+    /** Incident countdown buttons, "I am safe" and manual SOS. */
+    fun onIncident(action: IncidentAction) {
+        useCases.performIncident(action)
     }
 
     private companion object {

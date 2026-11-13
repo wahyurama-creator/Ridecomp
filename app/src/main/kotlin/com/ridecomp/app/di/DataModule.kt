@@ -3,12 +3,14 @@ package com.ridecomp.app.di
 import com.ridecomp.core.engine.sensors.SensorRepository
 import com.ridecomp.core.repository.ActivityProfileRepository
 import com.ridecomp.core.repository.ActivityRepository
+import com.ridecomp.core.repository.IncidentRepository
 import com.ridecomp.core.repository.ProfileRepository
 import com.ridecomp.core.repository.SafetyRepository
 import com.ridecomp.core.repository.SettingsRepository
 import com.ridecomp.data.db.RideCompDatabase
 import com.ridecomp.data.repository.ActivityProfileRepositoryImpl
 import com.ridecomp.data.repository.ActivityRepositoryImpl
+import com.ridecomp.data.repository.IncidentRepositoryImpl
 import com.ridecomp.data.repository.ProfileRepositoryImpl
 import com.ridecomp.data.repository.SafetyRepositoryImpl
 import com.ridecomp.data.repository.SensorRepositoryImpl
@@ -35,4 +37,5 @@ val dataModule = module {
     single<SensorRepository> { SensorRepositoryImpl(get()) }
     single<ActivityProfileRepository> { ActivityProfileRepositoryImpl(get(), get()) }
     single<SafetyRepository> { SafetyRepositoryImpl(get(), get()) }
+    single<IncidentRepository> { IncidentRepositoryImpl(get()) }
 }

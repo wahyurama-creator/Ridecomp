@@ -3,6 +3,7 @@ package com.ridecomp.core.repository
 import com.ridecomp.core.model.ActivityProfile
 import com.ridecomp.core.model.DataPagesLayout
 import com.ridecomp.core.model.EmergencyContact
+import com.ridecomp.core.model.IncidentRecord
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RiderProfile
 import com.ridecomp.core.model.SafetySettings
@@ -76,4 +77,12 @@ public interface SafetyRepository {
     public suspend fun getLastTestSmsAtMs(): Long?
 
     public suspend fun setLastTestSmsAtMs(atMs: Long)
+}
+
+/** Incidents of a ride (05-DATA-MODEL `incidents`). */
+public interface IncidentRepository {
+    /** Inserts when `id == 0`, otherwise updates; returns the id. */
+    public suspend fun save(incident: IncidentRecord): Long
+
+    public suspend fun getForActivity(activityId: Long): List<IncidentRecord>
 }

@@ -16,6 +16,7 @@ import com.ridecomp.core.engine.recording.RecorderOutput
 import com.ridecomp.core.engine.recording.RecordingSession
 import com.ridecomp.core.engine.recording.RideAction
 import com.ridecomp.core.engine.recording.RideSetup
+import com.ridecomp.core.engine.safety.IncidentAction
 import com.ridecomp.core.engine.sensors.SensorReading
 import com.ridecomp.core.model.ActivityStatus
 import com.ridecomp.core.model.RideEventType
@@ -65,6 +66,12 @@ class RecordingService : LifecycleService() {
     private var formatter = UnitFormatter(UnitSystem.METRIC)
     private var lastBatteryReadMs: Long? = null
     private var isGpsEnabled = true
+    private val incidents by lazy {
+        IncidentSupervisor(deps) { state ->
+            deps.stateHolder.updateIncident(state)
+            notification.update(deps.stateHolder.liveRide.value, formatter)
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -99,6 +106,9 @@ class RecordingService : LifecycleService() {
             ServiceIntents.ACTION_PERFORM -> intent.getStringExtra(ServiceIntents.EXTRA_RIDE_ACTION)
                 ?.let { name -> RideAction.entries.firstOrNull { it.name == name } }
                 ?.let { perform(it) }
+            ServiceIntents.ACTION_INCIDENT -> intent.getStringExtra(ServiceIntents.EXTRA_INCIDENT_ACTION)
+                ?.let { name -> IncidentAction.entries.firstOrNull { it.name == name } }
+                ?.let { incidents.onAction(it, session?.activityId) }
             // Restarted by the system after the process was killed (START_STICKY): recover automatically.
             null -> deps.activityRepository.findRecoverable()?.let { resumeRide(it.id, it.status) } ?: stopRide()
             else -> deps.logger.warn(TAG) { "Unknown service action ignored" }
@@ -141,10 +151,12 @@ class RecordingService : LifecycleService() {
             if (ends) session = null
             ends
         }
+        val isFinished = session?.status == RideStatus.FINISHED
+        if (isEnding || isFinished) incidents.close()
         when {
             isEnding -> stopRide()
             // Ride over (summary screen): GPS, sensors and wakelock off now; stay foreground until save/discard.
-            session?.status == RideStatus.FINISHED -> stopPipeline()
+            isFinished -> stopPipeline()
         }
     }
 
@@ -153,6 +165,7 @@ class RecordingService : LifecycleService() {
         wakeLock.acquireOrRenew(deps.clock.nowMs())
         pipelineJobs += scope.launch { tickLoop() }
         pipelineJobs += scope.launch { collectSensors() }
+        pipelineJobs += incidents.start(scope)
         // Indoor (GPS off): no location and no barometer, whose drift would invent climbing.
         if (isGpsEnabled) {
             pipelineJobs += scope.launch { collectLocation() }
@@ -170,6 +183,7 @@ class RecordingService : LifecycleService() {
                 active.tick(now)?.let { output ->
                     handleOutput(active, output, now)
                     publish(output)
+                    serviceScope?.let { incidents.onSecond(it, output.live, active.activityId) }
                 }
                 gpsIntervalMs.value = active.desiredGpsIntervalMs(now, GpsConfig.INTERVAL_MS)
             }
@@ -187,7 +201,10 @@ class RecordingService : LifecycleService() {
                 delay(SOURCE_RETRY_MS)
                 true
             }
-            .collect { fix -> sessionLock.withLock { session?.onLocation(fix) } }
+            .collect { fix ->
+                incidents.lastFix = fix
+                sessionLock.withLock { session?.onLocation(fix) }
+            }
     }
 
     /**
@@ -252,13 +269,15 @@ class RecordingService : LifecycleService() {
         RideEventType.SENSOR_LOST -> AlertPattern.DOUBLE
         RideEventType.SENSOR_BACK -> AlertPattern.SHORT
         RideEventType.START, RideEventType.PAUSE, RideEventType.RESUME, RideEventType.STOP, RideEventType.GAP,
-        RideEventType.LAP, RideEventType.REMINDER_ACK,
+        RideEventType.LAP, RideEventType.REMINDER_ACK, RideEventType.INCIDENT_DETECTED,
+        RideEventType.INCIDENT_CANCELLED, RideEventType.SOS_SENT, RideEventType.SMS_FAILED,
         -> null
     }
 
     private fun publish(output: RecorderOutput) {
-        deps.stateHolder.publish(output.live, session?.activityId)
-        notification.update(output.live, formatter)
+        val live = output.live.copy(incident = deps.incidentManager.state.value)
+        deps.stateHolder.publish(live, session?.activityId)
+        notification.update(live, formatter)
     }
 
     private fun enterForeground(live: LiveRide) {

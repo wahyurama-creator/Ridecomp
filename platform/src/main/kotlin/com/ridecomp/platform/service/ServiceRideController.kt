@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.core.content.ContextCompat
 import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RideAction
+import com.ridecomp.core.engine.safety.IncidentAction
 import com.ridecomp.core.source.RideController
 import kotlinx.coroutines.flow.StateFlow
 
@@ -25,5 +26,9 @@ class ServiceRideController(private val context: Context, private val holder: Ri
 
     override fun perform(action: RideAction) {
         ContextCompat.startForegroundService(context, ServiceIntents.perform(context, action))
+    }
+
+    override fun performIncident(action: IncidentAction) {
+        ContextCompat.startForegroundService(context, ServiceIntents.incident(context, action))
     }
 }

@@ -1,11 +1,13 @@
 package com.ridecomp.platform.service
 
 import com.ridecomp.core.engine.recording.RecordingSession
+import com.ridecomp.core.engine.safety.IncidentManager
 import com.ridecomp.core.engine.sensors.SensorConnector
 import com.ridecomp.core.engine.sensors.SensorRepository
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.ProfileRepository
 import com.ridecomp.core.repository.SettingsRepository
+import com.ridecomp.core.source.AccelerometerSource
 import com.ridecomp.core.source.BatteryLevelSource
 import com.ridecomp.core.source.Clock
 import com.ridecomp.core.source.DispatcherProvider
@@ -41,6 +43,10 @@ interface RecordingDependencies {
 
     /** Activity profile of a ride (default when the id is unknown or null). */
     val getRideProfile: GetRideProfileUseCase
+
+    /** Incident countdown and emergency SMS (single instance, T2.16). */
+    val incidentManager: IncidentManager
+    val accelerometerSource: AccelerometerSource
 
     /** A new session per service instance. */
     fun newSession(): RecordingSession

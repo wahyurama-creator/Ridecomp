@@ -38,6 +38,10 @@ public enum class RideEventType {
     BATTERY_MODE_SAVER,
     BATTERY_MODE_CRITICAL,
     BATTERY_MODE_EMERGENCY,
+    INCIDENT_DETECTED,
+    INCIDENT_CANCELLED,
+    SOS_SENT,
+    SMS_FAILED,
 }
 
 public data class RideEvent(val timeMs: Long, val type: RideEventType)

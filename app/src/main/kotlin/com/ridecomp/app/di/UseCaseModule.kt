@@ -34,6 +34,7 @@ import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveSafetyUseCase
 import com.ridecomp.core.usecase.ObserveSavedSensorsUseCase
 import com.ridecomp.core.usecase.PairSensorUseCase
+import com.ridecomp.core.usecase.PerformIncidentActionUseCase
 import com.ridecomp.core.usecase.PerformRideActionUseCase
 import com.ridecomp.core.usecase.ReadBatteryUseCase
 import com.ridecomp.core.usecase.RemoveEmergencyContactUseCase
@@ -88,6 +89,7 @@ val useCaseModule = module {
     factory { HandleRecoveredRideUseCase(get(), get()) }
     factory { ObserveGpsStatusUseCase(get()) }
     factory { ReadBatteryUseCase(get()) }
+    factory { PerformIncidentActionUseCase(get()) }
     factory { ExportActivityUseCase(get(), get()) }
     factory { ShareActivityFileUseCase(get(), get()) }
     factory { SaveActivityFileUseCase(get(), get()) }

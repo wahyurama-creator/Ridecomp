@@ -74,7 +74,7 @@ Spesifikasi detail fitur tambahan: `../12-FEATURE-SPECS.md`.
 - [x] T2.13 Profil aktivitas Road/Gravel/MTB/Indoor/Commute (§4), termasuk mode Indoor tanpa GPS; pemilih profil di Pre-ride.
 - [x] T2.14 Layar Keselamatan: kontak darurat (contact picker), nama pengendara, izin SMS, SMS uji (§5.1).
 - [x] T2.15 `IncidentDetector` di `:core` + `AccelerometerSource` (§5.2) dengan unit test dari data rekaman/sintetis (jatuh, lubang, HP jatuh saat diam, rem mendadak).
-- [ ] T2.16 Alur insiden: hitung mundur layar penuh, SMS + update lokasi, retry, "Saya aman", SOS manual (§5.3).
+- [x] T2.16 Alur insiden: hitung mundur layar penuh, SMS + update lokasi, retry, "Saya aman", SOS manual (§5.3).
 - [ ] T2.17 Backup & restore (§12): arsip `.rcbackup` streaming, opsi kata sandi (**ajukan pilihan library/parameter kripto**), pengingat backup saat app dibuka, restore atomik dengan backup darurat, validasi zip-slip/ukuran/checksum/versi skema.
 
 **DoD:** ride uji dengan HR strap + sensor cadence (dan power meter bila ada); data muncul benar di Strava; sensor dicabut-pasang di tengah ride tanpa merusak rekaman; uji insiden (simulasi & uji fisik aman, mis. menjatuhkan HP di atas kasur sambil bergerak) memicu hitung mundur, pembatalan berfungsi, SMS uji diterima; backup dari HP A berhasil di-restore di HP B (atau setelah uninstall-install ulang) dengan data identik.
