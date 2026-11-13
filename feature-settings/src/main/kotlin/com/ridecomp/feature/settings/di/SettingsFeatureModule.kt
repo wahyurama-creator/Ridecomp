@@ -14,7 +14,7 @@ import org.koin.dsl.module
 val settingsFeatureModule = module {
     viewModel { ProfileViewModel(get(), get(), get()) }
     viewModel { RideSettingsViewModel(get(), get()) }
-    viewModel { OnboardingViewModel(get()) }
+    viewModel { OnboardingViewModel(get(), get()) }
     factory { SafetyUseCases(get(), get(), get(), get(), get(), get(), get()) }
     viewModel { SafetyViewModel(get()) }
     factory { BackupUseCases(get(), get(), get(), get(), get(), get()) }

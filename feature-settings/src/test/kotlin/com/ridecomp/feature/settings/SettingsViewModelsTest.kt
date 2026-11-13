@@ -3,12 +3,16 @@ package com.ridecomp.feature.settings
 import app.cash.turbine.test
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RiderProfile
+import com.ridecomp.core.model.RidingPosition
 import com.ridecomp.core.model.ScreenMode
+import com.ridecomp.core.model.Surface
 import com.ridecomp.core.testing.FakeClock
+import com.ridecomp.core.testing.FakeLocationSource
 import com.ridecomp.core.testing.FakeProfileRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.usecase.CompleteOnboardingUseCase
 import com.ridecomp.core.usecase.EstimateHrMaxUseCase
+import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
 import com.ridecomp.core.usecase.ObserveProfileUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ProfileField
@@ -80,6 +84,22 @@ class SettingsViewModelsTest {
     }
 
     @Test
+    fun `saving keeps the surface and saves the hand position`() = runTest {
+        profiles.save(RiderProfile(weightKg = 70.0, surface = Surface.GRAVEL, ridingPosition = RidingPosition.DROPS))
+        val viewModel = profileViewModel()
+        assertEquals(RidingPosition.DROPS, viewModel.uiState.value.ridingPosition)
+
+        viewModel.effects.test {
+            viewModel.onEvent(ProfileUiEvent.PositionChanged(RidingPosition.TOPS))
+            viewModel.onEvent(ProfileUiEvent.Save)
+            assertEquals(ProfileEffect.Saved, awaitItem())
+        }
+
+        assertEquals(RidingPosition.TOPS, profiles.get().ridingPosition)
+        assertEquals(Surface.GRAVEL, profiles.get().surface)
+    }
+
+    @Test
     fun `text that is not a number marks the field invalid and nothing is saved`() {
         val viewModel = profileViewModel()
 
@@ -139,12 +159,13 @@ class SettingsViewModelsTest {
     @Test
     fun `onboarding walks through the steps and completes`() = runTest {
         val settings = FakeSettingsRepository()
-        val viewModel = OnboardingViewModel(CompleteOnboardingUseCase(settings))
+        val viewModel =
+            OnboardingViewModel(CompleteOnboardingUseCase(settings), ObserveGpsStatusUseCase(FakeLocationSource()))
 
         viewModel.onEvent(OnboardingUiEvent.Back)
-        assertEquals(OnboardingStep.LOCATION, viewModel.uiState.value)
+        assertEquals(OnboardingStep.PERMISSIONS, viewModel.uiState.value)
         repeat(5) { viewModel.onEvent(OnboardingUiEvent.Next) }
-        assertEquals(OnboardingStep.PROFILE, viewModel.uiState.value)
+        assertEquals(OnboardingStep.READY, viewModel.uiState.value)
 
         viewModel.effects.test {
             viewModel.onEvent(OnboardingUiEvent.Finished)
