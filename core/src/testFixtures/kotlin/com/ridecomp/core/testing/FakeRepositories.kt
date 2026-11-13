@@ -12,6 +12,7 @@ import com.ridecomp.core.model.RideSample
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RideTotals
 import com.ridecomp.core.model.RiderProfile
+import com.ridecomp.core.repository.ActivityAnalysisRepository
 import com.ridecomp.core.repository.ActivityProfileRepository
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.NewActivity
@@ -145,6 +146,24 @@ public class FakeActivityRepository : ActivityRepository {
         samples[activityId].orEmpty().filter { it.timeMs > afterTimeMs }.take(limit)
 
     override suspend fun getSampleCount(activityId: Long): Int = samples[activityId].orEmpty().size
+
+    /** Analysis version per ride; absent = never analyzed (see [FakeActivityAnalysisRepository]). */
+    public val analyzedVersions: MutableMap<Long, Int> = mutableMapOf()
+
+    internal fun all(): Collection<Activity> = activities.value.values
+}
+
+/** [ActivityAnalysisRepository] over the rides of a [FakeActivityRepository]. */
+public class FakeActivityAnalysisRepository(private val activities: FakeActivityRepository) :
+    ActivityAnalysisRepository {
+    override suspend fun getPendingAnalysis(version: Int, limit: Int): List<Activity> = activities.all()
+        .filter { it.status == ActivityStatus.FINISHED && (activities.analyzedVersions[it.id] ?: 0) < version }
+        .sortedBy { it.startedAtMs }
+        .take(limit)
+
+    override suspend fun markAnalyzed(activityId: Long, version: Int) {
+        activities.analyzedVersions[activityId] = version
+    }
 }
 
 /** In-memory [ProfileRepository]. */

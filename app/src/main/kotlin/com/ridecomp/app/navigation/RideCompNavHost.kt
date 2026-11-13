@@ -41,6 +41,8 @@ import com.ridecomp.feature.settings.ui.RideSettingsRoute
 import com.ridecomp.feature.settings.ui.SafetyRoute
 import com.ridecomp.feature.settings.ui.SettingsRoute
 import com.ridecomp.feature.settings.ui.SettingsSection
+import com.ridecomp.feature.training.ui.NewRecordsCard
+import com.ridecomp.feature.training.ui.RecordsRoute
 
 /** Routes that are not bottom-bar tabs, in one place. */
 object AppRoutes {
@@ -200,6 +202,7 @@ private fun NavGraphBuilder.rideGraph(navController: NavHostController) {
             },
             onDiscarded = { navController.navigateClearingBackStack(TopLevelDestination.HOME.route) },
             onStravaHelp = { navController.navigate(AppRoutes.STRAVA_HELP) },
+            newRecordsContent = { activityId -> NewRecordsCard(activityId) },
         )
     }
 }
@@ -210,6 +213,9 @@ private fun NavGraphBuilder.historyGraph(navController: NavHostController) {
             onStartRide = { navController.navigate(AppRoutes.preRide()) },
             onOpenActivity = { id -> navController.navigate(AppRoutes.activityDetail(id)) },
             onRestore = { navController.navigate(AppRoutes.BACKUP) },
+            recordsContent = {
+                RecordsRoute(onOpenActivity = { id -> navController.navigate(AppRoutes.activityDetail(id)) })
+            },
         )
     }
     composable(

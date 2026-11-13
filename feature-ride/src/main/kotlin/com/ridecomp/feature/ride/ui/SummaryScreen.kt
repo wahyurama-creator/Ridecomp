@@ -48,6 +48,7 @@ fun SummaryRoute(
     onDiscarded: () -> Unit,
     modifier: Modifier = Modifier,
     onStravaHelp: () -> Unit = {},
+    newRecordsContent: (@Composable (activityId: Long) -> Unit)? = null,
     viewModel: SummaryViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -57,15 +58,23 @@ fun SummaryRoute(
             SummaryEffect.Discarded -> onDiscarded()
         }
     }
-    SummaryScreen(state = state, onEvent = viewModel::onEvent, onStravaHelp = onStravaHelp, modifier = modifier)
+    SummaryScreen(
+        state = state,
+        onEvent = viewModel::onEvent,
+        onStravaHelp = onStravaHelp,
+        newRecordsContent = newRecordsContent,
+        modifier = modifier,
+    )
 }
 
+/** [newRecordsContent] is the "new records" card of the training feature, provided by the app (ARCH-02). */
 @Composable
 fun SummaryScreen(
     state: SummaryUiState,
     onEvent: (SummaryUiEvent) -> Unit,
     modifier: Modifier = Modifier,
     onStravaHelp: () -> Unit = {},
+    newRecordsContent: (@Composable (activityId: Long) -> Unit)? = null,
 ) {
     var isDiscardDialogShown by remember { mutableStateOf(false) }
     val formatter = remember(state.unitSystem) { UnitFormatter(state.unitSystem) }
@@ -87,6 +96,7 @@ fun SummaryScreen(
                 isLarge = true,
             )
             StatGrid(summaryStats(state.live, formatter))
+            state.activityId?.let { id -> newRecordsContent?.invoke(id) }
             BigButton(
                 text = stringResource(R.string.summary_save),
                 onClick = { onEvent(SummaryUiEvent.Save) },

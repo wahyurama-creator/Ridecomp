@@ -2,6 +2,7 @@ package com.ridecomp.app.di
 
 import com.ridecomp.core.usecase.AddEmergencyContactUseCase
 import com.ridecomp.core.usecase.AddPickedContactUseCase
+import com.ridecomp.core.usecase.AnalyzeActivitiesUseCase
 import com.ridecomp.core.usecase.BackupWriter
 import com.ridecomp.core.usecase.CheckGpsAvailabilityUseCase
 import com.ridecomp.core.usecase.CompleteOnboardingUseCase
@@ -12,12 +13,14 @@ import com.ridecomp.core.usecase.DeleteOfflineMapUseCase
 import com.ridecomp.core.usecase.DeleteRouteUseCase
 import com.ridecomp.core.usecase.DuplicateActivityProfileUseCase
 import com.ridecomp.core.usecase.EstimateHrMaxUseCase
+import com.ridecomp.core.usecase.EvaluateBestEffortsUseCase
 import com.ridecomp.core.usecase.ExportActivityUseCase
 import com.ridecomp.core.usecase.ExportFileStore
 import com.ridecomp.core.usecase.ExportFitUseCase
 import com.ridecomp.core.usecase.ExportGpxUseCase
 import com.ridecomp.core.usecase.ExportedFileHandler
 import com.ridecomp.core.usecase.ForgetSensorUseCase
+import com.ridecomp.core.usecase.GetActivityKindUseCase
 import com.ridecomp.core.usecase.GetFreeStorageUseCase
 import com.ridecomp.core.usecase.GetLapsUseCase
 import com.ridecomp.core.usecase.GetRecoverableRideUseCase
@@ -42,8 +45,10 @@ import com.ridecomp.core.usecase.ObserveLiveRideUseCase
 import com.ridecomp.core.usecase.ObserveMonthTotalsUseCase
 import com.ridecomp.core.usecase.ObserveOfflineMapsUseCase
 import com.ridecomp.core.usecase.ObserveOnboardingDoneUseCase
+import com.ridecomp.core.usecase.ObservePersonalRecordsUseCase
 import com.ridecomp.core.usecase.ObserveProfileChoiceUseCase
 import com.ridecomp.core.usecase.ObserveProfileUseCase
+import com.ridecomp.core.usecase.ObserveRecordKindsUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveRouteUseCase
 import com.ridecomp.core.usecase.ObserveRoutesUseCase
@@ -52,6 +57,7 @@ import com.ridecomp.core.usecase.ObserveSavedSensorsUseCase
 import com.ridecomp.core.usecase.PairSensorUseCase
 import com.ridecomp.core.usecase.PerformIncidentActionUseCase
 import com.ridecomp.core.usecase.PerformRideActionUseCase
+import com.ridecomp.core.usecase.PreviewNewRecordsUseCase
 import com.ridecomp.core.usecase.ReadBackupSummaryUseCase
 import com.ridecomp.core.usecase.ReadBatteryUseCase
 import com.ridecomp.core.usecase.RemoveEmergencyContactUseCase
@@ -162,4 +168,11 @@ val useCaseModule = module {
     factory { AddPickedContactUseCase(get(), get()) }
     factory { RemoveEmergencyContactUseCase(get()) }
     factory { SendTestSmsUseCase(get(), get(), get(), get()) }
+    factory { GetActivityKindUseCase(get()) }
+    factory { EvaluateBestEffortsUseCase(get(), get(), get(), get()) }
+    // Single: its mutex keeps one analysis running at a time.
+    single { AnalyzeActivitiesUseCase(get(), get(), get(), get(), get()) }
+    factory { PreviewNewRecordsUseCase(get(), get()) }
+    factory { ObservePersonalRecordsUseCase(get()) }
+    factory { ObserveRecordKindsUseCase(get()) }
 }

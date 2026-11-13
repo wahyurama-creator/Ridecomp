@@ -8,6 +8,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.ridecomp.data.db.dao.ActivityDao
 import com.ridecomp.data.db.dao.ActivityProfileDao
+import com.ridecomp.data.db.dao.BestEffortDao
 import com.ridecomp.data.db.dao.EmergencyContactDao
 import com.ridecomp.data.db.dao.EventDao
 import com.ridecomp.data.db.dao.IncidentDao
@@ -19,6 +20,8 @@ import com.ridecomp.data.db.dao.SettingsDao
 import com.ridecomp.data.db.dao.TrackPointDao
 import com.ridecomp.data.db.entity.ActivityEntity
 import com.ridecomp.data.db.entity.ActivityProfileEntity
+import com.ridecomp.data.db.entity.BestEffortEntity
+import com.ridecomp.data.db.entity.DailyTrainingEntity
 import com.ridecomp.data.db.entity.EmergencyContactEntity
 import com.ridecomp.data.db.entity.EventEntity
 import com.ridecomp.data.db.entity.IncidentEntity
@@ -28,6 +31,9 @@ import com.ridecomp.data.db.entity.RouteClimbEntity
 import com.ridecomp.data.db.entity.RouteEntity
 import com.ridecomp.data.db.entity.RoutePointEntity
 import com.ridecomp.data.db.entity.RouteTurnEntity
+import com.ridecomp.data.db.entity.SegmentEffortEntity
+import com.ridecomp.data.db.entity.SegmentEntity
+import com.ridecomp.data.db.entity.SegmentPointEntity
 import com.ridecomp.data.db.entity.SensorEntity
 import com.ridecomp.data.db.entity.SettingEntity
 import com.ridecomp.data.db.entity.TrackPointEntity
@@ -52,6 +58,11 @@ import com.ridecomp.data.db.entity.TrackPointEntity
         RoutePointEntity::class,
         RouteClimbEntity::class,
         RouteTurnEntity::class,
+        BestEffortEntity::class,
+        SegmentEntity::class,
+        SegmentPointEntity::class,
+        SegmentEffortEntity::class,
+        DailyTrainingEntity::class,
     ],
     version = RideCompDatabase.VERSION,
     exportSchema = true,
@@ -79,8 +90,10 @@ abstract class RideCompDatabase : RoomDatabase() {
 
     abstract fun routeDao(): RouteDao
 
+    abstract fun bestEffortDao(): BestEffortDao
+
     companion object {
-        const val VERSION = 5
+        const val VERSION = 6
 
         /**
          * Builds the database in internal storage (SEC-STO-01). Destructive migration is never enabled:
@@ -189,7 +202,83 @@ object RideCompMigrations {
         }
     }
 
-    val ALL: List<Migration> = listOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+    /**
+     * v6: every Phase 4 table at once (D-66) — best efforts (T4.1), segments (T4.2), daily training (T4.4) —
+     * and `activities.analysis_version` so rides saved before Phase 4 are analyzed once (D-67).
+     */
+    val MIGRATION_5_6: Migration = object : Migration(5, 6) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "ALTER TABLE `${DbNames.TABLE_ACTIVITIES}` ADD COLUMN `analysis_version` INTEGER NOT NULL DEFAULT 0",
+            )
+            createBestEfforts(db)
+            createSegments(db)
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `${DbNames.TABLE_DAILY_TRAINING}` (" +
+                    "`date` TEXT NOT NULL, `load` REAL NOT NULL, `ctl` REAL NOT NULL, `atl` REAL NOT NULL, " +
+                    "`tsb` REAL NOT NULL, PRIMARY KEY(`date`))",
+            )
+        }
+    }
+
+    private const val CASCADE_ACTIVITIES =
+        "REFERENCES `${DbNames.TABLE_ACTIVITIES}`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE"
+    private const val CASCADE_SEGMENTS =
+        "REFERENCES `${DbNames.TABLE_SEGMENTS}`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE"
+
+    private fun createBestEfforts(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `${DbNames.TABLE_BEST_EFFORTS}` (" +
+                "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `activity_id` INTEGER NOT NULL, " +
+                "`profile_kind` TEXT NOT NULL, `type` TEXT NOT NULL, `key` TEXT NOT NULL, `value` REAL NOT NULL, " +
+                "`start_t` INTEGER, `end_t` INTEGER, `is_pr` INTEGER NOT NULL, " +
+                "FOREIGN KEY(`activity_id`) $CASCADE_ACTIVITIES )",
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_best_efforts_activity_id` " +
+                "ON `${DbNames.TABLE_BEST_EFFORTS}` (`activity_id`)",
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_best_efforts_profile_kind_type_key_value` " +
+                "ON `${DbNames.TABLE_BEST_EFFORTS}` (`profile_kind`, `type`, `key`, `value`)",
+        )
+    }
+
+    private fun createSegments(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `${DbNames.TABLE_SEGMENTS}` (" +
+                "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, " +
+                "`length_m` REAL NOT NULL, `gain_m` REAL NOT NULL, `avg_grade` REAL NOT NULL, " +
+                "`start_lat` REAL NOT NULL, `start_lon` REAL NOT NULL, `end_lat` REAL NOT NULL, " +
+                "`end_lon` REAL NOT NULL, `min_lat` REAL NOT NULL, `min_lon` REAL NOT NULL, " +
+                "`max_lat` REAL NOT NULL, `max_lon` REAL NOT NULL, `created_from` TEXT NOT NULL, " +
+                "`created_at` INTEGER NOT NULL)",
+        )
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `${DbNames.TABLE_SEGMENT_POINTS}` (" +
+                "`segment_id` INTEGER NOT NULL, `seq` INTEGER NOT NULL, `lat` REAL NOT NULL, " +
+                "`lon` REAL NOT NULL, `cum_dist_m` REAL NOT NULL, PRIMARY KEY(`segment_id`, `seq`), " +
+                "FOREIGN KEY(`segment_id`) $CASCADE_SEGMENTS )",
+        )
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `${DbNames.TABLE_SEGMENT_EFFORTS}` (" +
+                "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `segment_id` INTEGER NOT NULL, " +
+                "`activity_id` INTEGER NOT NULL, `start_t` INTEGER NOT NULL, `end_t` INTEGER NOT NULL, " +
+                "`elapsed_s` REAL NOT NULL, `avg_speed` REAL NOT NULL, `avg_hr` INTEGER, `avg_power` INTEGER, " +
+                "`is_pr` INTEGER NOT NULL, FOREIGN KEY(`segment_id`) $CASCADE_SEGMENTS , " +
+                "FOREIGN KEY(`activity_id`) $CASCADE_ACTIVITIES )",
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_segment_efforts_segment_id_elapsed_s` " +
+                "ON `${DbNames.TABLE_SEGMENT_EFFORTS}` (`segment_id`, `elapsed_s`)",
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_segment_efforts_activity_id` " +
+                "ON `${DbNames.TABLE_SEGMENT_EFFORTS}` (`activity_id`)",
+        )
+    }
+
+    val ALL: List<Migration> = listOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
 }
 
 /** New installs get the built-in profiles too (existing ones get them from MIGRATION_2_3). */

@@ -60,6 +60,37 @@ class RideCompMigrationTest {
     }
 
     @Test
+    fun migrate_5_to_6_keeps_rides_marks_them_for_analysis_and_adds_phase_4_tables() {
+        helper.createDatabase(TEST_DB_6, 5).apply {
+            execSQL(
+                "INSERT INTO activities (id, uuid, name, status, started_at, elapsed_s, moving_s, distance_m, " +
+                    "ascent_m, descent_m, avg_speed, max_speed, last_checkpoint_at) " +
+                    "VALUES (1, 'u1', 'Evening ride', 'finished', 1000, 60, 50, 400.0, 3.0, 2.0, 8.0, 10.0, 2000)",
+            )
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(TEST_DB_6, 6, true, RideCompMigrations.MIGRATION_5_6)
+
+        db.query("SELECT name, analysis_version FROM activities WHERE id = 1").use { cursor ->
+            cursor.moveToFirst()
+            assertEquals("Evening ride", cursor.getString(0))
+            assertEquals(0, cursor.getInt(1))
+        }
+        db.execSQL(
+            "INSERT INTO best_efforts (activity_id, profile_kind, type, `key`, value, is_pr) " +
+                "VALUES (1, 'road', 'other', 'longest_ride', 400.0, 1)",
+        )
+        // Room turns foreign keys on when it opens the app database; the test helper does not.
+        db.execSQL("PRAGMA foreign_keys = ON")
+        db.execSQL("DELETE FROM activities WHERE id = 1")
+        db.query("SELECT COUNT(*) FROM best_efforts").use { cursor ->
+            cursor.moveToFirst()
+            assertEquals(0, cursor.getInt(0))
+        }
+    }
+
+    @Test
     fun all_migrations_open_on_latest_schema() {
         helper.createDatabase(TEST_DB_ALL, 1).close()
 
@@ -77,5 +108,6 @@ class RideCompMigrationTest {
         const val TEST_DB = "migration-test.db"
         const val TEST_DB_ALL = "migration-all-test.db"
         const val TEST_DB_3 = "migration-3-test.db"
+        const val TEST_DB_6 = "migration-6-test.db"
     }
 }

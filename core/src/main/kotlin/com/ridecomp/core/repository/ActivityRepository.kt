@@ -69,3 +69,14 @@ public interface ActivityRepository {
 
     public suspend fun getSampleCount(activityId: Long): Int
 }
+
+/** Which saved rides still need the post-ride analysis (D-67). Implemented in :data (ARCH-03). */
+public interface ActivityAnalysisRepository {
+    /**
+     * Saved rides not yet analyzed at [version] (best efforts, later segments and training load), oldest
+     * first so "new record" flags follow the order the rides happened.
+     */
+    public suspend fun getPendingAnalysis(version: Int, limit: Int): List<Activity>
+
+    public suspend fun markAnalyzed(activityId: Long, version: Int)
+}

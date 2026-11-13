@@ -49,4 +49,6 @@ data class ActivityEntity(
     @ColumnInfo(name = "fit_path") val fitPath: String? = null,
     @ColumnInfo(name = "strava_activity_id") val stravaActivityId: String? = null,
     @ColumnInfo(name = "last_checkpoint_at") val lastCheckpointAt: Long,
+    /** Post-ride analysis done up to this version (v6, D-67); 0 = never analyzed. */
+    @ColumnInfo(name = "analysis_version", defaultValue = "0") val analysisVersion: Int = 0,
 )
