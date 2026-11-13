@@ -37,6 +37,20 @@ Acuan: **OWASP MASVS** (Mobile Application Security Verification Standard) dan A
 | Static analysis keamanan | Android Lint (kategori Security, severity dinaikkan jadi error) + detekt | Sudah ada di verifikasi standar |
 | Scan APK (per fase) | MobSF (open source, dijalankan lokal) | Analisis statis APK release: izin, komponen ter-export, konfigurasi, secret ter-hardcode |
 
+### A.3 Memperbarui `verification-metadata.xml` (SUP-04)
+
+Metadata **wajib** dibuat ulang dengan cache Gradle **kosong**. Dengan cache yang sudah terisi, Gradle tidak mencatat sebagian file metadata (`.module` BOM, POM parent), sehingga build gagal di clone baru (D-48).
+
+```
+GRADLE_USER_HOME=<folder sementara kosong> ./gradlew --no-configuration-cache --continue \
+  --write-verification-metadata sha256 help assembleDebug assembleRelease test lint ktlintCheck detekt koverVerify generateLicenseReport
+```
+
+1. Diff harus **hanya menambah** entri. Checksum yang berubah = berhenti dan laporkan ke pemilik.
+2. Cocokkan file baru dengan checksum yang dipublikasikan repository (`.sha1` di Maven Central / Google Maven).
+3. Verifikasi ulang dengan `GRADLE_USER_HOME` kosong yang lain **tanpa** `--write-verification-metadata`.
+4. Setiap upgrade Gradle: tambahkan juga `gradle:gradle:<versi>` → `gradle-<versi>-src.zip` (diunduh sync IDE), checksum dari `https://services.gradle.org/distributions/gradle-<versi>-src.zip.sha256`.
+
 ---
 
 ## B. Keamanan kode (aturan)
