@@ -151,7 +151,8 @@ public class FakeActivityRepository : ActivityRepository {
     /** Analysis version per ride; absent = never analyzed (see [FakeActivityAnalysisRepository]). */
     public val analyzedVersions: MutableMap<Long, Int> = mutableMapOf()
 
-    internal fun all(): Collection<Activity> = activities.value.values
+    /** Every stored ride (other fakes read them). */
+    public fun all(): Collection<Activity> = activities.value.values
 }
 
 /** [ActivityAnalysisRepository] over the rides of a [FakeActivityRepository]. */

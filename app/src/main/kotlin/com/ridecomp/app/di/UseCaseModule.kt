@@ -39,6 +39,7 @@ import com.ridecomp.core.usecase.ImportGpxUseCase
 import com.ridecomp.core.usecase.ImportOfflineMapUseCase
 import com.ridecomp.core.usecase.LoadRideChartUseCase
 import com.ridecomp.core.usecase.LoadTrackOutlineUseCase
+import com.ridecomp.core.usecase.LoadWeekZonesUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfileUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
@@ -64,6 +65,7 @@ import com.ridecomp.core.usecase.ObserveSavedSensorsUseCase
 import com.ridecomp.core.usecase.ObserveSegmentEffortsUseCase
 import com.ridecomp.core.usecase.ObserveSegmentUseCase
 import com.ridecomp.core.usecase.ObserveSegmentsUseCase
+import com.ridecomp.core.usecase.ObserveTrainingUseCase
 import com.ridecomp.core.usecase.PairSensorUseCase
 import com.ridecomp.core.usecase.PerformIncidentActionUseCase
 import com.ridecomp.core.usecase.PerformRideActionUseCase
@@ -71,6 +73,7 @@ import com.ridecomp.core.usecase.PreviewNewRecordsUseCase
 import com.ridecomp.core.usecase.ReadBackupSummaryUseCase
 import com.ridecomp.core.usecase.ReadBatteryUseCase
 import com.ridecomp.core.usecase.ReadRideTrackUseCase
+import com.ridecomp.core.usecase.RecomputeTrainingUseCase
 import com.ridecomp.core.usecase.RemoveEmergencyContactUseCase
 import com.ridecomp.core.usecase.RenameActivityUseCase
 import com.ridecomp.core.usecase.RenameRouteUseCase
@@ -95,6 +98,8 @@ import com.ridecomp.core.usecase.SnoozeBackupReminderUseCase
 import com.ridecomp.core.usecase.StartRideUseCase
 import com.ridecomp.core.usecase.SuggestBackupFileNameUseCase
 import com.ridecomp.core.usecase.SuggestExportFileNameUseCase
+import com.ridecomp.core.usecase.TrainingCalendar
+import com.ridecomp.core.usecase.TrainingLoadStep
 import com.ridecomp.platform.export.AndroidExportFileStore
 import com.ridecomp.platform.export.AndroidExportedFileHandler
 import java.time.ZoneId
@@ -114,7 +119,7 @@ val useCaseModule = module {
     factory { ObserveActivityUseCase(get()) }
     factory { GetLapsUseCase(get()) }
     factory { RenameActivityUseCase(get()) }
-    factory { DeleteActivityUseCase(get()) }
+    factory { DeleteActivityUseCase(get(), get()) }
     factory { LoadRideChartUseCase(get()) }
     factory { ExportFitUseCase(get(), get(), get(), get(), get()) }
     factory { ExportGpxUseCase(get(), get(), get()) }
@@ -191,7 +196,11 @@ val useCaseModule = module {
         AnalyzeActivitiesUseCase(
             analysis = get(),
             readTrack = get(),
-            steps = listOf(BestEffortsStep(get(), get(), get()), SegmentsStep(get(), get())),
+            steps = listOf(
+                BestEffortsStep(get(), get(), get()),
+                SegmentsStep(get(), get()),
+                TrainingLoadStep(get(), get(), get(), get(), get()),
+            ),
             logger = get(),
         )
     }
@@ -203,6 +212,10 @@ val useCaseModule = module {
     factory { DeleteSegmentUseCase(get()) }
     factory { LoadTrackOutlineUseCase(get(), get()) }
     factory { GetLiveSegmentsUseCase(get()) }
+    factory { TrainingCalendar(get()) }
+    factory { RecomputeTrainingUseCase(get(), get(), get()) }
+    factory { ObserveTrainingUseCase(get(), get()) }
+    factory { LoadWeekZonesUseCase(get(), get(), get(), get(), get()) }
     factory { ObserveSegmentsUseCase(get()) }
     factory { ObserveSegmentUseCase(get()) }
     factory { ObserveSegmentEffortsUseCase(get()) }

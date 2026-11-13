@@ -100,7 +100,7 @@ Spesifikasi detail fitur tambahan: `../12-FEATURE-SPECS.md`.
 - [x] T4.1 `BestEffortCalculator` (jarak tercepat, power terbaik, rekor lain) dijalankan setelah ride disimpan + layar Rekor + badge PR di ringkasan (§8).
 - [x] T4.2 Segmen pribadi: buat dari aktivitas/tanjakan, `SegmentMatcher` setelah ride, layar Segmen (§9.1–9.2).
 - [x] T4.3 Live segment saat ride: deteksi start, field Segmen, selisih vs PR, banner hasil (§9.3).
-- [ ] T4.4 `TrainingLoadCalculator` (power/HR), tabel `daily_training` inkremental, layar Latihan dengan grafik & ringkasan mingguan (§10).
+- [x] T4.4 `TrainingLoadCalculator` (power/HR), tabel `daily_training` inkremental, layar Latihan dengan grafik & ringkasan mingguan (§10).
 - [ ] T4.5 Kartu share Story/Kotak dengan opsi privasi, render offline, share via FileProvider (§11).
 - [ ] T4.6 Unit test: best efforts dengan data sintetis (termasuk pause di tengah), pencocokan segmen (lewat sebagian, arah terbalik, GPS noise), nilai referensi TSS/TRIMP, CTL/ATL inkremental saat ride dihapus.
 

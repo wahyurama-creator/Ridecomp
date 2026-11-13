@@ -3,6 +3,7 @@
     <string name="history_tab_activities">Activities</string>
     <string name="history_tab_records">Records</string>
     <string name="history_tab_segments">Segments</string>
+    <string name="history_tab_training">Training</string>
     <string name="history_title">History</string>
     <string name="history_empty">Your first ride will show up here, with its stats and FIT file.</string>
     <string name="history_empty_action">START FIRST RIDE</string>

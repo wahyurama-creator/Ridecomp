@@ -46,6 +46,7 @@ import com.ridecomp.feature.training.ui.RecordsRoute
 import com.ridecomp.feature.training.ui.SegmentDetailRoute
 import com.ridecomp.feature.training.ui.SegmentEditorRoute
 import com.ridecomp.feature.training.ui.SegmentsRoute
+import com.ridecomp.feature.training.ui.TrainingRoute
 
 /** Routes that are not bottom-bar tabs, in one place. */
 object AppRoutes {
@@ -231,6 +232,7 @@ private fun NavGraphBuilder.historyGraph(navController: NavHostController) {
             segmentsContent = {
                 SegmentsRoute(onOpenSegment = { id -> navController.navigate(AppRoutes.segmentDetail(id)) })
             },
+            trainingContent = { TrainingRoute() },
         )
     }
     composable(

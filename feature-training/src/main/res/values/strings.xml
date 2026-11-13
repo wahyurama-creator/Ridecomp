@@ -55,4 +55,30 @@
     <string name="segment_error_position">This part of the ride has no GPS position.</string>
     <string name="segment_name">Segment name</string>
     <string name="segment_save">Save segment</string>
+    <!-- Training load (T4.4, 12-FEATURE-SPECS §10) -->
+    <string name="training_empty">No training load yet. It needs a heart-rate sensor (and HR max or birth year in your profile) or a power meter with your FTP.</string>
+    <string name="training_disclaimer">Estimates to follow your training trend, not medical values.</string>
+    <string name="training_fitness">Fitness</string>
+    <string name="training_fatigue">Fatigue</string>
+    <string name="training_form">Form</string>
+    <string name="training_fitness_change">%1$s / 4 wk</string>
+    <string name="training_fatigue_caption">7 days</string>
+    <string name="training_form_fresh">fresh</string>
+    <string name="training_form_neutral">balanced</string>
+    <string name="training_form_tired">tired</string>
+    <plurals name="training_trend">
+        <item quantity="one">Trend · %1$d week</item>
+        <item quantity="other">Trend · %1$d weeks</item>
+    </plurals>
+    <string name="training_trend_summary">Fitness, fatigue and form per day</string>
+    <string name="training_method_hr">estimated from heart rate (TRIMP)</string>
+    <string name="training_method_power">from power meter (TSS)</string>
+    <string name="training_method_mixed">from power (TSS) and heart rate (TRIMP)</string>
+    <string name="training_week">This week</string>
+    <string name="training_week_rides">Rides</string>
+    <string name="training_week_distance">Distance (%1$s)</string>
+    <string name="training_week_time">Time</string>
+    <string name="training_week_load">Load</string>
+    <string name="training_zones">Heart-rate zones this week</string>
+    <string name="training_zone">Z%1$d</string>
 </resources>

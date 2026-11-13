@@ -16,6 +16,7 @@ import com.ridecomp.core.repository.RouteRepository
 import com.ridecomp.core.repository.SafetyRepository
 import com.ridecomp.core.repository.SegmentRepository
 import com.ridecomp.core.repository.SettingsRepository
+import com.ridecomp.core.repository.TrainingRepository
 import com.ridecomp.core.source.AccelerometerSource
 import com.ridecomp.core.source.AppRestarter
 import com.ridecomp.core.source.BatteryLevelSource
@@ -57,6 +58,7 @@ import com.ridecomp.core.testing.FakeSegmentRepository
 import com.ridecomp.core.testing.FakeSensorRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.testing.FakeSmsGateway
+import com.ridecomp.core.testing.FakeTrainingRepository
 import com.ridecomp.core.testing.RecordingLogger
 import com.ridecomp.core.testing.TestDispatcherProvider
 import com.ridecomp.core.usecase.BackupDatabase
@@ -90,6 +92,7 @@ import com.ridecomp.feature.training.viewmodel.RecordsViewModel
 import com.ridecomp.feature.training.viewmodel.SegmentDetailViewModel
 import com.ridecomp.feature.training.viewmodel.SegmentEditorViewModel
 import com.ridecomp.feature.training.viewmodel.SegmentsViewModel
+import com.ridecomp.feature.training.viewmodel.TrainingViewModel
 import java.io.File
 import java.nio.file.Files
 import kotlin.test.AfterTest
@@ -147,6 +150,7 @@ class AppModulesTest {
         single<OfflineMapRepository> { FakeOfflineMapRepository() }
         single<BestEffortRepository> { FakeBestEffortRepository(get()) }
         single<SegmentRepository> { FakeSegmentRepository(get()) }
+        single<TrainingRepository> { FakeTrainingRepository(FakeActivityRepository()) }
         single<ActivityAnalysisRepository> { FakeActivityAnalysisRepository(FakeActivityRepository()) }
         factory<LicenseTextReader> { LicenseTextReader { "" } }
     }
@@ -182,6 +186,7 @@ class AppModulesTest {
         assertNotNull(koin.get<RecordsViewModel>())
         assertNotNull(koin.get<NewRecordsViewModel> { parametersOf(1L) })
         assertNotNull(koin.get<SegmentsViewModel>())
+        assertNotNull(koin.get<TrainingViewModel>())
         assertNotNull(koin.get<SegmentDetailViewModel> { parametersOf(1L) })
         assertNotNull(koin.get<SegmentEditorViewModel> { parametersOf(1L) })
         assertNotNull(koin.get<RideSettingsViewModel>())

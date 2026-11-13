@@ -19,6 +19,7 @@ import com.ridecomp.data.db.dao.SegmentDao
 import com.ridecomp.data.db.dao.SensorDao
 import com.ridecomp.data.db.dao.SettingsDao
 import com.ridecomp.data.db.dao.TrackPointDao
+import com.ridecomp.data.db.dao.TrainingDao
 import com.ridecomp.data.db.entity.ActivityEntity
 import com.ridecomp.data.db.entity.ActivityProfileEntity
 import com.ridecomp.data.db.entity.BestEffortEntity
@@ -94,6 +95,8 @@ abstract class RideCompDatabase : RoomDatabase() {
     abstract fun bestEffortDao(): BestEffortDao
 
     abstract fun segmentDao(): SegmentDao
+
+    abstract fun trainingDao(): TrainingDao
 
     companion object {
         const val VERSION = 6
