@@ -1,13 +1,16 @@
 package com.ridecomp.app.di
 
 import com.ridecomp.app.AppViewModel
+import com.ridecomp.core.engine.safety.IncidentManager
 import com.ridecomp.core.engine.sensors.BleScanner
 import com.ridecomp.core.engine.sensors.SensorRepository
 import com.ridecomp.core.repository.ActivityProfileRepository
 import com.ridecomp.core.repository.ActivityRepository
+import com.ridecomp.core.repository.IncidentRepository
 import com.ridecomp.core.repository.ProfileRepository
 import com.ridecomp.core.repository.SafetyRepository
 import com.ridecomp.core.repository.SettingsRepository
+import com.ridecomp.core.source.AccelerometerSource
 import com.ridecomp.core.source.BatteryLevelSource
 import com.ridecomp.core.source.Clock
 import com.ridecomp.core.source.DispatcherProvider
@@ -17,6 +20,7 @@ import com.ridecomp.core.source.PickedContactReader
 import com.ridecomp.core.source.RideController
 import com.ridecomp.core.source.SafetyMessages
 import com.ridecomp.core.source.SmsGateway
+import com.ridecomp.core.testing.FakeAccelerometerSource
 import com.ridecomp.core.testing.FakeActivityProfileRepository
 import com.ridecomp.core.testing.FakeActivityRepository
 import com.ridecomp.core.testing.FakeBatteryLevelSource
@@ -24,6 +28,7 @@ import com.ridecomp.core.testing.FakeBleScanner
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeExportFileStore
 import com.ridecomp.core.testing.FakeExportedFileHandler
+import com.ridecomp.core.testing.FakeIncidentRepository
 import com.ridecomp.core.testing.FakeLocationSource
 import com.ridecomp.core.testing.FakePickedContactReader
 import com.ridecomp.core.testing.FakeProfileRepository
@@ -92,6 +97,8 @@ class AppModulesTest {
         single<SmsGateway> { FakeSmsGateway() }
         single<SafetyMessages> { FakeSafetyMessages() }
         single<PickedContactReader> { FakePickedContactReader() }
+        single<IncidentRepository> { FakeIncidentRepository() }
+        single<AccelerometerSource> { FakeAccelerometerSource() }
     }
 
     @BeforeTest
@@ -128,6 +135,7 @@ class AppModulesTest {
         assertNotNull(koin.get<DataPagesEditorViewModel> { parametersOf(1L) })
         assertNotNull(koin.get<ActivityProfilesViewModel>())
         assertNotNull(koin.get<SafetyViewModel>())
+        assertNotNull(koin.get<IncidentManager>())
         assertNotNull(koin.get<ActivityProfileEditorViewModel> { parametersOf(1L) })
     }
 }

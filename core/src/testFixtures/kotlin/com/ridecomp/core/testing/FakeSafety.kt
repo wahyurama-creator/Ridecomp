@@ -2,7 +2,9 @@ package com.ridecomp.core.testing
 
 import com.ridecomp.core.engine.safety.AccelSample
 import com.ridecomp.core.model.EmergencyContact
+import com.ridecomp.core.model.IncidentRecord
 import com.ridecomp.core.model.SafetySettings
+import com.ridecomp.core.repository.IncidentRepository
 import com.ridecomp.core.repository.SafetyRepository
 import com.ridecomp.core.source.AccelerometerSource
 import com.ridecomp.core.source.PickedContact
@@ -93,4 +95,18 @@ public class FakeAccelerometerSource(override val hasAccelerometer: Boolean = tr
     override fun samples(): Flow<AccelSample> = samplesFlow
         .onStart { activeCollectors++ }
         .onCompletion { activeCollectors-- }
+}
+
+public class FakeIncidentRepository : IncidentRepository {
+    public val saved: MutableMap<Long, IncidentRecord> = linkedMapOf()
+    private var nextId = 1L
+
+    override suspend fun save(incident: IncidentRecord): Long {
+        val id = if (incident.id == 0L) nextId++ else incident.id
+        saved[id] = incident.copy(id = id)
+        return id
+    }
+
+    override suspend fun getForActivity(activityId: Long): List<IncidentRecord> =
+        saved.values.filter { it.activityId == activityId }
 }

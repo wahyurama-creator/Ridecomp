@@ -50,3 +50,17 @@ public object PhoneNumbers {
 
     private val SEPARATORS = setOf(' ', '-', '.', '(', ')')
 }
+
+/** Stored outcome of an incident (05-DATA-MODEL `incidents.outcome`). */
+public enum class IncidentOutcome { PENDING, CANCELLED, SENT, MANUAL_SOS, FAILED }
+
+/** One incident row; no phone numbers or message texts are stored here (SEC-SMS-05). */
+public data class IncidentRecord(
+    val id: Long = 0,
+    val activityId: Long,
+    val detectedAtMs: Long,
+    val peakG: Double?,
+    val speedBeforeMps: Double?,
+    val outcome: IncidentOutcome,
+    val smsSentCount: Int = 0,
+)

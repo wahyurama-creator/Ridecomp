@@ -8,6 +8,7 @@ import com.ridecomp.core.engine.geo.GpsRejection
 import com.ridecomp.core.engine.metrics.AltitudeSource
 import com.ridecomp.core.engine.metrics.ElevationSnapshot
 import com.ridecomp.core.engine.metrics.ElevationTracker
+import com.ridecomp.core.engine.safety.IncidentState
 import com.ridecomp.core.engine.sensors.SensorReading
 import com.ridecomp.core.engine.sensors.SensorSnapshot
 import com.ridecomp.core.model.BatteryMode
@@ -62,6 +63,8 @@ public data class LiveRide(
     /** False for an Indoor ride: GPS state is not shown (12-FEATURE-SPECS §4). */
     val isGpsEnabled: Boolean = true,
     val profileId: Long? = null,
+    /** Incident countdown / alert state, merged in by the recording service (T2.16). */
+    val incident: IncidentState = IncidentState.None,
 )
 
 /** Ride facts that do not change during the ride. */

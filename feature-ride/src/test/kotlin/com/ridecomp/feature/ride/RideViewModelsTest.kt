@@ -3,9 +3,12 @@ package com.ridecomp.feature.ride
 import app.cash.turbine.test
 import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RideAction
+import com.ridecomp.core.engine.safety.IncidentAction
 import com.ridecomp.core.model.ActivityKind
 import com.ridecomp.core.model.ActivityStatus
+import com.ridecomp.core.model.EmergencyContact
 import com.ridecomp.core.model.RideStatus
+import com.ridecomp.core.model.SafetySettings
 import com.ridecomp.core.model.UnitSystem
 import com.ridecomp.core.repository.NewActivity
 import com.ridecomp.core.testing.FakeActivityProfileRepository
@@ -13,6 +16,7 @@ import com.ridecomp.core.testing.FakeActivityRepository
 import com.ridecomp.core.testing.FakeBatteryLevelSource
 import com.ridecomp.core.testing.FakeLocationSource
 import com.ridecomp.core.testing.FakeRideController
+import com.ridecomp.core.testing.FakeSafetyRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.usecase.GetRecoverableRideUseCase
 import com.ridecomp.core.usecase.GpsStatus
@@ -25,6 +29,8 @@ import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
 import com.ridecomp.core.usecase.ObserveProfileChoiceUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
+import com.ridecomp.core.usecase.ObserveSafetyUseCase
+import com.ridecomp.core.usecase.PerformIncidentActionUseCase
 import com.ridecomp.core.usecase.PerformRideActionUseCase
 import com.ridecomp.core.usecase.ReadBatteryUseCase
 import com.ridecomp.core.usecase.RecoveryChoice
@@ -41,6 +47,7 @@ import com.ridecomp.feature.ride.viewmodel.PreRideEffect
 import com.ridecomp.feature.ride.viewmodel.PreRideUiEvent
 import com.ridecomp.feature.ride.viewmodel.PreRideViewModel
 import com.ridecomp.feature.ride.viewmodel.RideEffect
+import com.ridecomp.feature.ride.viewmodel.RideUseCases
 import com.ridecomp.feature.ride.viewmodel.RideViewModel
 import com.ridecomp.feature.ride.viewmodel.SummaryEffect
 import com.ridecomp.feature.ride.viewmodel.SummaryUiEvent
@@ -139,13 +146,28 @@ class RideViewModelsTest {
 
     @Test
     fun `ride screen opens the summary when finished and closes when the ride ends`() = runTest {
+        val safety = FakeSafetyRepository()
         val viewModel = RideViewModel(
-            ObserveLiveRideUseCase(controller),
-            ObserveRideSettingsUseCase(settings),
-            ObserveDataPagesUseCase(settings, profiles),
-            ObserveActivityProfilesUseCase(profiles),
-            PerformRideActionUseCase(controller),
+            RideUseCases(
+                ObserveLiveRideUseCase(controller),
+                ObserveRideSettingsUseCase(settings),
+                ObserveDataPagesUseCase(settings, profiles),
+                ObserveActivityProfilesUseCase(profiles),
+                ObserveSafetyUseCase(safety),
+                PerformRideActionUseCase(controller),
+                PerformIncidentActionUseCase(controller),
+            ),
         )
+        // SOS only with the feature on and a contact (12-FEATURE-SPECS §5.3).
+        viewModel.isSosAvailable.test {
+            assertEquals(false, awaitItem())
+            safety.addContact(EmergencyContact(displayName = "Ibu", phone = "0811000000"))
+            safety.saveSettings(SafetySettings(isEnabled = true))
+            assertEquals(true, expectMostRecentItem())
+        }
+        viewModel.onIncident(IncidentAction.SOS)
+        assertEquals("${FakeRideController.INCIDENT_PREFIX}SOS", controller.commands.single())
+        controller.commands.clear()
 
         viewModel.effects.test {
             controller.live.value = LiveRide(status = RideStatus.RECORDING)

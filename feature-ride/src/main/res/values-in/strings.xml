@@ -145,4 +145,15 @@
     <string name="profile_pages_own">Halaman khusus profil ini</string>
     <string name="profile_pages_general">Sama dengan halaman umum</string>
     <string name="profile_pages_use_general">Pakai halaman umum</string>
+    <string name="incident_question">Apakah kamu baik-baik saja?</string>
+    <string name="incident_countdown_hint">Jika tidak dijawab, kontak darurat menerima SMS berisi lokasimu.</string>
+    <string name="incident_ok">SAYA BAIK-BAIK SAJA</string>
+    <string name="incident_send_now">KIRIM SEKARANG</string>
+    <plurals name="incident_sent">
+        <item quantity="other">SMS darurat terkirim ke %1$d kontak.</item>
+    </plurals>
+    <string name="incident_retrying">SMS belum terkirim. Dicoba lagi tiap menit.</string>
+    <string name="incident_failed">SMS darurat gagal dikirim.</string>
+    <string name="incident_safe">SAYA AMAN</string>
+    <string name="incident_sos_hold">SOS · TAHAN 3 DETIK</string>
 </resources>

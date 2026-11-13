@@ -2,6 +2,7 @@ package com.ridecomp.app.di
 
 import com.ridecomp.app.BuildConfig
 import com.ridecomp.core.engine.recording.RecordingSession
+import com.ridecomp.core.engine.safety.IncidentManager
 import com.ridecomp.core.engine.sensors.BleScanner
 import com.ridecomp.core.engine.sensors.SensorConnector
 import com.ridecomp.core.engine.sensors.SensorRepository
@@ -67,6 +68,7 @@ val platformModule = module {
     single<SafetyMessages> { AndroidSafetyMessages(androidContext()) }
     single<PickedContactReader> { AndroidPickedContactReader(androidContext(), get()) }
     single<AccelerometerSource> { AndroidAccelerometerSource(androidContext(), get()) }
+    single { IncidentManager(get(), get(), get(), get(), get(), get()) }
     single<RideController> { ServiceRideController(androidContext(), get()) }
     factory { RecordingSession(get(), get(), get(), get()) }
 }
@@ -86,6 +88,8 @@ class KoinRecordingDependencies(private val koin: Koin) : RecordingDependencies 
     override val alertPlayer get() = koin.get<AlertPlayer>()
     override val exportFit get() = koin.get<ExportFitUseCase>()
     override val getRideProfile get() = koin.get<GetRideProfileUseCase>()
+    override val incidentManager get() = koin.get<IncidentManager>()
+    override val accelerometerSource get() = koin.get<AccelerometerSource>()
     override val sensorRepository get() = koin.get<SensorRepository>()
     override val sensorConnector get() = koin.get<SensorConnector>()
 

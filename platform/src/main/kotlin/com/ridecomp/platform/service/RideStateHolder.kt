@@ -1,9 +1,11 @@
 package com.ridecomp.platform.service
 
 import com.ridecomp.core.engine.recording.LiveRide
+import com.ridecomp.core.engine.safety.IncidentState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 /**
  * Process-wide live ride state, written only by [RecordingService] and read by the UI through
@@ -20,6 +22,11 @@ class RideStateHolder {
     internal fun publish(live: LiveRide, activityId: Long?) {
         _liveRide.value = live
         _activeActivityId.value = activityId
+    }
+
+    /** Incident state changes between ticks (countdown start, sent) are shown at once. */
+    internal fun updateIncident(state: IncidentState) {
+        _liveRide.update { it.copy(incident = state) }
     }
 
     internal fun reset() {

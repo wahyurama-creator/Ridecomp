@@ -3,6 +3,7 @@ package com.ridecomp.core.testing
 import com.ridecomp.core.engine.recording.BatteryStatus
 import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RideAction
+import com.ridecomp.core.engine.safety.IncidentAction
 import com.ridecomp.core.model.LocationFix
 import com.ridecomp.core.source.BatteryLevelSource
 import com.ridecomp.core.source.LocationSource
@@ -39,9 +40,14 @@ public class FakeRideController : RideController {
         commands += action.name
     }
 
+    override fun performIncident(action: IncidentAction) {
+        commands += INCIDENT_PREFIX + action.name
+    }
+
     public companion object {
         public const val START: String = "START"
         public const val RESUME_PREFIX: String = "RESUME:"
+        public const val INCIDENT_PREFIX: String = "INCIDENT:"
     }
 }
 
