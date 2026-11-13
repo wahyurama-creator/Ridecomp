@@ -79,9 +79,9 @@
     <string name="safety_disclaimer">Incident detection helps but cannot catch every accident and may raise false alarms. SMS needs mobile signal and credit. While riding, a 30 s countdown lets you cancel before anything is sent.</string>
     <string name="safety_enabled">Incident detection</string>
     <string name="safety_enabled_description">Needs at least one contact and the SMS permission.</string>
-    <string name="safety_rider_name">Your name (used in the SMS)</string>
-    <string name="safety_contacts">EMERGENCY CONTACTS (MAX 3)</string>
-    <string name="safety_pick_contact">Choose from contacts</string>
+    <string name="safety_rider_name">Rider name (used in the SMS)</string>
+    <string name="safety_contacts">Emergency contacts (max 3)</string>
+    <string name="safety_pick_contact">+ Add contact from phone book</string>
     <string name="safety_contact_name">Contact name</string>
     <string name="safety_contact_phone">Phone number</string>
     <string name="safety_add_contact">Add number</string>
@@ -200,4 +200,8 @@
         <item quantity="one">On · %1$d contact</item>
         <item quantity="other">On · %1$d contacts</item>
     </plurals>
+    <string name="safety_remove_contact">Remove contact %1$s</string>
+    <string name="safety_sms_example_title">Example SMS</string>
+    <string name="safety_sms_example">RideComp: %1$s may have had a cycling accident at 07:12. Last location: maps.google.com/?q=… (accuracy ±6 m). Automatic message.</string>
+    <string name="safety_sms_rider_unknown">a cyclist</string>
 </resources>

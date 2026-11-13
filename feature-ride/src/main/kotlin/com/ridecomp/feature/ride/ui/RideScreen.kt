@@ -76,6 +76,8 @@ import com.ridecomp.ui.theme.RideCompDimens
 import com.ridecomp.ui.theme.RideCompTheme
 import com.ridecomp.ui.udf.ObserveEffects
 import com.ridecomp.ui.util.volumeKeys
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import org.koin.androidx.compose.koinViewModel
 
 /** Ride screen (T1.8): data pages, status bar, controls, banners, pause screen, screen mode. */
@@ -90,6 +92,7 @@ fun RideRoute(
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val pages by viewModel.pages.collectAsStateWithLifecycle()
     val isSosAvailable by viewModel.isSosAvailable.collectAsStateWithLifecycle()
+    val contactNames by viewModel.contactNames.collectAsStateWithLifecycle()
     val route by viewModel.route.collectAsStateWithLifecycle()
     ObserveEffects(viewModel.effects) { effect ->
         when (effect) {
@@ -119,6 +122,7 @@ fun RideRoute(
         pages = pages,
         onIncident = viewModel::onIncident,
         isSosAvailable = isSosAvailable,
+        contactNames = contactNames,
         route = route,
         modifier = modifier
             .volumeKeys(settings.isVolumeButtonsEnabled) { key ->
@@ -144,11 +148,12 @@ fun RideScreen(
     pages: List<DataPage> = DefaultDataPages.ALL,
     onIncident: (IncidentAction) -> Unit = {},
     isSosAvailable: Boolean = false,
+    contactNames: ImmutableList<String> = persistentListOf(),
     route: RouteView? = null,
 ) {
     val incident = live.value.incident
     if (incident is IncidentState.Countdown) {
-        IncidentCountdown(incident, live.value.nowMs, onIncident, modifier)
+        IncidentCountdown(incident, live.value.nowMs, contactNames, onIncident, modifier)
         return
     }
     val labels = rememberMetricUnitLabels()

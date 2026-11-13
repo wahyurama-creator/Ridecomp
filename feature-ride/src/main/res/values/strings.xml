@@ -279,4 +279,10 @@
     <string name="metric_category_elevation">Elevation</string>
     <string name="metric_category_lap">Lap</string>
     <string name="metric_category_navigation">Navigation</string>
+    <string name="incident_title">Hard impact detected</string>
+    <string name="incident_title_manual">SOS will be sent</string>
+    <string name="incident_seconds">seconds</string>
+    <string name="incident_recipients">If you do not cancel, an SMS with your location goes to %1$s.</string>
+    <string name="incident_and">" and "</string>
+    <string name="incident_alarm_note">Alarm sounds &amp; phone vibrates · ride keeps recording</string>
 </resources>

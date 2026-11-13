@@ -6,18 +6,23 @@ import android.provider.ContactsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -25,18 +30,24 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.model.EmergencyContact
 import com.ridecomp.core.usecase.SafetyError
+import com.ridecomp.core.util.PhoneMask
 import com.ridecomp.feature.settings.R
 import com.ridecomp.feature.settings.viewmodel.SafetyEffect
 import com.ridecomp.feature.settings.viewmodel.SafetyMessage
 import com.ridecomp.feature.settings.viewmodel.SafetyUiEvent
 import com.ridecomp.feature.settings.viewmodel.SafetyUiState
 import com.ridecomp.feature.settings.viewmodel.SafetyViewModel
+import com.ridecomp.ui.R as UiR
 import com.ridecomp.ui.component.AlertBanner
 import com.ridecomp.ui.component.AlertSeverity
 import com.ridecomp.ui.component.BannerAction
 import com.ridecomp.ui.component.BigButton
+import com.ridecomp.ui.component.BigButtonSize
 import com.ridecomp.ui.component.BigButtonStyle
-import com.ridecomp.ui.component.ListRow
+import com.ridecomp.ui.component.IconSquareButton
+import com.ridecomp.ui.component.ListCard
+import com.ridecomp.ui.component.ListCardRow
+import com.ridecomp.ui.component.RideCompTextField
 import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.component.SectionHeader
 import com.ridecomp.ui.component.SwitchRow
@@ -50,7 +61,7 @@ import org.koin.androidx.compose.koinViewModel
 
 /** Safety screen entry point (T2.14): permission and contact picker launchers live here (UI glue only). */
 @Composable
-fun SafetyRoute(modifier: Modifier = Modifier, viewModel: SafetyViewModel = koinViewModel()) {
+fun SafetyRoute(modifier: Modifier = Modifier, onBack: () -> Unit = {}, viewModel: SafetyViewModel = koinViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         viewModel.onEvent(SafetyUiEvent.SmsPermissionResult)
@@ -70,54 +81,64 @@ fun SafetyRoute(modifier: Modifier = Modifier, viewModel: SafetyViewModel = koin
         onPickContact = {
             pickLauncher.launch(Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI))
         },
+        onBack = onBack,
         modifier = modifier,
     )
 }
 
-/** Stateless Safety screen (02-DESIGN §3.10, 12-FEATURE-SPECS §5.1). */
+/** Stateless Safety screen (02-DESIGN §3.10, 12-FEATURE-SPECS §5.1, 13-UI-SCREENS #19). */
 @Composable
 fun SafetyScreen(
     state: SafetyUiState,
     onEvent: (SafetyUiEvent) -> Unit,
     onPickContact: () -> Unit,
     modifier: Modifier = Modifier,
+    onBack: () -> Unit = {},
 ) {
     ScreenScaffold(
         modifier = modifier,
         title = stringResource(R.string.safety_title),
+        onBack = onBack,
+        backLabel = stringResource(R.string.onboarding_back_label),
         banner = { state.message?.let { SafetyBanner(it, onEvent) } },
     ) {
         if (!state.isLoaded) return@ScreenScaffold
         Column(
-            modifier = Modifier.verticalScroll(rememberScrollState()).padding(bottom = RideCompDimens.spacingL),
-            verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingM),
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(
+                    start = RideCompDimens.screenPaddingHorizontal,
+                    end = RideCompDimens.screenPaddingHorizontal,
+                    bottom = RideCompDimens.screenPaddingBottom,
+                ),
+            verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
         ) {
-            Text(
-                text = stringResource(R.string.safety_disclaimer),
-                style = RideCompTheme.typography.body,
-                color = RideCompTheme.colors.textSecondary,
-                modifier = Modifier.padding(horizontal = RideCompDimens.spacingM),
-            )
-            SwitchRow(
-                label = stringResource(R.string.safety_enabled),
-                description = stringResource(R.string.safety_enabled_description),
-                isChecked = state.isEnabled,
-                onCheckedChange = { onEvent(SafetyUiEvent.Enable(it)) },
-            )
-            OutlinedTextField(
+            ListCard {
+                SwitchRow(
+                    label = stringResource(R.string.safety_enabled),
+                    description = stringResource(R.string.safety_enabled_description),
+                    isChecked = state.isEnabled,
+                    onCheckedChange = { onEvent(SafetyUiEvent.Enable(it)) },
+                )
+            }
+            RideCompTextField(
+                label = stringResource(R.string.safety_rider_name),
                 value = state.riderName,
                 onValueChange = { onEvent(SafetyUiEvent.RiderName(it)) },
-                label = { Text(stringResource(R.string.safety_rider_name)) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = RideCompDimens.spacingM),
             )
             Contacts(state, onEvent, onPickContact)
+            SmsExample(state.riderName)
+            Text(
+                text = stringResource(R.string.safety_disclaimer),
+                style = RideCompTheme.typography.caption,
+                color = RideCompTheme.colors.textSecondary,
+            )
             BigButton(
                 text = stringResource(R.string.safety_send_test),
                 onClick = { onEvent(SafetyUiEvent.SendTest) },
-                style = BigButtonStyle.SECONDARY,
+                style = BigButtonStyle.OUTLINE,
+                size = BigButtonSize.TERTIARY,
                 isEnabled = state.contacts.isNotEmpty() && !state.isSendingTest,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = RideCompDimens.spacingM),
             )
         }
     }
@@ -125,45 +146,104 @@ fun SafetyScreen(
 
 @Composable
 private fun Contacts(state: SafetyUiState, onEvent: (SafetyUiEvent) -> Unit, onPickContact: () -> Unit) {
-    SectionHeader(stringResource(R.string.safety_contacts))
-    state.contacts.forEach { contact -> ContactRow(contact, onRemove = { onEvent(SafetyUiEvent.Remove(contact.id)) }) }
+    SectionHeader(stringResource(R.string.safety_contacts), horizontalPadding = RideCompDimens.none)
+    ListCard {
+        state.contacts.forEach { contact ->
+            ContactRow(contact, onRemove = { onEvent(SafetyUiEvent.Remove(contact.id)) })
+        }
+        if (state.canAddContact) {
+            ListCardRow(
+                title = stringResource(R.string.safety_pick_contact),
+                onClick = onPickContact,
+                hasDivider = false,
+                hasChevron = false,
+            )
+        }
+    }
     if (!state.canAddContact) return
-    BigButton(
-        text = stringResource(R.string.safety_pick_contact),
-        onClick = onPickContact,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = RideCompDimens.spacingM),
-    )
-    OutlinedTextField(
-        value = state.newName,
-        onValueChange = { onEvent(SafetyUiEvent.NewName(it)) },
-        label = { Text(stringResource(R.string.safety_contact_name)) },
-        singleLine = true,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = RideCompDimens.spacingM),
-    )
-    OutlinedTextField(
-        value = state.newPhone,
-        onValueChange = { onEvent(SafetyUiEvent.NewPhone(it)) },
-        label = { Text(stringResource(R.string.safety_contact_phone)) },
-        singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-        modifier = Modifier.fillMaxWidth().padding(horizontal = RideCompDimens.spacingM),
-    )
+    // Typing a number is the fallback when the contact is not in the phone book.
+    Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm), verticalAlignment = Alignment.Bottom) {
+        RideCompTextField(
+            label = stringResource(R.string.safety_contact_name),
+            value = state.newName,
+            onValueChange = { onEvent(SafetyUiEvent.NewName(it)) },
+            modifier = Modifier.weight(1f),
+        )
+        RideCompTextField(
+            label = stringResource(R.string.safety_contact_phone),
+            value = state.newPhone,
+            onValueChange = { onEvent(SafetyUiEvent.NewPhone(it)) },
+            keyboardType = KeyboardType.Phone,
+            modifier = Modifier.weight(1f),
+        )
+    }
     BigButton(
         text = stringResource(R.string.safety_add_contact),
         onClick = { onEvent(SafetyUiEvent.AddTyped) },
         style = BigButtonStyle.SECONDARY,
+        size = BigButtonSize.TERTIARY,
         isEnabled = state.newPhone.isNotBlank(),
-        modifier = Modifier.fillMaxWidth().padding(horizontal = RideCompDimens.spacingM),
     )
 }
 
+/** Initial avatar, name and the masked number (never the full number in the list, 13-UI-SCREENS #19). */
 @Composable
 private fun ContactRow(contact: EmergencyContact, onRemove: () -> Unit) {
-    ListRow(
+    val colors = RideCompTheme.colors
+    ListCardRow(
         title = contact.displayName,
-        subtitle = contact.phone,
-        trailing = { TextButton(onClick = onRemove) { Text(stringResource(R.string.safety_remove)) } },
+        subtitle = PhoneMask.mask(contact.phone),
+        leading = {
+            Box(
+                modifier = Modifier.size(RideCompDimens.avatarSize).background(colors.divider, CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = contact.displayName.take(1).uppercase(),
+                    style = RideCompTheme.typography.cardTitle,
+                    color = colors.textPrimary,
+                )
+            }
+        },
+        trailing = {
+            IconSquareButton(
+                iconRes = UiR.drawable.ic_close,
+                contentDescription = stringResource(R.string.safety_remove_contact, contact.displayName),
+                onClick = onRemove,
+            )
+        },
     )
+}
+
+/**
+ * Sample of the alert SMS. The real text is `sms_incident` in :platform (built by the recording
+ * service); keep this sample in step with it.
+ */
+@Composable
+private fun SmsExample(riderName: String) {
+    val colors = RideCompTheme.colors
+    val shape = RoundedCornerShape(RideCompDimens.cornerRadiusSmall)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(RideCompDimens.borderThin, colors.indicatorInactive, shape)
+            .padding(horizontal = RideCompDimens.spacingSm, vertical = RideCompDimens.spacingSm),
+        verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingXs),
+    ) {
+        Text(
+            text = stringResource(R.string.safety_sms_example_title).uppercase(),
+            style = RideCompTheme.typography.dataLabel,
+            color = colors.textSecondary,
+        )
+        Text(
+            text = stringResource(
+                R.string.safety_sms_example,
+                riderName.ifBlank { stringResource(R.string.safety_sms_rider_unknown) },
+            ),
+            style = RideCompTheme.typography.caption,
+            color = colors.textTertiary,
+        )
+    }
 }
 
 @Composable
