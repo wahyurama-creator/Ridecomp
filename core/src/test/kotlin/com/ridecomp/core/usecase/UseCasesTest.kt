@@ -11,6 +11,8 @@ import com.ridecomp.core.testing.FakeActivityRepository
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeProfileRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
+import com.ridecomp.core.testing.FakeTrainingRepository
+import com.ridecomp.core.testing.TestDispatcherProvider
 import com.ridecomp.core.util.Outcome
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -18,6 +20,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 
 class TimeOfDayTest {
@@ -86,7 +89,14 @@ class ActivityUseCasesTest {
     fun `delete removes the ride`() = runTest {
         val id = repository.create(NewActivity("u", "Ride", 0))
 
-        DeleteActivityUseCase(repository)(id)
+        DeleteActivityUseCase(
+            repository,
+            RecomputeTrainingUseCase(
+                FakeTrainingRepository(repository),
+                TrainingCalendar(FakeClock()),
+                TestDispatcherProvider(StandardTestDispatcher(testScheduler)),
+            ),
+        )(id)
 
         assertNull(repository.get(id))
         assertEquals(emptyList(), GetLapsUseCase(repository)(id))

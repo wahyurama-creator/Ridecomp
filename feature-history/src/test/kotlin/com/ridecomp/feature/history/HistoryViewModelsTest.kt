@@ -11,6 +11,7 @@ import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeExportFileStore
 import com.ridecomp.core.testing.FakeExportedFileHandler
 import com.ridecomp.core.testing.FakeSettingsRepository
+import com.ridecomp.core.testing.FakeTrainingRepository
 import com.ridecomp.core.testing.TestDispatcherProvider
 import com.ridecomp.core.usecase.DeleteActivityUseCase
 import com.ridecomp.core.usecase.ExportActivityUseCase
@@ -24,9 +25,11 @@ import com.ridecomp.core.usecase.ObserveHistoryCountUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveMonthTotalsUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
+import com.ridecomp.core.usecase.RecomputeTrainingUseCase
 import com.ridecomp.core.usecase.SaveActivityFileUseCase
 import com.ridecomp.core.usecase.ShareActivityFileUseCase
 import com.ridecomp.core.usecase.SuggestExportFileNameUseCase
+import com.ridecomp.core.usecase.TrainingCalendar
 import com.ridecomp.feature.history.viewmodel.ActivityDetailEffect
 import com.ridecomp.feature.history.viewmodel.ActivityDetailUiEvent
 import com.ridecomp.feature.history.viewmodel.ActivityDetailUseCases
@@ -107,7 +110,14 @@ class HistoryViewModelsTest {
             share = ShareActivityFileUseCase(export, handler),
             save = SaveActivityFileUseCase(export, handler),
             suggestName = SuggestExportFileNameUseCase(repository, ZoneOffset.UTC),
-            delete = DeleteActivityUseCase(repository),
+            delete = DeleteActivityUseCase(
+                repository,
+                RecomputeTrainingUseCase(
+                    FakeTrainingRepository(repository),
+                    TrainingCalendar(FakeClock()),
+                    TestDispatcherProvider(dispatcher),
+                ),
+            ),
         )
         return ActivityDetailViewModel(id, useCases, TestDispatcherProvider(dispatcher))
     }

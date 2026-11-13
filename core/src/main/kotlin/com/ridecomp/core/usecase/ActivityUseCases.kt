@@ -60,8 +60,14 @@ public class RenameActivityUseCase(private val repository: ActivityRepository) {
 }
 
 /** Deletes a ride and its files (SEC-STO-06). */
-public class DeleteActivityUseCase(private val repository: ActivityRepository) {
+public class DeleteActivityUseCase(
+    private val repository: ActivityRepository,
+    private val recomputeTraining: RecomputeTrainingUseCase,
+) {
     public suspend operator fun invoke(activityId: Long) {
+        val startedAtMs = repository.get(activityId)?.startedAtMs
         repository.delete(activityId)
+        // The fitness trend changes from the deleted ride's day on (12-FEATURE-SPECS §10.2).
+        startedAtMs?.let { recomputeTraining(it) }
     }
 }

@@ -23,9 +23,10 @@ import kotlinx.coroutines.withContext
 public object AnalysisConfig {
     public const val BEST_EFFORTS_VERSION: Int = 1
     public const val SEGMENTS_VERSION: Int = 2
+    public const val TRAINING_VERSION: Int = 3
 
     /** The version a fully analyzed ride has. */
-    public const val VERSION: Int = SEGMENTS_VERSION
+    public const val VERSION: Int = TRAINING_VERSION
 
     /** Rides analyzed per database query. */
     public const val BATCH_SIZE: Int = 20

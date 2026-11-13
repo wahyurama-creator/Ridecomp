@@ -73,6 +73,7 @@ fun HistoryRoute(
     onRestore: () -> Unit = {},
     recordsContent: (@Composable () -> Unit)? = null,
     segmentsContent: (@Composable () -> Unit)? = null,
+    trainingContent: (@Composable () -> Unit)? = null,
     viewModel: HistoryViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -84,20 +85,22 @@ fun HistoryRoute(
         onRestore = onRestore,
         recordsContent = recordsContent,
         segmentsContent = segmentsContent,
+        trainingContent = trainingContent,
         modifier = modifier,
     )
 }
 
-/** Tabs of History (13-UI-SCREENS #11); Training arrives with T4.4. */
+/** Tabs of History (13-UI-SCREENS #11): Aktivitas · Rekor · Segmen · Latihan. */
 private enum class HistoryTab(@param:StringRes val titleRes: Int) {
     ACTIVITIES(R.string.history_tab_activities),
     RECORDS(R.string.history_tab_records),
     SEGMENTS(R.string.history_tab_segments),
+    TRAINING(R.string.history_tab_training),
 }
 
 /**
- * History with the design's tabs. [recordsContent] and [segmentsContent] come from the training feature through
- * the app (feature modules never depend on each other, ARCH-02); without them the tabs are hidden.
+ * History with the design's tabs. The records, segments and training contents come from the training feature
+ * through the app (feature modules never depend on each other, ARCH-02); without them the tabs are hidden.
  */
 @Composable
 fun HistoryScreen(
@@ -109,6 +112,7 @@ fun HistoryScreen(
     onRestore: () -> Unit = {},
     recordsContent: (@Composable () -> Unit)? = null,
     segmentsContent: (@Composable () -> Unit)? = null,
+    trainingContent: (@Composable () -> Unit)? = null,
 ) {
     var tab by rememberSaveable { mutableStateOf(HistoryTab.ACTIVITIES) }
     ScreenScaffold(modifier = modifier, title = stringResource(R.string.history_title)) {
@@ -128,6 +132,7 @@ fun HistoryScreen(
             HistoryTab.ACTIVITIES -> ActivitiesTab(state, onStartRide, onOpenActivity, onLoadMore, onRestore)
             HistoryTab.RECORDS -> recordsContent?.invoke()
             HistoryTab.SEGMENTS -> segmentsContent?.invoke()
+            HistoryTab.TRAINING -> trainingContent?.invoke()
         }
     }
 }

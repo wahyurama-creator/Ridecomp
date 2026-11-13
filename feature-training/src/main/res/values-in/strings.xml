@@ -53,4 +53,29 @@
     <string name="segment_error_position">Bagian ride ini tidak punya posisi GPS.</string>
     <string name="segment_name">Nama segmen</string>
     <string name="segment_save">Simpan segmen</string>
+    <!-- Beban latihan (T4.4) -->
+    <string name="training_empty">Belum ada beban latihan. Butuh sensor detak jantung (dan HR maks atau tahun lahir di profil) atau power meter dengan FTP.</string>
+    <string name="training_disclaimer">Estimasi untuk melihat tren latihan, bukan nilai medis.</string>
+    <string name="training_fitness">Fitness</string>
+    <string name="training_fatigue">Kelelahan</string>
+    <string name="training_form">Form</string>
+    <string name="training_fitness_change">%1$s / 4 mgg</string>
+    <string name="training_fatigue_caption">7 hari</string>
+    <string name="training_form_fresh">segar</string>
+    <string name="training_form_neutral">seimbang</string>
+    <string name="training_form_tired">lelah</string>
+    <plurals name="training_trend">
+        <item quantity="other">Tren · %1$d minggu</item>
+    </plurals>
+    <string name="training_trend_summary">Fitness, kelelahan, dan form per hari</string>
+    <string name="training_method_hr">estimasi dari detak jantung (TRIMP)</string>
+    <string name="training_method_power">dari power meter (TSS)</string>
+    <string name="training_method_mixed">dari power (TSS) dan detak jantung (TRIMP)</string>
+    <string name="training_week">Minggu ini</string>
+    <string name="training_week_rides">Ride</string>
+    <string name="training_week_distance">Jarak (%1$s)</string>
+    <string name="training_week_time">Waktu</string>
+    <string name="training_week_load">Beban</string>
+    <string name="training_zones">Zona detak jantung minggu ini</string>
+    <string name="training_zone">Z%1$d</string>
 </resources>

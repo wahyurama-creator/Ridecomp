@@ -86,6 +86,9 @@ object RideCompDimens {
     val previewPageHeight = 600.dp
     val navigationFieldHeight = 92.dp
     val storageBarHeight = 8.dp
+
+    /** Label column of the zone bars ("Z1"…"Z5", Training tab). */
+    val zoneLabelWidth = 28.dp
     val routeMapHeight = 220.dp
     val turnDistanceSize = 44.sp
 
