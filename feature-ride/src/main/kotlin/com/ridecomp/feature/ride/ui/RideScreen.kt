@@ -5,6 +5,7 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -36,8 +38,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.engine.recording.BatteryModePolicy
 import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RideAction
+import com.ridecomp.core.engine.route.riddenUntil
 import com.ridecomp.core.engine.safety.IncidentAction
 import com.ridecomp.core.engine.safety.IncidentState
+import com.ridecomp.core.model.BatteryMode
 import com.ridecomp.core.model.RideStatus
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.ride.R
@@ -70,15 +74,19 @@ import com.ridecomp.ui.component.BigButtonSize
 import com.ridecomp.ui.component.BigButtonStyle
 import com.ridecomp.ui.component.ConfirmDialog
 import com.ridecomp.ui.component.DataGrid
+import com.ridecomp.ui.component.IconSquareButton
 import com.ridecomp.ui.component.LineChart
 import com.ridecomp.ui.component.PageIndicator
 import com.ridecomp.ui.component.StatCard
+import com.ridecomp.ui.map.MapPoint
+import com.ridecomp.ui.map.OfflineRouteMap
 import com.ridecomp.ui.theme.RideCompDimens
 import com.ridecomp.ui.theme.RideCompTheme
 import com.ridecomp.ui.udf.ObserveEffects
 import com.ridecomp.ui.util.volumeKeys
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import org.koin.androidx.compose.koinViewModel
 
 /** Ride screen (T1.8): data pages, status bar, controls, banners, pause screen, screen mode. */
@@ -94,6 +102,7 @@ fun RideRoute(
     val pages by viewModel.pages.collectAsStateWithLifecycle()
     val isSosAvailable by viewModel.isSosAvailable.collectAsStateWithLifecycle()
     val contactNames by viewModel.contactNames.collectAsStateWithLifecycle()
+    val mapRegions by viewModel.mapRegions.collectAsStateWithLifecycle()
     val route by viewModel.route.collectAsStateWithLifecycle()
     ObserveEffects(viewModel.effects) { effect ->
         when (effect) {
@@ -124,6 +133,7 @@ fun RideRoute(
         onIncident = viewModel::onIncident,
         isSosAvailable = isSosAvailable,
         contactNames = contactNames,
+        mapRegions = mapRegions,
         route = route,
         modifier = modifier
             .volumeKeys(settings.isVolumeButtonsEnabled) { key ->
@@ -150,6 +160,7 @@ fun RideScreen(
     onIncident: (IncidentAction) -> Unit = {},
     isSosAvailable: Boolean = false,
     contactNames: ImmutableList<String> = persistentListOf(),
+    mapRegions: ImmutableList<String> = persistentListOf(),
     route: RouteView? = null,
 ) {
     val incident = live.value.incident
@@ -181,7 +192,7 @@ fun RideScreen(
             },
         ) { index ->
             when (val screen = screens[index]) {
-                RidePage.Navigation -> route?.let { NavigationPage(it, live, formatter, labels) }
+                RidePage.Navigation -> route?.let { NavigationPage(it, mapRegions, live, formatter, labels) }
                 is RidePage.Data -> DataPageContent(screen.page, live, formatter, labels, route)
             }
         }
@@ -264,19 +275,26 @@ private fun ClimbSection(route: RouteView, live: State<LiveRide>, formatter: Uni
 @Composable
 private fun NavigationPage(
     route: RouteView,
+    mapRegions: ImmutableList<String>,
     live: State<LiveRide>,
     formatter: UnitFormatter,
     labels: MetricUnitLabels,
 ) {
     val current = live.value
+    // Battery saver turns the tile map into the breadcrumb (13-UI-SCREENS #14, 12-FEATURE-SPECS §3).
+    val isTileMap = mapRegions.isNotEmpty() && current.batteryMode == BatteryMode.NORMAL
     Column(modifier = Modifier.fillMaxSize()) {
-        BreadcrumbMap(
-            line = route.line,
-            distanceAlongM = current.route?.distanceAlongM,
-            latDeg = current.latDeg,
-            lonDeg = current.lonDeg,
-            modifier = Modifier.fillMaxWidth().weight(1f),
-        )
+        if (isTileMap) {
+            RideMap(route, mapRegions, live, Modifier.fillMaxWidth().weight(1f))
+        } else {
+            BreadcrumbMap(
+                line = route.line,
+                distanceAlongM = current.route?.distanceAlongM,
+                latDeg = current.latDeg,
+                lonDeg = current.lonDeg,
+                modifier = Modifier.fillMaxWidth().weight(1f),
+            )
+        }
         // Two fixed-height fields side by side, the map takes the rest (13-UI-SCREENS #7); the elevation
         // profile lives on the climb page.
         Row(
@@ -295,6 +313,45 @@ private fun NavigationPage(
                     modifier = Modifier.weight(1f),
                 )
             }
+        }
+    }
+}
+
+/**
+ * Offline tile map of the ride (T3.5, 13-UI-SCREENS #7): route, ridden part, position, north-up. Panning
+ * stops following; the "follow" button brings it back.
+ */
+@Composable
+private fun RideMap(route: RouteView, mapRegions: ImmutableList<String>, live: State<LiveRide>, modifier: Modifier) {
+    var isFollowing by rememberSaveable { mutableStateOf(true) }
+    val line = remember(route) { route.line.map { MapPoint(it.latDeg, it.lonDeg) }.toImmutableList() }
+    val along by remember { derivedStateOf { live.value.route?.distanceAlongM } }
+    val ridden = remember(route, along) {
+        route.line.riddenUntil(along ?: 0.0).map { MapPoint(it.latDeg, it.lonDeg) }.toImmutableList()
+    }
+    val lat = live.value.latDeg
+    val lon = live.value.lonDeg
+    val position = if (lat != null && lon != null) MapPoint(lat, lon) else null
+    Box(modifier = modifier) {
+        OfflineRouteMap(
+            regionPaths = mapRegions,
+            route = line,
+            ridden = ridden,
+            position = position,
+            isFollowing = isFollowing,
+            onUserMoved = { isFollowing = false },
+            attribution = stringResource(UiR.string.map_attribution),
+            description = stringResource(R.string.breadcrumb_description),
+            modifier = Modifier.fillMaxSize(),
+        )
+        if (!isFollowing) {
+            IconSquareButton(
+                iconRes = UiR.drawable.ic_my_location,
+                contentDescription = stringResource(R.string.ride_map_follow),
+                onClick = { isFollowing = true },
+                tint = RideCompTheme.colors.textPrimary,
+                modifier = Modifier.align(Alignment.BottomEnd).padding(RideCompDimens.spacingSm),
+            )
         }
     }
 }

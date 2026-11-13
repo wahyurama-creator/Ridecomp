@@ -12,6 +12,7 @@ import com.ridecomp.core.usecase.GetRoutePointsUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveDataPagesUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
+import com.ridecomp.core.usecase.ObserveOfflineMapsUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveSafetyUseCase
 import com.ridecomp.core.usecase.PerformIncidentActionUseCase
@@ -63,9 +64,17 @@ data class RideUseCases(
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class RideViewModel(private val useCases: RideUseCases, private val dispatchers: DispatcherProvider) :
-    UdfViewModel<Unit, RideAction, RideEffect>(Unit) {
+class RideViewModel(
+    private val useCases: RideUseCases,
+    private val dispatchers: DispatcherProvider,
+    observeOfflineMaps: ObserveOfflineMapsUseCase,
+) : UdfViewModel<Unit, RideAction, RideEffect>(Unit) {
     val liveRide: StateFlow<LiveRide> = useCases.observeLive()
+
+    /** Imported offline map regions (T3.5); empty = the breadcrumb page. */
+    val mapRegions: StateFlow<ImmutableList<String>> = observeOfflineMaps()
+        .map { maps -> maps.map { it.path }.toImmutableList() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), persistentListOf())
 
     /** Manual SOS is offered only when someone can be alerted (12-FEATURE-SPECS §5.3). */
     val isSosAvailable: StateFlow<Boolean> = useCases.observeSafety()

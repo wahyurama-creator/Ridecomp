@@ -3,8 +3,10 @@ package com.ridecomp.feature.routes.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -15,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.engine.route.Route
@@ -25,13 +28,18 @@ import com.ridecomp.feature.routes.viewmodel.RouteDetailEffect
 import com.ridecomp.feature.routes.viewmodel.RouteDetailUiEvent
 import com.ridecomp.feature.routes.viewmodel.RouteDetailUiState
 import com.ridecomp.feature.routes.viewmodel.RouteDetailViewModel
+import com.ridecomp.ui.R as UiR
 import com.ridecomp.ui.component.BigButton
 import com.ridecomp.ui.component.BigButtonStyle
+import com.ridecomp.ui.component.CardTone
 import com.ridecomp.ui.component.ConfirmDialog
 import com.ridecomp.ui.component.EmptyState
 import com.ridecomp.ui.component.LineChart
+import com.ridecomp.ui.component.RideCompCard
 import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.component.StatRow
+import com.ridecomp.ui.component.WarningCard
+import com.ridecomp.ui.map.OfflineRouteMap
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
 import com.ridecomp.ui.theme.RideCompDimens
@@ -48,6 +56,8 @@ fun RouteDetailRoute(
     onDeleted: () -> Unit,
     onRideRoute: (Long) -> Unit,
     modifier: Modifier = Modifier,
+    onOpenOfflineMaps: () -> Unit = {},
+    onBack: () -> Unit = {},
     viewModel: RouteDetailViewModel = koinViewModel(key = routeId.toString()) { parametersOf(routeId) },
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -61,6 +71,8 @@ fun RouteDetailRoute(
         state = state,
         onEvent = viewModel::onEvent,
         onRide = { onRideRoute(routeId) },
+        onOpenOfflineMaps = onOpenOfflineMaps,
+        onBack = onBack,
         modifier = modifier,
     )
 }
@@ -71,13 +83,52 @@ fun RouteDetailScreen(
     onEvent: (RouteDetailUiEvent) -> Unit,
     onRide: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenOfflineMaps: () -> Unit = {},
+    onBack: () -> Unit = {},
 ) {
     val route = state.route
-    ScreenScaffold(modifier = modifier, title = route?.name ?: stringResource(R.string.routes_title)) {
+    ScreenScaffold(
+        modifier = modifier,
+        title = route?.name ?: stringResource(R.string.routes_title),
+        subtitle = route?.sourceLabel,
+        onBack = onBack,
+        backLabel = stringResource(R.string.route_cancel),
+    ) {
         when {
             state.isMissing -> EmptyState(message = stringResource(R.string.route_missing))
-            route != null -> RouteContent(route, state, onEvent, onRide)
+            route != null -> RouteContent(route, state, onEvent, onRide, onOpenOfflineMaps)
         }
+    }
+}
+
+/** Route map and whether the area is available offline (13-UI-SCREENS #12). */
+@Composable
+private fun RouteMapSection(state: RouteDetailUiState, onOpenOfflineMaps: () -> Unit) {
+    if (state.isAreaOffline) {
+        OfflineRouteMap(
+            regionPaths = state.mapRegions,
+            route = state.mapLine,
+            attribution = stringResource(UiR.string.map_attribution),
+            description = stringResource(R.string.route_map_description),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(RideCompDimens.routeMapHeight)
+                .clip(RoundedCornerShape(RideCompDimens.cornerRadiusCard)),
+        )
+        RideCompCard(tone = CardTone.OK) {
+            Text(
+                text = stringResource(R.string.route_map_offline),
+                style = RideCompTheme.typography.bodyStrong,
+                color = RideCompTheme.colors.ok,
+            )
+        }
+    } else {
+        WarningCard(
+            title = stringResource(R.string.route_map_missing_title),
+            message = stringResource(R.string.route_map_missing),
+            actionLabel = stringResource(R.string.route_map_import),
+            onAction = onOpenOfflineMaps,
+        )
     }
 }
 
@@ -87,6 +138,7 @@ private fun RouteContent(
     state: RouteDetailUiState,
     onEvent: (RouteDetailUiEvent) -> Unit,
     onRide: () -> Unit,
+    onOpenOfflineMaps: () -> Unit,
 ) {
     val format = remember(state.unitSystem) { UnitFormatter(state.unitSystem) }
     var name by rememberSaveable(route.id) { mutableStateOf(route.name) }
@@ -96,6 +148,10 @@ private fun RouteContent(
         modifier = Modifier.verticalScroll(rememberScrollState()).padding(bottom = RideCompDimens.spacingL),
         verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingM),
     ) {
+        Column(
+            modifier = Modifier.padding(horizontal = RideCompDimens.screenPaddingHorizontal),
+            verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
+        ) { RouteMapSection(state, onOpenOfflineMaps) }
         BigButton(
             text = stringResource(R.string.route_ride),
             onClick = onRide,

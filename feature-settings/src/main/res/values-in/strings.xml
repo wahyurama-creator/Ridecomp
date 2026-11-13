@@ -203,4 +203,28 @@
     <string name="backup_excluded">Kontak darurat · peta offline</string>
     <string name="backup_password_recommended">Disarankan: berisi lokasi &amp; data HR</string>
     <string name="backup_create_hint">Simpan ke Google Drive, WhatsApp, atau folder HP</string>
+    <string name="offline_maps_title">Peta offline</string>
+    <string name="offline_maps_fallback_name">peta</string>
+    <string name="offline_maps_saved">Area tersimpan</string>
+    <string name="offline_maps_import">Impor file peta (.pmtiles)</string>
+    <string name="offline_maps_importing">Mengimpor…</string>
+    <string name="offline_maps_delete_title">Hapus peta %1$s?</string>
+    <string name="offline_maps_delete_message">File peta dihapus dari HP. Rute dan riwayat tidak terpengaruh.</string>
+    <string name="offline_maps_delete">Hapus</string>
+    <string name="offline_maps_delete_label">Hapus peta %1$s</string>
+    <string name="offline_maps_storage_title">Penyimpanan HP</string>
+    <string name="offline_maps_storage">Peta RideComp memakai %1$s · tersisa %2$s</string>
+    <string name="offline_maps_item">%1$s · diimpor %2$s</string>
+    <string name="offline_maps_howto_title">Dari mana file peta?</string>
+    <string name="offline_maps_howto">Peta berasal dari OpenStreetMap. Buat file wilayah (mis. Jawa Tengah) dengan perintah \"pmtiles extract\" dari build peta Protomaps di komputer, lalu salin file .pmtiles ke HP dan impor di sini. Peta dipakai tanpa internet.</string>
+    <string name="offline_maps_error_not_pmtiles">Ini bukan file peta PMTiles.</string>
+    <string name="offline_maps_error_version">Versi file PMTiles ini belum didukung (butuh v3).</string>
+    <string name="offline_maps_error_not_vector">File ini berisi peta gambar; RideComp butuh peta vektor.</string>
+    <string name="offline_maps_error_too_large">File peta lebih besar dari 2 GB.</string>
+    <string name="offline_maps_error_no_space">Ruang penyimpanan HP tidak cukup.</string>
+    <string name="offline_maps_error_read">File peta tidak bisa dibaca.</string>
+    <string name="settings_offline_maps_none">Belum ada</string>
+    <plurals name="settings_offline_maps_value">
+        <item quantity="other">%1$d area · %2$s</item>
+    </plurals>
 </resources>

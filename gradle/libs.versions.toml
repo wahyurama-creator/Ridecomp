@@ -34,8 +34,11 @@ detektKotlin = "2.0.21"
 kover = "0.9.11"
 dependencyCheck = "13.0.0"
 licenseReport = "3.1.5"
+# Offline vector map (T3.3, D-64): OpenGL ES build so phones without Vulkan can install the app.
+maplibre = "13.7.1"
 
 [libraries]
+maplibre-android = { group = "org.maplibre.gl", name = "android-sdk-opengl", version.ref = "maplibre" }
 # AndroidX
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }

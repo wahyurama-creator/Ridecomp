@@ -5,6 +5,7 @@ import com.ridecomp.core.engine.route.GpxError
 import com.ridecomp.core.model.UnitSystem
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeGpxDocumentSource
+import com.ridecomp.core.testing.FakeOfflineMapRepository
 import com.ridecomp.core.testing.FakeRouteRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.testing.TestDispatcherProvider
@@ -12,6 +13,7 @@ import com.ridecomp.core.usecase.DeleteRouteUseCase
 import com.ridecomp.core.usecase.GetRouteGuidanceUseCase
 import com.ridecomp.core.usecase.GetRoutePointsUseCase
 import com.ridecomp.core.usecase.ImportGpxUseCase
+import com.ridecomp.core.usecase.ObserveOfflineMapsUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveRouteUseCase
 import com.ridecomp.core.usecase.ObserveRoutesUseCase
@@ -93,6 +95,7 @@ class RoutesViewModelsTest {
                 ObserveRouteUseCase(routes),
                 GetRoutePointsUseCase(routes),
                 GetRouteGuidanceUseCase(routes, TestDispatcherProvider(dispatcher)),
+                ObserveOfflineMapsUseCase(FakeOfflineMapRepository()),
                 ObserveRideSettingsUseCase(settings),
                 RenameRouteUseCase(routes),
                 ReverseRouteUseCase(routes, clock, TestDispatcherProvider(dispatcher)),

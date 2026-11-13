@@ -82,9 +82,9 @@ Spesifikasi detail fitur tambahan: `../12-FEATURE-SPECS.md`.
 ## Fase 3 — Navigasi rute (GPX)
 - [x] T3.1 Import GPX (file picker + intent "Buka dengan"), parsing aman (SEC-IN-01..04: tanpa DOCTYPE/entity, batas ukuran & titik, validasi nilai), simplifikasi, simpan ke DB.
 - [x] T3.2 Daftar & detail rute (statistik, profil elevasi), "balik arah".
-- [ ] T3.3 **Ajukan pilihan sumber tile offline** (`04-INTEGRATIONS.md` §D) ke pemilik → implementasi MapLibre + atribusi.
-- [ ] T3.4 Manajer peta offline (unduh/impor area, hapus, ukuran).
-- [ ] T3.5 Halaman peta di layar ride: rute, posisi, jejak, north-up, follow mode.
+- [x] T3.3 **Ajukan pilihan sumber tile offline** (`04-INTEGRATIONS.md` §D) ke pemilik → implementasi MapLibre + atribusi. (Dipilih: MapLibre + PMTiles, D-64.)
+- [x] T3.4 Manajer peta offline (unduh/impor area, hapus, ukuran). (Impor file `.pmtiles` saja; app tanpa izin internet, D-64.)
+- [x] T3.5 Halaman peta di layar ride: rute, posisi, jejak, north-up, follow mode.
 - [x] T3.6 Route tracker: proyeksi ke rute, jarak tersisa, ETA, sisa tanjakan.
 - [x] T3.7 Off-route & back-on-route alert (getar + suara + banner).
 - [x] T3.8 Mode breadcrumb tanpa tile.

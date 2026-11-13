@@ -21,7 +21,7 @@ Setiap resource berat **harus** memiliki satu pemilik, titik akuisisi, dan titik
 | Foreground service | `RecordingService` | Start ride | Ride disimpan/dibuang | `stopForeground(STOP_FOREGROUND_REMOVE)` + `stopSelf()` | Notifikasi hilang; `adb shell dumpsys activity services` |
 | Sensor barometer | `AndroidPressureSource` (dihentikan juga saat mode baterai Kritis) | Start ride | Ride selesai, `awaitClose` | `SensorManager.unregisterListener()` | `adb shell dumpsys sensorservice` |
 | Wake layar + override kecerahan (redup otomatis) | `RideScreenModeEffect` (layar ride) | Mode "selalu nyala" & layar ride terlihat | Layar ride ditutup / mode diganti | `FLAG_KEEP_SCREEN_ON` dihapus (via `DisposableEffect`) | Layar mati normal setelah keluar layar ride |
-| MapView MapLibre | Composable peta | Composable masuk komposisi | Keluar komposisi | `onStop()` + `onDestroy()` | LeakCanary bersih; memori turun setelah keluar layar peta |
+| MapView MapLibre | `OfflineRouteMap` (`:ui-common`, dipakai halaman Peta ride & detail rute) | Composable masuk komposisi (`onCreate`), lalu `onStart`/`onResume` mengikuti lifecycle layar | Keluar komposisi / layar ON_STOP; mode hemat baterai mengganti peta dengan breadcrumb | `onPause()`/`onStop()` sesuai state lalu `onDestroy()` di `DisposableEffect`; MapLibre offline (`setConnected(false)`, tanpa izin INTERNET) | LeakCanary bersih; memori turun setelah keluar layar peta; tidak ada koneksi jaringan |
 | Coroutine scope service | `RecordingService` | `onCreate` | `onDestroy` | `serviceScope.cancel()` | Test + log |
 | Cursor/stream file | Pemanggil | Buka | Selesai dipakai | `use { }` | StrictMode `detectLeakedClosableObjects` |
 | Vibrator/MediaPlayer/ToneGenerator (alert, alarm insiden) | `AlertPlayer` | Alert/hitung mundur muncul | Setelah bunyi, dibatalkan, atau service destroy | `release()` / `cancel()` | StrictMode + review |
@@ -29,6 +29,7 @@ Setiap resource berat **harus** memiliki satu pemilik, titik akuisisi, dan titik
 | Pembacaan level baterai | `BatteryLevelSource` | Tick pipeline (≤ 1x/30 dtk) | — (sticky broadcast dibaca, bukan receiver terdaftar) | Tidak ada receiver permanen | Review |
 | Bitmap kartu share | `ShareCardRenderer` | Render dimulai | Setelah PNG ditulis | `recycle()`/lepas referensi | Memory Profiler + LeakCanary |
 | Stream backup/restore (ZIP, DB snapshot) | `BackupManager` | Mulai backup/restore | Selesai/gagal/dibatalkan | `use { }` + hapus folder sementara | StrictMode `detectLeakedClosableObjects` |
+| Impor file peta (`.part`) | `AndroidOfflineMapStore` | Impor dari SAF | Selesai/gagal (selalu, `use { }` + hapus `.part`) | `delete()` file sementara | Folder `files/maps` hanya berisi `.pmtiles` |
 | File sementara share/FIT darurat | Pemanggil | Dibuat | Setelah dibagikan / app dibuka berikutnya / ride disimpan | Hapus file | Cek folder cache |
 | File crash log (`filesDir/crash_logs`) | `CrashLogStore` (`:platform`) | Uncaught exception | Rotasi: hanya 10 file terbaru disimpan; `clear()` dari pengaturan | `File.delete()` | `CrashLogStoreTest` |
 | Database Room | Koin `single` di `:app` (`dataModule`) | Akses pertama (lazy) | Hidup selama proses (by design; satu instance) | — | LeakCanary; StrictMode (tidak ada akses di main thread) |

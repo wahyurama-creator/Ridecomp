@@ -53,7 +53,20 @@ data class RideCompColors(
      * (the design merges 0–6 %; 0–3 % gets a lighter shade, D-54): brightness falls as grade rises.
      */
     val gradeBands: ImmutableList<Color>,
+    /** Offline map palette (13-UI-SCREENS #7, #16): dark land, muted roads, so the route stands out. */
+    val map: MapColors,
     val isDark: Boolean,
+)
+
+/** Colors of the offline map style; the route uses `accent`, the ridden track `track`. */
+@Immutable
+data class MapColors(
+    val land: Color,
+    val water: Color,
+    val park: Color,
+    val building: Color,
+    val roadMinor: Color,
+    val roadMajor: Color,
 )
 
 /** Raw palette values, kept in one place. */
@@ -93,6 +106,18 @@ private object Palette {
     val WarnTint = Color(0xFF1A1500)
     val WarnTintLight = Color(0xFFFFF5CC)
     val DangerDeep = Color(0xFF7A0E0E)
+    val MapLand = Color(0xFF0E0E10)
+    val MapWater = Color(0xFF0B1A2A)
+    val MapPark = Color(0xFF14201A)
+    val MapBuilding = Color(0xFF1A1A20)
+    val MapRoadMinor = Color(0xFF1E1E22)
+    val MapRoadMajor = Color(0xFF26262B)
+    val MapLandLight = Color(0xFFF2F2F2)
+    val MapWaterLight = Color(0xFFB9D3EA)
+    val MapParkLight = Color(0xFFD4E8D0)
+    val MapBuildingLight = Color(0xFFE0E0E0)
+    val MapRoadMinorLight = Color(0xFFFFFFFF)
+    val MapRoadMajorLight = Color(0xFFBDBDBD)
     val GradeEasy = Color(0xFFFFF0C2)
     val GradeModerate = Color(0xFFFFE08A)
     val GradeHard = Color(0xFFFFB020)
@@ -106,6 +131,24 @@ private val GradeBandColors = persistentListOf(
     Palette.GradeHard,
     Palette.GradeSteep,
     Palette.GradeExtreme,
+)
+
+private val DarkMapColors = MapColors(
+    land = Palette.MapLand,
+    water = Palette.MapWater,
+    park = Palette.MapPark,
+    building = Palette.MapBuilding,
+    roadMinor = Palette.MapRoadMinor,
+    roadMajor = Palette.MapRoadMajor,
+)
+
+private val LightMapColors = MapColors(
+    land = Palette.MapLandLight,
+    water = Palette.MapWaterLight,
+    park = Palette.MapParkLight,
+    building = Palette.MapBuildingLight,
+    roadMinor = Palette.MapRoadMinorLight,
+    roadMajor = Palette.MapRoadMajorLight,
 )
 
 private val ZoneColors = persistentListOf(
@@ -148,6 +191,7 @@ val DarkRideCompColors = RideCompColors(
     dangerDeep = Palette.DangerDeep,
     zones = ZoneColors,
     gradeBands = GradeBandColors,
+    map = DarkMapColors,
     isDark = true,
 )
 
@@ -181,6 +225,7 @@ val LightRideCompColors = RideCompColors(
     dangerDeep = Palette.DangerDeep,
     zones = ZoneColors,
     gradeBands = GradeBandColors,
+    map = LightMapColors,
     isDark = false,
 )
 

@@ -22,6 +22,8 @@ dependencies {
     api(libs.kotlinx.collections.immutable)
     api(libs.androidx.lifecycle.viewmodel)
     api(libs.androidx.lifecycle.runtime.compose)
+    // Offline map view (T3.3–T3.5, D-64); kept internal to :ui-common behind the RouteMap composable.
+    implementation(libs.maplibre.android)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     testImplementation(libs.kotlin.test.junit)

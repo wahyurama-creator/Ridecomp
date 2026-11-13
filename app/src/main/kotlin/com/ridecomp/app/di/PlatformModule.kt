@@ -8,6 +8,7 @@ import com.ridecomp.core.engine.sensors.BleScanner
 import com.ridecomp.core.engine.sensors.SensorConnector
 import com.ridecomp.core.engine.sensors.SensorRepository
 import com.ridecomp.core.repository.ActivityRepository
+import com.ridecomp.core.repository.OfflineMapRepository
 import com.ridecomp.core.repository.ProfileRepository
 import com.ridecomp.core.repository.RouteRepository
 import com.ridecomp.core.repository.SettingsRepository
@@ -43,6 +44,7 @@ import com.ridecomp.platform.device.AndroidRideNameProvider
 import com.ridecomp.platform.device.UuidIdGenerator
 import com.ridecomp.platform.location.AndroidLocationSource
 import com.ridecomp.platform.location.AndroidPressureSource
+import com.ridecomp.platform.map.AndroidOfflineMapStore
 import com.ridecomp.platform.route.AndroidGpxDocumentSource
 import com.ridecomp.platform.safety.AndroidAccelerometerSource
 import com.ridecomp.platform.safety.AndroidPickedContactReader
@@ -76,6 +78,7 @@ val platformModule = module {
     single { AlertPlayer(androidContext()) }
     single { RideStateHolder() }
     single<BleScanner> { AndroidBleScanner(androidContext()) }
+    single<OfflineMapRepository> { AndroidOfflineMapStore(androidContext(), get(), get()) }
     single<SensorConnector> { AndroidSensorConnector(androidContext(), get(), get()) }
     single<SmsGateway> { AndroidSmsGateway(androidContext(), get(), get()) }
     single<SafetyMessages> { AndroidSafetyMessages(androidContext()) }

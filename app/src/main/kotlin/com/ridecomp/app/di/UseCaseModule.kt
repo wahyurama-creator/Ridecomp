@@ -8,6 +8,7 @@ import com.ridecomp.core.usecase.CompleteOnboardingUseCase
 import com.ridecomp.core.usecase.CreateBackupUseCase
 import com.ridecomp.core.usecase.DeleteActivityProfileUseCase
 import com.ridecomp.core.usecase.DeleteActivityUseCase
+import com.ridecomp.core.usecase.DeleteOfflineMapUseCase
 import com.ridecomp.core.usecase.DeleteRouteUseCase
 import com.ridecomp.core.usecase.DuplicateActivityProfileUseCase
 import com.ridecomp.core.usecase.EstimateHrMaxUseCase
@@ -17,6 +18,7 @@ import com.ridecomp.core.usecase.ExportFitUseCase
 import com.ridecomp.core.usecase.ExportGpxUseCase
 import com.ridecomp.core.usecase.ExportedFileHandler
 import com.ridecomp.core.usecase.ForgetSensorUseCase
+import com.ridecomp.core.usecase.GetFreeStorageUseCase
 import com.ridecomp.core.usecase.GetLapsUseCase
 import com.ridecomp.core.usecase.GetRecoverableRideUseCase
 import com.ridecomp.core.usecase.GetRideProfileUseCase
@@ -25,6 +27,7 @@ import com.ridecomp.core.usecase.GetRoutePointsUseCase
 import com.ridecomp.core.usecase.HandleRecoveredRideUseCase
 import com.ridecomp.core.usecase.HasProfileUseCase
 import com.ridecomp.core.usecase.ImportGpxUseCase
+import com.ridecomp.core.usecase.ImportOfflineMapUseCase
 import com.ridecomp.core.usecase.LoadRideChartUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfileUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
@@ -37,6 +40,7 @@ import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveLastBackupUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
 import com.ridecomp.core.usecase.ObserveMonthTotalsUseCase
+import com.ridecomp.core.usecase.ObserveOfflineMapsUseCase
 import com.ridecomp.core.usecase.ObserveOnboardingDoneUseCase
 import com.ridecomp.core.usecase.ObserveProfileChoiceUseCase
 import com.ridecomp.core.usecase.ObserveProfileUseCase
@@ -125,6 +129,10 @@ val useCaseModule = module {
     factory { ObserveRouteUseCase(get()) }
     factory { GetRoutePointsUseCase(get()) }
     factory { GetRouteGuidanceUseCase(get(), get()) }
+    factory { ObserveOfflineMapsUseCase(get()) }
+    factory { ImportOfflineMapUseCase(get()) }
+    factory { DeleteOfflineMapUseCase(get()) }
+    factory { GetFreeStorageUseCase(get()) }
     factory { RenameRouteUseCase(get()) }
     factory { DeleteRouteUseCase(get()) }
     factory { ReverseRouteUseCase(get(), get(), get()) }

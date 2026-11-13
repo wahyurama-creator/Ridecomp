@@ -8,6 +8,7 @@ import com.ridecomp.core.engine.sensors.SensorRepository
 import com.ridecomp.core.repository.ActivityProfileRepository
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.IncidentRepository
+import com.ridecomp.core.repository.OfflineMapRepository
 import com.ridecomp.core.repository.ProfileRepository
 import com.ridecomp.core.repository.RouteRepository
 import com.ridecomp.core.repository.SafetyRepository
@@ -40,6 +41,7 @@ import com.ridecomp.core.testing.FakeExportedFileHandler
 import com.ridecomp.core.testing.FakeGpxDocumentSource
 import com.ridecomp.core.testing.FakeIncidentRepository
 import com.ridecomp.core.testing.FakeLocationSource
+import com.ridecomp.core.testing.FakeOfflineMapRepository
 import com.ridecomp.core.testing.FakePickedContactReader
 import com.ridecomp.core.testing.FakeProfileRepository
 import com.ridecomp.core.testing.FakeRideController
@@ -69,6 +71,7 @@ import com.ridecomp.feature.routes.viewmodel.RouteDetailViewModel
 import com.ridecomp.feature.routes.viewmodel.RoutesViewModel
 import com.ridecomp.feature.sensors.viewmodel.SensorsViewModel
 import com.ridecomp.feature.settings.viewmodel.BackupViewModel
+import com.ridecomp.feature.settings.viewmodel.OfflineMapsViewModel
 import com.ridecomp.feature.settings.viewmodel.OnboardingViewModel
 import com.ridecomp.feature.settings.viewmodel.ProfileViewModel
 import com.ridecomp.feature.settings.viewmodel.RideSettingsViewModel
@@ -128,6 +131,7 @@ class AppModulesTest {
         single<AppRestarter> { FakeAppRestarter() }
         single<RouteRepository> { FakeRouteRepository() }
         single<GpxDocumentSource> { FakeGpxDocumentSource() }
+        single<OfflineMapRepository> { FakeOfflineMapRepository() }
     }
 
     @BeforeTest
@@ -156,6 +160,7 @@ class AppModulesTest {
         assertNotNull(koin.get<SummaryViewModel>())
         assertNotNull(koin.get<ProfileViewModel>())
         assertNotNull(koin.get<SettingsViewModel>())
+        assertNotNull(koin.get<OfflineMapsViewModel>())
         assertNotNull(koin.get<RideSettingsViewModel>())
         assertNotNull(koin.get<OnboardingViewModel>())
         assertNotNull(koin.get<HistoryViewModel>())
