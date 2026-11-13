@@ -37,8 +37,18 @@ import com.ridecomp.ui.udf.ObserveEffects
 import kotlinx.collections.immutable.persistentListOf
 import org.koin.androidx.compose.koinViewModel
 
-/** GPX types offered by the picker; some file managers report GPX as XML. */
-private val GPX_MIME_TYPES = arrayOf("application/gpx+xml", "application/gpx", "text/xml", "application/xml")
+/**
+ * GPX types offered by the picker; some file managers report GPX as XML, and Android's media store has no
+ * GPX type, so `.gpx` files are often `application/octet-stream` (D-51). The parser rejects anything that
+ * is not a valid GPX, so offering octet-stream here is safe; the "Open with" filter stays narrow (D-44).
+ */
+private val GPX_MIME_TYPES = arrayOf(
+    "application/gpx+xml",
+    "application/gpx",
+    "text/xml",
+    "application/xml",
+    "application/octet-stream",
+)
 
 /**
  * Routes entry point (T3.1). [incomingUri] is a GPX opened from another app ("Open with"); it is imported
