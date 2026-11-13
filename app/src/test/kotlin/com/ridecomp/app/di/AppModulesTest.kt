@@ -6,13 +6,17 @@ import com.ridecomp.core.engine.sensors.SensorRepository
 import com.ridecomp.core.repository.ActivityProfileRepository
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.ProfileRepository
+import com.ridecomp.core.repository.SafetyRepository
 import com.ridecomp.core.repository.SettingsRepository
 import com.ridecomp.core.source.BatteryLevelSource
 import com.ridecomp.core.source.Clock
 import com.ridecomp.core.source.DispatcherProvider
 import com.ridecomp.core.source.LocationSource
 import com.ridecomp.core.source.Logger
+import com.ridecomp.core.source.PickedContactReader
 import com.ridecomp.core.source.RideController
+import com.ridecomp.core.source.SafetyMessages
+import com.ridecomp.core.source.SmsGateway
 import com.ridecomp.core.testing.FakeActivityProfileRepository
 import com.ridecomp.core.testing.FakeActivityRepository
 import com.ridecomp.core.testing.FakeBatteryLevelSource
@@ -21,10 +25,14 @@ import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeExportFileStore
 import com.ridecomp.core.testing.FakeExportedFileHandler
 import com.ridecomp.core.testing.FakeLocationSource
+import com.ridecomp.core.testing.FakePickedContactReader
 import com.ridecomp.core.testing.FakeProfileRepository
 import com.ridecomp.core.testing.FakeRideController
+import com.ridecomp.core.testing.FakeSafetyMessages
+import com.ridecomp.core.testing.FakeSafetyRepository
 import com.ridecomp.core.testing.FakeSensorRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
+import com.ridecomp.core.testing.FakeSmsGateway
 import com.ridecomp.core.testing.RecordingLogger
 import com.ridecomp.core.testing.TestDispatcherProvider
 import com.ridecomp.core.usecase.ExportFileStore
@@ -42,6 +50,7 @@ import com.ridecomp.feature.sensors.viewmodel.SensorsViewModel
 import com.ridecomp.feature.settings.viewmodel.OnboardingViewModel
 import com.ridecomp.feature.settings.viewmodel.ProfileViewModel
 import com.ridecomp.feature.settings.viewmodel.RideSettingsViewModel
+import com.ridecomp.feature.settings.viewmodel.SafetyViewModel
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -79,6 +88,10 @@ class AppModulesTest {
         single<SensorRepository> { FakeSensorRepository() }
         single<BleScanner> { FakeBleScanner() }
         single<ActivityProfileRepository> { FakeActivityProfileRepository() }
+        single<SafetyRepository> { FakeSafetyRepository() }
+        single<SmsGateway> { FakeSmsGateway() }
+        single<SafetyMessages> { FakeSafetyMessages() }
+        single<PickedContactReader> { FakePickedContactReader() }
     }
 
     @BeforeTest
@@ -114,6 +127,7 @@ class AppModulesTest {
         assertNotNull(koin.get<DataPagesEditorViewModel>())
         assertNotNull(koin.get<DataPagesEditorViewModel> { parametersOf(1L) })
         assertNotNull(koin.get<ActivityProfilesViewModel>())
+        assertNotNull(koin.get<SafetyViewModel>())
         assertNotNull(koin.get<ActivityProfileEditorViewModel> { parametersOf(1L) })
     }
 }

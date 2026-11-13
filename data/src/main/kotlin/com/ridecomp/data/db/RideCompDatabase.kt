@@ -8,7 +8,9 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.ridecomp.data.db.dao.ActivityDao
 import com.ridecomp.data.db.dao.ActivityProfileDao
+import com.ridecomp.data.db.dao.EmergencyContactDao
 import com.ridecomp.data.db.dao.EventDao
+import com.ridecomp.data.db.dao.IncidentDao
 import com.ridecomp.data.db.dao.LapDao
 import com.ridecomp.data.db.dao.ProfileDao
 import com.ridecomp.data.db.dao.SensorDao
@@ -16,7 +18,9 @@ import com.ridecomp.data.db.dao.SettingsDao
 import com.ridecomp.data.db.dao.TrackPointDao
 import com.ridecomp.data.db.entity.ActivityEntity
 import com.ridecomp.data.db.entity.ActivityProfileEntity
+import com.ridecomp.data.db.entity.EmergencyContactEntity
 import com.ridecomp.data.db.entity.EventEntity
+import com.ridecomp.data.db.entity.IncidentEntity
 import com.ridecomp.data.db.entity.LapEntity
 import com.ridecomp.data.db.entity.ProfileEntity
 import com.ridecomp.data.db.entity.SensorEntity
@@ -37,6 +41,8 @@ import com.ridecomp.data.db.entity.TrackPointEntity
         LapEntity::class,
         SensorEntity::class,
         ActivityProfileEntity::class,
+        EmergencyContactEntity::class,
+        IncidentEntity::class,
     ],
     version = RideCompDatabase.VERSION,
     exportSchema = true,
@@ -58,8 +64,12 @@ abstract class RideCompDatabase : RoomDatabase() {
 
     abstract fun activityProfileDao(): ActivityProfileDao
 
+    abstract fun emergencyContactDao(): EmergencyContactDao
+
+    abstract fun incidentDao(): IncidentDao
+
     companion object {
-        const val VERSION = 3
+        const val VERSION = 4
 
         /**
          * Builds the database in internal storage (SEC-STO-01). Destructive migration is never enabled:
@@ -108,7 +118,29 @@ object RideCompMigrations {
         }
     }
 
-    val ALL: List<Migration> = listOf(MIGRATION_1_2, MIGRATION_2_3)
+    /** v4: emergency contacts and incidents (T2.14–T2.16). */
+    val MIGRATION_3_4: Migration = object : Migration(3, 4) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `${DbNames.TABLE_EMERGENCY_CONTACTS}` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `display_name` TEXT NOT NULL, " +
+                    "`phone_e164` TEXT NOT NULL, `sort_order` INTEGER NOT NULL)",
+            )
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `${DbNames.TABLE_INCIDENTS}` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `activity_id` INTEGER NOT NULL, " +
+                    "`detected_t` INTEGER NOT NULL, `peak_g` REAL, `speed_before_mps` REAL, " +
+                    "`outcome` TEXT NOT NULL, `sms_sent_count` INTEGER NOT NULL, `last_status` TEXT, " +
+                    "FOREIGN KEY(`activity_id`) REFERENCES `activities`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_incidents_activity_id` " +
+                    "ON `${DbNames.TABLE_INCIDENTS}` (`activity_id`)",
+            )
+        }
+    }
+
+    val ALL: List<Migration> = listOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
 }
 
 /** New installs get the built-in profiles too (existing ones get them from MIGRATION_2_3). */

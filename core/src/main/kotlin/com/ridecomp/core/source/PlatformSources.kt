@@ -60,3 +60,32 @@ public interface RideController {
     /** Any in-ride action (pause, lap, finish, save, discard, reminder buttons…). */
     public fun perform(action: RideAction)
 }
+
+/**
+ * The only way RideComp sends SMS (SEC-SMS-02). Called only by the incident flow and the test SMS.
+ * Returns true when the network accepted the message.
+ */
+public interface SmsGateway {
+    public fun hasPermission(): Boolean
+
+    public suspend fun send(phone: String, text: String): Boolean
+}
+
+/** Localized SMS texts (12-FEATURE-SPECS §5.3, minimal content SEC-SMS-04). */
+public interface SafetyMessages {
+    public fun test(riderName: String): String
+
+    public fun incident(riderName: String, atMs: Long, latDeg: Double?, lonDeg: Double?, accuracyM: Double?): String
+
+    public fun safe(riderName: String): String
+}
+
+/** Contact chosen with the system picker (`ACTION_PICK`, no READ_CONTACTS, SEC-SMS-05). */
+public data class PickedContact(val displayName: String, val phone: String) {
+    override fun toString(): String = "PickedContact"
+}
+
+public interface PickedContactReader {
+    /** Reads the contact the picker returned as [uri]; null when it has no phone number. */
+    public suspend fun read(uri: String): PickedContact?
+}

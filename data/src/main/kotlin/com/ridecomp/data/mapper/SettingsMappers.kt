@@ -26,6 +26,9 @@ internal object SettingsKeys {
     const val ONBOARDING_DONE = "app.onboarding_done"
     const val DATA_PAGES = "ride.data_pages"
     const val LAST_PROFILE_ID = "app.last_profile_id"
+    const val SAFETY_ENABLED = "safety.enabled"
+    const val SAFETY_RIDER_NAME = "safety.rider_name"
+    const val SAFETY_LAST_TEST_SMS_AT = "safety.last_test_sms_at"
 
     /** Stored for an optional value that the user switched off (distinguishes "off" from "default"). */
     const val OFF = "off"

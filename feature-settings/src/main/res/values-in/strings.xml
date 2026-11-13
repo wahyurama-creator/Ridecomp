@@ -85,4 +85,27 @@
     <string name="battery_help_samsung">Setelan → Baterai → Batas penggunaan latar → keluarkan RideComp dari aplikasi tidur. Baterai aplikasi: Tidak dibatasi.</string>
     <string name="battery_help_generic">Setelan → Aplikasi → RideComp → Baterai: Tidak dibatasi / Jangan optimalkan.</string>
     <string name="battery_help_more">BANTUAN LAIN UNTUK HP KAMU</string>
+    <string name="safety_title">Keselamatan</string>
+    <string name="safety_disclaimer">Deteksi insiden membantu, tetapi tidak menjamin semua kecelakaan terdeteksi dan bisa memberi alarm palsu. SMS butuh sinyal seluler dan pulsa. Saat ride, hitung mundur 30 detik memberi kesempatan membatalkan sebelum SMS dikirim.</string>
+    <string name="safety_enabled">Deteksi insiden</string>
+    <string name="safety_enabled_description">Butuh minimal satu kontak dan izin SMS.</string>
+    <string name="safety_rider_name">Nama kamu (dipakai di SMS)</string>
+    <string name="safety_contacts">KONTAK DARURAT (MAKS 3)</string>
+    <string name="safety_pick_contact">Pilih dari kontak</string>
+    <string name="safety_contact_name">Nama kontak</string>
+    <string name="safety_contact_phone">Nomor HP</string>
+    <string name="safety_add_contact">Tambah nomor</string>
+    <string name="safety_remove">Hapus</string>
+    <string name="safety_send_test">Kirim SMS uji</string>
+    <plurals name="safety_test_sent">
+        <item quantity="other">SMS uji terkirim ke %1$d kontak.</item>
+    </plurals>
+    <string name="safety_ok">OK</string>
+    <string name="safety_error_no_contacts">Tambahkan kontak darurat dulu.</string>
+    <string name="safety_error_permission">Izin SMS diperlukan untuk pesan darurat.</string>
+    <string name="safety_error_phone">Nomor HP tidak valid.</string>
+    <string name="safety_error_too_many">Maksimal 3 kontak.</string>
+    <string name="safety_error_too_soon">Tunggu satu menit sebelum SMS uji berikutnya.</string>
+    <string name="safety_error_send_failed">SMS gagal dikirim. Periksa sinyal dan pulsa.</string>
+    <string name="settings_safety_subtitle">Deteksi insiden, kontak darurat</string>
 </resources>

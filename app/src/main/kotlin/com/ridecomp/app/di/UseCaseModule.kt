@@ -1,5 +1,7 @@
 package com.ridecomp.app.di
 
+import com.ridecomp.core.usecase.AddEmergencyContactUseCase
+import com.ridecomp.core.usecase.AddPickedContactUseCase
 import com.ridecomp.core.usecase.CompleteOnboardingUseCase
 import com.ridecomp.core.usecase.DeleteActivityProfileUseCase
 import com.ridecomp.core.usecase.DeleteActivityUseCase
@@ -29,10 +31,12 @@ import com.ridecomp.core.usecase.ObserveOnboardingDoneUseCase
 import com.ridecomp.core.usecase.ObserveProfileChoiceUseCase
 import com.ridecomp.core.usecase.ObserveProfileUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
+import com.ridecomp.core.usecase.ObserveSafetyUseCase
 import com.ridecomp.core.usecase.ObserveSavedSensorsUseCase
 import com.ridecomp.core.usecase.PairSensorUseCase
 import com.ridecomp.core.usecase.PerformRideActionUseCase
 import com.ridecomp.core.usecase.ReadBatteryUseCase
+import com.ridecomp.core.usecase.RemoveEmergencyContactUseCase
 import com.ridecomp.core.usecase.RenameActivityUseCase
 import com.ridecomp.core.usecase.ResetDataPagesUseCase
 import com.ridecomp.core.usecase.SaveActivityFileUseCase
@@ -40,8 +44,11 @@ import com.ridecomp.core.usecase.SaveActivityProfileUseCase
 import com.ridecomp.core.usecase.SaveDataPagesUseCase
 import com.ridecomp.core.usecase.SaveProfileUseCase
 import com.ridecomp.core.usecase.SaveRideSettingsUseCase
+import com.ridecomp.core.usecase.SaveRiderNameUseCase
 import com.ridecomp.core.usecase.ScanSensorsUseCase
 import com.ridecomp.core.usecase.SelectActivityProfileUseCase
+import com.ridecomp.core.usecase.SendTestSmsUseCase
+import com.ridecomp.core.usecase.SetSafetyEnabledUseCase
 import com.ridecomp.core.usecase.ShareActivityFileUseCase
 import com.ridecomp.core.usecase.StartRideUseCase
 import com.ridecomp.core.usecase.SuggestExportFileNameUseCase
@@ -100,4 +107,11 @@ val useCaseModule = module {
     factory { SaveActivityProfileUseCase(get()) }
     factory { DuplicateActivityProfileUseCase(get()) }
     factory { DeleteActivityProfileUseCase(get()) }
+    factory { ObserveSafetyUseCase(get()) }
+    factory { SaveRiderNameUseCase(get()) }
+    factory { SetSafetyEnabledUseCase(get(), get()) }
+    factory { AddEmergencyContactUseCase(get()) }
+    factory { AddPickedContactUseCase(get(), get()) }
+    factory { RemoveEmergencyContactUseCase(get()) }
+    factory { SendTestSmsUseCase(get(), get(), get(), get()) }
 }
