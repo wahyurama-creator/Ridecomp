@@ -28,10 +28,13 @@ object CrashLogConfig {
  * No third-party crash reporting. Content is sanitized so exported logs do not leak locations.
  */
 class CrashLogStore(
-    private val directory: File,
+    /** Resolved on first use: `Context.filesDir` touches the disk, and the store is built on the main thread. */
+    directoryProvider: () -> File,
     private val clock: Clock,
     private val maxFiles: Int = CrashLogConfig.MAX_FILES,
 ) {
+    private val directory: File by lazy(directoryProvider)
+
     /** Writes a crash report and removes the oldest files beyond [maxFiles]. Returns the new file. */
     fun write(threadName: String, throwable: Throwable): File {
         directory.mkdirs()

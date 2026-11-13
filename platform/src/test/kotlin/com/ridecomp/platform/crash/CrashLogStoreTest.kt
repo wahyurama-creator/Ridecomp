@@ -21,7 +21,7 @@ class CrashLogStoreTest {
 
     @Test
     fun `crash is written with thread and stack trace`() {
-        val store = CrashLogStore(directory, clock)
+        val store = CrashLogStore({ directory }, clock)
 
         val file = store.write("main", IllegalStateException("boom"))
 
@@ -32,7 +32,7 @@ class CrashLogStoreTest {
 
     @Test
     fun `only the newest files are kept`() {
-        val store = CrashLogStore(directory, clock, maxFiles = 3)
+        val store = CrashLogStore({ directory }, clock, maxFiles = 3)
 
         repeat(5) {
             store.write("main", RuntimeException("crash $it"))
@@ -55,7 +55,7 @@ class CrashLogStoreTest {
 
     @Test
     fun `clear deletes all logs`() {
-        val store = CrashLogStore(directory, clock)
+        val store = CrashLogStore({ directory }, clock)
         store.write("main", RuntimeException())
 
         store.clear()
@@ -65,7 +65,7 @@ class CrashLogStoreTest {
 
     @Test
     fun `handler stores the crash and delegates to the previous handler`() {
-        val store = CrashLogStore(directory, clock)
+        val store = CrashLogStore({ directory }, clock)
         var delegated: Throwable? = null
         val error = RuntimeException("fatal")
         val handler = CrashLogHandler(store) { _, throwable -> delegated = throwable }

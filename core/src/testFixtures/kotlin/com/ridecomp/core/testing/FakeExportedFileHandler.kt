@@ -9,7 +9,7 @@ public class FakeExportedFileHandler : ExportedFileHandler {
     public val copied: MutableList<Pair<ExportedFile, String>> = mutableListOf()
     public var isCopyFailing: Boolean = false
 
-    override fun share(file: ExportedFile) {
+    override suspend fun share(file: ExportedFile) {
         shared += file
     }
 

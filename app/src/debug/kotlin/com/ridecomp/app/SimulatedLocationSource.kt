@@ -1,6 +1,5 @@
 package com.ridecomp.app
 
-import android.content.SharedPreferences
 import com.ridecomp.core.config.Units
 import com.ridecomp.core.model.LocationFix
 import com.ridecomp.core.source.Clock
@@ -75,9 +74,9 @@ class SimulatedLocationSource(private val clock: Clock) : LocationSource {
 class DebugLocationSource(
     private val real: LocationSource,
     private val simulated: LocationSource,
-    private val preferences: SharedPreferences,
+    private val settings: DeveloperSettings,
 ) : LocationSource {
-    private val isSimulating: Boolean get() = preferences.getBoolean(DevTools.KEY_SIMULATE_GPS, false)
+    private val isSimulating: Boolean get() = settings.isSimulatingGps
 
     override fun fixes(intervalMs: Long): Flow<LocationFix> =
         if (isSimulating) simulated.fixes(intervalMs) else real.fixes(intervalMs)

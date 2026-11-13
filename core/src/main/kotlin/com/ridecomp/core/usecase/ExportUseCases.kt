@@ -33,7 +33,7 @@ public interface ExportFileStore {
 /** Hands an exported file to other apps or to a user-chosen location (SEC-PLT-04, SEC-STO-01). */
 public interface ExportedFileHandler {
     /** Opens the Android share sheet (Strava, Drive, WhatsApp…) through a FileProvider. */
-    public fun share(file: ExportedFile)
+    public suspend fun share(file: ExportedFile)
 
     /** Copies the file to a location picked with the Storage Access Framework ("Save to Downloads"). */
     public suspend fun copyTo(file: ExportedFile, destinationUri: String): Boolean
