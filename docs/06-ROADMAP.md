@@ -97,7 +97,7 @@ Spesifikasi detail fitur tambahan: `../12-FEATURE-SPECS.md`.
 **DoD:** ride uji mengikuti GPX ≥ 20 km dengan sengaja keluar jalur 2x; alert benar; peta tampil tanpa internet (mode pesawat + GPS); peringatan tanjakan & belokan muncul tepat waktu pada rute uji.
 
 ## Fase 4 — Latihan & analisis
-- [ ] T4.1 `BestEffortCalculator` (jarak tercepat, power terbaik, rekor lain) dijalankan setelah ride disimpan + layar Rekor + badge PR di ringkasan (§8).
+- [x] T4.1 `BestEffortCalculator` (jarak tercepat, power terbaik, rekor lain) dijalankan setelah ride disimpan + layar Rekor + badge PR di ringkasan (§8).
 - [ ] T4.2 Segmen pribadi: buat dari aktivitas/tanjakan, `SegmentMatcher` setelah ride, layar Segmen (§9.1–9.2).
 - [ ] T4.3 Live segment saat ride: deteksi start, field Segmen, selisih vs PR, banner hasil (§9.3).
 - [ ] T4.4 `TrainingLoadCalculator` (power/HR), tabel `daily_training` inkremental, layar Latihan dengan grafik & ringkasan mingguan (§10).
