@@ -66,6 +66,8 @@ object RideCompDimens {
     val onboardingProgressHeight = 4.dp
     val gpsWaitOuter = 200.dp
     val gpsWaitInner = 140.dp
+    val emptyIllustrationWidth = 140.dp
+    val emptyIllustrationHeight = 90.dp
 
     // Toggle (13-UI-SCREENS §1.4): 56 × 34
     val toggleWidth = 56.dp

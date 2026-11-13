@@ -22,6 +22,7 @@ import com.ridecomp.core.usecase.LoadRideChartUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
 import com.ridecomp.core.usecase.ObserveHistoryCountUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
+import com.ridecomp.core.usecase.ObserveMonthTotalsUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.SaveActivityFileUseCase
 import com.ridecomp.core.usecase.ShareActivityFileUseCase
@@ -79,6 +80,8 @@ class HistoryViewModelsTest {
             ObserveHistoryPageUseCase(repository),
             ObserveHistoryCountUseCase(repository),
             ObserveRideSettingsUseCase(settings),
+            ObserveMonthTotalsUseCase(repository, FakeClock()),
+            FakeClock(),
         )
 
         assertEquals(20, viewModel.uiState.value.rides.size)

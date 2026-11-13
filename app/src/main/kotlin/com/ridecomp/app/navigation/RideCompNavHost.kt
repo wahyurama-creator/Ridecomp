@@ -188,6 +188,7 @@ private fun NavGraphBuilder.rideGraph(navController: NavHostController) {
                 navController.navigate(AppRoutes.activityDetail(activityId))
             },
             onDiscarded = { navController.navigateClearingBackStack(TopLevelDestination.HOME.route) },
+            onStravaHelp = { navController.navigate(AppRoutes.STRAVA_HELP) },
         )
     }
 }
@@ -197,6 +198,7 @@ private fun NavGraphBuilder.historyGraph(navController: NavHostController) {
         HistoryRoute(
             onStartRide = { navController.navigate(AppRoutes.preRide()) },
             onOpenActivity = { id -> navController.navigate(AppRoutes.activityDetail(id)) },
+            onRestore = { navController.navigate(AppRoutes.BACKUP) },
         )
     }
     composable(
@@ -207,6 +209,7 @@ private fun NavGraphBuilder.historyGraph(navController: NavHostController) {
             activityId = entry.arguments?.getLong(AppRoutes.ARG_ACTIVITY_ID) ?: AppRoutes.NO_ACTIVITY,
             onDeleted = { navController.popBackStack() },
             onOpenStravaHelp = { navController.navigate(AppRoutes.STRAVA_HELP) },
+            onBack = { navController.popBackStack() },
         )
     }
     composable(AppRoutes.STRAVA_HELP) { StravaHelpRoute() }

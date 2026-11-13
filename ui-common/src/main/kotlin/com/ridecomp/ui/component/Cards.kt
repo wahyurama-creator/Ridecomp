@@ -5,10 +5,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -17,12 +21,14 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
 import com.ridecomp.ui.R
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
@@ -30,6 +36,7 @@ import com.ridecomp.ui.theme.RideCompColors
 import com.ridecomp.ui.theme.RideCompDimens
 import com.ridecomp.ui.theme.RideCompTheme
 import com.ridecomp.ui.util.thenIf
+import kotlinx.collections.immutable.ImmutableList
 
 /** Look of a [RideCompCard] (13-UI-SCREENS §2). */
 enum class CardTone {
@@ -197,6 +204,56 @@ fun StatCard(label: String, value: String, modifier: Modifier = Modifier, unit: 
         }
     }
 }
+
+/** One cell of a [StatGrid]: label, big value, small caption ("max 54.3 km/h"). */
+@Immutable
+data class StatItem(val label: String, val value: String, val caption: String? = null, val isLabelWarn: Boolean = false)
+
+/** Statistics grid with 1 dp dividers inside a rounded `surface` card (13-UI-SCREENS #10). */
+@Composable
+fun StatGrid(items: ImmutableList<StatItem>, modifier: Modifier = Modifier, columns: Int = STAT_GRID_COLUMNS) {
+    val colors = RideCompTheme.colors
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(RideCompDimens.cornerRadiusCard))
+            .background(colors.divider),
+        verticalArrangement = Arrangement.spacedBy(RideCompDimens.dividerThickness),
+    ) {
+        items.chunked(columns).forEach { row ->
+            Row(
+                modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+                horizontalArrangement = Arrangement.spacedBy(RideCompDimens.dividerThickness),
+            ) {
+                row.forEach { item ->
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .background(colors.surface)
+                            .padding(horizontal = RideCompDimens.spacingSm, vertical = RideCompDimens.cardGap)
+                            .semantics(mergeDescendants = true) {},
+                    ) {
+                        Text(
+                            text = item.label.uppercase(),
+                            style = RideCompTheme.typography.navLabel,
+                            color = if (item.isLabelWarn) colors.warnText else colors.textSecondary,
+                        )
+                        Text(text = item.value, style = RideCompTheme.typography.statValue, color = colors.textPrimary)
+                        item.caption?.let {
+                            Text(text = it, style = RideCompTheme.typography.navLabel, color = colors.textSecondary)
+                        }
+                    }
+                }
+                repeat(columns - row.size) {
+                    Box(modifier = Modifier.weight(1f).fillMaxHeight().background(colors.surface))
+                }
+            }
+        }
+    }
+}
+
+private const val STAT_GRID_COLUMNS = 3
 
 /** Decorative chevron of a clickable row or card (its text is the label). */
 @Composable

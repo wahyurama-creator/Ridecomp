@@ -9,6 +9,9 @@ import com.ridecomp.data.db.entity.ActivityEntity
 import kotlinx.coroutines.flow.Flow
 
 /** Queries on `activities`. Lists are always paged (DATA-04); all calls are suspend/Flow (DATA-01). */
+/** Row of [ActivityDao.observeTotalsSince]. */
+data class PeriodTotalsRow(val rides: Int, val distanceM: Double, val ascentM: Double)
+
 @Dao
 interface ActivityDao {
     @Insert
@@ -40,6 +43,13 @@ interface ActivityDao {
 
     @Query("SELECT COUNT(*) FROM ${DbNames.TABLE_ACTIVITIES} WHERE status = '${DbNames.ActivityStatus.FINISHED}'")
     fun observeFinishedCount(): Flow<Int>
+
+    @Query(
+        "SELECT COUNT(*) AS rides, COALESCE(SUM(distance_m), 0) AS distanceM, " +
+            "COALESCE(SUM(ascent_m), 0) AS ascentM FROM ${DbNames.TABLE_ACTIVITIES} " +
+            "WHERE status = '${DbNames.ActivityStatus.FINISHED}' AND started_at >= :sinceMs",
+    )
+    fun observeTotalsSince(sinceMs: Long): Flow<PeriodTotalsRow>
 
     /** Deletes the ride; track points, events and laps follow through `ON DELETE CASCADE`. */
     @Query("DELETE FROM ${DbNames.TABLE_ACTIVITIES} WHERE id = :id")

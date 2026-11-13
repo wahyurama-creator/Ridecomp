@@ -21,6 +21,7 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
@@ -31,7 +32,9 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.KeyboardType
@@ -192,6 +195,62 @@ fun SwitchRow(
             }
         }
         RideCompToggle(isChecked = isChecked)
+    }
+}
+
+/**
+ * Text input in the design style (13-UI-SCREENS #10, #2): uppercase label above, `surface` box with a
+ * `divider` border, large bold text. [error] turns the border red and is read by TalkBack.
+ */
+@Composable
+fun RideCompTextField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    suffix: String? = null,
+    error: String? = null,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    isLarge: Boolean = false,
+) {
+    val colors = RideCompTheme.colors
+    val shape = RoundedCornerShape(RideCompDimens.cornerRadiusSmall)
+    val textStyle = (if (isLarge) RideCompTheme.typography.title else RideCompTheme.typography.cardTitle)
+        .copy(color = colors.textPrimary)
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingXs)) {
+        Text(text = label.uppercase(), style = RideCompTheme.typography.dataLabel, color = colors.textSecondary)
+        BasicTextField(
+            value = value,
+            onValueChange = onValueChange,
+            singleLine = true,
+            textStyle = textStyle,
+            cursorBrush = SolidColor(colors.accent),
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics {
+                    contentDescription = label
+                    if (error != null) stateDescription = error
+                },
+            decorationBox = { inner ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = RideCompDimens.touchTargetMin)
+                        .clip(shape)
+                        .background(colors.surface)
+                        .border(RideCompDimens.borderThin, if (error != null) colors.danger else colors.divider, shape)
+                        .padding(horizontal = RideCompDimens.spacingSm),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(modifier = Modifier.weight(1f)) { inner() }
+                    if (suffix != null) {
+                        Text(text = suffix, style = RideCompTheme.typography.body, color = colors.textSecondary)
+                    }
+                }
+            },
+        )
+        if (error != null) Text(text = error, style = RideCompTheme.typography.caption, color = colors.danger)
     }
 }
 

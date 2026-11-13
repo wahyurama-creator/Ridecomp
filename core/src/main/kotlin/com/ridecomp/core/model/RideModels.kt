@@ -106,6 +106,9 @@ public data class RideTotals(
     val calories: Int? = null,
 )
 
+/** Sum of finished rides over a period (13-UI-SCREENS #11 "BULAN INI"). */
+public data class PeriodTotals(val rides: Int = 0, val distanceM: Double = 0.0, val ascentM: Double = 0.0)
+
 /** A ride as stored (domain view of `activities`). */
 public data class Activity(
     val id: Long,

@@ -36,6 +36,7 @@ import com.ridecomp.core.usecase.ObserveHistoryCountUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveLastBackupUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
+import com.ridecomp.core.usecase.ObserveMonthTotalsUseCase
 import com.ridecomp.core.usecase.ObserveOnboardingDoneUseCase
 import com.ridecomp.core.usecase.ObserveProfileChoiceUseCase
 import com.ridecomp.core.usecase.ObserveProfileUseCase
@@ -86,6 +87,7 @@ val useCaseModule = module {
     factory { GetRecoverableRideUseCase(get()) }
     factory { ObserveHistoryPageUseCase(get()) }
     factory { ObserveHistoryCountUseCase(get()) }
+    factory { ObserveMonthTotalsUseCase(get(), get()) }
     factory { ObserveActivityUseCase(get()) }
     factory { GetLapsUseCase(get()) }
     factory { RenameActivityUseCase(get()) }

@@ -3,6 +3,7 @@ package com.ridecomp.data.repository
 import com.ridecomp.core.model.Activity
 import com.ridecomp.core.model.ActivityStatus
 import com.ridecomp.core.model.Lap
+import com.ridecomp.core.model.PeriodTotals
 import com.ridecomp.core.model.RideEvent
 import com.ridecomp.core.model.RideSample
 import com.ridecomp.core.model.RideTotals
@@ -97,6 +98,9 @@ class ActivityRepositoryImpl(
         activityDao.observeFinishedPage(limit, offset).map { page -> page.mapNotNull { it.toDomain() } }
 
     override fun observeFinishedCount(): Flow<Int> = activityDao.observeFinishedCount()
+
+    override fun observeTotalsSince(sinceMs: Long): Flow<PeriodTotals> =
+        activityDao.observeTotalsSince(sinceMs).map { PeriodTotals(it.rides, it.distanceM, it.ascentM) }
 
     override suspend fun getLaps(activityId: Long): List<Lap> = lapDao.getForActivity(activityId).map { it.toDomain() }
 

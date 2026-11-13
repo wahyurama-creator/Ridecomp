@@ -52,8 +52,8 @@
     <string name="ride_battery_critical">Battery critical</string>
 
     <string name="summary_title">Ride summary</string>
-    <string name="summary_name">Ride name</string>
-    <string name="summary_save">SAVE</string>
+    <string name="summary_name">Activity name</string>
+    <string name="summary_save">Save</string>
 
     <string name="metric_speed">Speed</string>
     <string name="metric_avg_speed">Avg speed</string>
@@ -252,4 +252,21 @@
     <string name="pre_ride_gps_tips">• Move to an open area, away from tall buildings\n• Set phone location to \"High accuracy\"\n• The first fix after a long time off can take 1–2 minutes</string>
     <string name="pre_ride_show_options">Show ride options</string>
     <string name="pre_ride_start_without_fix_hint">Recording starts now; position follows once there is a signal</string>
+    <string name="summary_distance">Distance</string>
+    <string name="summary_moving">Moving</string>
+    <string name="summary_hms">h:m:s</string>
+    <string name="summary_ascent">Climbing</string>
+    <string name="summary_speed">Avg / max</string>
+    <string name="summary_max">max %1$s %2$s</string>
+    <string name="summary_hr">Avg HR</string>
+    <string name="summary_cadence">Cadence</string>
+    <string name="summary_cadence_caption">rpm average</string>
+    <string name="summary_power">Power</string>
+    <string name="summary_power_estimate">Power EST</string>
+    <string name="summary_power_estimate_caption">W · not in FIT</string>
+    <string name="summary_calories">Calories</string>
+    <string name="summary_laps">Laps</string>
+    <string name="summary_laps_caption">laps</string>
+    <string name="summary_export_hint">Export FIT and share are on the activity detail after saving</string>
+    <string name="summary_strava_help">How to upload a FIT file to Strava</string>
 </resources>
