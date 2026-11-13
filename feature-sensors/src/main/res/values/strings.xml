@@ -2,11 +2,11 @@
 <resources>
     <string name="sensors_title">Sensors</string>
     <string name="sensors_empty">No saved sensors. Scan for heart rate, speed/cadence or power sensors.</string>
-    <string name="sensors_scan_action">Scan</string>
+    <string name="sensors_scan_action">Scan again</string>
     <string name="sensors_stop_scan">Stop scan</string>
     <string name="sensors_saved">Saved</string>
-    <string name="sensors_found">Found</string>
-    <string name="sensors_scanning">Scanning…</string>
+    <string name="sensors_found">Found nearby</string>
+    <string name="sensors_scanning">Searching…</string>
     <string name="sensors_pair">Pair</string>
     <string name="sensors_forget">Forget</string>
     <string name="sensors_cancel">Cancel</string>
@@ -26,4 +26,8 @@
     <string name="sensors_blocker_permission_action">Allow</string>
     <string name="sensors_blocker_bluetooth">Bluetooth is off.</string>
     <string name="sensors_blocker_bluetooth_action">Turn on</string>
+    <string name="sensors_forget_label">Forget %1$s</string>
+    <string name="sensors_signal_strong">strong signal</string>
+    <string name="sensors_signal_weak">weak signal</string>
+    <string name="sensors_ble_info">Bluetooth (BLE) sensors only. ANT+-only sensors are not supported by most phones. Calibrate a power meter with its maker\'s app.</string>
 </resources>

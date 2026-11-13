@@ -7,17 +7,30 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -30,19 +43,23 @@ import com.ridecomp.feature.sensors.R
 import com.ridecomp.feature.sensors.viewmodel.SensorsUiEvent
 import com.ridecomp.feature.sensors.viewmodel.SensorsUiState
 import com.ridecomp.feature.sensors.viewmodel.SensorsViewModel
+import com.ridecomp.ui.R as UiR
 import com.ridecomp.ui.component.AlertBanner
 import com.ridecomp.ui.component.AlertSeverity
 import com.ridecomp.ui.component.BannerAction
 import com.ridecomp.ui.component.BigButton
+import com.ridecomp.ui.component.BigButtonSize
 import com.ridecomp.ui.component.BigButtonStyle
 import com.ridecomp.ui.component.ConfirmDialog
 import com.ridecomp.ui.component.EmptyState
-import com.ridecomp.ui.component.ListRow
+import com.ridecomp.ui.component.IconSquareButton
+import com.ridecomp.ui.component.RideCompCard
 import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.component.SectionHeader
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
 import com.ridecomp.ui.theme.RideCompDimens
+import com.ridecomp.ui.theme.RideCompTheme
 import kotlinx.collections.immutable.persistentListOf
 import org.koin.androidx.compose.koinViewModel
 
@@ -80,7 +97,7 @@ fun SensorsRoute(modifier: Modifier = Modifier, viewModel: SensorsViewModel = ko
     )
 }
 
-/** Stateless Sensors screen (02-DESIGN §3.8). */
+/** Stateless Sensors screen (02-DESIGN §3.8, 13-UI-SCREENS #4). */
 @Composable
 fun SensorsScreen(
     state: SensorsUiState,
@@ -95,21 +112,24 @@ fun SensorsScreen(
         banner = { SensorsBanner(state, onFixBlocker) },
     ) {
         val isEmpty = state.saved.isEmpty() && state.discovered.isEmpty() && !state.isScanning
-        Box(modifier = Modifier.weight(1f)) {
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(horizontal = RideCompDimens.screenPaddingHorizontal),
+            verticalArrangement = Arrangement.spacedBy(RideCompDimens.cardGap),
+        ) {
             if (isEmpty) {
-                EmptyState(message = stringResource(R.string.sensors_empty))
-            } else {
-                LazyColumn {
-                    savedSection(state.saved, onForget = { onEvent(SensorsUiEvent.AskForget(it)) })
-                    discoveredSection(state, onPair)
-                }
+                item(key = EMPTY_KEY) { EmptyState(message = stringResource(R.string.sensors_empty)) }
             }
+            savedSection(state, onForget = { onEvent(SensorsUiEvent.AskForget(it)) })
+            discoveredSection(state, onPair)
+            item(key = INFO_KEY) { BleInfo() }
         }
         BigButton(
             text = stringResource(if (state.isScanning) R.string.sensors_stop_scan else R.string.sensors_scan_action),
             onClick = { onEvent(if (state.isScanning) SensorsUiEvent.StopScan else SensorsUiEvent.StartScan) },
-            style = if (state.isScanning) BigButtonStyle.SECONDARY else BigButtonStyle.PRIMARY,
-            modifier = Modifier.padding(RideCompDimens.spacingM),
+            style = BigButtonStyle.SECONDARY,
+            size = BigButtonSize.TERTIARY,
+            modifier = Modifier.padding(RideCompDimens.screenPaddingHorizontal),
         )
     }
     state.forgetCandidate?.let { sensor ->
@@ -131,6 +151,7 @@ private fun SensorsBanner(state: SensorsUiState, onFixBlocker: (ScanBlocker) -> 
         blocker != null -> AlertBanner(
             message = stringResource(blocker.messageRes()),
             severity = AlertSeverity.WARN,
+            iconRes = UiR.drawable.ic_bluetooth_off,
             actions = listOf(BannerAction(stringResource(blocker.actionRes())) { onFixBlocker(blocker) }),
         )
         state.hasScanFailed -> AlertBanner(
@@ -140,33 +161,145 @@ private fun SensorsBanner(state: SensorsUiState, onFixBlocker: (ScanBlocker) -> 
     }
 }
 
-private fun LazyListScope.savedSection(saved: List<SavedSensor>, onForget: (SavedSensor) -> Unit) {
-    if (saved.isEmpty()) return
-    item(key = SAVED_HEADER_KEY) { SectionHeader(stringResource(R.string.sensors_saved)) }
-    items(saved, key = { SAVED_KEY_PREFIX + it.address }) { sensor ->
-        ListRow(
+private fun LazyListScope.savedSection(state: SensorsUiState, onForget: (SavedSensor) -> Unit) {
+    if (state.saved.isEmpty()) return
+    item(key = SAVED_HEADER_KEY) {
+        SectionHeader(stringResource(R.string.sensors_saved), horizontalPadding = RideCompDimens.none)
+    }
+    // Saved sensors connect when a ride starts; scans leave them out, so no live status here (D-60).
+    items(state.saved, key = { SAVED_KEY_PREFIX + it.address }) { sensor ->
+        SensorCard(
+            iconKind = sensor.kinds.firstOrNull(),
             title = sensor.name,
             subtitle = savedSubtitle(sensor),
-            trailing = {
-                TextButton(onClick = { onForget(sensor) }) { Text(stringResource(R.string.sensors_forget)) }
-            },
-        )
+            isOutlined = false,
+        ) {
+            IconSquareButton(
+                iconRes = UiR.drawable.ic_trash,
+                contentDescription = stringResource(R.string.sensors_forget_label, sensor.name),
+                onClick = { onForget(sensor) },
+            )
+        }
     }
 }
 
 private fun LazyListScope.discoveredSection(state: SensorsUiState, onPair: (DiscoveredSensor) -> Unit) {
-    if (state.discovered.isEmpty() && !state.isScanning) return
-    item(key = FOUND_HEADER_KEY) {
-        SectionHeader(stringResource(if (state.isScanning) R.string.sensors_scanning else R.string.sensors_found))
-    }
-    items(state.discovered, key = { FOUND_KEY_PREFIX + it.address }) { sensor ->
-        ListRow(
+    val found = state.discovered.filter { sensor -> state.saved.none { it.address == sensor.address } }
+    if (found.isEmpty() && !state.isScanning) return
+    item(key = FOUND_HEADER_KEY) { FoundHeader(state.isScanning) }
+    items(found, key = { FOUND_KEY_PREFIX + it.address }) { sensor ->
+        val isStrong = sensor.rssiDbm >= STRONG_SIGNAL_DBM
+        SensorCard(
+            iconKind = sensor.kinds.firstOrNull(),
             title = sensor.name ?: stringResource(R.string.sensors_unnamed),
-            subtitle = kindsLabel(sensor.kinds),
-            onClick = { onPair(sensor) },
-            trailing = { Text(stringResource(R.string.sensors_pair)) },
-        )
+            subtitle = stringResource(
+                R.string.sensors_subtitle,
+                kindsLabel(sensor.kinds),
+                stringResource(if (isStrong) R.string.sensors_signal_strong else R.string.sensors_signal_weak),
+            ),
+            isOutlined = true,
+        ) {
+            BigButton(
+                text = stringResource(R.string.sensors_pair),
+                onClick = { onPair(sensor) },
+                // A strong signal is the likely sensor on your bike: filled button (13-UI-SCREENS #4).
+                style = if (isStrong) BigButtonStyle.PRIMARY else BigButtonStyle.OUTLINE,
+                size = BigButtonSize.TERTIARY,
+                modifier = Modifier.fillMaxWidth(PAIR_BUTTON_FRACTION),
+            )
+        }
     }
+}
+
+@Composable
+private fun FoundHeader(isScanning: Boolean) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        SectionHeader(
+            stringResource(R.string.sensors_found),
+            horizontalPadding = RideCompDimens.none,
+            modifier = Modifier.weight(1f),
+        )
+        if (isScanning) {
+            Text(
+                text = stringResource(R.string.sensors_scanning),
+                style = RideCompTheme.typography.caption.copy(fontWeight = FontWeight.SemiBold),
+                color = RideCompTheme.colors.accent,
+            )
+        }
+    }
+}
+
+/** At or above this the sensor is near the phone ("sinyal kuat"). */
+private const val STRONG_SIGNAL_DBM = -70
+private const val PAIR_BUTTON_FRACTION = 0.35f
+
+/** Sensor card: type icon, name, details, trailing status/actions (13-UI-SCREENS #4). */
+@Composable
+private fun SensorCard(
+    iconKind: SensorKind?,
+    title: String,
+    subtitle: String,
+    isOutlined: Boolean,
+    trailing: @Composable () -> Unit,
+) {
+    val colors = RideCompTheme.colors
+    val shape = RoundedCornerShape(RideCompDimens.cornerRadiusCard)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(if (isOutlined) colors.bg else colors.surface)
+            .border(RideCompDimens.borderThin, if (isOutlined) colors.divider else colors.surface, shape)
+            .padding(horizontal = RideCompDimens.cardPaddingHorizontal, vertical = RideCompDimens.cardPaddingVertical),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm),
+    ) {
+        Icon(
+            painterResource(iconKind.iconRes()),
+            contentDescription = null,
+            tint = iconKind.tint(),
+            modifier = Modifier.size(RideCompDimens.iconSize),
+        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = title, style = RideCompTheme.typography.cardTitle, color = colors.textPrimary)
+            Text(text = subtitle, style = RideCompTheme.typography.caption, color = colors.textSecondary)
+        }
+        trailing()
+    }
+}
+
+/** "Only Bluetooth (BLE)…" note (13-UI-SCREENS #4). */
+@Composable
+private fun BleInfo() {
+    RideCompCard(modifier = Modifier.padding(top = RideCompDimens.spacingS)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.cardGap)) {
+            Icon(
+                painterResource(UiR.drawable.ic_info),
+                contentDescription = null,
+                tint = RideCompTheme.colors.textSecondary,
+            )
+            Text(
+                text = stringResource(R.string.sensors_ble_info),
+                style = RideCompTheme.typography.caption,
+                color = RideCompTheme.colors.textTertiary,
+            )
+        }
+    }
+}
+
+private fun SensorKind?.iconRes(): Int = when (this) {
+    SensorKind.HEART_RATE -> UiR.drawable.ic_heart
+    SensorKind.SPEED_CADENCE -> UiR.drawable.ic_cadence
+    SensorKind.POWER -> UiR.drawable.ic_power
+    null -> UiR.drawable.ic_nav_sensors
+}
+
+@Composable
+private fun SensorKind?.tint(): Color = when (this) {
+    SensorKind.HEART_RATE -> RideCompTheme.colors.danger
+    SensorKind.SPEED_CADENCE -> RideCompTheme.colors.track
+    SensorKind.POWER -> RideCompTheme.colors.warnText
+    null -> RideCompTheme.colors.textSecondary
 }
 
 @Composable
@@ -203,6 +336,8 @@ private fun ScanBlocker.actionRes(): Int = when (this) {
 }
 
 private const val SAVED_HEADER_KEY = "saved_header"
+private const val EMPTY_KEY = "empty"
+private const val INFO_KEY = "info"
 private const val FOUND_HEADER_KEY = "found_header"
 private const val SAVED_KEY_PREFIX = "saved_"
 private const val FOUND_KEY_PREFIX = "found_"

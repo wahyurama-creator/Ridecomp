@@ -2,11 +2,11 @@
 <resources>
     <string name="sensors_title">Sensor</string>
     <string name="sensors_empty">Belum ada sensor tersimpan. Pindai sensor heart rate, speed/cadence, atau power.</string>
-    <string name="sensors_scan_action">Pindai</string>
+    <string name="sensors_scan_action">Scan ulang</string>
     <string name="sensors_stop_scan">Hentikan pindai</string>
     <string name="sensors_saved">Tersimpan</string>
-    <string name="sensors_found">Ditemukan</string>
-    <string name="sensors_scanning">Memindai…</string>
+    <string name="sensors_found">Ditemukan di sekitar</string>
+    <string name="sensors_scanning">Mencari…</string>
     <string name="sensors_pair">Pasangkan</string>
     <string name="sensors_forget">Lupakan</string>
     <string name="sensors_cancel">Batal</string>
@@ -26,4 +26,8 @@
     <string name="sensors_blocker_permission_action">Izinkan</string>
     <string name="sensors_blocker_bluetooth">Bluetooth mati.</string>
     <string name="sensors_blocker_bluetooth_action">Nyalakan</string>
+    <string name="sensors_forget_label">Lupakan %1$s</string>
+    <string name="sensors_signal_strong">sinyal kuat</string>
+    <string name="sensors_signal_weak">sinyal lemah</string>
+    <string name="sensors_ble_info">Hanya sensor Bluetooth (BLE). Sensor ANT+ saja tidak didukung oleh kebanyakan HP. Kalibrasi power meter dilakukan lewat app pabrikannya.</string>
 </resources>
