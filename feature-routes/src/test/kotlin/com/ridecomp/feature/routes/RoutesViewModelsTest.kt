@@ -9,7 +9,7 @@ import com.ridecomp.core.testing.FakeRouteRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.testing.TestDispatcherProvider
 import com.ridecomp.core.usecase.DeleteRouteUseCase
-import com.ridecomp.core.usecase.GetRouteClimbsUseCase
+import com.ridecomp.core.usecase.GetRouteGuidanceUseCase
 import com.ridecomp.core.usecase.GetRoutePointsUseCase
 import com.ridecomp.core.usecase.ImportGpxUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
@@ -92,10 +92,10 @@ class RoutesViewModelsTest {
             RouteDetailUseCases(
                 ObserveRouteUseCase(routes),
                 GetRoutePointsUseCase(routes),
-                GetRouteClimbsUseCase(routes),
+                GetRouteGuidanceUseCase(routes, TestDispatcherProvider(dispatcher)),
                 ObserveRideSettingsUseCase(settings),
                 RenameRouteUseCase(routes),
-                ReverseRouteUseCase(routes, clock),
+                ReverseRouteUseCase(routes, clock, TestDispatcherProvider(dispatcher)),
                 DeleteRouteUseCase(routes),
             ),
             TestDispatcherProvider(dispatcher),

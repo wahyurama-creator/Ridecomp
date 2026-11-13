@@ -339,6 +339,7 @@ class RecordingService : LifecycleService() {
         isGpsEnabled = activityProfile?.isGpsEnabled != false
         // Indoor rides have no position to follow a route with.
         val followedId = routeId?.takeIf { isGpsEnabled }
+        val guidance = followedId?.let { deps.getRouteGuidance(it) }
         return RideSetup(
             settings = activityProfile?.let(settings::withProfile) ?: settings,
             altitudeSource = altitudeSource(),
@@ -348,8 +349,8 @@ class RecordingService : LifecycleService() {
             isGpsEnabled = isGpsEnabled,
             routeId = routeId,
             routePoints = followedId?.let { deps.routeRepository.getPoints(it) }.orEmpty(),
-            routeClimbs = followedId?.let { deps.routeRepository.getClimbs(it) }.orEmpty(),
-            routeTurns = followedId?.let { deps.routeRepository.getTurns(it) }.orEmpty(),
+            routeClimbs = guidance?.climbs.orEmpty(),
+            routeTurns = guidance?.turns.orEmpty(),
         )
     }
 

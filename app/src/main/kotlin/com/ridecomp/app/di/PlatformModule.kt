@@ -29,6 +29,7 @@ import com.ridecomp.core.source.SmsGateway
 import com.ridecomp.core.usecase.BackupFiles
 import com.ridecomp.core.usecase.ExportFitUseCase
 import com.ridecomp.core.usecase.GetRideProfileUseCase
+import com.ridecomp.core.usecase.GetRouteGuidanceUseCase
 import com.ridecomp.platform.backup.AndroidAppRestarter
 import com.ridecomp.platform.backup.AndroidBackupFiles
 import com.ridecomp.platform.backup.JsonBackupManifestCodec
@@ -104,6 +105,7 @@ class KoinRecordingDependencies(private val koin: Koin) : RecordingDependencies 
     override val incidentManager get() = koin.get<IncidentManager>()
     override val accelerometerSource get() = koin.get<AccelerometerSource>()
     override val routeRepository get() = koin.get<RouteRepository>()
+    override val getRouteGuidance get() = koin.get<GetRouteGuidanceUseCase>()
     override val sensorRepository get() = koin.get<SensorRepository>()
     override val sensorConnector get() = koin.get<SensorConnector>()
 

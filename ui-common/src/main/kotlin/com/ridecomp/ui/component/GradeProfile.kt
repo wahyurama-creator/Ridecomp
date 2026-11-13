@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -40,6 +41,13 @@ fun GradeProfile(
     val colors = RideCompTheme.colors
     val labelStyle = RideCompTheme.typography.dataLabel.copy(color = colors.textPrimary)
     val measurer = rememberTextMeasurer()
+    // Measured once per climb: the canvas redraws every second as the position marker moves.
+    val labels = remember(gradesPercent, labelStyle, measurer) {
+        gradesPercent.map { measurer.measure(it.roundToInt().toString(), labelStyle) }
+    }
+    val labelHeight = remember(labelStyle, measurer) {
+        measurer.measure(SAMPLE_LABEL, labelStyle).size.height.toFloat()
+    }
     Column(modifier = modifier.fillMaxWidth()) {
         Text(text = title, style = RideCompTheme.typography.dataLabel, color = colors.textSecondary)
         Canvas(
@@ -51,7 +59,6 @@ fun GradeProfile(
             if (gradesPercent.isEmpty()) return@Canvas
             val maxGrade = gradesPercent.max().coerceAtLeast(MIN_SCALE_PERCENT)
             val barWidth = size.width / gradesPercent.size
-            val labelHeight = measurer.measure(SAMPLE_LABEL, labelStyle).size.height.toFloat()
             val plotHeight = size.height - labelHeight
             gradesPercent.forEachIndexed { index, grade ->
                 val band = bandUpperBoundsPercent.indexOfFirst { grade < it }
@@ -64,7 +71,7 @@ fun GradeProfile(
                     topLeft = Offset(left, size.height - height),
                     size = Size(barWidth - RideCompDimens.chartStroke.toPx(), height),
                 )
-                val label = measurer.measure(grade.roundToInt().toString(), labelStyle)
+                val label = labels[index]
                 if (label.size.width <= barWidth) {
                     drawText(
                         textLayoutResult = label,

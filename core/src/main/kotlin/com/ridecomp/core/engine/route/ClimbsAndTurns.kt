@@ -97,11 +97,37 @@ private fun List<RoutePoint>.resample(stepM: Double): List<RoutePoint> {
     return result
 }
 
+/**
+ * Some GPX files miss `<ele>` on a few points. Missing elevations are interpolated by distance between
+ * the known neighbours (the nearest known one at the ends), so a gap never reads as a drop to 0 m.
+ */
+private fun List<RoutePoint>.withElevationGapsFilled(): List<RoutePoint> {
+    if (all { it.elevationM != null }) return this
+    val known = indices.filter { this[it].elevationM != null }
+    var next = 0
+    return mapIndexed { i, point ->
+        if (point.elevationM != null) return@mapIndexed point
+        while (next < known.size && known[next] < i) next++
+        val before = known.getOrNull(next - 1)?.let { this[it] }
+        val after = known.getOrNull(next)?.let { this[it] }
+        val elevation = when {
+            before?.elevationM == null -> after?.elevationM
+            after?.elevationM == null -> before.elevationM
+            else -> {
+                val span = after.cumDistanceM - before.cumDistanceM
+                val t = if (span <= 0.0) 0.0 else (point.cumDistanceM - before.cumDistanceM) / span
+                before.elevationM + t * (after.elevationM - before.elevationM)
+            }
+        }
+        point.copy(elevationM = elevation)
+    }
+}
+
 public object ClimbDetector {
     /** Climbs of a route; empty when it has no elevation (the feature is then hidden, §6). */
     public fun detect(points: List<RoutePoint>): List<RouteClimb> {
-        if (points.size < 2 || points.any { it.elevationM == null }) return emptyList()
-        val samples = points.resample(ClimbConfig.RESAMPLE_M)
+        if (points.size < 2 || points.none { it.elevationM != null }) return emptyList()
+        val samples = points.withElevationGapsFilled().resample(ClimbConfig.RESAMPLE_M)
         val elevations = smooth(samples.map { it.elevationM ?: 0.0 })
         val runs = mergedRuns(ascendingRuns(elevations), elevations)
         return runs.mapNotNull { (start, end) -> climbOf(samples, elevations, start, end) }

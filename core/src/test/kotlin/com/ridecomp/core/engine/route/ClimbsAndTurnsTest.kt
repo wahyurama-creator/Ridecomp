@@ -67,6 +67,19 @@ class ClimbsAndTurnsTest {
     }
 
     @Test
+    fun `a few points without elevation do not hide or invent climbs`() {
+        val full = route(Triple(3_000.0, 0.0, 0.0), Triple(2_000.0, 0.0, 6.0), Triple(1_000.0, 0.0, 0.0))
+        // Every 7th point loses its elevation, including the first one.
+        val gappy = full.mapIndexed { i, p -> if (i % 7 == 0) p.copy(elevationM = null) else p }
+
+        val climbs = ClimbDetector.detect(gappy)
+
+        assertEquals(1, climbs.size, "climbs: $climbs")
+        near(120.0, climbs.single().gainM, 10.0)
+        near(ClimbDetector.detect(full).single().startDistanceM, climbs.single().startDistanceM, 40.0)
+    }
+
+    @Test
     fun `a 90 degree left turn, a sharp right and a hairpin`() {
         val left = TurnDetector.detect(route(Triple(500.0, 0.0, 0.0), Triple(500.0, 270.0, 0.0)))
         assertEquals(1, left.size, "turns: $left")
