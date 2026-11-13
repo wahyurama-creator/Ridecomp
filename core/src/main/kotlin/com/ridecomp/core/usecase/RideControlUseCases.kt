@@ -18,8 +18,9 @@ import kotlinx.coroutines.flow.onStart
 
 /** Starts a new ride (foreground service). */
 public class StartRideUseCase(private val controller: RideController) {
-    public operator fun invoke() {
-        controller.start()
+    /** Starts a ride with the chosen activity profile (12-FEATURE-SPECS §4). */
+    public operator fun invoke(profileId: Long?) {
+        controller.start(profileId)
     }
 }
 
@@ -65,6 +66,9 @@ public sealed interface GpsStatus {
     public data object Disabled : GpsStatus
 
     public data object Searching : GpsStatus
+
+    /** The selected profile records without GPS (Indoor). */
+    public data object NotUsed : GpsStatus
 
     public data class Ready(val accuracyM: Double?) : GpsStatus
 }

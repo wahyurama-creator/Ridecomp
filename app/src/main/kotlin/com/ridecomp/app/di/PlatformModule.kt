@@ -18,6 +18,7 @@ import com.ridecomp.core.source.PressureSource
 import com.ridecomp.core.source.RideController
 import com.ridecomp.core.source.RideNameProvider
 import com.ridecomp.core.usecase.ExportFitUseCase
+import com.ridecomp.core.usecase.GetRideProfileUseCase
 import com.ridecomp.platform.ble.AndroidBleScanner
 import com.ridecomp.platform.ble.AndroidSensorConnector
 import com.ridecomp.platform.crash.CrashLogConfig
@@ -72,6 +73,7 @@ class KoinRecordingDependencies(private val koin: Koin) : RecordingDependencies 
     override val stateHolder get() = koin.get<RideStateHolder>()
     override val alertPlayer get() = koin.get<AlertPlayer>()
     override val exportFit get() = koin.get<ExportFitUseCase>()
+    override val getRideProfile get() = koin.get<GetRideProfileUseCase>()
     override val sensorRepository get() = koin.get<SensorRepository>()
     override val sensorConnector get() = koin.get<SensorConnector>()
 

@@ -52,7 +52,7 @@ public interface RideController {
     public val activeActivityId: StateFlow<Long?>
 
     /** Starts the foreground service and a new ride. */
-    public fun start()
+    public fun start(profileId: Long?)
 
     /** Continues a recovered ride (03-ARCHITECTURE §4.5). */
     public fun resumeRecovered(activityId: Long)

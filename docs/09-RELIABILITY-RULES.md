@@ -13,6 +13,7 @@ Setiap resource berat **harus** memiliki satu pemilik, titik akuisisi, dan titik
 | Resource | Pemilik | Diakuisisi saat | WAJIB dilepas saat | API pelepasan | Verifikasi |
 |---|---|---|---|---|---|
 | Update lokasi GPS | `AndroidLocationSource` (dipakai `RecordingService` dan pre-ride lewat `ObserveGpsStatusUseCase` + `WhileSubscribed`) | Pre-ride (selama layar terlihat) / start ride | Ride selesai/dibuang, service destroy, `awaitClose` | `LocationManager.removeUpdates()` | `adb shell dumpsys location` tidak menampilkan request app setelah ride selesai |
+| GPS saat ride Indoor | `RecordingService` | — (tidak diakuisisi: profil `gps_enabled = false`) | — | — | `dumpsys location` tanpa request app saat ride Indoor |
 | Koneksi BLE (GATT) | `AndroidSensorConnector` + `GattClient` (dikoleksi `RecordingService`) | Ride dimulai/dipulihkan (sensor auto-connect) | Ride selesai (layar ringkasan), simpan/buang, service destroy (job dibatalkan → `finally`) | `disconnect()` lalu **`close()`** | Sensor kembali advertising (terlihat di scan app lain); log koneksi |
 | Scan BLE | `AndroidBleScanner` (dikoleksi `SensorsViewModel`) | Tombol Pindai | Timeout 15 dtk, tombol Hentikan, layar ON_STOP, ViewModel dibersihkan | `stopScan()` | Log + scan berhenti dalam batas waktu |
 | Wakelock parsial | `RecordingService` (`WakeLockHolder`) | Status recording | Status idle/finished, service destroy (di `finally`) | `release()` (cek `isHeld`) | `adb shell dumpsys power` → tidak ada wakelock milik app saat idle |

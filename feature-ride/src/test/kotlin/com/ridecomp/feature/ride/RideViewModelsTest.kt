@@ -3,27 +3,33 @@ package com.ridecomp.feature.ride
 import app.cash.turbine.test
 import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RideAction
+import com.ridecomp.core.model.ActivityKind
 import com.ridecomp.core.model.ActivityStatus
 import com.ridecomp.core.model.RideStatus
 import com.ridecomp.core.model.UnitSystem
 import com.ridecomp.core.repository.NewActivity
+import com.ridecomp.core.testing.FakeActivityProfileRepository
 import com.ridecomp.core.testing.FakeActivityRepository
 import com.ridecomp.core.testing.FakeBatteryLevelSource
 import com.ridecomp.core.testing.FakeLocationSource
 import com.ridecomp.core.testing.FakeRideController
 import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.usecase.GetRecoverableRideUseCase
+import com.ridecomp.core.usecase.GpsStatus
 import com.ridecomp.core.usecase.HandleRecoveredRideUseCase
+import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
 import com.ridecomp.core.usecase.ObserveDataPagesUseCase
 import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
+import com.ridecomp.core.usecase.ObserveProfileChoiceUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.PerformRideActionUseCase
 import com.ridecomp.core.usecase.ReadBatteryUseCase
 import com.ridecomp.core.usecase.RecoveryChoice
 import com.ridecomp.core.usecase.RenameActivityUseCase
+import com.ridecomp.core.usecase.SelectActivityProfileUseCase
 import com.ridecomp.core.usecase.StartRideUseCase
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.ride.model.DefaultDataPages
@@ -58,6 +64,7 @@ class RideViewModelsTest {
     private val controller = FakeRideController()
     private val repository = FakeActivityRepository()
     private val settings = FakeSettingsRepository()
+    private val profiles = FakeActivityProfileRepository()
 
     @BeforeTest
     fun setUp() {
@@ -103,12 +110,23 @@ class RideViewModelsTest {
     }
 
     @Test
-    fun `pre ride start launches the ride`() = runTest {
+    fun `pre ride start launches the ride with the chosen profile`() = runTest {
+        val location = FakeLocationSource()
         val viewModel = PreRideViewModel(
-            ObserveGpsStatusUseCase(FakeLocationSource()),
+            ObserveGpsStatusUseCase(location),
             ReadBatteryUseCase(FakeBatteryLevelSource()),
+            ObserveProfileChoiceUseCase(profiles),
+            SelectActivityProfileUseCase(profiles),
             StartRideUseCase(controller),
         )
+        assertEquals(ActivityKind.ROAD, viewModel.uiState.value.selected?.kind)
+        viewModel.onEvent(PreRideUiEvent.SelectProfile(INDOOR_ID))
+        assertEquals(ActivityKind.INDOOR, viewModel.uiState.value.selected?.kind)
+        viewModel.gpsStatus.test {
+            // Indoor: no GPS is started at all (BAT-01).
+            assertEquals(GpsStatus.NotUsed, expectMostRecentItem())
+            assertEquals(0, location.activeCollectors)
+        }
         assertEquals(80, viewModel.uiState.value.battery?.percent)
 
         viewModel.effects.test {
@@ -116,6 +134,7 @@ class RideViewModelsTest {
             assertEquals(PreRideEffect.OpenRide, awaitItem())
         }
         assertEquals(listOf(FakeRideController.START), controller.commands)
+        assertEquals(INDOOR_ID, controller.startedProfileId)
     }
 
     @Test
@@ -123,7 +142,8 @@ class RideViewModelsTest {
         val viewModel = RideViewModel(
             ObserveLiveRideUseCase(controller),
             ObserveRideSettingsUseCase(settings),
-            ObserveDataPagesUseCase(settings),
+            ObserveDataPagesUseCase(settings, profiles),
+            ObserveActivityProfilesUseCase(profiles),
             PerformRideActionUseCase(controller),
         )
 
@@ -171,5 +191,10 @@ class RideViewModelsTest {
         assertEquals(UnitFormatter.NO_VALUE, RideMetric.SPEED.value(live, formatter))
         assertEquals(UnitFormatter.NO_VALUE, RideMetric.HEART_RATE.value(live, formatter))
         assertEquals(6, DefaultDataPages.MAIN.metrics.size)
+    }
+
+    private companion object {
+        /** Built-in ids follow BuiltInProfiles order in the fake (Road = 1 … Indoor = 4). */
+        const val INDOOR_ID = 4L
     }
 }

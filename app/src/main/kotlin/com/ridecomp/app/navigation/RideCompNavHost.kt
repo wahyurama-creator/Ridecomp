@@ -18,6 +18,8 @@ import com.ridecomp.app.DevTools
 import com.ridecomp.feature.history.ui.ActivityDetailRoute
 import com.ridecomp.feature.history.ui.HistoryRoute
 import com.ridecomp.feature.history.ui.StravaHelpRoute
+import com.ridecomp.feature.ride.ui.ActivityProfileEditorRoute
+import com.ridecomp.feature.ride.ui.ActivityProfilesRoute
 import com.ridecomp.feature.ride.ui.DataPagesEditorRoute
 import com.ridecomp.feature.ride.ui.HomeRoute
 import com.ridecomp.feature.ride.ui.PreRideRoute
@@ -41,13 +43,24 @@ object AppRoutes {
     const val PROFILE = "profile"
     const val RIDE_SETTINGS = "ride_settings"
     const val BATTERY_HELP = "battery_help"
-    const val DATA_PAGES = "data_pages"
+    const val ARG_PROFILE_ID = "profileId"
+    const val DATA_PAGES = "data_pages?$ARG_PROFILE_ID={$ARG_PROFILE_ID}"
+    const val ACTIVITY_PROFILES = "activity_profiles"
+    const val ACTIVITY_PROFILE = "activity_profile/{$ARG_PROFILE_ID}"
+
+    fun dataPages(profileId: Long? = null): String =
+        if (profileId == null) "data_pages" else "data_pages?$ARG_PROFILE_ID=$profileId"
+
+    fun activityProfile(profileId: Long): String = "activity_profile/$profileId"
     const val STRAVA_HELP = "strava_help"
     const val DEVELOPER = "developer"
     const val ARG_ACTIVITY_ID = "activityId"
     const val ACTIVITY_DETAIL = "activity/{$ARG_ACTIVITY_ID}"
 
     const val NO_ACTIVITY = -1L
+
+    /** Missing optional id argument. */
+    const val NO_ID = -1L
 
     fun activityDetail(activityId: Long): String = "activity/$activityId"
 
@@ -86,7 +99,31 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
         composable(AppRoutes.PROFILE) { ProfileRoute(onSaved = { navController.popBackStack() }) }
         composable(AppRoutes.RIDE_SETTINGS) { RideSettingsRoute() }
         composable(AppRoutes.BATTERY_HELP) { BatteryHelpRoute() }
-        composable(AppRoutes.DATA_PAGES) { DataPagesEditorRoute(onDone = { navController.popBackStack() }) }
+        composable(
+            AppRoutes.DATA_PAGES,
+            arguments = listOf(
+                navArgument(AppRoutes.ARG_PROFILE_ID) {
+                    type = NavType.LongType
+                    defaultValue = AppRoutes.NO_ID
+                },
+            ),
+        ) { entry ->
+            val profileId = entry.arguments?.getLong(AppRoutes.ARG_PROFILE_ID)?.takeIf { it != AppRoutes.NO_ID }
+            DataPagesEditorRoute(onDone = { navController.popBackStack() }, profileId = profileId)
+        }
+        composable(AppRoutes.ACTIVITY_PROFILES) {
+            ActivityProfilesRoute(onOpen = { navController.navigate(AppRoutes.activityProfile(it)) })
+        }
+        composable(
+            AppRoutes.ACTIVITY_PROFILE,
+            arguments = listOf(navArgument(AppRoutes.ARG_PROFILE_ID) { type = NavType.LongType }),
+        ) { entry ->
+            val profileId = entry.arguments?.getLong(AppRoutes.ARG_PROFILE_ID) ?: AppRoutes.NO_ID
+            ActivityProfileEditorRoute(
+                profileId = profileId,
+                onEditPages = { navController.navigate(AppRoutes.dataPages(it)) },
+            )
+        }
         composable(AppRoutes.DEVELOPER) { DevTools.DeveloperScreen() }
     }
 }
@@ -157,7 +194,8 @@ private fun openSection(section: SettingsSection, navController: NavHostControll
                 Intent(Settings.ACTION_APP_LOCALE_SETTINGS, (PACKAGE_SCHEME + context.packageName).toUri()),
             )
         }
-        SettingsSection.DATA_PAGES -> navController.navigate(AppRoutes.DATA_PAGES)
+        SettingsSection.DATA_PAGES -> navController.navigate(AppRoutes.dataPages())
+        SettingsSection.ACTIVITY_PROFILES -> navController.navigate(AppRoutes.ACTIVITY_PROFILES)
         SettingsSection.SAFETY, SettingsSection.BACKUP, SettingsSection.OFFLINE_MAPS -> Unit
     }
 }

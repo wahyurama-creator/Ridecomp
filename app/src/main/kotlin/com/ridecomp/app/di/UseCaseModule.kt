@@ -1,7 +1,9 @@
 package com.ridecomp.app.di
 
 import com.ridecomp.core.usecase.CompleteOnboardingUseCase
+import com.ridecomp.core.usecase.DeleteActivityProfileUseCase
 import com.ridecomp.core.usecase.DeleteActivityUseCase
+import com.ridecomp.core.usecase.DuplicateActivityProfileUseCase
 import com.ridecomp.core.usecase.EstimateHrMaxUseCase
 import com.ridecomp.core.usecase.ExportActivityUseCase
 import com.ridecomp.core.usecase.ExportFileStore
@@ -11,9 +13,12 @@ import com.ridecomp.core.usecase.ExportedFileHandler
 import com.ridecomp.core.usecase.ForgetSensorUseCase
 import com.ridecomp.core.usecase.GetLapsUseCase
 import com.ridecomp.core.usecase.GetRecoverableRideUseCase
+import com.ridecomp.core.usecase.GetRideProfileUseCase
 import com.ridecomp.core.usecase.HandleRecoveredRideUseCase
 import com.ridecomp.core.usecase.HasProfileUseCase
 import com.ridecomp.core.usecase.LoadRideChartUseCase
+import com.ridecomp.core.usecase.ObserveActivityProfileUseCase
+import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
 import com.ridecomp.core.usecase.ObserveDataPagesUseCase
 import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
@@ -21,6 +26,7 @@ import com.ridecomp.core.usecase.ObserveHistoryCountUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
 import com.ridecomp.core.usecase.ObserveOnboardingDoneUseCase
+import com.ridecomp.core.usecase.ObserveProfileChoiceUseCase
 import com.ridecomp.core.usecase.ObserveProfileUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveSavedSensorsUseCase
@@ -30,10 +36,12 @@ import com.ridecomp.core.usecase.ReadBatteryUseCase
 import com.ridecomp.core.usecase.RenameActivityUseCase
 import com.ridecomp.core.usecase.ResetDataPagesUseCase
 import com.ridecomp.core.usecase.SaveActivityFileUseCase
+import com.ridecomp.core.usecase.SaveActivityProfileUseCase
 import com.ridecomp.core.usecase.SaveDataPagesUseCase
 import com.ridecomp.core.usecase.SaveProfileUseCase
 import com.ridecomp.core.usecase.SaveRideSettingsUseCase
 import com.ridecomp.core.usecase.ScanSensorsUseCase
+import com.ridecomp.core.usecase.SelectActivityProfileUseCase
 import com.ridecomp.core.usecase.ShareActivityFileUseCase
 import com.ridecomp.core.usecase.StartRideUseCase
 import com.ridecomp.core.usecase.SuggestExportFileNameUseCase
@@ -57,7 +65,7 @@ val useCaseModule = module {
     factory { RenameActivityUseCase(get()) }
     factory { DeleteActivityUseCase(get()) }
     factory { LoadRideChartUseCase(get()) }
-    factory { ExportFitUseCase(get(), get(), get(), get()) }
+    factory { ExportFitUseCase(get(), get(), get(), get(), get()) }
     factory { ExportGpxUseCase(get(), get(), get()) }
     factory { ObserveProfileUseCase(get()) }
     factory { HasProfileUseCase(get()) }
@@ -81,7 +89,15 @@ val useCaseModule = module {
     factory { ScanSensorsUseCase(get()) }
     factory { PairSensorUseCase(get(), get()) }
     factory { ForgetSensorUseCase(get()) }
-    factory { ObserveDataPagesUseCase(get()) }
-    factory { SaveDataPagesUseCase(get()) }
-    factory { ResetDataPagesUseCase(get()) }
+    factory { ObserveDataPagesUseCase(get(), get()) }
+    factory { SaveDataPagesUseCase(get(), get()) }
+    factory { ResetDataPagesUseCase(get(), get()) }
+    factory { ObserveActivityProfilesUseCase(get()) }
+    factory { ObserveProfileChoiceUseCase(get()) }
+    factory { SelectActivityProfileUseCase(get()) }
+    factory { GetRideProfileUseCase(get()) }
+    factory { ObserveActivityProfileUseCase(get()) }
+    factory { SaveActivityProfileUseCase(get()) }
+    factory { DuplicateActivityProfileUseCase(get()) }
+    factory { DeleteActivityProfileUseCase(get()) }
 }

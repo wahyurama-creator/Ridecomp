@@ -1,5 +1,6 @@
 package com.ridecomp.core.repository
 
+import com.ridecomp.core.model.ActivityProfile
 import com.ridecomp.core.model.DataPagesLayout
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RiderProfile
@@ -35,4 +36,21 @@ public interface SettingsRepository {
 
     /** Saves custom pages; null restores the defaults. */
     public suspend fun saveDataPages(layout: DataPagesLayout?)
+}
+
+/** Activity profiles (05-DATA-MODEL `activity_profiles`) and the last one used (`settings`). */
+public interface ActivityProfileRepository {
+    /** All profiles in display order. */
+    public fun observeAll(): Flow<List<ActivityProfile>>
+
+    public suspend fun get(id: Long): ActivityProfile?
+
+    /** Inserts when `id == 0`, otherwise updates; returns the id. */
+    public suspend fun save(profile: ActivityProfile): Long
+
+    public suspend fun delete(id: Long)
+
+    public fun observeLastUsedId(): Flow<Long?>
+
+    public suspend fun setLastUsedId(id: Long)
 }

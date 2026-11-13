@@ -1,7 +1,9 @@
 package com.ridecomp.core.testing
 
 import com.ridecomp.core.model.Activity
+import com.ridecomp.core.model.ActivityProfile
 import com.ridecomp.core.model.ActivityStatus
+import com.ridecomp.core.model.BuiltInProfiles
 import com.ridecomp.core.model.DataPagesLayout
 import com.ridecomp.core.model.Lap
 import com.ridecomp.core.model.RideEvent
@@ -9,6 +11,7 @@ import com.ridecomp.core.model.RideSample
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RideTotals
 import com.ridecomp.core.model.RiderProfile
+import com.ridecomp.core.repository.ActivityProfileRepository
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.NewActivity
 import com.ridecomp.core.repository.ProfileRepository
@@ -58,6 +61,7 @@ public class FakeActivityRepository : ActivityRepository {
                 endedAtMs = null,
                 totals = RideTotals(),
                 lastCheckpointAtMs = activity.startedAtMs,
+                profileId = activity.profileId,
             ),
         )
         return id
@@ -189,4 +193,32 @@ public class FakeIdGenerator : IdGenerator {
 /** Name "Ride <startedAtMs>". */
 public class FakeRideNameProvider : RideNameProvider {
     override fun defaultName(startedAtMs: Long): String = "Ride $startedAtMs"
+}
+
+/** In-memory profiles, seeded with the built-ins (ids 1..5 in their order). */
+public class FakeActivityProfileRepository(
+    seed: List<ActivityProfile> = BuiltInProfiles.ALL.mapIndexed { index, profile -> profile.copy(id = index + 1L) },
+) : ActivityProfileRepository {
+    private val profiles = MutableStateFlow(seed)
+    private val lastUsed = MutableStateFlow<Long?>(null)
+
+    override fun observeAll(): Flow<List<ActivityProfile>> = profiles.map { list -> list.sortedBy { it.sortOrder } }
+
+    override suspend fun get(id: Long): ActivityProfile? = profiles.value.firstOrNull { it.id == id }
+
+    override suspend fun save(profile: ActivityProfile): Long {
+        val id = if (profile.id == 0L) (profiles.value.maxOfOrNull { it.id } ?: 0L) + 1 else profile.id
+        profiles.value = profiles.value.filterNot { it.id == id } + profile.copy(id = id)
+        return id
+    }
+
+    override suspend fun delete(id: Long) {
+        profiles.value = profiles.value.filterNot { it.id == id }
+    }
+
+    override fun observeLastUsedId(): Flow<Long?> = lastUsed
+
+    override suspend fun setLastUsedId(id: Long) {
+        lastUsed.value = id
+    }
 }

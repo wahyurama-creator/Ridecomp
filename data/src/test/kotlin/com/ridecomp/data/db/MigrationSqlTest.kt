@@ -1,6 +1,7 @@
 package com.ridecomp.data.db
 
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.ridecomp.core.model.BuiltInProfiles
 import java.io.File
 import java.lang.reflect.Proxy
 import kotlin.test.Test
@@ -42,6 +43,15 @@ class MigrationSqlTest {
     }
 
     @Test
+    fun `migration 2 to 3 creates the exported profiles table and seeds the built-ins`() {
+        val executed = executedSql { RideCompMigrations.MIGRATION_2_3.migrate(it) }
+        val (creates, inserts) = executed.partition { it.startsWith(CREATE) }
+
+        assertEquals(exportedCreateSql(3, DbNames.TABLE_ACTIVITY_PROFILES), creates)
+        assertEquals(BuiltInProfiles.ALL.size, inserts.size)
+    }
+
+    @Test
     fun `every schema version has a migration path`() {
         val versions = File(SCHEMA_DIR).listFiles().orEmpty().mapNotNull { it.nameWithoutExtension.toIntOrNull() }
 
@@ -50,6 +60,7 @@ class MigrationSqlTest {
     }
 
     private companion object {
+        const val CREATE = "CREATE"
         const val SCHEMA_DIR = "schemas/com.ridecomp.data.db.RideCompDatabase"
     }
 }

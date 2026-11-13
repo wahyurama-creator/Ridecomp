@@ -17,7 +17,7 @@ Semua nilai disimpan dalam satuan SI. Waktu disimpan sebagai epoch milidetik UTC
 | birth_year | int? | untuk rumus kalori HR |
 | sex | text? | `male`/`female`, opsional, untuk rumus kalori HR |
 | riding_position | text | `tops`/`hoods`/`drops` (untuk estimated power) |
-| surface | text | `road`/`gravel` (Crr) |
+| surface | text | `road`/`gravel Skema v3. Kolom setting ride bernilai null = ikuti pengaturan umum; `auto_lap_m = 0` = auto-lap mati untuk profil ini; `data_pages_json` null = halaman data umum (D-32). Profil bawaan di-seed oleh migrasi 2→3 / `onCreate`; profil terakhir di `settings` `app.last_profile_id`.` (Crr) |
 
 ### `sensors`
 | Kolom | Tipe |

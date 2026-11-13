@@ -48,6 +48,18 @@ class RideCompMigrationTest {
     }
 
     @Test
+    fun migrate_2_to_3_seeds_the_built_in_profiles() {
+        helper.createDatabase(TEST_DB_3, 2).close()
+
+        val db = helper.runMigrationsAndValidate(TEST_DB_3, 3, true, RideCompMigrations.MIGRATION_2_3)
+
+        db.query("SELECT kind FROM activity_profiles ORDER BY sort_order").use { cursor ->
+            val kinds = buildList { while (cursor.moveToNext()) add(cursor.getString(0)) }
+            assertEquals(listOf("road", "gravel", "mtb", "indoor", "commute"), kinds)
+        }
+    }
+
+    @Test
     fun all_migrations_open_on_latest_schema() {
         helper.createDatabase(TEST_DB_ALL, 1).close()
 
@@ -64,5 +76,6 @@ class RideCompMigrationTest {
     private companion object {
         const val TEST_DB = "migration-test.db"
         const val TEST_DB_ALL = "migration-all-test.db"
+        const val TEST_DB_3 = "migration-3-test.db"
     }
 }

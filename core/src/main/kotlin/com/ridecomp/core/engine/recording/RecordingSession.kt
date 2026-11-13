@@ -25,6 +25,10 @@ public data class RideSetup(
     val altitudeSource: AltitudeSource,
     val profile: RiderProfile = RiderProfile(),
     val ageYears: Int? = null,
+    /** Activity profile of this ride (12-FEATURE-SPECS §4); stored on the activity. */
+    val profileId: Long? = null,
+    /** False for Indoor: no GPS, speed and distance from the wheel sensor. */
+    val isGpsEnabled: Boolean = true,
 )
 
 /** Why a session command could not run. */
@@ -67,7 +71,7 @@ public class RecordingSession(
         val output = newRecorder.handle(RideAction.START, nowMs)
         return output.mapErrorToSession().onSuccess { started ->
             recorder = newRecorder
-            activityId = repository.create(NewActivity(ids.newId(), names.defaultName(nowMs), nowMs))
+            activityId = repository.create(NewActivity(ids.newId(), names.defaultName(nowMs), nowMs, setup.profileId))
             persist(started, nowMs)
         }
     }
@@ -188,7 +192,8 @@ public class RecordingSession(
         }
     }
 
-    private fun RideSetup.newRecorder() = RideRecorder(settings, altitudeSource, profile, ageYears)
+    private fun RideSetup.newRecorder() =
+        RideRecorder(settings, altitudeSource, profile, ageYears, RideContext(profileId, isGpsEnabled))
 
     private fun RideStatus.toActivityStatus(): ActivityStatus = when (this) {
         RideStatus.RECORDING, RideStatus.AUTO_PAUSED -> ActivityStatus.RECORDING

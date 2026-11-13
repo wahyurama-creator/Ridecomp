@@ -5,6 +5,7 @@ import com.ridecomp.core.model.ActivityStatus
 import com.ridecomp.core.model.RideSample
 import com.ridecomp.core.model.RideTotals
 import com.ridecomp.core.repository.NewActivity
+import com.ridecomp.core.testing.FakeActivityProfileRepository
 import com.ridecomp.core.testing.FakeActivityRepository
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeExportFileStore
@@ -92,7 +93,7 @@ class HistoryViewModelsTest {
 
     private fun detailViewModel(id: Long): ActivityDetailViewModel {
         val export = ExportActivityUseCase(
-            ExportFitUseCase(repository, store, FakeClock(), ZoneOffset.UTC),
+            ExportFitUseCase(repository, store, FakeClock(), ZoneOffset.UTC, FakeActivityProfileRepository()),
             ExportGpxUseCase(repository, store, ZoneOffset.UTC),
         )
         val useCases = ActivityDetailUseCases(

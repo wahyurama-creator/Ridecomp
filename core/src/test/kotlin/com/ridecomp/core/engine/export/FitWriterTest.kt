@@ -1,5 +1,6 @@
 package com.ridecomp.core.engine.export
 
+import com.ridecomp.core.model.FitSportValues
 import com.ridecomp.core.model.Lap
 import com.ridecomp.core.model.LapTrigger
 import com.ridecomp.core.model.RideSample
@@ -126,7 +127,7 @@ class FitWriterTest {
         val messages = ride((0L..60L).map { sample(it) }, laps = listOf(lap))
 
         val session = messages.single { it.global == FitProfile.Message.SESSION }.fields
-        assertEquals(FitProfile.Session.SPORT_CYCLING, session[FitProfile.Session.SPORT])
+        assertEquals(FitSportValues.SPORT_CYCLING.toLong(), session[FitProfile.Session.SPORT])
         assertEquals(48_000L, session[FitProfile.Session.TOTAL_DISTANCE])
         assertEquals(55_000L, session[FitProfile.Session.TOTAL_TIMER_TIME])
         assertEquals(60_000L, session[FitProfile.Session.TOTAL_ELAPSED_TIME])

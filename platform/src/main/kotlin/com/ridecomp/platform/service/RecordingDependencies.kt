@@ -13,6 +13,7 @@ import com.ridecomp.core.source.LocationSource
 import com.ridecomp.core.source.Logger
 import com.ridecomp.core.source.PressureSource
 import com.ridecomp.core.usecase.ExportFitUseCase
+import com.ridecomp.core.usecase.GetRideProfileUseCase
 import com.ridecomp.platform.device.AlertPlayer
 
 /**
@@ -37,6 +38,9 @@ interface RecordingDependencies {
 
     /** Writes the temporary emergency FIT at ≤ 5 % battery (12-FEATURE-SPECS §3). */
     val exportFit: ExportFitUseCase
+
+    /** Activity profile of a ride (default when the id is unknown or null). */
+    val getRideProfile: GetRideProfileUseCase
 
     /** A new session per service instance. */
     fun newSession(): RecordingSession

@@ -3,6 +3,7 @@ package com.ridecomp.app.di
 import com.ridecomp.app.AppViewModel
 import com.ridecomp.core.engine.sensors.BleScanner
 import com.ridecomp.core.engine.sensors.SensorRepository
+import com.ridecomp.core.repository.ActivityProfileRepository
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.ProfileRepository
 import com.ridecomp.core.repository.SettingsRepository
@@ -12,6 +13,7 @@ import com.ridecomp.core.source.DispatcherProvider
 import com.ridecomp.core.source.LocationSource
 import com.ridecomp.core.source.Logger
 import com.ridecomp.core.source.RideController
+import com.ridecomp.core.testing.FakeActivityProfileRepository
 import com.ridecomp.core.testing.FakeActivityRepository
 import com.ridecomp.core.testing.FakeBatteryLevelSource
 import com.ridecomp.core.testing.FakeBleScanner
@@ -29,6 +31,8 @@ import com.ridecomp.core.usecase.ExportFileStore
 import com.ridecomp.core.usecase.ExportedFileHandler
 import com.ridecomp.feature.history.viewmodel.ActivityDetailViewModel
 import com.ridecomp.feature.history.viewmodel.HistoryViewModel
+import com.ridecomp.feature.ride.viewmodel.ActivityProfileEditorViewModel
+import com.ridecomp.feature.ride.viewmodel.ActivityProfilesViewModel
 import com.ridecomp.feature.ride.viewmodel.DataPagesEditorViewModel
 import com.ridecomp.feature.ride.viewmodel.HomeViewModel
 import com.ridecomp.feature.ride.viewmodel.PreRideViewModel
@@ -74,6 +78,7 @@ class AppModulesTest {
         single<ExportedFileHandler> { FakeExportedFileHandler() }
         single<SensorRepository> { FakeSensorRepository() }
         single<BleScanner> { FakeBleScanner() }
+        single<ActivityProfileRepository> { FakeActivityProfileRepository() }
     }
 
     @BeforeTest
@@ -107,5 +112,8 @@ class AppModulesTest {
         assertNotNull(koin.get<ActivityDetailViewModel> { parametersOf(1L) })
         assertNotNull(koin.get<SensorsViewModel>())
         assertNotNull(koin.get<DataPagesEditorViewModel>())
+        assertNotNull(koin.get<DataPagesEditorViewModel> { parametersOf(1L) })
+        assertNotNull(koin.get<ActivityProfilesViewModel>())
+        assertNotNull(koin.get<ActivityProfileEditorViewModel> { parametersOf(1L) })
     }
 }

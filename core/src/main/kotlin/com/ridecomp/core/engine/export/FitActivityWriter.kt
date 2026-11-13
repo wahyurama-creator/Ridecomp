@@ -8,6 +8,7 @@ import com.ridecomp.core.engine.export.FitBaseType.UINT16
 import com.ridecomp.core.engine.export.FitBaseType.UINT32
 import com.ridecomp.core.engine.export.FitBaseType.UINT32Z
 import com.ridecomp.core.engine.export.FitBaseType.UINT8
+import com.ridecomp.core.model.FitSportValues
 import com.ridecomp.core.model.Lap
 import com.ridecomp.core.model.LapTrigger
 import com.ridecomp.core.model.RideSample
@@ -21,7 +22,17 @@ import kotlin.math.roundToLong
  * Only real power-meter data goes to `power`; estimated power is never written (§B.3, CLAUDE.md).
  * Feed samples and timer events in time order, then call [finish].
  */
-public class FitActivityWriter(private val startTimeMs: Long, serialNumber: Long) {
+/** FIT session `sport` / `sub_sport` (from the activity profile, 12-FEATURE-SPECS §4). */
+public data class FitSport(
+    val sport: Int = FitSportValues.SPORT_CYCLING,
+    val subSport: Int = FitSportValues.SUB_SPORT_GENERIC,
+)
+
+public class FitActivityWriter(
+    private val startTimeMs: Long,
+    serialNumber: Long,
+    private val sport: FitSport = FitSport(),
+) {
     private val encoder = FitEncoder()
     private var lapCount = 0
 
@@ -122,8 +133,8 @@ public class FitActivityWriter(private val startTimeMs: Long, serialNumber: Long
                 FitProfile.Event.SESSION,
                 FitProfile.Event.TYPE_STOP,
                 fitTime(startTimeMs),
-                FitProfile.Session.SPORT_CYCLING,
-                FitProfile.Session.SUB_SPORT_GENERIC,
+                sport.sport.toLong(),
+                sport.subSport.toLong(),
                 scaled(totals.elapsedS.toDouble(), FitProfile.TIME_SCALE),
                 scaled(totals.movingS.toDouble(), FitProfile.TIME_SCALE),
                 scaled(totals.distanceM, FitProfile.DISTANCE_SCALE),
