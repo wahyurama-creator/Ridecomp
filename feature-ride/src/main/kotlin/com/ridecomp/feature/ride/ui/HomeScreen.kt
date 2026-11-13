@@ -1,21 +1,46 @@
 package com.ridecomp.feature.ride.ui
 
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.config.Units
+import com.ridecomp.core.engine.recording.BatteryStatus
+import com.ridecomp.core.engine.sensors.SavedSensor
+import com.ridecomp.core.engine.sensors.SensorKind
+import com.ridecomp.core.engine.sensors.isBatteryLow
+import com.ridecomp.core.model.Activity
 import com.ridecomp.core.usecase.BackupReminder
+import com.ridecomp.core.usecase.GpsAvailability
 import com.ridecomp.core.usecase.RecoveryChoice
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.ride.R
@@ -23,17 +48,23 @@ import com.ridecomp.feature.ride.viewmodel.HomeEffect
 import com.ridecomp.feature.ride.viewmodel.HomeUiEvent
 import com.ridecomp.feature.ride.viewmodel.HomeUiState
 import com.ridecomp.feature.ride.viewmodel.HomeViewModel
-import com.ridecomp.ui.component.AlertBanner
-import com.ridecomp.ui.component.AlertSeverity
-import com.ridecomp.ui.component.BannerAction
+import com.ridecomp.ui.R as UiR
 import com.ridecomp.ui.component.BigButton
+import com.ridecomp.ui.component.BigButtonSize
+import com.ridecomp.ui.component.BigButtonStyle
+import com.ridecomp.ui.component.CardTone
 import com.ridecomp.ui.component.ConfirmDialog
-import com.ridecomp.ui.component.ScreenScaffold
+import com.ridecomp.ui.component.RideCompCard
+import com.ridecomp.ui.component.StatusTone
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
 import com.ridecomp.ui.theme.RideCompDimens
 import com.ridecomp.ui.theme.RideCompTheme
 import com.ridecomp.ui.udf.ObserveEffects
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import kotlinx.collections.immutable.persistentListOf
 import org.koin.androidx.compose.koinViewModel
 
 /** Home (02-DESIGN §3.2): START RIDE, ride in progress, recovery banner, last ride. */
@@ -46,6 +77,10 @@ fun HomeRoute(
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    LifecycleResumeEffect(Unit) {
+        viewModel.onEvent(HomeUiEvent.Refresh)
+        onPauseOrDispose {}
+    }
     ObserveEffects(viewModel.effects) { effect ->
         when (effect) {
             HomeEffect.OpenPreRide -> onOpenPreRide()
@@ -59,48 +94,49 @@ fun HomeRoute(
 @Composable
 fun HomeScreen(state: HomeUiState, onEvent: (HomeUiEvent) -> Unit, modifier: Modifier = Modifier) {
     var isDiscardDialogShown by remember { mutableStateOf(false) }
-    ScreenScaffold(
-        modifier = modifier,
-        title = stringResource(R.string.ride_home_title),
-        banner = state.recoverable?.let {
-            {
-                AlertBanner(
-                    message = stringResource(R.string.ride_recovery_message),
-                    severity = AlertSeverity.WARN,
-                    actions = listOf(
-                        BannerAction(stringResource(R.string.ride_recovery_resume)) {
-                            onEvent(HomeUiEvent.Recover(RecoveryChoice.RESUME))
-                        },
-                        BannerAction(stringResource(R.string.ride_recovery_save)) {
-                            onEvent(HomeUiEvent.Recover(RecoveryChoice.SAVE))
-                        },
-                        BannerAction(stringResource(R.string.ride_recovery_discard)) { isDiscardDialogShown = true },
-                    ),
-                )
-            }
-        },
+    val format = remember(state.unitSystem) { UnitFormatter(state.unitSystem) }
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(RideCompTheme.colors.bg)
+            .verticalScroll(rememberScrollState())
+            .padding(
+                start = RideCompDimens.screenPaddingHorizontal,
+                end = RideCompDimens.screenPaddingHorizontal,
+                top = RideCompDimens.screenPaddingTop,
+                bottom = RideCompDimens.screenPaddingBottom,
+            ),
+        verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(RideCompDimens.spacingM),
-            verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingM),
-        ) {
-            if (state.isRideInProgress) {
-                Text(
-                    text = stringResource(R.string.ride_home_in_progress),
-                    style = RideCompTheme.typography.title,
-                    color = RideCompTheme.colors.ok,
-                )
-                BigButton(text = stringResource(R.string.ride_home_open_ride), onClick = {
-                    onEvent(HomeUiEvent.OpenRide)
-                })
-            } else {
-                BigButton(text = stringResource(R.string.ride_start_button), onClick = {
-                    onEvent(HomeUiEvent.StartRide)
-                })
-            }
-            LastRide(state)
+        HomeHeader(state.battery)
+        val recoverable = state.recoverable
+        if (recoverable != null) {
+            RecoveryCard(recoverable, format, onEvent, onDiscard = { isDiscardDialogShown = true })
+        } else {
             state.backupReminder?.let { BackupReminderCard(it, onEvent) }
         }
+        StatusTiles(state)
+        if (state.isRideInProgress) {
+            Text(
+                text = stringResource(R.string.ride_home_in_progress),
+                style = RideCompTheme.typography.cardTitle,
+                color = RideCompTheme.colors.ok,
+            )
+            BigButton(
+                text = stringResource(R.string.ride_home_open_ride),
+                onClick = { onEvent(HomeUiEvent.OpenRide) },
+                size = BigButtonSize.HERO,
+                iconRes = UiR.drawable.ic_play,
+            )
+        } else {
+            BigButton(
+                text = stringResource(R.string.ride_start_button),
+                onClick = { onEvent(HomeUiEvent.StartRide) },
+                size = BigButtonSize.HERO,
+                iconRes = UiR.drawable.ic_play,
+            )
+        }
+        state.lastRide?.let { LastRideCard(it, format) }
     }
     if (isDiscardDialogShown) {
         ConfirmDialog(
@@ -117,45 +153,242 @@ fun HomeScreen(state: HomeUiState, onEvent: (HomeUiEvent) -> Unit, modifier: Mod
     }
 }
 
+/** "Ride**Comp**" logo and the phone battery (13-UI-SCREENS #3). */
 @Composable
-private fun LastRide(state: HomeUiState) {
-    val ride = state.lastRide
-    val text = if (ride == null) {
-        stringResource(R.string.ride_home_no_last_ride)
-    } else {
-        val formatter = UnitFormatter(state.unitSystem)
-        val summary = listOf(
-            ride.name,
-            "${formatter.distance(ride.totals.distanceM)} ${formatter.distanceUnit}",
-            formatter.duration(ride.totals.movingS * Units.MS_PER_SECOND),
-        ).joinToString(SEPARATOR)
-        stringResource(R.string.ride_home_last_ride, summary)
+private fun HomeHeader(battery: BatteryStatus?) {
+    val colors = RideCompTheme.colors
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = buildAnnotatedString {
+                append(stringResource(R.string.home_logo_first))
+                withStyle(SpanStyle(color = colors.accent)) { append(stringResource(R.string.home_logo_second)) }
+            },
+            style = RideCompTheme.typography.title,
+            color = colors.textPrimary,
+            modifier = Modifier.weight(1f).semantics { heading() },
+        )
+        battery?.let {
+            Text(
+                text = stringResource(R.string.home_battery, it.percent),
+                style = RideCompTheme.typography.caption,
+                color = colors.textSecondary,
+            )
+        }
     }
-    Text(text = text, style = RideCompTheme.typography.body, color = RideCompTheme.colors.textSecondary)
 }
 
-private const val SEPARATOR = " · "
-
-@ThemePreviews
+/** Unsaved ride after a crash/kill (T1.6): resume, save or discard (2-step). */
 @Composable
-private fun HomeScreenPreview() {
-    RideCompPreview { HomeScreen(state = HomeUiState(), onEvent = {}) }
+private fun RecoveryCard(ride: Activity, format: UnitFormatter, onEvent: (HomeUiEvent) -> Unit, onDiscard: () -> Unit) {
+    RideCompCard(tone = CardTone.WARNING) {
+        Text(
+            text = stringResource(R.string.ride_recovery_message),
+            style = RideCompTheme.typography.cardTitle,
+            color = RideCompTheme.colors.warnText,
+        )
+        Text(
+            text = rideSummary(ride, format),
+            style = RideCompTheme.typography.body,
+            color = RideCompTheme.colors.textTertiary,
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS)) {
+            BigButton(
+                text = stringResource(R.string.ride_recovery_resume),
+                onClick = { onEvent(HomeUiEvent.Recover(RecoveryChoice.RESUME)) },
+                style = BigButtonStyle.WARN,
+                modifier = Modifier.weight(1f),
+            )
+            BigButton(
+                text = stringResource(R.string.ride_recovery_save),
+                onClick = { onEvent(HomeUiEvent.Recover(RecoveryChoice.SAVE)) },
+                style = BigButtonStyle.WARN_OUTLINE,
+                modifier = Modifier.weight(1f),
+            )
+            BigButton(
+                text = stringResource(R.string.ride_recovery_discard),
+                onClick = onDiscard,
+                style = BigButtonStyle.TEXT_DANGER,
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
 }
+
+/** Four status tiles (13-UI-SCREENS #3): GPS permission, then saved sensors with their last battery. */
+@Composable
+private fun StatusTiles(state: HomeUiState) {
+    val gpsTile = when (state.gps) {
+        GpsAvailability.READY -> TileValue(stringResource(R.string.home_tile_gps_ready), StatusTone.OK)
+        GpsAvailability.NO_PERMISSION -> TileValue(
+            stringResource(R.string.home_tile_gps_no_permission),
+            StatusTone.DANGER,
+        )
+        GpsAvailability.DISABLED -> TileValue(stringResource(R.string.home_tile_gps_off), StatusTone.DANGER)
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS)) {
+        StatusTile(UiR.drawable.ic_location, stringResource(R.string.home_tile_gps), gpsTile, Modifier.weight(1f))
+        SensorKind.entries.forEach { kind ->
+            StatusTile(
+                iconRes = kind.tileIcon(),
+                label = stringResource(kind.tileLabel()),
+                value = sensorTileValue(state.sensors, kind),
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
+}
+
+private data class TileValue(val text: String, val tone: StatusTone)
+
+@Composable
+private fun sensorTileValue(sensors: List<SavedSensor>, kind: SensorKind): TileValue {
+    val sensor = sensors.firstOrNull { kind in it.kinds }
+    return when {
+        sensor == null && kind == SensorKind.POWER ->
+            TileValue(stringResource(R.string.home_tile_power_estimate), StatusTone.INACTIVE)
+        sensor == null -> TileValue(stringResource(R.string.home_tile_none), StatusTone.INACTIVE)
+        else -> TileValue(
+            sensor.lastBatteryPercent?.let { stringResource(R.string.home_battery_percent, it) }
+                ?: stringResource(R.string.home_tile_saved),
+            if (sensor.isBatteryLow) StatusTone.WARN else StatusTone.OK,
+        )
+    }
+}
+
+@Composable
+private fun StatusTile(@DrawableRes iconRes: Int, label: String, value: TileValue, modifier: Modifier) {
+    val colors = RideCompTheme.colors
+    val tint = when (value.tone) {
+        StatusTone.OK -> colors.ok
+        StatusTone.WARN -> colors.warnText
+        StatusTone.DANGER -> colors.danger
+        StatusTone.INACTIVE -> colors.disabled
+    }
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(RideCompDimens.cornerRadiusSmall))
+            .background(colors.surface)
+            .padding(vertical = RideCompDimens.spacingSm, horizontal = RideCompDimens.spacingXs)
+            .semantics(mergeDescendants = true) {},
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingXs),
+    ) {
+        Icon(painterResource(iconRes), contentDescription = null, tint = tint)
+        Text(
+            text = label,
+            style = RideCompTheme.typography.caption.copy(fontWeight = FontWeight.Bold),
+            color = if (value.tone == StatusTone.INACTIVE) colors.textSecondary else colors.textPrimary,
+            maxLines = 1,
+        )
+        Text(
+            text = value.text,
+            style = RideCompTheme.typography.navLabel,
+            color = if (value.tone == StatusTone.INACTIVE) colors.textSecondary else tint,
+            maxLines = 1,
+        )
+    }
+}
+
+private fun SensorKind.tileIcon(): Int = when (this) {
+    SensorKind.HEART_RATE -> UiR.drawable.ic_heart
+    SensorKind.SPEED_CADENCE -> UiR.drawable.ic_cadence
+    SensorKind.POWER -> UiR.drawable.ic_power
+}
+
+@StringRes
+private fun SensorKind.tileLabel(): Int = when (this) {
+    SensorKind.HEART_RATE -> R.string.home_tile_hr
+    SensorKind.SPEED_CADENCE -> R.string.home_tile_cadence
+    SensorKind.POWER -> R.string.home_tile_power
+}
+
+/** Last ride (13-UI-SCREENS #3): distance, moving time, average speed. */
+@Composable
+private fun LastRideCard(ride: Activity, format: UnitFormatter) {
+    RideCompCard {
+        Text(
+            text = stringResource(R.string.home_last_ride_title, ride.name).uppercase(),
+            style = RideCompTheme.typography.dataLabel,
+            color = RideCompTheme.colors.textSecondary,
+        )
+        Row {
+            LastRideStat(format.distance(ride.totals.distanceM), format.distanceUnit, Modifier.weight(1f))
+            LastRideStat(
+                format.duration(ride.totals.movingS * Units.MS_PER_SECOND),
+                stringResource(R.string.home_last_ride_moving),
+                Modifier.weight(1f),
+            )
+            LastRideStat(
+                format.speed(ride.totals.avgSpeedMps),
+                stringResource(R.string.home_last_ride_avg, format.speedUnit),
+                Modifier.weight(1f),
+            )
+        }
+    }
+}
+
+@Composable
+private fun LastRideStat(value: String, caption: String, modifier: Modifier) {
+    Column(modifier = modifier) {
+        Text(text = value, style = RideCompTheme.typography.statValue, color = RideCompTheme.colors.textPrimary)
+        Text(text = caption, style = RideCompTheme.typography.caption, color = RideCompTheme.colors.textSecondary)
+    }
+}
+
+/** "12 Nov 06:12 · 12,40 km · 0:31:05" for the recovery card. */
+private fun rideSummary(ride: Activity, format: UnitFormatter): String = listOf(
+    START_FORMAT.format(Instant.ofEpochMilli(ride.startedAtMs).atZone(ZoneId.systemDefault())),
+    "${format.distance(ride.totals.distanceM)} ${format.distanceUnit}",
+    format.duration(ride.totals.movingS * Units.MS_PER_SECOND),
+).joinToString(SEPARATOR)
+
+private val START_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM HH:mm")
+private const val SEPARATOR = " · "
 
 /** Shown when opening the app, never by a background job (12-FEATURE-SPECS §12.4, BAT-05). */
 @Composable
 private fun BackupReminderCard(reminder: BackupReminder, onEvent: (HomeUiEvent) -> Unit) {
     val days = reminder.daysSinceBackup
-    AlertBanner(
-        message = if (days == null) {
-            pluralStringResource(R.plurals.home_backup_never, reminder.newActivities, reminder.newActivities)
-        } else {
-            pluralStringResource(R.plurals.home_backup_days, days.toInt(), days.toInt())
-        },
-        severity = AlertSeverity.INFO,
-        actions = listOf(
-            BannerAction(stringResource(R.string.home_backup_now)) { onEvent(HomeUiEvent.OpenBackup) },
-            BannerAction(stringResource(R.string.home_backup_later)) { onEvent(HomeUiEvent.SnoozeBackupReminder) },
-        ),
-    )
+    RideCompCard(tone = CardTone.WARNING) {
+        Text(
+            text = if (days == null) {
+                pluralStringResource(R.plurals.home_backup_never, reminder.newActivities, reminder.newActivities)
+            } else {
+                pluralStringResource(R.plurals.home_backup_days, days.toInt(), days.toInt())
+            },
+            style = RideCompTheme.typography.cardTitle,
+            color = RideCompTheme.colors.warnText,
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS)) {
+            BigButton(
+                text = stringResource(R.string.home_backup_now),
+                onClick = { onEvent(HomeUiEvent.OpenBackup) },
+                style = BigButtonStyle.WARN,
+                modifier = Modifier.weight(1f),
+            )
+            BigButton(
+                text = stringResource(R.string.home_backup_later),
+                onClick = { onEvent(HomeUiEvent.SnoozeBackupReminder) },
+                style = BigButtonStyle.WARN_OUTLINE,
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
+}
+
+@ThemePreviews
+@Composable
+private fun HomeScreenPreview() {
+    RideCompPreview {
+        HomeScreen(
+            state = HomeUiState(
+                battery = BatteryStatus(86, isCharging = false),
+                sensors = persistentListOf(
+                    SavedSensor("A", "HRM", setOf(SensorKind.HEART_RATE), lastBatteryPercent = 82),
+                    SavedSensor("B", "CSC", setOf(SensorKind.SPEED_CADENCE), lastBatteryPercent = 12),
+                ),
+            ),
+            onEvent = {},
+        )
+    }
 }

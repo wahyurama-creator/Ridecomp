@@ -66,7 +66,8 @@ public sealed interface GpsStatus {
 
     public data object Disabled : GpsStatus
 
-    public data object Searching : GpsStatus
+    /** No fix good enough yet; [accuracyM] is the latest fix's accuracy, if any (13-UI-SCREENS #29). */
+    public data class Searching(val accuracyM: Double? = null) : GpsStatus
 
     /** The selected profile records without GPS (Indoor). */
     public data object NotUsed : GpsStatus
@@ -90,11 +91,22 @@ public class ObserveGpsStatusUseCase(private val locationSource: LocationSource)
                 ) {
                     GpsStatus.Ready(accuracy)
                 } else {
-                    GpsStatus.Searching
+                    GpsStatus.Searching(accuracy)
                 }
             }
-            .onStart { emit(GpsStatus.Searching) }
+            .onStart { emit(GpsStatus.Searching()) }
             .catch { emit(GpsStatus.NoPermission) }
+    }
+}
+
+/** Whether recording could use GPS, for the home tiles: permission and switch only, GPS stays off (BAT-01). */
+public enum class GpsAvailability { READY, NO_PERMISSION, DISABLED }
+
+public class CheckGpsAvailabilityUseCase(private val locationSource: LocationSource) {
+    public operator fun invoke(): GpsAvailability = when {
+        !locationSource.isPermissionGranted() -> GpsAvailability.NO_PERMISSION
+        !locationSource.isGpsEnabled() -> GpsAvailability.DISABLED
+        else -> GpsAvailability.READY
     }
 }
 

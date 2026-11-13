@@ -20,8 +20,10 @@ import com.ridecomp.core.testing.FakeLocationSource
 import com.ridecomp.core.testing.FakeRideController
 import com.ridecomp.core.testing.FakeRouteRepository
 import com.ridecomp.core.testing.FakeSafetyRepository
+import com.ridecomp.core.testing.FakeSensorRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.testing.TestDispatcherProvider
+import com.ridecomp.core.usecase.CheckGpsAvailabilityUseCase
 import com.ridecomp.core.usecase.GetRecoverableRideUseCase
 import com.ridecomp.core.usecase.GetRoutePointsUseCase
 import com.ridecomp.core.usecase.GpsStatus
@@ -37,22 +39,26 @@ import com.ridecomp.core.usecase.ObserveProfileChoiceUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveRouteUseCase
 import com.ridecomp.core.usecase.ObserveSafetyUseCase
+import com.ridecomp.core.usecase.ObserveSavedSensorsUseCase
 import com.ridecomp.core.usecase.PerformIncidentActionUseCase
 import com.ridecomp.core.usecase.PerformRideActionUseCase
 import com.ridecomp.core.usecase.ReadBatteryUseCase
 import com.ridecomp.core.usecase.RecoveryChoice
 import com.ridecomp.core.usecase.RenameActivityUseCase
+import com.ridecomp.core.usecase.SaveRideSettingsUseCase
 import com.ridecomp.core.usecase.SelectActivityProfileUseCase
 import com.ridecomp.core.usecase.SnoozeBackupReminderUseCase
 import com.ridecomp.core.usecase.StartRideUseCase
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.ride.model.DefaultDataPages
 import com.ridecomp.feature.ride.model.RideMetric
+import com.ridecomp.feature.ride.viewmodel.HomeDeviceUseCases
 import com.ridecomp.feature.ride.viewmodel.HomeEffect
 import com.ridecomp.feature.ride.viewmodel.HomeUiEvent
 import com.ridecomp.feature.ride.viewmodel.HomeUseCases
 import com.ridecomp.feature.ride.viewmodel.HomeViewModel
 import com.ridecomp.feature.ride.viewmodel.PreRideEffect
+import com.ridecomp.feature.ride.viewmodel.PreRideOptionUseCases
 import com.ridecomp.feature.ride.viewmodel.PreRideUiEvent
 import com.ridecomp.feature.ride.viewmodel.PreRideUseCases
 import com.ridecomp.feature.ride.viewmodel.PreRideViewModel
@@ -104,6 +110,11 @@ class RideViewModelsTest {
             ObserveRideSettingsUseCase(settings),
             ObserveBackupReminderUseCase(backupState, repository, FakeClock()),
             SnoozeBackupReminderUseCase(backupState, FakeClock()),
+            HomeDeviceUseCases(
+                ReadBatteryUseCase(FakeBatteryLevelSource()),
+                ObserveSavedSensorsUseCase(FakeSensorRepository()),
+                CheckGpsAvailabilityUseCase(FakeLocationSource()),
+            ),
         ),
     )
 
@@ -144,6 +155,11 @@ class RideViewModelsTest {
                 SelectActivityProfileUseCase(profiles),
                 ObserveRouteUseCase(FakeRouteRepository()),
                 StartRideUseCase(controller),
+                PreRideOptionUseCases(
+                    ObserveSavedSensorsUseCase(FakeSensorRepository()),
+                    ObserveRideSettingsUseCase(settings),
+                    SaveRideSettingsUseCase(settings),
+                ),
             ),
         )
         assertEquals(ActivityKind.ROAD, viewModel.uiState.value.selected?.kind)

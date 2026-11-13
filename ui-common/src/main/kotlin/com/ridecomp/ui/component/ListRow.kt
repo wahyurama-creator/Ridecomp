@@ -18,6 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Dp
 import com.ridecomp.ui.R
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
@@ -74,14 +75,18 @@ fun ListRow(
 
 /** Group title above list rows (e.g. "Saved", "Found"); marked as a heading for TalkBack (UI-08). */
 @Composable
-fun SectionHeader(text: String, modifier: Modifier = Modifier) {
+fun SectionHeader(
+    text: String,
+    modifier: Modifier = Modifier,
+    horizontalPadding: Dp = RideCompDimens.screenPaddingHorizontal,
+) {
     Text(
         text = text.uppercase(),
         style = RideCompTheme.typography.dataLabel,
         color = RideCompTheme.colors.textSecondary,
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = RideCompDimens.screenPaddingHorizontal, vertical = RideCompDimens.spacingS)
+            .padding(horizontal = horizontalPadding, vertical = RideCompDimens.spacingS)
             .semantics { heading() },
     )
 }
