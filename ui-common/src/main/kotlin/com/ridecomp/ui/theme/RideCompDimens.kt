@@ -85,6 +85,8 @@ object RideCompDimens {
     val turnArrowSize = 64.dp
     val previewPageHeight = 600.dp
     val navigationFieldHeight = 92.dp
+    val storageBarHeight = 8.dp
+    val routeMapHeight = 220.dp
     val turnDistanceSize = 44.sp
 
     // Data field typography (02-DESIGN §4.2)

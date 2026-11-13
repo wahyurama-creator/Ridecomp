@@ -31,4 +31,9 @@
     <string name="route_no_climbs">No climbs on this route.</string>
     <string name="route_climb_label">Climb %1$d of %2$d</string>
     <string name="route_climb_stats">%1$s %2$s · %3$s%% · ↑ %4$s %5$s</string>
+    <string name="route_map_description">Route map</string>
+    <string name="route_map_offline">The map of this route is available offline</string>
+    <string name="route_map_missing_title">No map for this area yet</string>
+    <string name="route_map_missing">You can still follow the route with the breadcrumb line. Import a map file of this region to see the roads.</string>
+    <string name="route_map_import">Open Offline maps</string>
 </resources>

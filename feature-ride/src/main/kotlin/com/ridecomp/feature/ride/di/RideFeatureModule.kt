@@ -24,7 +24,7 @@ val rideFeatureModule = module {
     factory { PreRideUseCases(get(), get(), get(), get(), get(), get(), get()) }
     viewModel { params -> PreRideViewModel(params.getOrNull(), get()) }
     factory { RideUseCases(get(), get(), get(), get(), get(), get(), get(), get()) }
-    viewModel { RideViewModel(get(), get()) }
+    viewModel { RideViewModel(get(), get(), get()) }
     viewModel { SummaryViewModel(get(), get(), get(), get(), get()) }
     viewModel { params -> DataPagesEditorViewModel(params.getOrNull(), get(), get(), get()) }
     viewModel { ActivityProfilesViewModel(get(), get(), get()) }

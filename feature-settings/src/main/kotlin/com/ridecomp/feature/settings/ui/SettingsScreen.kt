@@ -1,6 +1,7 @@
 package com.ridecomp.feature.settings.ui
 
 import android.os.Build
+import android.text.format.Formatter
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -46,7 +48,7 @@ enum class SettingsSection(@param:StringRes val titleRes: Int, val taskId: Strin
     REMINDERS(R.string.settings_reminders),
     SAFETY(R.string.settings_safety),
     DATA_PAGES(R.string.settings_data_pages),
-    OFFLINE_MAPS(R.string.settings_offline_maps, taskId = "T3.4"),
+    OFFLINE_MAPS(R.string.settings_offline_maps),
     LANGUAGE(R.string.settings_language),
     BACKUP(R.string.settings_backup),
     BATTERY_HELP(R.string.settings_battery_help),
@@ -195,10 +197,23 @@ private fun SettingsSection.summary(state: SettingsUiState): Pair<String?, Value
             },
         ) to ValueTone.NORMAL
         SettingsSection.BACKUP -> stringResource(R.string.settings_backup_value) to ValueTone.NORMAL
-        SettingsSection.DATA_PAGES, SettingsSection.OFFLINE_MAPS, SettingsSection.BATTERY_HELP,
+        SettingsSection.OFFLINE_MAPS -> offlineMapsSummary(state) to ValueTone.NORMAL
+        SettingsSection.DATA_PAGES, SettingsSection.BATTERY_HELP,
         SettingsSection.DEVELOPER,
         -> null to ValueTone.NORMAL
     }
+}
+
+@Composable
+private fun offlineMapsSummary(state: SettingsUiState): String = if (state.offlineMapCount == 0) {
+    stringResource(R.string.settings_offline_maps_none)
+} else {
+    pluralStringResource(
+        R.plurals.settings_offline_maps_value,
+        state.offlineMapCount,
+        state.offlineMapCount,
+        Formatter.formatShortFileSize(LocalContext.current, state.offlineMapBytes),
+    )
 }
 
 @Composable

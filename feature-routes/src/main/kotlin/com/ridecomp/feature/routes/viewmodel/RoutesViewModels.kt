@@ -4,7 +4,9 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.viewModelScope
 import com.ridecomp.core.config.ActivityConfig
 import com.ridecomp.core.config.Units
+import com.ridecomp.core.engine.map.covering
 import com.ridecomp.core.engine.route.GpxError
+import com.ridecomp.core.engine.route.PolylineSimplifier
 import com.ridecomp.core.engine.route.Route
 import com.ridecomp.core.engine.route.RouteClimb
 import com.ridecomp.core.engine.route.RoutePoint
@@ -14,6 +16,7 @@ import com.ridecomp.core.usecase.DeleteRouteUseCase
 import com.ridecomp.core.usecase.GetRouteGuidanceUseCase
 import com.ridecomp.core.usecase.GetRoutePointsUseCase
 import com.ridecomp.core.usecase.ImportGpxUseCase
+import com.ridecomp.core.usecase.ObserveOfflineMapsUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveRouteUseCase
 import com.ridecomp.core.usecase.ObserveRoutesUseCase
@@ -22,6 +25,7 @@ import com.ridecomp.core.usecase.ReverseRouteUseCase
 import com.ridecomp.core.util.Outcome
 import com.ridecomp.core.util.downsample
 import com.ridecomp.ui.component.ChartValue
+import com.ridecomp.ui.map.MapPoint
 import com.ridecomp.ui.udf.UdfViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -92,6 +96,7 @@ data class RouteDetailUseCases(
     val observeRoute: ObserveRouteUseCase,
     val getPoints: GetRoutePointsUseCase,
     val getGuidance: GetRouteGuidanceUseCase,
+    val observeMaps: ObserveOfflineMapsUseCase,
     val observeSettings: ObserveRideSettingsUseCase,
     val rename: RenameRouteUseCase,
     val reverse: ReverseRouteUseCase,
@@ -106,6 +111,11 @@ data class RouteDetailUiState(
     val elevation: ImmutableList<ChartValue> = persistentListOf(),
     /** Climbs found at import (T3.11), in route order. */
     val climbs: ImmutableList<RouteClimb> = persistentListOf(),
+    /** Simplified route line for the map (13-UI-SCREENS #12). */
+    val mapLine: ImmutableList<MapPoint> = persistentListOf(),
+    /** Imported regions; the map shows only when one covers the route start. */
+    val mapRegions: ImmutableList<String> = persistentListOf(),
+    val isAreaOffline: Boolean = false,
     val unitSystem: UnitSystem = UnitSystem.METRIC,
 )
 
@@ -142,7 +152,20 @@ class RouteDetailViewModel(
             val units = currentState.unitSystem
             // Conversion and downsampling are CPU work: off the main thread (02-DESIGN §6).
             val chart = withContext(dispatchers.default) { points.elevationChart(units) }
-            updateState { copy(elevation = chart) }
+            val line = withContext(dispatchers.default) {
+                PolylineSimplifier.simplify(points).map { MapPoint(it.latDeg, it.lonDeg) }.toImmutableList()
+            }
+            updateState { copy(elevation = chart, mapLine = line) }
+            val start = points.firstOrNull()
+            useCases.observeMaps().collect { maps ->
+                val covering = start?.let { maps.covering(it.latDeg, it.lonDeg) }.orEmpty()
+                updateState {
+                    copy(
+                        mapRegions = maps.map { it.path }.toImmutableList(),
+                        isAreaOffline = covering.isNotEmpty(),
+                    )
+                }
+            }
         }
         viewModelScope.launch {
             val climbs = useCases.getGuidance(routeId).climbs.toImmutableList()

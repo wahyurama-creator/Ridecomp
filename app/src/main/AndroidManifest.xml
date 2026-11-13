@@ -2,6 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!--
+      MapLibre (D-64) declares these for online tiles. RideComp maps are local PMTiles files and the app
+      has no network feature: removed so the app stays offline (SEC-NET). ACCESS_NETWORK_STATE (normal
+      permission, no data access) is kept because MapLibre checks connectivity.
+    -->
+    <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" tools:node="remove" />
+
     <application
         android:name=".RideCompApplication"
         android:allowBackup="true"

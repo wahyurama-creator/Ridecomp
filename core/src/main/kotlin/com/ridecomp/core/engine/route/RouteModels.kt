@@ -139,3 +139,27 @@ public object PolylineSimplifier {
         return hypot(px - t * bx, py - t * by)
     }
 }
+
+/**
+ * The part of a (simplified) route already ridden, ending exactly at [distanceAlongM] on the route, so the
+ * ridden line meets the position dot even when the next vertex is far away (T3.5).
+ */
+public fun List<RoutePoint>.riddenUntil(distanceAlongM: Double): List<RoutePoint> {
+    val next = indexOfFirst { it.cumDistanceM > distanceAlongM }
+    return when (next) {
+        -1 -> this
+        0 -> emptyList()
+        else -> subList(0, next) + pointBetween(this[next - 1], this[next], distanceAlongM)
+    }
+}
+
+/** The point at [distanceAlongM] on the straight segment [from]–[to] (linear in degrees: short segments). */
+private fun pointBetween(from: RoutePoint, to: RoutePoint, distanceAlongM: Double): RoutePoint {
+    val fraction = (distanceAlongM - from.cumDistanceM) / (to.cumDistanceM - from.cumDistanceM)
+    return RoutePoint(
+        latDeg = from.latDeg + (to.latDeg - from.latDeg) * fraction,
+        lonDeg = from.lonDeg + (to.lonDeg - from.lonDeg) * fraction,
+        elevationM = null,
+        cumDistanceM = distanceAlongM,
+    )
+}

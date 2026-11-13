@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RiderProfile
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
+import com.ridecomp.core.usecase.ObserveOfflineMapsUseCase
 import com.ridecomp.core.usecase.ObserveProfileUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveSafetyUseCase
@@ -21,6 +22,8 @@ data class SettingsUiState(
     val activityProfileCount: Int = 0,
     val rideSettings: RideSettings = RideSettings(),
     val safety: SafetyState? = null,
+    val offlineMapCount: Int = 0,
+    val offlineMapBytes: Long = 0,
 )
 
 /** Settings overview: read-only summaries; every change happens on the section's own screen. */
@@ -29,6 +32,7 @@ class SettingsViewModel(
     observeActivityProfiles: ObserveActivityProfilesUseCase,
     observeRideSettings: ObserveRideSettingsUseCase,
     observeSafety: ObserveSafetyUseCase,
+    observeOfflineMaps: ObserveOfflineMapsUseCase,
 ) : UdfViewModel<SettingsUiState, Unit, NoEffect>(SettingsUiState()) {
     init {
         viewModelScope.launch {
@@ -39,7 +43,14 @@ class SettingsViewModel(
                     safety,
                 ->
                 SettingsUiState(profile, profiles.size, settings, safety)
-            }.collect { state -> updateState { state } }
+            }.collect { state ->
+                updateState { state.copy(offlineMapCount = offlineMapCount, offlineMapBytes = offlineMapBytes) }
+            }
+        }
+        viewModelScope.launch {
+            observeOfflineMaps().collect { maps ->
+                updateState { copy(offlineMapCount = maps.size, offlineMapBytes = maps.sumOf { it.sizeBytes }) }
+            }
         }
     }
 

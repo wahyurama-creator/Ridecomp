@@ -290,4 +290,5 @@
     <string name="ride_climb_profile">Climb profile</string>
     <string name="ride_climb_summary">%1$s %2$s · %3$s%% · ↑ %4$s %5$s</string>
     <string name="ride_climb_section">per %1$s %2$s</string>
+    <string name="ride_map_follow">Follow position</string>
 </resources>

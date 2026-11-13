@@ -2,6 +2,8 @@ package com.ridecomp.feature.settings.di
 
 import com.ridecomp.feature.settings.viewmodel.BackupUseCases
 import com.ridecomp.feature.settings.viewmodel.BackupViewModel
+import com.ridecomp.feature.settings.viewmodel.OfflineMapsUseCases
+import com.ridecomp.feature.settings.viewmodel.OfflineMapsViewModel
 import com.ridecomp.feature.settings.viewmodel.OnboardingViewModel
 import com.ridecomp.feature.settings.viewmodel.ProfileViewModel
 import com.ridecomp.feature.settings.viewmodel.RideSettingsViewModel
@@ -14,7 +16,9 @@ import org.koin.dsl.module
 /** ViewModels of the settings feature; use cases come from the app graph. */
 val settingsFeatureModule = module {
     viewModel { ProfileViewModel(get(), get(), get()) }
-    viewModel { SettingsViewModel(get(), get(), get(), get()) }
+    viewModel { SettingsViewModel(get(), get(), get(), get(), get()) }
+    factory { OfflineMapsUseCases(get(), get(), get(), get()) }
+    viewModel { OfflineMapsViewModel(get()) }
     viewModel { RideSettingsViewModel(get(), get()) }
     viewModel { OnboardingViewModel(get(), get()) }
     factory { SafetyUseCases(get(), get(), get(), get(), get(), get(), get()) }

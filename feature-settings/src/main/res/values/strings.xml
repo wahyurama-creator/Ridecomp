@@ -210,4 +210,29 @@
     <string name="backup_excluded">Emergency contacts · offline maps</string>
     <string name="backup_password_recommended">Recommended: it holds locations &amp; HR data</string>
     <string name="backup_create_hint">Save to Google Drive, WhatsApp or a phone folder</string>
+    <string name="offline_maps_title">Offline maps</string>
+    <string name="offline_maps_fallback_name">map</string>
+    <string name="offline_maps_saved">Saved areas</string>
+    <string name="offline_maps_import">Import map file (.pmtiles)</string>
+    <string name="offline_maps_importing">Importing…</string>
+    <string name="offline_maps_delete_title">Delete map %1$s?</string>
+    <string name="offline_maps_delete_message">The map file is removed from this phone. Routes and history stay.</string>
+    <string name="offline_maps_delete">Delete</string>
+    <string name="offline_maps_delete_label">Delete map %1$s</string>
+    <string name="offline_maps_storage_title">Phone storage</string>
+    <string name="offline_maps_storage">RideComp maps use %1$s · %2$s free</string>
+    <string name="offline_maps_item">%1$s · imported %2$s</string>
+    <string name="offline_maps_howto_title">Where do map files come from?</string>
+    <string name="offline_maps_howto">Maps come from OpenStreetMap. Make a region file (e.g. Central Java) on a computer with \"pmtiles extract\" from the Protomaps map build, copy the .pmtiles file to the phone and import it here. Maps work without internet.</string>
+    <string name="offline_maps_error_not_pmtiles">This is not a PMTiles map file.</string>
+    <string name="offline_maps_error_version">This PMTiles version is not supported (v3 needed).</string>
+    <string name="offline_maps_error_not_vector">This file holds image tiles; RideComp needs a vector map.</string>
+    <string name="offline_maps_error_too_large">The map file is larger than 2 GB.</string>
+    <string name="offline_maps_error_no_space">Not enough storage on this phone.</string>
+    <string name="offline_maps_error_read">The map file cannot be read.</string>
+    <string name="settings_offline_maps_none">None yet</string>
+    <plurals name="settings_offline_maps_value">
+        <item quantity="one">%1$d area · %2$s</item>
+        <item quantity="other">%1$d areas · %2$s</item>
+    </plurals>
 </resources>

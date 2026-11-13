@@ -17,6 +17,7 @@ import com.ridecomp.core.testing.FakeBackupStateRepository
 import com.ridecomp.core.testing.FakeBatteryLevelSource
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeLocationSource
+import com.ridecomp.core.testing.FakeOfflineMapRepository
 import com.ridecomp.core.testing.FakeRideController
 import com.ridecomp.core.testing.FakeRouteRepository
 import com.ridecomp.core.testing.FakeSafetyRepository
@@ -35,6 +36,7 @@ import com.ridecomp.core.usecase.ObserveDataPagesUseCase
 import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
+import com.ridecomp.core.usecase.ObserveOfflineMapsUseCase
 import com.ridecomp.core.usecase.ObserveProfileChoiceUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveRouteUseCase
@@ -196,6 +198,7 @@ class RideViewModelsTest {
                 GetRoutePointsUseCase(FakeRouteRepository()),
             ),
             TestDispatcherProvider(UnconfinedTestDispatcher()),
+            ObserveOfflineMapsUseCase(FakeOfflineMapRepository()),
         )
         // SOS only with the feature on and a contact (12-FEATURE-SPECS §5.3).
         viewModel.isSosAvailable.test {
