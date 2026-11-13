@@ -176,4 +176,16 @@
     <string name="incident_failed">Emergency SMS could not be sent.</string>
     <string name="incident_safe">I AM SAFE</string>
     <string name="incident_sos_hold">SOS · HOLD 3 SECONDS</string>
+    <string name="metric_next_turn">Next turn</string>
+    <string name="ride_turn_left">Turn left</string>
+    <string name="ride_turn_right">Turn right</string>
+    <string name="ride_turn_sharp_left">Sharp left</string>
+    <string name="ride_turn_sharp_right">Sharp right</string>
+    <string name="ride_turn_uturn">U-turn</string>
+    <string name="ride_turn_banner">%1$s %2$s · %3$s %4$s</string>
+    <string name="ride_climb_ahead">Climb starts in %1$s %2$s · %3$s %4$s · %5$s%%</string>
+    <string name="ride_climb_title">CLIMB %1$d OF %2$d</string>
+    <string name="ride_climb_remaining">%1$s %2$s · ↑ %3$s %4$s to go · avg %5$s%%</string>
+    <string name="ride_climb_profile_description">Climb profile by grade, %1$s%% average</string>
+    <string name="ride_next_climb">Next climb (%1$d of %2$d): %3$s %4$s away</string>
 </resources>

@@ -208,7 +208,7 @@ public class RecordingSession(
         altitudeSource,
         profile,
         ageYears,
-        RideContext(profileId, isGpsEnabled, routeId, routePoints),
+        RideContext(profileId, isGpsEnabled, routeId, routePoints, routeClimbs, routeTurns),
     )
 
     private fun RideStatus.toActivityStatus(): ActivityStatus = when (this) {

@@ -5,6 +5,7 @@ import com.ridecomp.core.engine.route.GpxParser
 import com.ridecomp.core.engine.route.NewRoute
 import com.ridecomp.core.engine.route.Route
 import com.ridecomp.core.engine.route.RouteBuilder
+import com.ridecomp.core.engine.route.RouteClimb
 import com.ridecomp.core.engine.route.RouteConfig
 import com.ridecomp.core.engine.route.RoutePoint
 import com.ridecomp.core.repository.RouteRepository
@@ -60,6 +61,11 @@ public class ObserveRouteUseCase(private val routes: RouteRepository) {
 
 public class GetRoutePointsUseCase(private val routes: RouteRepository) {
     public suspend operator fun invoke(id: Long): List<RoutePoint> = routes.getPoints(id)
+}
+
+/** Climbs detected at import (T3.11), in route order. */
+public class GetRouteClimbsUseCase(private val routes: RouteRepository) {
+    public suspend operator fun invoke(id: Long): List<RouteClimb> = routes.getClimbs(id)
 }
 
 public class RenameRouteUseCase(private val routes: RouteRepository) {

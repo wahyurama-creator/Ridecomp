@@ -12,7 +12,7 @@ public object ClimbConfig {
     public const val MERGE_MAX_DROP_M: Double = 10.0
     public const val MERGE_MAX_GAP_M: Double = 200.0
 
-    /** A small dip (< [MERGE_MAX_DROP_M]) still splits climbs when the flat part is longer than this (D-48). */
+    /** A small dip (< [MERGE_MAX_DROP_M]) still splits climbs when the flat part is longer than this (D-49). */
     public const val MERGE_MAX_FLAT_GAP_M: Double = 500.0
     public const val MIN_LENGTH_M: Double = 500.0
     public const val MIN_GAIN_M: Double = 20.0
@@ -136,7 +136,7 @@ public object ClimbDetector {
     /**
      * Joins runs separated by a short gap (≤ 200 m, any dip) or by a small dip (< 10 m) that is not a long
      * flat stretch (≤ 500 m). Read literally, "< 10 m or < 200 m" would join climbs across kilometres of
-     * flat road (drop 0 m), which the spec does not intend (decision D-48).
+     * flat road (drop 0 m), which the spec does not intend (decision D-49).
      */
     private fun mergedRuns(runs: List<Pair<Int, Int>>, elevations: List<Double>): List<Pair<Int, Int>> {
         val merged = ArrayList<Pair<Int, Int>>()
@@ -162,9 +162,12 @@ public object ClimbDetector {
     private fun climbOf(samples: List<RoutePoint>, elevations: List<Double>, start: Int, end: Int): RouteClimb? {
         val lengthM = samples[end].cumDistanceM - samples[start].cumDistanceM
         val gainM = elevations[end] - elevations[start]
-        if (lengthM < ClimbConfig.MIN_LENGTH_M || gainM < ClimbConfig.MIN_GAIN_M) return null
+        // Length is checked first, so the grade is never computed over a zero length.
+        val isValid = lengthM >= ClimbConfig.MIN_LENGTH_M &&
+            gainM >= ClimbConfig.MIN_GAIN_M &&
+            gainM / lengthM * Units.PERCENT >= ClimbConfig.MIN_AVG_GRADE_PERCENT
+        if (!isValid) return null
         val avgGrade = gainM / lengthM * Units.PERCENT
-        if (avgGrade < ClimbConfig.MIN_AVG_GRADE_PERCENT) return null
         val step = (ClimbConfig.PROFILE_STEP_M / ClimbConfig.RESAMPLE_M).toInt()
         val profile = (start until end step step).map { i ->
             val j = (i + step).coerceAtMost(end)
@@ -256,7 +259,13 @@ public object TurnDetector {
 /** One-shot route alerts while riding (vibration + banner, 12-FEATURE-SPECS §6.2, §7.2). */
 public enum class RouteAlert { TURN_FAR, TURN_NEAR, CLIMB_AHEAD }
 
-public data class UpcomingTurn(val direction: TurnDirection, val severity: TurnSeverity, val distanceM: Double)
+public data class UpcomingTurn(
+    val direction: TurnDirection,
+    val severity: TurnSeverity,
+    val distanceM: Double,
+    /** Within the (speed-scaled) far alert distance: the turn banner is shown. */
+    val isAnnounced: Boolean = false,
+)
 
 /** Climb the rider is on ("Climb 2 of 4"), with what is left of it. */
 public data class ClimbStatus(
@@ -265,10 +274,25 @@ public data class ClimbStatus(
     val remainingDistanceM: Double,
     val remainingGainM: Double,
     val climb: RouteClimb,
-)
+) {
+    /** Average grade of what is left of the climb. */
+    val remainingAvgGradePercent: Double
+        get() = if (remainingDistanceM > 0.0) remainingGainM / remainingDistanceM * Units.PERCENT else 0.0
+
+    /** Position on the climb, 0..1. */
+    val progressFraction: Double
+        get() = if (climb.lengthM > 0.0) (1.0 - remainingDistanceM / climb.lengthM).coerceIn(0.0, 1.0) else 1.0
+}
 
 /** Next climb ahead ("Next climb in 3.4 km"). */
-public data class NextClimb(val number: Int, val total: Int, val distanceToStartM: Double, val climb: RouteClimb)
+public data class NextClimb(
+    val number: Int,
+    val total: Int,
+    val distanceToStartM: Double,
+    val climb: RouteClimb,
+    /** Within [ClimbConfig.WARNING_DISTANCE_M]: the climb banner is shown. */
+    val isAnnounced: Boolean = false,
+)
 
 /**
  * Climb and turn information along the route (12-FEATURE-SPECS §6.2, §7.2). Each turn is announced once
@@ -290,7 +314,15 @@ public class ClimbTurnTracker(private val climbs: List<RouteClimb>, private val 
     public fun update(distanceAlongM: Double, speedMps: Double, isOffRoute: Boolean): Snapshot {
         val turnIndex = turns.indexOfFirst { it.distanceM > distanceAlongM }
         val turn = turns.getOrNull(turnIndex)
-        val upcoming = turn?.let { UpcomingTurn(it.direction, it.severity, it.distanceM - distanceAlongM) }
+        val upcoming = turn?.let {
+            val distanceM = it.distanceM - distanceAlongM
+            UpcomingTurn(
+                it.direction,
+                it.severity,
+                distanceM,
+                distanceM <= TurnConfig.FAR_ALERT_M * alertScale(speedMps),
+            )
+        }
         val climbIndex = climbs.indexOfFirst { distanceAlongM < it.endDistanceM }
         val current = climbs.getOrNull(climbIndex)?.takeIf { distanceAlongM >= it.startDistanceM }
         val next = climbs.getOrNull(climbIndex)?.takeIf { distanceAlongM < it.startDistanceM }
@@ -311,7 +343,10 @@ public class ClimbTurnTracker(private val climbs: List<RouteClimb>, private val 
                     it,
                 )
             },
-            nextClimb = next?.let { NextClimb(climbIndex + 1, climbs.size, it.startDistanceM - distanceAlongM, it) },
+            nextClimb = next?.let {
+                val distanceM = it.startDistanceM - distanceAlongM
+                NextClimb(climbIndex + 1, climbs.size, distanceM, it, distanceM <= ClimbConfig.WARNING_DISTANCE_M)
+            },
             alert = alert,
         )
     }
@@ -319,7 +354,7 @@ public class ClimbTurnTracker(private val climbs: List<RouteClimb>, private val 
     /** Far/near alert distances grow with speed above 30 km/h (same lead time, §7.2). */
     private fun turnAlert(index: Int, turn: UpcomingTurn?, speedMps: Double): RouteAlert? {
         if (turn == null) return null
-        val factor = (speedMps / TurnConfig.REFERENCE_SPEED_MPS).coerceAtLeast(1.0)
+        val factor = alertScale(speedMps)
         return when {
             turn.distanceM <= TurnConfig.NEAR_ALERT_M * factor -> RouteAlert.TURN_NEAR.takeIf {
                 announcedNear.add(index)
@@ -328,6 +363,8 @@ public class ClimbTurnTracker(private val climbs: List<RouteClimb>, private val 
             else -> null
         }
     }
+
+    private fun alertScale(speedMps: Double): Double = (speedMps / TurnConfig.REFERENCE_SPEED_MPS).coerceAtLeast(1.0)
 
     private fun climbAlert(index: Int, next: RouteClimb?, distanceAlongM: Double): RouteAlert? =
         next?.takeIf { it.startDistanceM - distanceAlongM <= ClimbConfig.WARNING_DISTANCE_M }

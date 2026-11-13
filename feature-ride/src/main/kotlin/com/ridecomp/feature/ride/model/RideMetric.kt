@@ -2,6 +2,7 @@ package com.ridecomp.feature.ride.model
 
 import androidx.annotation.StringRes
 import com.ridecomp.core.engine.recording.LiveRide
+import com.ridecomp.core.engine.route.TurnDirection
 import com.ridecomp.core.engine.sensors.SensorKind
 import com.ridecomp.core.model.DataPageLayout
 import com.ridecomp.core.model.DataPagesLayout
@@ -22,11 +23,24 @@ data class MetricUnitLabels(
     val kcal: String = "",
 )
 
+/** Direction glyphs of turn fields and banners (12-FEATURE-SPECS §7.2); symbols, not translated text. */
+object TurnArrows {
+    const val LEFT: String = "←"
+    const val RIGHT: String = "→"
+    const val UTURN: String = "↶"
+
+    fun of(direction: TurnDirection): String = when (direction) {
+        TurnDirection.LEFT -> LEFT
+        TurnDirection.RIGHT -> RIGHT
+        TurnDirection.UTURN -> UTURN
+    }
+}
+
 /** Everything a metric needs to produce its text. */
 class MetricContext(val live: LiveRide, val format: UnitFormatter, val zone: ZoneId)
 
 /** How a metric's unit is chosen. */
-enum class MetricUnit { NONE, SPEED, DISTANCE, ELEVATION, PERCENT, BPM, RPM, WATT, WATTS_PER_KG, KCAL }
+enum class MetricUnit { NONE, SPEED, DISTANCE, SHORT_DISTANCE, ELEVATION, PERCENT, BPM, RPM, WATT, WATTS_PER_KG, KCAL }
 
 private val CLOCK_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 private const val ONE_DECIMAL = "%.1f"
@@ -126,6 +140,10 @@ enum class RideMetric(
     REMAINING_ASCENT(R.string.metric_remaining_ascent, MetricUnit.ELEVATION, null, {
         format.elevation(live.route?.remainingAscentM)
     }),
+    NEXT_TURN(R.string.metric_next_turn, MetricUnit.SHORT_DISTANCE, null, {
+        live.route?.nextTurn?.let { "${TurnArrows.of(it.direction)} ${format.shortDistance(it.distanceM)}" }
+            ?: UnitFormatter.NO_VALUE
+    }),
     ;
 
     /**
@@ -147,7 +165,7 @@ enum class RideMetric(
         MetricUnit.NONE -> null
         MetricUnit.SPEED -> format.speedUnit
         MetricUnit.DISTANCE -> format.distanceUnit
-        MetricUnit.ELEVATION -> format.elevationUnit
+        MetricUnit.ELEVATION, MetricUnit.SHORT_DISTANCE -> format.elevationUnit
         MetricUnit.PERCENT -> labels.percent
         MetricUnit.BPM -> labels.bpm
         MetricUnit.RPM -> labels.rpm

@@ -90,9 +90,9 @@ Spesifikasi detail fitur tambahan: `../12-FEATURE-SPECS.md`.
 - [x] T3.8 Mode breadcrumb tanpa tile.
 - [x] T3.9 Profil elevasi dengan penanda posisi di halaman tanjakan.
 - [x] T3.10 Unit test: proyeksi titik ke polyline, rute bersilangan/berputar, off-route timing.
-- [ ] T3.11 `ClimbDetector` saat import + daftar tanjakan + halaman tanjakan ala ClimbPro + peringatan 500 m (§6).
-- [ ] T3.12 `TurnDetector` saat import + peringatan belokan 150/30 m + field "Belokan berikutnya" (§7).
-- [ ] T3.13 Unit test tanjakan & belokan dengan GPX referensi (belok 90°, hairpin, tikungan landai tanpa alert, noise GPS, rute tanpa elevasi).
+- [x] T3.11 `ClimbDetector` saat import + daftar tanjakan + halaman tanjakan ala ClimbPro + peringatan 500 m (§6).
+- [x] T3.12 `TurnDetector` saat import + peringatan belokan 150/30 m + field "Belokan berikutnya" (§7).
+- [x] T3.13 Unit test tanjakan & belokan dengan GPX referensi (belok 90°, hairpin, tikungan landai tanpa alert, noise GPS, rute tanpa elevasi).
 
 **DoD:** ride uji mengikuti GPX ≥ 20 km dengan sengaja keluar jalur 2x; alert benar; peta tampil tanpa internet (mode pesawat + GPS); peringatan tanjakan & belokan muncul tepat waktu pada rute uji.
 

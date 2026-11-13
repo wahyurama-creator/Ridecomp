@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.engine.route.Route
+import com.ridecomp.core.engine.route.RouteClimb
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.routes.R
 import com.ridecomp.feature.routes.viewmodel.RouteDetailEffect
@@ -117,6 +118,7 @@ private fun RouteContent(
                 color = RideCompTheme.colors.track,
                 modifier = Modifier.padding(horizontal = RideCompDimens.spacingM),
             )
+            ClimbList(state.climbs, format)
         }
         OutlinedTextField(
             value = name,
@@ -156,6 +158,34 @@ private fun RouteContent(
                 onEvent(RouteDetailUiEvent.Delete)
             },
             onDismiss = { isDeleteDialogShown = false },
+        )
+    }
+}
+
+/** "Climb 2 of 4 · 2.1 km · 6.3% · ↑ 132 m" (12-FEATURE-SPECS §6.2). */
+@Composable
+private fun ClimbList(climbs: List<RouteClimb>, format: UnitFormatter) {
+    Text(
+        text = if (climbs.isEmpty()) {
+            stringResource(R.string.route_no_climbs)
+        } else {
+            stringResource(R.string.route_climbs_title, climbs.size)
+        },
+        style = RideCompTheme.typography.dataLabel,
+        color = RideCompTheme.colors.textSecondary,
+        modifier = Modifier.padding(horizontal = RideCompDimens.spacingM),
+    )
+    climbs.forEachIndexed { index, climb ->
+        StatRow(
+            stringResource(R.string.route_climb_label, index + 1, climbs.size),
+            stringResource(
+                R.string.route_climb_stats,
+                format.distance(climb.lengthM),
+                format.distanceUnit,
+                format.grade(climb.avgGradePercent),
+                format.elevation(climb.gainM),
+                format.elevationUnit,
+            ),
         )
     }
 }
