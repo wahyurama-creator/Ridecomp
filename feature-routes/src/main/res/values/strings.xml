@@ -3,4 +3,27 @@
     <string name="routes_title">Routes</string>
     <string name="routes_empty">No routes yet. Import a GPX file to ride a route.</string>
     <string name="routes_import_action">Import GPX</string>
+    <string name="routes_importing">Importing…</string>
+    <string name="routes_unnamed">Imported route</string>
+    <string name="routes_stats">%1$s %2$s · ↑ %3$s %4$s</string>
+    <string name="routes_ok">OK</string>
+    <string name="routes_error_too_large">This file is larger than 20 MB.</string>
+    <string name="routes_error_too_many_points">This route has more than 50,000 points.</string>
+    <string name="routes_error_malformed">This is not a valid GPX file.</string>
+    <string name="routes_error_no_points">This GPX file has no route or track points.</string>
+    <string name="routes_error_invalid_value">This GPX file contains impossible coordinates or elevations.</string>
+    <string name="route_missing">This route no longer exists.</string>
+    <string name="route_distance">Distance</string>
+    <string name="route_ascent">Climbing</string>
+    <string name="route_source">File</string>
+    <string name="route_no_elevation">This route has no elevation data.</string>
+    <string name="route_elevation_profile">ELEVATION</string>
+    <string name="route_name">Route name</string>
+    <string name="route_rename">Save name</string>
+    <string name="route_reverse">Reverse direction</string>
+    <string name="route_reversed_name">%1$s (reverse)</string>
+    <string name="route_delete">Delete route</string>
+    <string name="route_delete_title">Delete %1$s?</string>
+    <string name="route_delete_message">Rides recorded on this route are kept.</string>
+    <string name="route_cancel">Cancel</string>
 </resources>

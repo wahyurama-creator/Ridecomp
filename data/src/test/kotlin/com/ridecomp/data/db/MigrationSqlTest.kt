@@ -62,6 +62,21 @@ class MigrationSqlTest {
     }
 
     @Test
+    fun `migration 4 to 5 matches the exported route tables`() {
+        val executed = executedSql { RideCompMigrations.MIGRATION_4_5.migrate(it) }
+
+        assertEquals(
+            listOf(
+                DbNames.TABLE_ROUTES,
+                DbNames.TABLE_ROUTE_POINTS,
+                DbNames.TABLE_ROUTE_CLIMBS,
+                DbNames.TABLE_ROUTE_TURNS,
+            ).flatMap { exportedCreateSql(5, it) },
+            executed,
+        )
+    }
+
+    @Test
     fun `every schema version has a migration path`() {
         val versions = File(SCHEMA_DIR).listFiles().orEmpty().mapNotNull { it.nameWithoutExtension.toIntOrNull() }
 

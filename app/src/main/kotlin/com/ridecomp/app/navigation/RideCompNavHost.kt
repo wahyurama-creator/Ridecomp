@@ -5,9 +5,11 @@ import android.content.Intent
 import android.os.Build
 import android.provider.Settings
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -25,6 +27,7 @@ import com.ridecomp.feature.ride.ui.HomeRoute
 import com.ridecomp.feature.ride.ui.PreRideRoute
 import com.ridecomp.feature.ride.ui.RideRoute
 import com.ridecomp.feature.ride.ui.SummaryRoute
+import com.ridecomp.feature.routes.ui.RouteDetailRoute
 import com.ridecomp.feature.routes.ui.RoutesRoute
 import com.ridecomp.feature.sensors.ui.SensorsRoute
 import com.ridecomp.feature.settings.ui.BackupRoute
@@ -50,6 +53,10 @@ object AppRoutes {
     const val ACTIVITY_PROFILES = "activity_profiles"
     const val SAFETY = "safety"
     const val BACKUP = "backup"
+    const val ARG_ROUTE_ID = "routeId"
+    const val ROUTE_DETAIL = "route/{$ARG_ROUTE_ID}"
+
+    fun routeDetail(routeId: Long): String = "route/$routeId"
     const val ACTIVITY_PROFILE = "activity_profile/{$ARG_PROFILE_ID}"
 
     fun dataPages(profileId: Long? = null): String =
@@ -88,8 +95,29 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
         rideGraph(navController)
         historyGraph(navController)
         composable(TopLevelDestination.ROUTES.route) {
-            // TODO(T3.1): open the GPX file picker.
-            RoutesRoute(onImportGpx = {})
+            val incoming by IncomingGpx.uri.collectAsStateWithLifecycle()
+            RoutesRoute(
+                onOpenRoute = { navController.navigate(AppRoutes.routeDetail(it)) },
+                incomingUri = incoming,
+                onIncomingHandled = IncomingGpx::consumed,
+            )
+        }
+        composable(
+            AppRoutes.ROUTE_DETAIL,
+            arguments = listOf(navArgument(AppRoutes.ARG_ROUTE_ID) { type = NavType.LongType }),
+        ) { entry ->
+            RouteDetailRoute(
+                routeId = entry.arguments?.getLong(AppRoutes.ARG_ROUTE_ID) ?: AppRoutes.NO_ID,
+                onOpenRoute = {
+                    navController.navigate(AppRoutes.routeDetail(it)) {
+                        popUpTo(AppRoutes.ROUTE_DETAIL) {
+                            inclusive =
+                                true
+                        }
+                    }
+                },
+                onDeleted = { navController.popBackStack() },
+            )
         }
         composable(TopLevelDestination.SENSORS.route) {
             SensorsRoute()

@@ -80,8 +80,8 @@ Spesifikasi detail fitur tambahan: `../12-FEATURE-SPECS.md`.
 **DoD:** ride uji dengan HR strap + sensor cadence (dan power meter bila ada); data muncul benar di Strava; sensor dicabut-pasang di tengah ride tanpa merusak rekaman; uji insiden (simulasi & uji fisik aman, mis. menjatuhkan HP di atas kasur sambil bergerak) memicu hitung mundur, pembatalan berfungsi, SMS uji diterima; backup dari HP A berhasil di-restore di HP B (atau setelah uninstall-install ulang) dengan data identik.
 
 ## Fase 3 — Navigasi rute (GPX)
-- [ ] T3.1 Import GPX (file picker + intent "Buka dengan"), parsing aman (SEC-IN-01..04: tanpa DOCTYPE/entity, batas ukuran & titik, validasi nilai), simplifikasi, simpan ke DB.
-- [ ] T3.2 Daftar & detail rute (statistik, profil elevasi), "balik arah".
+- [x] T3.1 Import GPX (file picker + intent "Buka dengan"), parsing aman (SEC-IN-01..04: tanpa DOCTYPE/entity, batas ukuran & titik, validasi nilai), simplifikasi, simpan ke DB.
+- [x] T3.2 Daftar & detail rute (statistik, profil elevasi), "balik arah".
 - [ ] T3.3 **Ajukan pilihan sumber tile offline** (`04-INTEGRATIONS.md` §D) ke pemilik → implementasi MapLibre + atribusi.
 - [ ] T3.4 Manajer peta offline (unduh/impor area, hapus, ukuran).
 - [ ] T3.5 Halaman peta di layar ride: rute, posisi, jejak, north-up, follow mode.

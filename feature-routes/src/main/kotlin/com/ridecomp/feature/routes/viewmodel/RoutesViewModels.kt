@@ -1,0 +1,168 @@
+package com.ridecomp.feature.routes.viewmodel
+
+import androidx.compose.runtime.Immutable
+import androidx.lifecycle.viewModelScope
+import com.ridecomp.core.config.ActivityConfig
+import com.ridecomp.core.config.Units
+import com.ridecomp.core.engine.route.GpxError
+import com.ridecomp.core.engine.route.Route
+import com.ridecomp.core.engine.route.RoutePoint
+import com.ridecomp.core.model.UnitSystem
+import com.ridecomp.core.source.DispatcherProvider
+import com.ridecomp.core.usecase.DeleteRouteUseCase
+import com.ridecomp.core.usecase.GetRoutePointsUseCase
+import com.ridecomp.core.usecase.ImportGpxUseCase
+import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
+import com.ridecomp.core.usecase.ObserveRouteUseCase
+import com.ridecomp.core.usecase.ObserveRoutesUseCase
+import com.ridecomp.core.usecase.RenameRouteUseCase
+import com.ridecomp.core.usecase.ReverseRouteUseCase
+import com.ridecomp.core.util.Outcome
+import com.ridecomp.ui.component.ChartValue
+import com.ridecomp.ui.udf.UdfViewModel
+import kotlin.math.ceil
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+@Immutable
+data class RoutesUiState(
+    val routes: ImmutableList<Route> = persistentListOf(),
+    val unitSystem: UnitSystem = UnitSystem.METRIC,
+    val isImporting: Boolean = false,
+    val importError: GpxError? = null,
+    val isLoaded: Boolean = false,
+)
+
+sealed interface RoutesUiEvent {
+    /** A GPX document from the picker or "Open with"; [fallbackName] when the file has none. */
+    data class Import(val uri: String, val fallbackName: String) : RoutesUiEvent
+
+    data object ErrorShown : RoutesUiEvent
+}
+
+sealed interface RoutesEffect {
+    data class Imported(val routeId: Long) : RoutesEffect
+}
+
+/** Routes list and GPX import (T3.1). */
+class RoutesViewModel(
+    observeRoutes: ObserveRoutesUseCase,
+    observeSettings: ObserveRideSettingsUseCase,
+    private val importGpx: ImportGpxUseCase,
+) : UdfViewModel<RoutesUiState, RoutesUiEvent, RoutesEffect>(RoutesUiState()) {
+    init {
+        viewModelScope.launch {
+            combine(observeRoutes(), observeSettings()) { routes, settings -> routes to settings.unitSystem }
+                .collect { (routes, units) ->
+                    updateState { copy(routes = routes.toImmutableList(), unitSystem = units, isLoaded = true) }
+                }
+        }
+    }
+
+    override fun onEvent(event: RoutesUiEvent) {
+        when (event) {
+            is RoutesUiEvent.Import -> import(event)
+            RoutesUiEvent.ErrorShown -> updateState { copy(importError = null) }
+        }
+    }
+
+    private fun import(event: RoutesUiEvent.Import) {
+        if (currentState.isImporting) return
+        updateState { copy(isImporting = true, importError = null) }
+        viewModelScope.launch {
+            when (val result = importGpx(event.uri, event.fallbackName)) {
+                is Outcome.Success -> {
+                    updateState { copy(isImporting = false) }
+                    sendEffect(RoutesEffect.Imported(result.value))
+                }
+                is Outcome.Failure -> updateState { copy(isImporting = false, importError = result.error) }
+            }
+        }
+    }
+}
+
+/** Use cases of the route detail, grouped to keep the constructor short. */
+data class RouteDetailUseCases(
+    val observeRoute: ObserveRouteUseCase,
+    val getPoints: GetRoutePointsUseCase,
+    val observeSettings: ObserveRideSettingsUseCase,
+    val rename: RenameRouteUseCase,
+    val reverse: ReverseRouteUseCase,
+    val delete: DeleteRouteUseCase,
+)
+
+@Immutable
+data class RouteDetailUiState(
+    val route: Route? = null,
+    val isMissing: Boolean = false,
+    /** Elevation (m or ft) against distance (km or mi); empty when the route has no elevation. */
+    val elevation: ImmutableList<ChartValue> = persistentListOf(),
+    val unitSystem: UnitSystem = UnitSystem.METRIC,
+)
+
+sealed interface RouteDetailUiEvent {
+    data class Rename(val name: String) : RouteDetailUiEvent
+
+    /** "Balik arah" (T3.2); [reversedName] is the localized "<name> (reverse)". */
+    data class Reverse(val reversedName: String) : RouteDetailUiEvent
+
+    data object Delete : RouteDetailUiEvent
+}
+
+sealed interface RouteDetailEffect {
+    data class Open(val routeId: Long) : RouteDetailEffect
+
+    data object Deleted : RouteDetailEffect
+}
+
+/** Route detail (T3.2): statistics, elevation profile, rename, reverse, delete. */
+class RouteDetailViewModel(
+    private val routeId: Long,
+    private val useCases: RouteDetailUseCases,
+    private val dispatchers: DispatcherProvider,
+) : UdfViewModel<RouteDetailUiState, RouteDetailUiEvent, RouteDetailEffect>(RouteDetailUiState()) {
+    init {
+        viewModelScope.launch {
+            combine(useCases.observeRoute(routeId), useCases.observeSettings()) { route, settings -> route to settings }
+                .collect { (route, settings) ->
+                    updateState { copy(route = route, isMissing = route == null, unitSystem = settings.unitSystem) }
+                }
+        }
+        viewModelScope.launch {
+            val points = useCases.getPoints(routeId)
+            val units = currentState.unitSystem
+            // Conversion and downsampling are CPU work: off the main thread (02-DESIGN §6).
+            val chart = withContext(dispatchers.default) { points.elevationChart(units) }
+            updateState { copy(elevation = chart) }
+        }
+    }
+
+    override fun onEvent(event: RouteDetailUiEvent) {
+        when (event) {
+            is RouteDetailUiEvent.Rename -> viewModelScope.launch { useCases.rename(routeId, event.name) }
+            is RouteDetailUiEvent.Reverse -> viewModelScope.launch {
+                useCases.reverse(routeId, event.reversedName)?.let { sendEffect(RouteDetailEffect.Open(it)) }
+            }
+            RouteDetailUiEvent.Delete -> viewModelScope.launch {
+                useCases.delete(routeId)
+                sendEffect(RouteDetailEffect.Deleted)
+            }
+        }
+    }
+}
+
+/** Every n-th point, at most [ActivityConfig.CHART_MAX_POINTS]; null elevations leave gaps. */
+internal fun List<RoutePoint>.elevationChart(units: UnitSystem): ImmutableList<ChartValue> {
+    if (none { it.elevationM != null }) return persistentListOf()
+    val isMetric = units == UnitSystem.METRIC
+    val distanceDivisor = if (isMetric) Units.METERS_PER_KM else Units.METERS_PER_MILE
+    val elevationDivisor = if (isMetric) 1.0 else Units.METERS_PER_FOOT
+    val stride = ceil(size.toDouble() / ActivityConfig.CHART_MAX_POINTS).toInt().coerceAtLeast(1)
+    return filterIndexed { index, _ -> index % stride == 0 }
+        .map { ChartValue(it.cumDistanceM / distanceDivisor, it.elevationM?.div(elevationDivisor)) }
+        .toImmutableList()
+}

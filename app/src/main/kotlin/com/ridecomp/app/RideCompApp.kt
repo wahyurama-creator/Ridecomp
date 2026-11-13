@@ -12,6 +12,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -21,6 +22,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.ridecomp.app.navigation.AppRoutes
+import com.ridecomp.app.navigation.IncomingGpx
 import com.ridecomp.app.navigation.RideCompNavHost
 import com.ridecomp.app.navigation.TopLevelDestination
 import com.ridecomp.app.navigation.navigateToTopLevel
@@ -41,6 +43,11 @@ fun RideCompApp(modifier: Modifier = Modifier, viewModel: AppViewModel = koinVie
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val route = backStackEntry?.destination?.route
+    val incomingGpx by IncomingGpx.uri.collectAsStateWithLifecycle()
+    // A GPX opened from another app: show the routes tab, which imports it (onboarding comes first).
+    LaunchedEffect(incomingGpx, done) {
+        if (incomingGpx != null && done) navController.navigateToTopLevel(TopLevelDestination.ROUTES)
+    }
     Scaffold(
         modifier = modifier,
         containerColor = RideCompTheme.colors.bg,

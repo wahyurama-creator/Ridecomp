@@ -3,4 +3,27 @@
     <string name="routes_title">Rute</string>
     <string name="routes_empty">Belum ada rute. Import file GPX untuk ride mengikuti rute.</string>
     <string name="routes_import_action">Import GPX</string>
+    <string name="routes_importing">Mengimpor…</string>
+    <string name="routes_unnamed">Rute impor</string>
+    <string name="routes_stats">%1$s %2$s · ↑ %3$s %4$s</string>
+    <string name="routes_ok">OK</string>
+    <string name="routes_error_too_large">File ini lebih besar dari 20 MB.</string>
+    <string name="routes_error_too_many_points">Rute ini punya lebih dari 50.000 titik.</string>
+    <string name="routes_error_malformed">Ini bukan file GPX yang valid.</string>
+    <string name="routes_error_no_points">File GPX ini tidak berisi titik rute atau track.</string>
+    <string name="routes_error_invalid_value">File GPX ini berisi koordinat atau elevasi yang mustahil.</string>
+    <string name="route_missing">Rute ini sudah tidak ada.</string>
+    <string name="route_distance">Jarak</string>
+    <string name="route_ascent">Total tanjakan</string>
+    <string name="route_source">File</string>
+    <string name="route_no_elevation">Rute ini tidak punya data elevasi.</string>
+    <string name="route_elevation_profile">ELEVASI</string>
+    <string name="route_name">Nama rute</string>
+    <string name="route_rename">Simpan nama</string>
+    <string name="route_reverse">Balik arah</string>
+    <string name="route_reversed_name">%1$s (balik arah)</string>
+    <string name="route_delete">Hapus rute</string>
+    <string name="route_delete_title">Hapus %1$s?</string>
+    <string name="route_delete_message">Ride yang direkam di rute ini tetap tersimpan.</string>
+    <string name="route_cancel">Batal</string>
 </resources>

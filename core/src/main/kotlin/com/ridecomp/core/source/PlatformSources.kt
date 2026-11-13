@@ -7,6 +7,7 @@ import com.ridecomp.core.engine.safety.AccelSample
 import com.ridecomp.core.engine.safety.IncidentAction
 import com.ridecomp.core.model.LocationFix
 import com.ridecomp.core.model.PressureReading
+import java.io.InputStream
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -106,4 +107,13 @@ public interface AccelerometerSource {
 /** Restarts the app process (used once after a restore, decision D-39). */
 public interface AppRestarter {
     public fun restart()
+}
+
+/** A GPX document chosen by the rider (SAF picker or "Open with"). */
+public interface GpxDocumentSource {
+    /** Opens the document; the caller closes the stream. */
+    public fun open(uri: String): InputStream
+
+    /** Original file name, used only as a label (SEC-IN-04); null when unknown. */
+    public fun displayName(uri: String): String?
 }

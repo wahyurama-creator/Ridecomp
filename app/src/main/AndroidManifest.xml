@@ -26,6 +26,21 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!--
+                "Open with RideComp" for GPX files (T3.1, D-44): content URIs only, no BROWSABLE (web pages
+                cannot trigger it). The file is parsed as untrusted input (SEC-IN-01..04).
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:scheme="content" />
+                <data android:mimeType="application/gpx+xml" />
+                <data android:mimeType="application/gpx" />
+                <data android:mimeType="text/xml" />
+                <data android:mimeType="application/xml" />
+            </intent-filter>
         </activity>
         <!-- SEC-PLT-04: FileProvider for exported FIT/GPX files; not exported, temporary grants only. -->
         <provider

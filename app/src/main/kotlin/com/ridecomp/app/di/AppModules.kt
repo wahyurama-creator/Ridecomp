@@ -3,6 +3,7 @@ package com.ridecomp.app.di
 import com.ridecomp.app.AppViewModel
 import com.ridecomp.feature.history.di.historyFeatureModule
 import com.ridecomp.feature.ride.di.rideFeatureModule
+import com.ridecomp.feature.routes.di.routesFeatureModule
 import com.ridecomp.feature.sensors.di.sensorsFeatureModule
 import com.ridecomp.feature.settings.di.settingsFeatureModule
 import org.koin.core.module.Module
@@ -24,4 +25,5 @@ val appModules: List<Module> = listOf(
     historyFeatureModule,
     settingsFeatureModule,
     sensorsFeatureModule,
+    routesFeatureModule,
 )
