@@ -190,16 +190,20 @@ private fun Contacts(state: SafetyUiState, onEvent: (SafetyUiEvent) -> Unit, onP
 @Composable
 private fun ContactRow(contact: EmergencyContact, onRemove: () -> Unit) {
     val colors = RideCompTheme.colors
+    val masked = PhoneMask.mask(contact.phone)
+    // A contact saved without a name carries the number as its name: never show it in full.
+    val hasName = contact.displayName.filter(Char::isDigit) != contact.phone.filter(Char::isDigit)
+    val name = if (hasName) contact.displayName else masked
     ListCardRow(
-        title = contact.displayName,
-        subtitle = PhoneMask.mask(contact.phone),
+        title = name,
+        subtitle = if (hasName) masked else null,
         leading = {
             Box(
                 modifier = Modifier.size(RideCompDimens.avatarSize).background(colors.divider, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = contact.displayName.take(1).uppercase(),
+                    text = if (hasName) name.take(1).uppercase() else PHONE_AVATAR,
                     style = RideCompTheme.typography.cardTitle,
                     color = colors.textPrimary,
                 )
@@ -208,12 +212,15 @@ private fun ContactRow(contact: EmergencyContact, onRemove: () -> Unit) {
         trailing = {
             IconSquareButton(
                 iconRes = UiR.drawable.ic_close,
-                contentDescription = stringResource(R.string.safety_remove_contact, contact.displayName),
+                contentDescription = stringResource(R.string.safety_remove_contact, name),
                 onClick = onRemove,
             )
         },
     )
 }
+
+/** Avatar of a contact without a name. */
+private const val PHONE_AVATAR = "#"
 
 /**
  * Sample of the alert SMS. The real text is `sms_incident` in :platform (built by the recording

@@ -204,4 +204,10 @@
     <string name="safety_sms_example_title">Example SMS</string>
     <string name="safety_sms_example">RideComp: %1$s may have had a cycling accident at 07:12. Last location: maps.google.com/?q=… (accuracy ±6 m). Automatic message.</string>
     <string name="safety_sms_rider_unknown">a cyclist</string>
+    <string name="backup_included_title">Included</string>
+    <string name="backup_included">Activities &amp; FIT files · GPX routes · profiles &amp; settings · saved sensors</string>
+    <string name="backup_excluded_title">Not included</string>
+    <string name="backup_excluded">Emergency contacts · offline maps</string>
+    <string name="backup_password_recommended">Recommended: it holds locations &amp; HR data</string>
+    <string name="backup_create_hint">Save to Google Drive, WhatsApp or a phone folder</string>
 </resources>
