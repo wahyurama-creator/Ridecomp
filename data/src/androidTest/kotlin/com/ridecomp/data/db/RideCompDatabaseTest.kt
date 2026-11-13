@@ -3,6 +3,7 @@ package com.ridecomp.data.db
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.ridecomp.data.db.dao.PeriodTotalsRow
 import com.ridecomp.data.db.entity.ActivityEntity
 import com.ridecomp.data.db.entity.EventEntity
 import com.ridecomp.data.db.entity.LapEntity
@@ -78,6 +79,20 @@ class RideCompDatabaseTest {
 
         assertEquals(listOf(4L, 3L), page)
         assertEquals(5, dao.observeFinishedCount().first())
+    }
+
+    @Test
+    fun totals_since_count_only_finished_rides_from_that_time() = runTest {
+        val dao = db.activityDao()
+        (1L..4L).forEach {
+            dao.insert(activity(DbNames.ActivityStatus.FINISHED, it).copy(distanceM = 1_000.0, ascentM = 10.0))
+        }
+        dao.insert(activity(DbNames.ActivityStatus.RECORDING, 5).copy(distanceM = 9_000.0))
+
+        val totals = dao.observeTotalsSince(sinceMs = 3).first()
+
+        assertEquals(PeriodTotalsRow(rides = 2, distanceM = 2_000.0, ascentM = 20.0), totals)
+        assertEquals(0, dao.observeTotalsSince(sinceMs = 100).first().rides)
     }
 
     @Test

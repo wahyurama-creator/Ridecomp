@@ -52,8 +52,8 @@
     <string name="ride_battery_critical">Mode kritis</string>
 
     <string name="summary_title">Ringkasan ride</string>
-    <string name="summary_name">Nama ride</string>
-    <string name="summary_save">SIMPAN</string>
+    <string name="summary_name">Nama aktivitas</string>
+    <string name="summary_save">Simpan</string>
 
     <string name="metric_speed">Kecepatan</string>
     <string name="metric_avg_speed">Kec. rata-rata</string>
@@ -248,4 +248,21 @@
     <string name="pre_ride_gps_tips">• Pindah ke area terbuka, jauh dari gedung tinggi\n• Pastikan lokasi HP mode \"Akurasi tinggi\"\n• Fix pertama setelah HP lama mati bisa 1–2 menit</string>
     <string name="pre_ride_show_options">Lihat pilihan ride</string>
     <string name="pre_ride_start_without_fix_hint">Rekaman mulai sekarang, posisi menyusul saat sinyal didapat</string>
+    <string name="summary_distance">Jarak</string>
+    <string name="summary_moving">Bergerak</string>
+    <string name="summary_hms">j:m:d</string>
+    <string name="summary_ascent">Tanjakan</string>
+    <string name="summary_speed">Avg / max</string>
+    <string name="summary_max">max %1$s %2$s</string>
+    <string name="summary_hr">Avg HR</string>
+    <string name="summary_cadence">Cadence</string>
+    <string name="summary_cadence_caption">rpm rata-rata</string>
+    <string name="summary_power">Power</string>
+    <string name="summary_power_estimate">Power EST</string>
+    <string name="summary_power_estimate_caption">W · tidak masuk FIT</string>
+    <string name="summary_calories">Kalori</string>
+    <string name="summary_laps">Lap</string>
+    <string name="summary_laps_caption">lap</string>
+    <string name="summary_export_hint">Export FIT dan bagikan ada di detail aktivitas setelah disimpan</string>
+    <string name="summary_strava_help">Cara upload file FIT ke Strava</string>
 </resources>

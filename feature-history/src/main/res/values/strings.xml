@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="history_title">History</string>
-    <string name="history_empty">No rides yet. Start your first ride</string>
-    <string name="history_empty_action">START RIDE</string>
+    <string name="history_empty">Your first ride will show up here, with its stats and FIT file.</string>
+    <string name="history_empty_action">START FIRST RIDE</string>
     <string name="history_item_subtitle">%1$s · %2$s · %3$s</string>
     <string name="history_fit_exported">FIT exported</string>
 
@@ -22,11 +22,11 @@
     <string name="detail_chart_power">POWER</string>
     <string name="detail_laps">Laps</string>
     <string name="detail_lap_row">Lap %1$d</string>
-    <string name="detail_export_fit">EXPORT FIT</string>
-    <string name="detail_export_gpx">EXPORT GPX</string>
+    <string name="detail_export_fit">Export FIT</string>
+    <string name="detail_export_gpx">Export GPX</string>
     <string name="detail_save_fit">SAVE FIT TO DOWNLOADS</string>
     <string name="detail_strava_help">How to upload to Strava</string>
-    <string name="detail_delete">DELETE RIDE</string>
+    <string name="detail_delete">Delete activity</string>
     <string name="detail_delete_title">Delete this ride?</string>
     <string name="detail_delete_message">The ride and its exported files will be deleted permanently.</string>
     <string name="detail_ok">OK</string>
@@ -41,4 +41,30 @@
     <string name="strava_step_3">3. Choose “File”, select the .fit file and save. Speed, distance, elevation and (from Phase 2) heart rate, cadence and power appear in Strava.</string>
     <string name="strava_note">Automatic upload via the Strava API is an optional later feature and needs a Strava subscription.</string>
     <string name="strava_open">OPEN STRAVA UPLOAD PAGE</string>
+    <string name="history_month">This month</string>
+    <string name="history_month_rides">Rides</string>
+    <string name="history_month_ascent">Climbing</string>
+    <string name="history_fit_not_exported">Not exported</string>
+    <string name="history_moving">moving</string>
+    <string name="history_ascent_unit">%1$s ↑</string>
+    <string name="history_today">Today</string>
+    <string name="history_yesterday">Yesterday</string>
+    <string name="history_when">%1$s · %2$s</string>
+    <string name="history_empty_title">No rides yet</string>
+    <string name="history_empty_restore">Have a backup? Restore from file</string>
+    <string name="detail_back">Back</string>
+    <string name="detail_moving_short">moving</string>
+    <string name="detail_ascent_short">%1$s ↑</string>
+    <string name="detail_avg_bpm">avg bpm</string>
+    <string name="detail_chart_vs_distance">%1$s vs distance</string>
+    <string name="detail_lap_column">LAP</string>
+    <string name="detail_lap_distance">DIST</string>
+    <string name="detail_lap_time">TIME</string>
+    <string name="detail_lap_hr">HR</string>
+    <string name="detail_share_fit">Share</string>
+    <string name="detail_tab_speed">Speed</string>
+    <string name="detail_tab_elevation">Elevation</string>
+    <string name="detail_tab_heart_rate">HR</string>
+    <string name="detail_tab_cadence">Cadence</string>
+    <string name="detail_tab_power">Power</string>
 </resources>

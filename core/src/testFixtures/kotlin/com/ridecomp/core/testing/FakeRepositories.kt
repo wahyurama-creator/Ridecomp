@@ -6,6 +6,7 @@ import com.ridecomp.core.model.ActivityStatus
 import com.ridecomp.core.model.BuiltInProfiles
 import com.ridecomp.core.model.DataPagesLayout
 import com.ridecomp.core.model.Lap
+import com.ridecomp.core.model.PeriodTotals
 import com.ridecomp.core.model.RideEvent
 import com.ridecomp.core.model.RideSample
 import com.ridecomp.core.model.RideSettings
@@ -130,6 +131,11 @@ public class FakeActivityRepository : ActivityRepository {
 
     override fun observeFinishedCount(): Flow<Int> =
         activities.map { all -> all.values.count { it.status == ActivityStatus.FINISHED } }
+
+    override fun observeTotalsSince(sinceMs: Long): Flow<PeriodTotals> = activities.map { all ->
+        val rides = all.values.filter { it.status == ActivityStatus.FINISHED && it.startedAtMs >= sinceMs }
+        PeriodTotals(rides.size, rides.sumOf { it.totals.distanceM }, rides.sumOf { it.totals.ascentM })
+    }
 
     override suspend fun getLaps(activityId: Long): List<Lap> = laps[activityId].orEmpty().toList()
 

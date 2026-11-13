@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="history_title">Riwayat</string>
-    <string name="history_empty">Belum ada ride. Mulai ride pertamamu</string>
-    <string name="history_empty_action">MULAI RIDE</string>
+    <string name="history_empty">Ride pertamamu akan muncul di sini, lengkap dengan statistik dan file FIT.</string>
+    <string name="history_empty_action">MULAI RIDE PERTAMA</string>
     <string name="history_item_subtitle">%1$s · %2$s · %3$s</string>
     <string name="history_fit_exported">FIT diekspor</string>
 
@@ -22,11 +22,11 @@
     <string name="detail_chart_power">POWER</string>
     <string name="detail_laps">Lap</string>
     <string name="detail_lap_row">Lap %1$d</string>
-    <string name="detail_export_fit">EKSPOR FIT</string>
-    <string name="detail_export_gpx">EKSPOR GPX</string>
+    <string name="detail_export_fit">Export FIT</string>
+    <string name="detail_export_gpx">Export GPX</string>
     <string name="detail_save_fit">SIMPAN FIT KE DOWNLOAD</string>
     <string name="detail_strava_help">Cara upload ke Strava</string>
-    <string name="detail_delete">HAPUS RIDE</string>
+    <string name="detail_delete">Hapus aktivitas</string>
     <string name="detail_delete_title">Hapus ride ini?</string>
     <string name="detail_delete_message">Ride dan file ekspornya akan dihapus permanen.</string>
     <string name="detail_ok">OK</string>
@@ -41,4 +41,30 @@
     <string name="strava_step_3">3. Pilih “File”, pilih file .fit lalu simpan. Kecepatan, jarak, elevasi, dan (mulai Fase 2) heart rate, cadence, serta power tampil di Strava.</string>
     <string name="strava_note">Upload otomatis lewat Strava API adalah fitur opsional berikutnya dan memerlukan langganan Strava.</string>
     <string name="strava_open">BUKA HALAMAN UPLOAD STRAVA</string>
+    <string name="history_month">Bulan ini</string>
+    <string name="history_month_rides">Ride</string>
+    <string name="history_month_ascent">Tanjakan</string>
+    <string name="history_fit_not_exported">Belum diekspor</string>
+    <string name="history_moving">bergerak</string>
+    <string name="history_ascent_unit">%1$s ↑</string>
+    <string name="history_today">Hari ini</string>
+    <string name="history_yesterday">Kemarin</string>
+    <string name="history_when">%1$s · %2$s</string>
+    <string name="history_empty_title">Belum ada ride</string>
+    <string name="history_empty_restore">Punya backup? Restore dari file</string>
+    <string name="detail_back">Kembali</string>
+    <string name="detail_moving_short">bergerak</string>
+    <string name="detail_ascent_short">%1$s ↑</string>
+    <string name="detail_avg_bpm">avg bpm</string>
+    <string name="detail_chart_vs_distance">%1$s vs jarak</string>
+    <string name="detail_lap_column">LAP</string>
+    <string name="detail_lap_distance">JARAK</string>
+    <string name="detail_lap_time">WAKTU</string>
+    <string name="detail_lap_hr">HR</string>
+    <string name="detail_share_fit">Bagikan</string>
+    <string name="detail_tab_speed">Speed</string>
+    <string name="detail_tab_elevation">Elevasi</string>
+    <string name="detail_tab_heart_rate">HR</string>
+    <string name="detail_tab_cadence">Cadence</string>
+    <string name="detail_tab_power">Power</string>
 </resources>

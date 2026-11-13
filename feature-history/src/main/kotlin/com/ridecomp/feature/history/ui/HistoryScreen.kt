@@ -1,43 +1,70 @@
 package com.ridecomp.feature.history.ui
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.config.Units
 import com.ridecomp.core.model.Activity
+import com.ridecomp.core.model.PeriodTotals
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.history.R
 import com.ridecomp.feature.history.viewmodel.HistoryUiEvent
 import com.ridecomp.feature.history.viewmodel.HistoryUiState
 import com.ridecomp.feature.history.viewmodel.HistoryViewModel
-import com.ridecomp.ui.component.EmptyState
-import com.ridecomp.ui.component.ListRow
+import com.ridecomp.ui.R as UiR
+import com.ridecomp.ui.component.BigButton
+import com.ridecomp.ui.component.BigButtonSize
+import com.ridecomp.ui.component.LinkText
+import com.ridecomp.ui.component.RideCompCard
 import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
+import com.ridecomp.ui.theme.RideCompDimens
+import com.ridecomp.ui.theme.RideCompTheme
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import java.time.format.TextStyle
+import java.time.temporal.ChronoUnit
 import org.koin.androidx.compose.koinViewModel
 
 /** Loads the next page when this many rows remain below the visible ones. */
 private const val LOAD_MORE_THRESHOLD = 5
 
-/** History list (T1.13, 02-DESIGN §3.7). */
+/** History list (T1.13, 02-DESIGN §3.7, 13-UI-SCREENS #11, #28). */
 @Composable
 fun HistoryRoute(
     onStartRide: () -> Unit,
     onOpenActivity: (Long) -> Unit,
     modifier: Modifier = Modifier,
+    onRestore: () -> Unit = {},
     viewModel: HistoryViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -46,10 +73,15 @@ fun HistoryRoute(
         onStartRide = onStartRide,
         onOpenActivity = onOpenActivity,
         onLoadMore = { viewModel.onEvent(HistoryUiEvent.LoadMore) },
+        onRestore = onRestore,
         modifier = modifier,
     )
 }
 
+/**
+ * The Rekor · Segmen · Latihan tabs of the design arrive with Phase 4; until then the list has no tabs
+ * (CLAUDE.md: no features of a later phase, D-57).
+ */
 @Composable
 fun HistoryScreen(
     state: HistoryUiState,
@@ -57,14 +89,11 @@ fun HistoryScreen(
     onOpenActivity: (Long) -> Unit,
     onLoadMore: () -> Unit,
     modifier: Modifier = Modifier,
+    onRestore: () -> Unit = {},
 ) {
     ScreenScaffold(modifier = modifier, title = stringResource(R.string.history_title)) {
         if (state.isLoaded && state.rides.isEmpty()) {
-            EmptyState(
-                message = stringResource(R.string.history_empty),
-                actionLabel = stringResource(R.string.history_empty_action),
-                onAction = onStartRide,
-            )
+            EmptyHistory(onStartRide, onRestore)
         } else {
             val listState = rememberLazyListState()
             val isNearEnd by remember {
@@ -75,28 +104,168 @@ fun HistoryScreen(
             }
             LaunchedEffect(isNearEnd, state.rides.size) { if (isNearEnd && state.hasMore) onLoadMore() }
             val formatter = remember(state.unitSystem) { UnitFormatter(state.unitSystem) }
-            LazyColumn(state = listState) {
+            LazyColumn(
+                state = listState,
+                contentPadding = PaddingValues(
+                    start = RideCompDimens.screenPaddingHorizontal,
+                    end = RideCompDimens.screenPaddingHorizontal,
+                    bottom = RideCompDimens.screenPaddingBottom,
+                ),
+                verticalArrangement = Arrangement.spacedBy(RideCompDimens.cardGap),
+            ) {
+                item { MonthCard(state.month, formatter) }
                 items(state.rides, key = { it.id }) { ride ->
-                    ListRow(
-                        title = ride.name,
-                        subtitle = ride.subtitle(formatter),
-                        onClick = { onOpenActivity(ride.id) },
-                    )
+                    ActivityCard(ride, formatter, state.nowMs, onClick = { onOpenActivity(ride.id) })
                 }
             }
         }
     }
 }
 
-private val DATE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+/** "BULAN INI · RIDE · TANJAKAN" (13-UI-SCREENS #11). */
+@Composable
+private fun MonthCard(month: PeriodTotals, format: UnitFormatter) {
+    RideCompCard {
+        Row {
+            MonthStat(
+                stringResource(R.string.history_month),
+                "${format.distance(month.distanceM)} ${format.distanceUnit}",
+                Modifier.weight(1f),
+            )
+            MonthStat(stringResource(R.string.history_month_rides), month.rides.toString(), Modifier.weight(1f))
+            MonthStat(
+                stringResource(R.string.history_month_ascent),
+                "${format.elevation(month.ascentM)} ${format.elevationUnit}",
+                Modifier.weight(1f),
+            )
+        }
+    }
+}
 
 @Composable
-private fun Activity.subtitle(formatter: UnitFormatter): String = stringResource(
-    R.string.history_item_subtitle,
-    DATE_FORMAT.format(Instant.ofEpochMilli(startedAtMs).atZone(ZoneId.systemDefault())),
-    "${formatter.distance(totals.distanceM)} ${formatter.distanceUnit}",
-    formatter.duration(totals.movingS * Units.MS_PER_SECOND),
-)
+private fun MonthStat(label: String, value: String, modifier: Modifier) {
+    Column(modifier = modifier) {
+        Text(
+            text = label.uppercase(),
+            style = RideCompTheme.typography.navLabel,
+            color = RideCompTheme.colors.textSecondary,
+        )
+        Text(text = value, style = RideCompTheme.typography.statValue, color = RideCompTheme.colors.textPrimary)
+    }
+}
+
+/** Ride card: name, export status, relative time, distance · time · climbing (13-UI-SCREENS #11). */
+@Composable
+private fun ActivityCard(ride: Activity, format: UnitFormatter, nowMs: Long, onClick: () -> Unit) {
+    val colors = RideCompTheme.colors
+    val isExported = ride.fitExportedAtMs != null
+    RideCompCard(onClick = onClick) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = ride.name,
+                style = RideCompTheme.typography.cardTitle,
+                color = colors.textPrimary,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = stringResource(
+                    if (isExported) R.string.history_fit_exported else R.string.history_fit_not_exported,
+                ),
+                style = RideCompTheme.typography.caption.copy(fontWeight = FontWeight.Bold),
+                color = if (isExported) colors.ok else colors.warnText,
+            )
+        }
+        Text(
+            text = relativeTime(ride.startedAtMs, nowMs),
+            style = RideCompTheme.typography.caption,
+            color = colors.textSecondary,
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingM)) {
+            CardStat(format.distance(ride.totals.distanceM), format.distanceUnit)
+            CardStat(
+                format.duration(ride.totals.movingS * Units.MS_PER_SECOND),
+                stringResource(R.string.history_moving),
+            )
+            CardStat(
+                format.elevation(ride.totals.ascentM),
+                stringResource(R.string.history_ascent_unit, format.elevationUnit),
+            )
+        }
+    }
+}
+
+@Composable
+private fun CardStat(value: String, unit: String) {
+    val colors = RideCompTheme.colors
+    Text(
+        text = buildAnnotatedString {
+            withStyle(SpanStyle(color = colors.textPrimary, fontWeight = FontWeight.Bold)) { append(value) }
+            append(" ")
+            append(unit)
+        },
+        style = RideCompTheme.typography.body,
+        color = colors.textTertiary,
+    )
+}
+
+/** "Hari ini · 05:31", "Kemarin · 16:40", "Selasa · 16:40" within a week, then the date. */
+@Composable
+private fun relativeTime(startedAtMs: Long, nowMs: Long): String {
+    val zone = ZoneId.systemDefault()
+    val locale = LocalConfiguration.current.locales[0]
+    val start = Instant.ofEpochMilli(startedAtMs).atZone(zone)
+    val days = ChronoUnit.DAYS.between(start.toLocalDate(), Instant.ofEpochMilli(nowMs).atZone(zone).toLocalDate())
+    val day = when {
+        days == 0L -> stringResource(R.string.history_today)
+        days == 1L -> stringResource(R.string.history_yesterday)
+        days in 2 until DAYS_PER_WEEK -> start.dayOfWeek.getDisplayName(TextStyle.FULL, locale)
+        else -> DATE_FORMAT.format(start)
+    }
+    return stringResource(R.string.history_when, day, TIME_FORMAT.format(start))
+}
+
+private const val DAYS_PER_WEEK = 7L
+private val DATE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+private val TIME_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
+/** Empty history (13-UI-SCREENS #28): bike drawing, first-ride button, restore link. */
+@Composable
+private fun EmptyHistory(onStartRide: () -> Unit, onRestore: () -> Unit) {
+    val colors = RideCompTheme.colors
+    Column(
+        modifier = Modifier.fillMaxSize().padding(horizontal = RideCompDimens.screenPaddingHorizontal),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap, Alignment.CenterVertically),
+    ) {
+        Icon(
+            painter = painterResource(UiR.drawable.ic_empty_bike),
+            contentDescription = null,
+            tint = colors.disabled,
+            modifier = Modifier.size(
+                width = RideCompDimens.emptyIllustrationWidth,
+                height = RideCompDimens.emptyIllustrationHeight,
+            ),
+        )
+        Text(
+            text = stringResource(R.string.history_empty_title),
+            style = RideCompTheme.typography.title,
+            color = colors.textPrimary,
+        )
+        Text(
+            text = stringResource(R.string.history_empty),
+            style = RideCompTheme.typography.body,
+            color = colors.textSecondary,
+            textAlign = TextAlign.Center,
+        )
+        BigButton(
+            text = stringResource(R.string.history_empty_action),
+            onClick = onStartRide,
+            size = BigButtonSize.SECONDARY,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        LinkText(stringResource(R.string.history_empty_restore), onClick = onRestore)
+    }
+}
 
 @ThemePreviews
 @Composable

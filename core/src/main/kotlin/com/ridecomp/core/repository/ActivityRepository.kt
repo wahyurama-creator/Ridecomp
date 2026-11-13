@@ -3,6 +3,7 @@ package com.ridecomp.core.repository
 import com.ridecomp.core.model.Activity
 import com.ridecomp.core.model.ActivityStatus
 import com.ridecomp.core.model.Lap
+import com.ridecomp.core.model.PeriodTotals
 import com.ridecomp.core.model.RideEvent
 import com.ridecomp.core.model.RideSample
 import com.ridecomp.core.model.RideTotals
@@ -55,6 +56,9 @@ public interface ActivityRepository {
     public fun observeFinished(limit: Int, offset: Int): Flow<List<Activity>>
 
     public fun observeFinishedCount(): Flow<Int>
+
+    /** Totals of finished rides started at or after [sinceMs] (history "this month" card). */
+    public fun observeTotalsSince(sinceMs: Long): Flow<PeriodTotals>
 
     public suspend fun getLaps(activityId: Long): List<Lap>
 

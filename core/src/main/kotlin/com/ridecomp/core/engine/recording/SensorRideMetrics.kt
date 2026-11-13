@@ -35,6 +35,8 @@ public data class LiveSensors(
     val powerZone: Int? = null,
     val wattsPerKg: Double? = null,
     val estimatedPowerW: Int? = null,
+    /** Average of the estimate over moving time (summary "POWER EST", never written to FIT power). */
+    val avgEstimatedPowerW: Int? = null,
     val calories: Int? = null,
     val snapshot: SensorSnapshot = SensorSnapshot(),
 )
@@ -99,6 +101,7 @@ public class SensorRideMetrics(private val profile: RiderProfile, private val ag
         powerZone = Zones.power(power.threeSecondW().takeIf { power.hasData }, profile.ftpW),
         wattsPerKg = power.threeSecondW()?.takeIf { power.hasData }?.let { it / profile.weightKg },
         estimatedPowerW = lastEstimateW,
+        avgEstimatedPowerW = estimated.average(),
         calories = calories(),
         snapshot = snapshot,
     )

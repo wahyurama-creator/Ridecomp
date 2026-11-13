@@ -4,9 +4,12 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.viewModelScope
 import com.ridecomp.core.config.ActivityConfig
 import com.ridecomp.core.model.Activity
+import com.ridecomp.core.model.PeriodTotals
 import com.ridecomp.core.model.UnitSystem
+import com.ridecomp.core.source.Clock
 import com.ridecomp.core.usecase.ObserveHistoryCountUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
+import com.ridecomp.core.usecase.ObserveMonthTotalsUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.ui.udf.NoEffect
 import com.ridecomp.ui.udf.UdfViewModel
@@ -25,6 +28,10 @@ data class HistoryUiState(
     val totalCount: Int = 0,
     val unitSystem: UnitSystem = UnitSystem.METRIC,
     val isLoaded: Boolean = false,
+    /** "BULAN INI" card (13-UI-SCREENS #11). */
+    val month: PeriodTotals = PeriodTotals(),
+    /** Now, for "Hari ini · 05:31" labels; from the injected clock. */
+    val nowMs: Long = 0,
 ) {
     val hasMore: Boolean get() = rides.size < totalCount
 }
@@ -40,6 +47,8 @@ class HistoryViewModel(
     observePage: ObserveHistoryPageUseCase,
     observeCount: ObserveHistoryCountUseCase,
     observeSettings: ObserveRideSettingsUseCase,
+    observeMonth: ObserveMonthTotalsUseCase,
+    clock: Clock,
 ) : UdfViewModel<HistoryUiState, HistoryUiEvent, NoEffect>(HistoryUiState()) {
     private val loadedCount = MutableStateFlow(ActivityConfig.HISTORY_PAGE_SIZE)
 
@@ -49,8 +58,16 @@ class HistoryViewModel(
                 loadedCount.flatMapLatest { count -> observePage(page = 0, pageSize = count) },
                 observeCount(),
                 observeSettings(),
-            ) { rides, total, settings ->
-                HistoryUiState(rides.toImmutableList(), total, settings.unitSystem, isLoaded = true)
+                observeMonth(),
+            ) { rides, total, settings, month ->
+                HistoryUiState(
+                    rides.toImmutableList(),
+                    total,
+                    settings.unitSystem,
+                    isLoaded = true,
+                    month,
+                    clock.nowMs(),
+                )
             }.collect { state -> updateState { state } }
         }
     }
