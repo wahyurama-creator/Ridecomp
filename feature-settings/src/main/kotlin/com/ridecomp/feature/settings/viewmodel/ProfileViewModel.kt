@@ -3,7 +3,9 @@ package com.ridecomp.feature.settings.viewmodel
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.viewModelScope
 import com.ridecomp.core.model.RiderProfile
+import com.ridecomp.core.model.RidingPosition
 import com.ridecomp.core.model.Sex
+import com.ridecomp.core.model.Surface
 import com.ridecomp.core.usecase.EstimateHrMaxUseCase
 import com.ridecomp.core.usecase.ObserveProfileUseCase
 import com.ridecomp.core.usecase.ProfileField
@@ -24,6 +26,10 @@ data class ProfileUiState(
     val ftpW: String = "",
     val birthYear: String = "",
     val sex: Sex? = null,
+    /** Hand position for estimated power (13-UI-SCREENS #2). */
+    val ridingPosition: RidingPosition = RidingPosition.HOODS,
+    /** Not edited here, but kept so saving never resets it. */
+    val surface: Surface = Surface.ROAD,
     val invalidFields: Set<ProfileField> = emptySet(),
     val isHrMaxEstimated: Boolean = false,
     val isLoaded: Boolean = false,
@@ -34,6 +40,8 @@ sealed interface ProfileUiEvent {
     data class FieldChanged(val field: ProfileField, val text: String) : ProfileUiEvent
 
     data class SexChanged(val sex: Sex?) : ProfileUiEvent
+
+    data class PositionChanged(val position: RidingPosition) : ProfileUiEvent
 
     /** Wheel size picked from the common sizes list. */
     data class WheelPicked(val circumferenceMm: Int) : ProfileUiEvent
@@ -63,6 +71,7 @@ class ProfileViewModel(
         when (event) {
             is ProfileUiEvent.FieldChanged -> updateState { withField(event.field, event.text) }
             is ProfileUiEvent.SexChanged -> updateState { copy(sex = event.sex) }
+            is ProfileUiEvent.PositionChanged -> updateState { copy(ridingPosition = event.position) }
             is ProfileUiEvent.WheelPicked -> updateState {
                 withField(ProfileField.WHEEL_CIRCUMFERENCE, event.circumferenceMm.toString())
             }
@@ -113,6 +122,8 @@ private fun RiderProfile.toUiState() = ProfileUiState(
     ftpW = ftpW?.toString().orEmpty(),
     birthYear = birthYear?.toString().orEmpty(),
     sex = sex,
+    ridingPosition = ridingPosition,
+    surface = surface,
     isLoaded = true,
 )
 
@@ -149,6 +160,8 @@ private fun ProfileUiState.toProfileOrNull(): RiderProfile? {
         ftpW = ftpW.toOptionalInt(),
         birthYear = birthYear.toOptionalInt(),
         sex = sex,
+        ridingPosition = ridingPosition,
+        surface = surface,
     )
 }
 

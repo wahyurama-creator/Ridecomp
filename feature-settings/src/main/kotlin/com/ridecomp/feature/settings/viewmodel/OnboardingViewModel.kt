@@ -2,18 +2,28 @@ package com.ridecomp.feature.settings.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.ridecomp.core.usecase.CompleteOnboardingUseCase
+import com.ridecomp.core.usecase.GpsStatus
+import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
 import com.ridecomp.ui.udf.UdfViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/** Onboarding steps in order (02-DESIGN §3.1). Bluetooth permission comes with sensors in Phase 2. */
-enum class OnboardingStep { LOCATION, NOTIFICATIONS, BATTERY, PROFILE }
+/** Onboarding steps in order (02-DESIGN §3.1, 13-UI-SCREENS #1, #2, #22). */
+enum class OnboardingStep { PERMISSIONS, PROFILE, READY }
 
 sealed interface OnboardingUiEvent {
     data object Next : OnboardingUiEvent
 
     data object Back : OnboardingUiEvent
 
-    /** Profile saved on the last step. */
+    /** "Mulai pakai RideComp" or "Lewati" on the last step. */
     data object Finished : OnboardingUiEvent
 }
 
@@ -21,8 +31,21 @@ sealed interface OnboardingEffect {
     data object Done : OnboardingEffect
 }
 
-class OnboardingViewModel(private val completeOnboarding: CompleteOnboardingUseCase) :
-    UdfViewModel<OnboardingStep, OnboardingUiEvent, OnboardingEffect>(OnboardingStep.LOCATION) {
+/**
+ * Onboarding. The GPS test of the last step runs only while that step is shown and the screen observes
+ * [gpsStatus] (`WhileSubscribed`), like the pre-ride check (BAT-01, CO-07).
+ */
+@OptIn(ExperimentalCoroutinesApi::class)
+class OnboardingViewModel(
+    private val completeOnboarding: CompleteOnboardingUseCase,
+    observeGps: ObserveGpsStatusUseCase,
+) : UdfViewModel<OnboardingStep, OnboardingUiEvent, OnboardingEffect>(OnboardingStep.PERMISSIONS) {
+    val gpsStatus: StateFlow<GpsStatus?> = uiState
+        .map { it == OnboardingStep.READY }
+        .distinctUntilChanged()
+        .flatMapLatest { isTesting -> if (isTesting) observeGps() else flowOf(null) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), null)
+
     override fun onEvent(event: OnboardingUiEvent) {
         when (event) {
             OnboardingUiEvent.Next -> updateState { OnboardingStep.entries.getOrElse(ordinal + 1) { this } }
@@ -32,5 +55,10 @@ class OnboardingViewModel(private val completeOnboarding: CompleteOnboardingUseC
                 sendEffect(OnboardingEffect.Done)
             }
         }
+    }
+
+    private companion object {
+        /** Keeps GPS across quick configuration changes only (CO-07). */
+        const val STOP_TIMEOUT_MS = 5_000L
     }
 }

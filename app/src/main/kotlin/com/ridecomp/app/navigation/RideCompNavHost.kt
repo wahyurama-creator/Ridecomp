@@ -94,7 +94,10 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
     val context = LocalContext.current
     NavHost(navController = navController, startDestination = startDestination, modifier = modifier) {
         composable(AppRoutes.ONBOARDING) {
-            OnboardingRoute(onDone = { navController.navigateClearingBackStack(TopLevelDestination.HOME.route) })
+            OnboardingRoute(
+                onDone = { navController.navigateClearingBackStack(TopLevelDestination.HOME.route) },
+                onOpenSensors = { navController.navigate(TopLevelDestination.SENSORS.route) },
+            )
         }
         rideGraph(navController)
         historyGraph(navController)

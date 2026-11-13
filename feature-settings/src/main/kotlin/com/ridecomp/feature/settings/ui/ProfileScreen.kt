@@ -2,17 +2,19 @@ package com.ridecomp.feature.settings.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.config.ProfileDefaults
+import com.ridecomp.core.model.RidingPosition
 import com.ridecomp.core.model.Sex
 import com.ridecomp.core.usecase.ProfileField
 import com.ridecomp.feature.settings.R
@@ -21,9 +23,11 @@ import com.ridecomp.feature.settings.viewmodel.ProfileUiEvent
 import com.ridecomp.feature.settings.viewmodel.ProfileUiState
 import com.ridecomp.feature.settings.viewmodel.ProfileViewModel
 import com.ridecomp.ui.component.BigButton
+import com.ridecomp.ui.component.BigButtonSize
 import com.ridecomp.ui.component.Choice
 import com.ridecomp.ui.component.ChoiceChips
-import com.ridecomp.ui.component.NumberField
+import com.ridecomp.ui.component.LinkText
+import com.ridecomp.ui.component.RideCompTextField
 import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
@@ -35,119 +39,177 @@ import org.koin.androidx.compose.koinViewModel
 
 /** Profile settings screen (T1.2). */
 @Composable
-fun ProfileRoute(onSaved: () -> Unit, modifier: Modifier = Modifier, viewModel: ProfileViewModel = koinViewModel()) {
+fun ProfileRoute(
+    onSaved: () -> Unit,
+    modifier: Modifier = Modifier,
+    onBack: () -> Unit = onSaved,
+    viewModel: ProfileViewModel = koinViewModel(),
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     ObserveEffects(viewModel.effects) { effect ->
         when (effect) {
             ProfileEffect.Saved -> onSaved()
         }
     }
-    ScreenScaffold(modifier = modifier, title = stringResource(R.string.profile_title)) {
+    ScreenScaffold(
+        modifier = modifier,
+        title = stringResource(R.string.profile_title),
+        onBack = onBack,
+        backLabel = stringResource(R.string.onboarding_back_label),
+    ) {
         ProfileForm(state = state, onEvent = viewModel::onEvent)
     }
 }
 
-/** Stateless, scrollable profile form; reused by onboarding. */
+/**
+ * Stateless, scrollable profile form (13-UI-SCREENS #2); reused by onboarding, where the optional
+ * birth year, resting HR and sex are left for later ([isOnboarding]).
+ */
 @Composable
-fun ProfileForm(state: ProfileUiState, onEvent: (ProfileUiEvent) -> Unit, modifier: Modifier = Modifier) {
+fun ProfileForm(
+    state: ProfileUiState,
+    onEvent: (ProfileUiEvent) -> Unit,
+    modifier: Modifier = Modifier,
+    isOnboarding: Boolean = false,
+    header: @Composable () -> Unit = {},
+) {
     val error = stringResource(R.string.profile_error_invalid)
     fun errorOf(field: ProfileField) = error.takeIf { field in state.invalidFields }
     fun change(field: ProfileField): (String) -> Unit = { onEvent(ProfileUiEvent.FieldChanged(field, it)) }
     Column(
-        modifier = modifier.verticalScroll(rememberScrollState()).padding(bottom = RideCompDimens.spacingL),
-        verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS),
+        modifier = modifier
+            .verticalScroll(rememberScrollState())
+            .padding(
+                start = RideCompDimens.screenPaddingHorizontal,
+                end = RideCompDimens.screenPaddingHorizontal,
+                bottom = RideCompDimens.screenPaddingBottom,
+            ),
+        verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
     ) {
-        NumberField(
-            label = stringResource(R.string.profile_weight),
-            value = state.weightKg,
-            onValueChange = change(ProfileField.WEIGHT),
-            unit = stringResource(R.string.unit_kg),
-            error = errorOf(ProfileField.WEIGHT),
-            isDecimal = true,
-        )
-        NumberField(
-            label = stringResource(R.string.profile_bike_weight),
-            value = state.bikeWeightKg,
-            onValueChange = change(ProfileField.BIKE_WEIGHT),
-            unit = stringResource(R.string.unit_kg),
-            error = errorOf(ProfileField.BIKE_WEIGHT),
-            isDecimal = true,
-        )
-        NumberField(
+        header()
+        Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm)) {
+            RideCompTextField(
+                label = stringResource(R.string.profile_weight),
+                value = state.weightKg,
+                onValueChange = change(ProfileField.WEIGHT),
+                suffix = stringResource(R.string.unit_kg),
+                error = errorOf(ProfileField.WEIGHT),
+                keyboardType = KeyboardType.Decimal,
+                modifier = Modifier.weight(1f),
+            )
+            RideCompTextField(
+                label = stringResource(R.string.profile_bike_weight),
+                value = state.bikeWeightKg,
+                onValueChange = change(ProfileField.BIKE_WEIGHT),
+                suffix = stringResource(R.string.unit_kg),
+                error = errorOf(ProfileField.BIKE_WEIGHT),
+                keyboardType = KeyboardType.Decimal,
+                modifier = Modifier.weight(1f),
+            )
+        }
+        RideCompTextField(
             label = stringResource(R.string.profile_wheel),
             value = state.wheelCircumferenceMm,
             onValueChange = change(ProfileField.WHEEL_CIRCUMFERENCE),
-            unit = stringResource(R.string.unit_mm),
+            suffix = stringResource(R.string.unit_mm),
             error = errorOf(ProfileField.WHEEL_CIRCUMFERENCE),
+            keyboardType = KeyboardType.Number,
         )
         ChoiceChips(
             label = stringResource(R.string.profile_wheel_common),
             choices = ProfileDefaults.COMMON_WHEELS_MM.map { (label, mm) -> Choice<Int?>(mm, label) }.toImmutableList(),
             selected = state.wheelCircumferenceMm.toIntOrNull(),
             onSelect = { mm -> mm?.let { onEvent(ProfileUiEvent.WheelPicked(it)) } },
+            horizontalPadding = RideCompDimens.none,
+            columns = WHEEL_COLUMNS,
         )
-        HeartRateFields(state, onEvent, ::errorOf)
-        NumberField(
-            label = stringResource(R.string.profile_ftp),
-            value = state.ftpW,
-            onValueChange = change(ProfileField.FTP),
-            unit = stringResource(R.string.unit_watt),
-            error = errorOf(ProfileField.FTP),
+        Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm)) {
+            RideCompTextField(
+                label = stringResource(R.string.profile_hr_max),
+                value = state.hrMaxBpm,
+                onValueChange = change(ProfileField.HR_MAX),
+                suffix = stringResource(R.string.unit_bpm),
+                error = errorOf(ProfileField.HR_MAX),
+                keyboardType = KeyboardType.Number,
+                modifier = Modifier.weight(1f),
+            )
+            RideCompTextField(
+                label = stringResource(R.string.profile_ftp),
+                value = state.ftpW,
+                onValueChange = change(ProfileField.FTP),
+                suffix = stringResource(R.string.unit_watt),
+                error = errorOf(ProfileField.FTP),
+                keyboardType = KeyboardType.Number,
+                modifier = Modifier.weight(1f),
+            )
+        }
+        if (state.isHrMaxEstimated) {
+            Text(
+                text = stringResource(R.string.profile_hr_max_estimated),
+                style = RideCompTheme.typography.caption,
+                color = RideCompTheme.colors.warnText,
+            )
+        }
+        ChoiceChips(
+            label = stringResource(R.string.profile_hand_position),
+            choices = listOf(
+                Choice(RidingPosition.TOPS, stringResource(R.string.profile_hand_tops)),
+                Choice(RidingPosition.HOODS, stringResource(R.string.profile_hand_hoods)),
+                Choice(RidingPosition.DROPS, stringResource(R.string.profile_hand_drops)),
+            ).toImmutableList(),
+            selected = state.ridingPosition,
+            onSelect = { onEvent(ProfileUiEvent.PositionChanged(it)) },
+            horizontalPadding = RideCompDimens.none,
+            columns = RidingPosition.entries.size,
         )
-        SexChoice(selected = state.sex, onSelect = { onEvent(ProfileUiEvent.SexChanged(it)) })
+        if (isOnboarding) {
+            Text(
+                text = stringResource(R.string.profile_later_note),
+                style = RideCompTheme.typography.caption,
+                color = RideCompTheme.colors.textSecondary,
+            )
+        } else {
+            OptionalFields(state, onEvent, ::errorOf)
+        }
         BigButton(
-            text = stringResource(R.string.profile_save),
+            text = stringResource(if (isOnboarding) R.string.profile_save_next else R.string.profile_save),
             onClick = { onEvent(ProfileUiEvent.Save) },
             isEnabled = state.isLoaded && !state.isSaving,
-            modifier = Modifier.padding(horizontal = RideCompDimens.spacingM),
+            size = BigButtonSize.SECONDARY,
         )
     }
 }
 
+/** Common wheel sizes in rows of three (13-UI-SCREENS #2 "Ukuran ban"). */
+private const val WHEEL_COLUMNS = 3
+
+/** Birth year (with the 220 − age estimate), resting HR and sex: optional, settings only. */
 @Composable
-private fun HeartRateFields(
+private fun OptionalFields(
     state: ProfileUiState,
     onEvent: (ProfileUiEvent) -> Unit,
     errorOf: (ProfileField) -> String?,
 ) {
-    NumberField(
-        label = stringResource(R.string.profile_birth_year),
-        value = state.birthYear,
-        onValueChange = { onEvent(ProfileUiEvent.FieldChanged(ProfileField.BIRTH_YEAR, it)) },
-        error = errorOf(ProfileField.BIRTH_YEAR),
-    )
-    NumberField(
-        label = stringResource(R.string.profile_hr_max),
-        value = state.hrMaxBpm,
-        onValueChange = { onEvent(ProfileUiEvent.FieldChanged(ProfileField.HR_MAX, it)) },
-        unit = stringResource(R.string.unit_bpm),
-        error = errorOf(ProfileField.HR_MAX),
-    )
-    if (state.isHrMaxEstimated) {
-        Text(
-            text = stringResource(R.string.profile_hr_max_estimated),
-            style = RideCompTheme.typography.dataLabel,
-            color = RideCompTheme.colors.warnText,
-            modifier = Modifier.padding(horizontal = RideCompDimens.spacingM),
+    Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm)) {
+        RideCompTextField(
+            label = stringResource(R.string.profile_birth_year),
+            value = state.birthYear,
+            onValueChange = { onEvent(ProfileUiEvent.FieldChanged(ProfileField.BIRTH_YEAR, it)) },
+            error = errorOf(ProfileField.BIRTH_YEAR),
+            keyboardType = KeyboardType.Number,
+            modifier = Modifier.weight(1f),
+        )
+        RideCompTextField(
+            label = stringResource(R.string.profile_hr_rest),
+            value = state.hrRestBpm,
+            onValueChange = { onEvent(ProfileUiEvent.FieldChanged(ProfileField.HR_REST, it)) },
+            suffix = stringResource(R.string.unit_bpm),
+            error = errorOf(ProfileField.HR_REST),
+            keyboardType = KeyboardType.Number,
+            modifier = Modifier.weight(1f),
         )
     }
-    TextButton(
-        onClick = { onEvent(ProfileUiEvent.EstimateHrMax) },
-        modifier = Modifier.padding(horizontal = RideCompDimens.spacingS),
-    ) {
-        Text(stringResource(R.string.profile_estimate_hr_max))
-    }
-    NumberField(
-        label = stringResource(R.string.profile_hr_rest),
-        value = state.hrRestBpm,
-        onValueChange = { onEvent(ProfileUiEvent.FieldChanged(ProfileField.HR_REST, it)) },
-        unit = stringResource(R.string.unit_bpm),
-        error = errorOf(ProfileField.HR_REST),
-    )
-}
-
-@Composable
-private fun SexChoice(selected: Sex?, onSelect: (Sex?) -> Unit) {
+    LinkText(stringResource(R.string.profile_estimate_hr_max), onClick = { onEvent(ProfileUiEvent.EstimateHrMax) })
     ChoiceChips(
         label = stringResource(R.string.profile_sex),
         choices = listOf<Choice<Sex?>>(
@@ -155,10 +217,14 @@ private fun SexChoice(selected: Sex?, onSelect: (Sex?) -> Unit) {
             Choice(Sex.MALE, stringResource(R.string.profile_sex_male)),
             Choice(Sex.FEMALE, stringResource(R.string.profile_sex_female)),
         ).toImmutableList(),
-        selected = selected,
-        onSelect = onSelect,
+        selected = state.sex,
+        onSelect = { onEvent(ProfileUiEvent.SexChanged(it)) },
+        horizontalPadding = RideCompDimens.none,
+        columns = SEX_COLUMNS,
     )
 }
+
+private const val SEX_COLUMNS = 3
 
 @ThemePreviews
 @Composable
