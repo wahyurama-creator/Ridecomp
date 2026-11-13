@@ -11,9 +11,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.config.Units
+import com.ridecomp.core.usecase.BackupReminder
 import com.ridecomp.core.usecase.RecoveryChoice
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.ride.R
@@ -40,6 +42,7 @@ fun HomeRoute(
     onOpenPreRide: () -> Unit,
     onOpenRide: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenBackup: () -> Unit = {},
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -47,6 +50,7 @@ fun HomeRoute(
         when (effect) {
             HomeEffect.OpenPreRide -> onOpenPreRide()
             HomeEffect.OpenRide -> onOpenRide()
+            HomeEffect.OpenBackup -> onOpenBackup()
         }
     }
     HomeScreen(state = state, onEvent = viewModel::onEvent, modifier = modifier)
@@ -95,6 +99,7 @@ fun HomeScreen(state: HomeUiState, onEvent: (HomeUiEvent) -> Unit, modifier: Mod
                 })
             }
             LastRide(state)
+            state.backupReminder?.let { BackupReminderCard(it, onEvent) }
         }
     }
     if (isDiscardDialogShown) {
@@ -135,4 +140,22 @@ private const val SEPARATOR = " · "
 @Composable
 private fun HomeScreenPreview() {
     RideCompPreview { HomeScreen(state = HomeUiState(), onEvent = {}) }
+}
+
+/** Shown when opening the app, never by a background job (12-FEATURE-SPECS §12.4, BAT-05). */
+@Composable
+private fun BackupReminderCard(reminder: BackupReminder, onEvent: (HomeUiEvent) -> Unit) {
+    val days = reminder.daysSinceBackup
+    AlertBanner(
+        message = if (days == null) {
+            pluralStringResource(R.plurals.home_backup_never, reminder.newActivities, reminder.newActivities)
+        } else {
+            pluralStringResource(R.plurals.home_backup_days, days.toInt(), days.toInt())
+        },
+        severity = AlertSeverity.INFO,
+        actions = listOf(
+            BannerAction(stringResource(R.string.home_backup_now)) { onEvent(HomeUiEvent.OpenBackup) },
+            BannerAction(stringResource(R.string.home_backup_later)) { onEvent(HomeUiEvent.SnoozeBackupReminder) },
+        ),
+    )
 }

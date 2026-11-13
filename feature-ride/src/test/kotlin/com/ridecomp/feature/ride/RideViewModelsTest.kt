@@ -13,7 +13,9 @@ import com.ridecomp.core.model.UnitSystem
 import com.ridecomp.core.repository.NewActivity
 import com.ridecomp.core.testing.FakeActivityProfileRepository
 import com.ridecomp.core.testing.FakeActivityRepository
+import com.ridecomp.core.testing.FakeBackupStateRepository
 import com.ridecomp.core.testing.FakeBatteryLevelSource
+import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeLocationSource
 import com.ridecomp.core.testing.FakeRideController
 import com.ridecomp.core.testing.FakeSafetyRepository
@@ -23,6 +25,7 @@ import com.ridecomp.core.usecase.GpsStatus
 import com.ridecomp.core.usecase.HandleRecoveredRideUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
+import com.ridecomp.core.usecase.ObserveBackupReminderUseCase
 import com.ridecomp.core.usecase.ObserveDataPagesUseCase
 import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
@@ -36,12 +39,14 @@ import com.ridecomp.core.usecase.ReadBatteryUseCase
 import com.ridecomp.core.usecase.RecoveryChoice
 import com.ridecomp.core.usecase.RenameActivityUseCase
 import com.ridecomp.core.usecase.SelectActivityProfileUseCase
+import com.ridecomp.core.usecase.SnoozeBackupReminderUseCase
 import com.ridecomp.core.usecase.StartRideUseCase
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.ride.model.DefaultDataPages
 import com.ridecomp.feature.ride.model.RideMetric
 import com.ridecomp.feature.ride.viewmodel.HomeEffect
 import com.ridecomp.feature.ride.viewmodel.HomeUiEvent
+import com.ridecomp.feature.ride.viewmodel.HomeUseCases
 import com.ridecomp.feature.ride.viewmodel.HomeViewModel
 import com.ridecomp.feature.ride.viewmodel.PreRideEffect
 import com.ridecomp.feature.ride.viewmodel.PreRideUiEvent
@@ -83,12 +88,18 @@ class RideViewModelsTest {
         Dispatchers.resetMain()
     }
 
+    private val backupState = FakeBackupStateRepository()
+
     private fun homeViewModel() = HomeViewModel(
-        GetRecoverableRideUseCase(repository),
-        HandleRecoveredRideUseCase(controller, repository),
-        ObserveHistoryPageUseCase(repository),
-        ObserveLiveRideUseCase(controller),
-        ObserveRideSettingsUseCase(settings),
+        HomeUseCases(
+            GetRecoverableRideUseCase(repository),
+            HandleRecoveredRideUseCase(controller, repository),
+            ObserveHistoryPageUseCase(repository),
+            ObserveLiveRideUseCase(controller),
+            ObserveRideSettingsUseCase(settings),
+            ObserveBackupReminderUseCase(backupState, repository, FakeClock()),
+            SnoozeBackupReminderUseCase(backupState, FakeClock()),
+        ),
     )
 
     @Test

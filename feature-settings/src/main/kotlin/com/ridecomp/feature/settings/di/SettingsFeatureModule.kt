@@ -1,5 +1,7 @@
 package com.ridecomp.feature.settings.di
 
+import com.ridecomp.feature.settings.viewmodel.BackupUseCases
+import com.ridecomp.feature.settings.viewmodel.BackupViewModel
 import com.ridecomp.feature.settings.viewmodel.OnboardingViewModel
 import com.ridecomp.feature.settings.viewmodel.ProfileViewModel
 import com.ridecomp.feature.settings.viewmodel.RideSettingsViewModel
@@ -15,4 +17,6 @@ val settingsFeatureModule = module {
     viewModel { OnboardingViewModel(get()) }
     factory { SafetyUseCases(get(), get(), get(), get(), get(), get(), get()) }
     viewModel { SafetyViewModel(get()) }
+    factory { BackupUseCases(get(), get(), get(), get(), get(), get()) }
+    viewModel { BackupViewModel(get()) }
 }

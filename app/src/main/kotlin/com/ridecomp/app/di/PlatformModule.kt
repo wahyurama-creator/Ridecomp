@@ -1,6 +1,7 @@
 package com.ridecomp.app.di
 
 import com.ridecomp.app.BuildConfig
+import com.ridecomp.core.engine.backup.BackupManifestCodec
 import com.ridecomp.core.engine.recording.RecordingSession
 import com.ridecomp.core.engine.safety.IncidentManager
 import com.ridecomp.core.engine.sensors.BleScanner
@@ -10,6 +11,7 @@ import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.ProfileRepository
 import com.ridecomp.core.repository.SettingsRepository
 import com.ridecomp.core.source.AccelerometerSource
+import com.ridecomp.core.source.AppRestarter
 import com.ridecomp.core.source.BatteryLevelSource
 import com.ridecomp.core.source.Clock
 import com.ridecomp.core.source.DispatcherProvider
@@ -22,8 +24,12 @@ import com.ridecomp.core.source.RideController
 import com.ridecomp.core.source.RideNameProvider
 import com.ridecomp.core.source.SafetyMessages
 import com.ridecomp.core.source.SmsGateway
+import com.ridecomp.core.usecase.BackupFiles
 import com.ridecomp.core.usecase.ExportFitUseCase
 import com.ridecomp.core.usecase.GetRideProfileUseCase
+import com.ridecomp.platform.backup.AndroidAppRestarter
+import com.ridecomp.platform.backup.AndroidBackupFiles
+import com.ridecomp.platform.backup.JsonBackupManifestCodec
 import com.ridecomp.platform.ble.AndroidBleScanner
 import com.ridecomp.platform.ble.AndroidSensorConnector
 import com.ridecomp.platform.crash.CrashLogConfig
@@ -69,6 +75,9 @@ val platformModule = module {
     single<PickedContactReader> { AndroidPickedContactReader(androidContext(), get()) }
     single<AccelerometerSource> { AndroidAccelerometerSource(androidContext(), get()) }
     single { IncidentManager(get(), get(), get(), get(), get(), get()) }
+    single<BackupFiles> { AndroidBackupFiles(androidContext()) }
+    single<BackupManifestCodec> { JsonBackupManifestCodec() }
+    single<AppRestarter> { AndroidAppRestarter(androidContext()) }
     single<RideController> { ServiceRideController(androidContext(), get()) }
     factory { RecordingSession(get(), get(), get(), get()) }
 }

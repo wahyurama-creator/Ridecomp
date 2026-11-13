@@ -102,3 +102,8 @@ public interface AccelerometerSource {
     /** About 50 Hz while collected; the sensor listener is removed when collection stops (09 §1). */
     public fun samples(): Flow<AccelSample>
 }
+
+/** Restarts the app process (used once after a restore, decision D-39). */
+public interface AppRestarter {
+    public fun restart()
+}

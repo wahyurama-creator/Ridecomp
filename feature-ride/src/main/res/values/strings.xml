@@ -145,6 +145,16 @@
     <string name="profile_pages_own">Own pages for this profile</string>
     <string name="profile_pages_general">Same as the general pages</string>
     <string name="profile_pages_use_general">Use the general pages</string>
+    <plurals name="home_backup_never">
+        <item quantity="one">No backup yet · %1$d ride exists only on this phone</item>
+        <item quantity="other">No backup yet · %1$d rides exist only on this phone</item>
+    </plurals>
+    <plurals name="home_backup_days">
+        <item quantity="one">Last backup %1$d day ago</item>
+        <item quantity="other">Last backup %1$d days ago</item>
+    </plurals>
+    <string name="home_backup_now">Back up now</string>
+    <string name="home_backup_later">Later</string>
     <string name="incident_question">Are you OK?</string>
     <string name="incident_countdown_hint">If you do not answer, your emergency contacts get an SMS with your location.</string>
     <string name="incident_ok">I AM OK</string>

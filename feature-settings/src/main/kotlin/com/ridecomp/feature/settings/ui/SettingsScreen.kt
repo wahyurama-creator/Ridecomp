@@ -27,7 +27,7 @@ enum class SettingsSection(
     ACTIVITY_PROFILES(R.string.settings_activity_profiles, R.string.settings_activity_profiles_subtitle),
     DATA_PAGES(R.string.settings_data_pages),
     SAFETY(R.string.settings_safety, R.string.settings_safety_subtitle),
-    BACKUP(R.string.settings_backup, taskId = "T2.17"),
+    BACKUP(R.string.settings_backup, R.string.settings_backup_subtitle),
     OFFLINE_MAPS(R.string.settings_offline_maps, taskId = "T3.4"),
     LANGUAGE(R.string.settings_language),
     BATTERY_HELP(R.string.settings_battery_help),

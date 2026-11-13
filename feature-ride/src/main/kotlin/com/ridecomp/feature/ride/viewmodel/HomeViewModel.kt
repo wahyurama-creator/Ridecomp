@@ -4,12 +4,15 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.viewModelScope
 import com.ridecomp.core.model.Activity
 import com.ridecomp.core.model.UnitSystem
+import com.ridecomp.core.usecase.BackupReminder
 import com.ridecomp.core.usecase.GetRecoverableRideUseCase
 import com.ridecomp.core.usecase.HandleRecoveredRideUseCase
+import com.ridecomp.core.usecase.ObserveBackupReminderUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.RecoveryChoice
+import com.ridecomp.core.usecase.SnoozeBackupReminderUseCase
 import com.ridecomp.core.usecase.isRideInProgress
 import com.ridecomp.ui.udf.UdfViewModel
 import kotlinx.coroutines.flow.combine
@@ -22,6 +25,8 @@ data class HomeUiState(
     val lastRide: Activity? = null,
     val isRideInProgress: Boolean = false,
     val unitSystem: UnitSystem = UnitSystem.METRIC,
+    /** "Last backup N days ago" card (12-FEATURE-SPECS §12.4); null when not due. */
+    val backupReminder: BackupReminder? = null,
 )
 
 sealed interface HomeUiEvent {
@@ -30,28 +35,45 @@ sealed interface HomeUiEvent {
     data object OpenRide : HomeUiEvent
 
     data class Recover(val choice: RecoveryChoice) : HomeUiEvent
+
+    data object OpenBackup : HomeUiEvent
+
+    /** Hides the backup card for 7 days. */
+    data object SnoozeBackupReminder : HomeUiEvent
 }
 
 sealed interface HomeEffect {
     data object OpenPreRide : HomeEffect
 
     data object OpenRide : HomeEffect
+
+    data object OpenBackup : HomeEffect
 }
 
-class HomeViewModel(
-    private val getRecoverable: GetRecoverableRideUseCase,
-    private val handleRecovered: HandleRecoveredRideUseCase,
-    observeHistory: ObserveHistoryPageUseCase,
-    private val observeLive: ObserveLiveRideUseCase,
-    observeSettings: ObserveRideSettingsUseCase,
-) : UdfViewModel<HomeUiState, HomeUiEvent, HomeEffect>(HomeUiState()) {
+/** Use cases of the home screen, grouped to keep the constructor short. */
+data class HomeUseCases(
+    val getRecoverable: GetRecoverableRideUseCase,
+    val handleRecovered: HandleRecoveredRideUseCase,
+    val observeHistory: ObserveHistoryPageUseCase,
+    val observeLive: ObserveLiveRideUseCase,
+    val observeSettings: ObserveRideSettingsUseCase,
+    val observeBackupReminder: ObserveBackupReminderUseCase,
+    val snoozeBackupReminder: SnoozeBackupReminderUseCase,
+)
+
+class HomeViewModel(private val useCases: HomeUseCases) :
+    UdfViewModel<HomeUiState, HomeUiEvent, HomeEffect>(HomeUiState()) {
     init {
         viewModelScope.launch {
-            combine(observeLive(), observeHistory(page = 0, pageSize = 1), observeSettings()) { live, last, settings ->
+            useCases.observeBackupReminder().collect { updateState { copy(backupReminder = it) } }
+        }
+        viewModelScope.launch {
+            val history = useCases.observeHistory(page = 0, pageSize = 1)
+            combine(useCases.observeLive(), history, useCases.observeSettings()) { live, last, settings ->
                 Triple(live.isRideInProgress(), last.firstOrNull(), settings.unitSystem)
             }.collect { (inProgress, last, units) ->
                 // The service's own ride is "recording" in the database too: never offer it for recovery.
-                val recoverable = if (inProgress) null else getRecoverable()
+                val recoverable = if (inProgress) null else useCases.getRecoverable()
                 updateState {
                     copy(recoverable = recoverable, lastRide = last, isRideInProgress = inProgress, unitSystem = units)
                 }
@@ -64,6 +86,8 @@ class HomeViewModel(
             HomeUiEvent.StartRide -> sendEffect(HomeEffect.OpenPreRide)
             HomeUiEvent.OpenRide -> sendEffect(HomeEffect.OpenRide)
             is HomeUiEvent.Recover -> recover(event.choice)
+            HomeUiEvent.OpenBackup -> sendEffect(HomeEffect.OpenBackup)
+            HomeUiEvent.SnoozeBackupReminder -> viewModelScope.launch { useCases.snoozeBackupReminder() }
         }
     }
 
@@ -71,7 +95,7 @@ class HomeViewModel(
         val ride = currentState.recoverable ?: return
         updateState { copy(recoverable = null) }
         viewModelScope.launch {
-            handleRecovered(ride.id, choice)
+            useCases.handleRecovered(ride.id, choice)
             if (choice == RecoveryChoice.RESUME) sendEffect(HomeEffect.OpenRide)
         }
     }
