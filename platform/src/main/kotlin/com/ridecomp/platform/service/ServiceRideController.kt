@@ -15,8 +15,8 @@ class ServiceRideController(private val context: Context, private val holder: Ri
     override val liveRide: StateFlow<LiveRide> get() = holder.liveRide
     override val activeActivityId: StateFlow<Long?> get() = holder.activeActivityId
 
-    override fun start() {
-        ContextCompat.startForegroundService(context, ServiceIntents.start(context))
+    override fun start(profileId: Long?) {
+        ContextCompat.startForegroundService(context, ServiceIntents.start(context, profileId))
     }
 
     override fun resumeRecovered(activityId: Long) {

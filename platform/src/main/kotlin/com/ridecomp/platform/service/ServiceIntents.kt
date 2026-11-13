@@ -11,9 +11,12 @@ internal object ServiceIntents {
     const val ACTION_PERFORM = "com.ridecomp.platform.action.PERFORM"
     const val EXTRA_ACTIVITY_ID = "com.ridecomp.platform.extra.ACTIVITY_ID"
     const val EXTRA_RIDE_ACTION = "com.ridecomp.platform.extra.RIDE_ACTION"
+    const val EXTRA_PROFILE_ID = "com.ridecomp.platform.extra.PROFILE_ID"
     const val NO_ID = -1L
 
-    fun start(context: Context): Intent = Intent(context, RecordingService::class.java).setAction(ACTION_START)
+    fun start(context: Context, profileId: Long?): Intent = Intent(context, RecordingService::class.java)
+        .setAction(ACTION_START)
+        .putExtra(EXTRA_PROFILE_ID, profileId ?: NO_ID)
 
     fun resumeRecovered(context: Context, activityId: Long): Intent = Intent(context, RecordingService::class.java)
         .setAction(ACTION_RESUME_RECOVERED)

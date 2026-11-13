@@ -4,6 +4,8 @@
     <string name="settings_profile">Profile</string>
     <string name="settings_profile_subtitle">Weight, bike, wheel size, HR max, FTP</string>
     <string name="settings_data_pages">Data pages</string>
+    <string name="settings_activity_profiles">Activity profiles</string>
+    <string name="settings_activity_profiles_subtitle">Road, Gravel, MTB, Indoor, Commute</string>
     <string name="settings_screen_battery">Ride, screen &amp; battery</string>
     <string name="settings_safety">Safety</string>
     <string name="settings_offline_maps">Offline maps</string>

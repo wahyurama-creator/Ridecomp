@@ -22,10 +22,11 @@ class RideControlUseCasesTest {
 
     @Test
     fun `start and actions go to the controller`() {
-        StartRideUseCase(controller)()
+        StartRideUseCase(controller)(profileId = 3)
         PerformRideActionUseCase(controller)(RideAction.LAP)
 
         assertEquals(listOf(FakeRideController.START, "LAP"), controller.commands)
+        assertEquals(3, controller.startedProfileId)
     }
 
     @Test

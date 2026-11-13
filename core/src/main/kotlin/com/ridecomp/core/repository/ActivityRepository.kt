@@ -9,7 +9,13 @@ import com.ridecomp.core.model.RideTotals
 import kotlinx.coroutines.flow.Flow
 
 /** New activity row created when a ride starts. */
-public data class NewActivity(val uuid: String, val name: String, val startedAtMs: Long)
+public data class NewActivity(
+    val uuid: String,
+    val name: String,
+    val startedAtMs: Long,
+    /** Activity profile used (12-FEATURE-SPECS §4); null for rides recorded before profiles. */
+    val profileId: Long? = null,
+)
 
 /** Rides and their track, events and laps (05-DATA-MODEL §1). Implemented in :data (ARCH-03). */
 public interface ActivityRepository {

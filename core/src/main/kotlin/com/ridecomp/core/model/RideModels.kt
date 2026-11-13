@@ -112,4 +112,5 @@ public data class Activity(
     val lastCheckpointAtMs: Long,
     val fitPath: String? = null,
     val fitExportedAtMs: Long? = null,
+    val profileId: Long? = null,
 )

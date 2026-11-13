@@ -84,6 +84,8 @@ fun RideStatusBar(
     batteryMode: BatteryMode,
     modifier: Modifier = Modifier,
     sensors: Map<SensorKind, SensorState> = emptyMap(),
+    /** False for Indoor: no GPS indicator. */
+    isGpsEnabled: Boolean = true,
 ) {
     val colors = RideCompTheme.colors
     val (label, color) = when (status) {
@@ -99,11 +101,13 @@ fun RideStatusBar(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(text = label, style = RideCompTheme.typography.dataLabel, color = color)
-        Text(
-            text = GPS_LABEL,
-            style = RideCompTheme.typography.dataLabel,
-            color = if (hasGpsFix) colors.ok else colors.danger,
-        )
+        if (isGpsEnabled) {
+            Text(
+                text = GPS_LABEL,
+                style = RideCompTheme.typography.dataLabel,
+                color = if (hasGpsFix) colors.ok else colors.danger,
+            )
+        }
         val batteryColor = when (batteryMode) {
             BatteryMode.NORMAL -> colors.textSecondary
             BatteryMode.SAVER -> colors.warnText
@@ -146,7 +150,7 @@ fun RideControlBar(status: RideStatus, onAction: (RideAction) -> Unit, modifier:
 /** Non-blocking banners above the data (02-DESIGN §3.4, §3.11). At most the most important few show. */
 @Composable
 fun RideBanners(live: LiveRide, onAction: (RideAction) -> Unit) {
-    if (live.status == RideStatus.RECORDING && !live.hasGpsFix) {
+    if (live.isGpsEnabled && live.status == RideStatus.RECORDING && !live.hasGpsFix) {
         AlertBanner(message = stringResource(R.string.ride_gps_lost), severity = AlertSeverity.DANGER)
     }
     if (live.isIdlePromptVisible) {

@@ -7,6 +7,7 @@ import com.ridecomp.core.model.RideEvent
 import com.ridecomp.core.model.RideEventType
 import com.ridecomp.core.model.RideSample
 import com.ridecomp.core.repository.NewActivity
+import com.ridecomp.core.testing.FakeActivityProfileRepository
 import com.ridecomp.core.testing.FakeActivityRepository
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeExportFileStore
@@ -27,7 +28,8 @@ class ExportUseCasesTest {
     private val store = FakeExportFileStore()
     private val clock = FakeClock()
     private val zone = ZoneId.of("Asia/Jakarta")
-    private val exportFit = ExportFitUseCase(repository, store, clock, zone)
+    private val profiles = FakeActivityProfileRepository()
+    private val exportFit = ExportFitUseCase(repository, store, clock, zone, profiles)
 
     private suspend fun storedRide(withStop: Boolean = true): Long {
         val id = repository.create(NewActivity("uuid-1", "Gowes <Pagi> & \"Sore\"", START_MS))

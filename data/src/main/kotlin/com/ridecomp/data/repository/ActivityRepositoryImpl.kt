@@ -38,6 +38,7 @@ class ActivityRepositoryImpl(
             status = ActivityStatus.RECORDING.toDb(),
             startedAt = activity.startedAtMs,
             lastCheckpointAt = activity.startedAtMs,
+            profileId = activity.profileId,
         ),
     )
 

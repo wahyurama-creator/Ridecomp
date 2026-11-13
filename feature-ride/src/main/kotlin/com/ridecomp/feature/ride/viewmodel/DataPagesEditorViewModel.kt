@@ -64,13 +64,15 @@ sealed interface DataPagesEditorEffect {
  * of each field. Edits stay local until saved.
  */
 class DataPagesEditorViewModel(
-    observeDataPages: ObserveDataPagesUseCase,
+    /** Edits this profile's own pages, or the general pages when null (T2.13). */
+    private val profileId: Long?,
+    private val observeDataPages: ObserveDataPagesUseCase,
     private val saveDataPages: SaveDataPagesUseCase,
     private val resetDataPages: ResetDataPagesUseCase,
 ) : UdfViewModel<DataPagesEditorUiState, DataPagesEditorUiEvent, DataPagesEditorEffect>(DataPagesEditorUiState()) {
     init {
         viewModelScope.launch {
-            val stored = observeDataPages(RideMetricKeys.ALL).first() ?: DefaultDataPages.ALL.toLayout()
+            val stored = observeDataPages(RideMetricKeys.ALL, profileId).first() ?: DefaultDataPages.ALL.toLayout()
             updateState { copy(pages = stored.pages.toImmutableList(), isLoaded = true) }
         }
     }
@@ -129,21 +131,17 @@ class DataPagesEditorViewModel(
 
     private fun save() {
         viewModelScope.launch {
-            saveDataPages(DataPagesLayout(currentState.pages), RideMetricKeys.ALL)
+            saveDataPages(DataPagesLayout(currentState.pages), RideMetricKeys.ALL, profileId)
             sendEffect(DataPagesEditorEffect.Saved)
         }
     }
 
     private fun reset() {
         viewModelScope.launch {
-            resetDataPages()
-            updateState {
-                copy(
-                    pages = DefaultDataPages.ALL.toLayout().pages.toImmutableList(),
-                    selectedPage = 0,
-                    pickingField = null,
-                )
-            }
+            resetDataPages(profileId)
+            // A profile falls back to the general pages, the general pages to the built-in defaults.
+            val restored = observeDataPages(RideMetricKeys.ALL, profileId).first() ?: DefaultDataPages.ALL.toLayout()
+            updateState { copy(pages = restored.pages.toImmutableList(), selectedPage = 0, pickingField = null) }
         }
     }
 

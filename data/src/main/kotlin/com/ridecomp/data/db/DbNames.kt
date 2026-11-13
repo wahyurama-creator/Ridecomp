@@ -11,6 +11,7 @@ object DbNames {
     const val TABLE_EVENTS = "events"
     const val TABLE_LAPS = "laps"
     const val TABLE_SENSORS = "sensors"
+    const val TABLE_ACTIVITY_PROFILES = "activity_profiles"
 
     /** The profile table always holds exactly one row with this id. */
     const val SINGLE_PROFILE_ID = 1

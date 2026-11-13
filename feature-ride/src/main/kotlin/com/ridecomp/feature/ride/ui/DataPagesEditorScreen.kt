@@ -47,13 +47,16 @@ import com.ridecomp.ui.theme.RideCompTheme
 import com.ridecomp.ui.udf.ObserveEffects
 import kotlinx.collections.immutable.toImmutableList
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 /** Data page editor entry point (T2.8). */
 @Composable
 fun DataPagesEditorRoute(
     onDone: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: DataPagesEditorViewModel = koinViewModel(),
+    /** A profile's own pages, or the general pages when null. */
+    profileId: Long? = null,
+    viewModel: DataPagesEditorViewModel = koinViewModel(key = profileId?.toString()) { parametersOf(profileId) },
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     ObserveEffects(viewModel.effects) { effect ->

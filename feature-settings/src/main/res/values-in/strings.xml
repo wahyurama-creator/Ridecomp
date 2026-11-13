@@ -4,6 +4,8 @@
     <string name="settings_profile">Profil</string>
     <string name="settings_profile_subtitle">Berat badan, sepeda, ukuran roda, HR max, FTP</string>
     <string name="settings_data_pages">Halaman data</string>
+    <string name="settings_activity_profiles">Profil aktivitas</string>
+    <string name="settings_activity_profiles_subtitle">Road, Gravel, MTB, Indoor, Commute</string>
     <string name="settings_screen_battery">Ride, layar &amp; baterai</string>
     <string name="settings_safety">Keselamatan</string>
     <string name="settings_offline_maps">Peta offline</string>

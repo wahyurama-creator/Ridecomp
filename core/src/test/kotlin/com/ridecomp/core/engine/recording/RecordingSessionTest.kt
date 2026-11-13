@@ -11,6 +11,7 @@ import com.ridecomp.core.testing.FakeIdGenerator
 import com.ridecomp.core.testing.FakeRideNameProvider
 import com.ridecomp.core.testing.RecordingLogger
 import com.ridecomp.core.util.Outcome
+import com.ridecomp.core.util.getOrNull
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -49,6 +50,16 @@ class RecordingSessionTest {
         assertEquals(ActivityStatus.RECORDING, activity.status)
         assertEquals("Ride $T0", activity.name)
         assertEquals(listOf(RideEventType.START), repository.events[id]?.map { it.type })
+    }
+
+    @Test
+    fun `the activity profile is stored and an indoor ride reports gps as off`() = runTest {
+        val output = session.start(setup.copy(profileId = 4, isGpsEnabled = false), now)
+
+        assertEquals(4, repository.get(assertNotNull(session.activityId))?.profileId)
+        val live = assertNotNull(output.getOrNull()).live
+        assertEquals(false, live.isGpsEnabled)
+        assertEquals(4, live.profileId)
     }
 
     @Test

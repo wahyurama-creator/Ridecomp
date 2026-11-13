@@ -3,10 +3,12 @@ package com.ridecomp.core.usecase
 import com.ridecomp.core.config.ActivityConfig
 import com.ridecomp.core.engine.export.ByteSink
 import com.ridecomp.core.engine.export.FitActivityWriter
+import com.ridecomp.core.engine.export.FitSport
 import com.ridecomp.core.engine.export.GpxWriter
 import com.ridecomp.core.model.Activity
 import com.ridecomp.core.model.RideEventType
 import com.ridecomp.core.model.RideSample
+import com.ridecomp.core.repository.ActivityProfileRepository
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.source.Clock
 import com.ridecomp.core.util.Outcome
@@ -82,6 +84,7 @@ public class ExportFitUseCase(
     private val store: ExportFileStore,
     private val clock: Clock,
     private val zone: ZoneId,
+    private val profiles: ActivityProfileRepository,
 ) {
     public suspend operator fun invoke(
         activityId: Long,
@@ -111,7 +114,9 @@ public class ExportFitUseCase(
     }
 
     private suspend fun buildFit(activity: Activity): ByteArray {
-        val writer = FitActivityWriter(activity.startedAtMs, activity.uuid.hashCode().toLong() and UINT32_MASK)
+        val profile = activity.profileId?.let { profiles.get(it) }
+        val sport = profile?.let { FitSport(it.fitSport, it.fitSubSport) } ?: FitSport()
+        val writer = FitActivityWriter(activity.startedAtMs, activity.uuid.hashCode().toLong() and UINT32_MASK, sport)
         val timerEvents = repository.getEvents(activity.id).mapNotNull { event ->
             timerStateOf(event.type)?.let { isStart -> event.timeMs to isStart }
         }.sortedBy { it.first }

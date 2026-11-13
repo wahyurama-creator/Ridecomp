@@ -23,7 +23,11 @@ public class FakeRideController : RideController {
     override val liveRide: StateFlow<LiveRide> get() = live
     override val activeActivityId: StateFlow<Long?> get() = activityId
 
-    override fun start() {
+    public var startedProfileId: Long? = null
+        private set
+
+    override fun start(profileId: Long?) {
+        startedProfileId = profileId
         commands += START
     }
 

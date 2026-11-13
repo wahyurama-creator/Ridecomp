@@ -5,6 +5,8 @@ import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RideAction
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RideStatus
+import com.ridecomp.core.model.withProfile
+import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveDataPagesUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
@@ -14,8 +16,12 @@ import com.ridecomp.feature.ride.model.DefaultDataPages
 import com.ridecomp.feature.ride.model.RideMetricKeys
 import com.ridecomp.feature.ride.model.toDataPages
 import com.ridecomp.ui.udf.UdfViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -32,18 +38,32 @@ sealed interface RideEffect {
  * Ride screen (T1.8). Live data comes straight from the service's StateFlow; each field derives its own
  * text so only changed fields recompose (UI-04). User input only goes out as [RideAction]s (ARCH-06).
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class RideViewModel(
     observeLive: ObserveLiveRideUseCase,
     observeSettings: ObserveRideSettingsUseCase,
     observeDataPages: ObserveDataPagesUseCase,
+    observeProfiles: ObserveActivityProfilesUseCase,
     private val performAction: PerformRideActionUseCase,
 ) : UdfViewModel<Unit, RideAction, RideEffect>(Unit) {
     val liveRide: StateFlow<LiveRide> = observeLive()
-    val settings: StateFlow<RideSettings> = observeSettings()
+
+    /** General settings with the ride profile's overrides (screen mode, auto pause…). */
+    val settings: StateFlow<RideSettings> = combine(observeSettings(), observeProfiles(), liveRide) {
+            general,
+            all,
+            live,
+        ->
+        all.firstOrNull { it.id == live.profileId }?.let(general::withProfile) ?: general
+    }
+        .distinctUntilChanged()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), RideSettings())
 
-    /** The rider's pages (T2.8), or the defaults. */
-    val pages: StateFlow<List<DataPage>> = observeDataPages(RideMetricKeys.ALL)
+    /** The ride profile's pages (T2.13), else the general pages (T2.8), else the defaults. */
+    val pages: StateFlow<List<DataPage>> = liveRide
+        .map { it.profileId }
+        .distinctUntilChanged()
+        .flatMapLatest { profileId -> observeDataPages(RideMetricKeys.ALL, profileId) }
         .map { layout -> layout?.toDataPages() ?: DefaultDataPages.ALL }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), DefaultDataPages.ALL)
 

@@ -105,8 +105,6 @@ public object FitProfile {
         public const val NORMALIZED_POWER: Int = 34
         public const val ENHANCED_AVG_SPEED: Int = 124
         public const val ENHANCED_MAX_SPEED: Int = 125
-        public const val SPORT_CYCLING: Long = 2
-        public const val SUB_SPORT_GENERIC: Long = 0
     }
 
     public object Activity {

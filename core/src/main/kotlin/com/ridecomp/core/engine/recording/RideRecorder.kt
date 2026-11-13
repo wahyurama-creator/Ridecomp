@@ -59,7 +59,13 @@ public data class LiveRide(
     val isIdlePromptVisible: Boolean = false,
     /** Heart rate, cadence, power, estimates and sensor states (Phase 2). */
     val sensors: LiveSensors = LiveSensors(),
+    /** False for an Indoor ride: GPS state is not shown (12-FEATURE-SPECS §4). */
+    val isGpsEnabled: Boolean = true,
+    val profileId: Long? = null,
 )
+
+/** Ride facts that do not change during the ride. */
+public data class RideContext(val profileId: Long? = null, val isGpsEnabled: Boolean = true)
 
 /** Result of a tick or an action: new state plus what must be persisted. */
 public data class RecorderOutput(
@@ -83,6 +89,7 @@ public class RideRecorder(
     altitudeSource: AltitudeSource,
     profile: RiderProfile = RiderProfile(),
     ageYears: Int? = null,
+    private val context: RideContext = RideContext(),
 ) {
     private val metrics = RideMetricsAccumulator()
     private val sensors = SensorRideMetrics(profile, ageYears)
@@ -386,6 +393,8 @@ public class RideRecorder(
                 !isIdlePromptDismissed &&
                 autoPause.isIdlePromptDue(nowMs),
             sensors = sensors.live(sensorSnapshot),
+            isGpsEnabled = context.isGpsEnabled,
+            profileId = context.profileId,
         )
     }
 

@@ -4,6 +4,7 @@ import com.ridecomp.core.model.DataPageLayout
 import com.ridecomp.core.model.DataPageLimits
 import com.ridecomp.core.model.DataPagesLayout
 import com.ridecomp.core.model.withFieldCount
+import com.ridecomp.core.testing.FakeActivityProfileRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -13,6 +14,7 @@ import kotlinx.coroutines.test.runTest
 
 class DataPageUseCasesTest {
     private val repository = FakeSettingsRepository()
+    private val profiles = FakeActivityProfileRepository()
     private val known = setOf("speed", "distance", "hr", "cadence", "power", "clock", "ascent", "grade", "lap_time")
 
     @Test
@@ -22,21 +24,21 @@ class DataPageUseCasesTest {
             listOf(DataPageLayout(listOf("speed", "removed_metric", "hr")), DataPageLayout(listOf("gone"))) + tooMany,
         )
 
-        SaveDataPagesUseCase(repository)(layout, known)
+        SaveDataPagesUseCase(repository, profiles)(layout, known)
 
-        val saved = ObserveDataPagesUseCase(repository)(known).first()
+        val saved = ObserveDataPagesUseCase(repository, profiles)(known).first()
         assertEquals(DataPageLimits.MAX_PAGES, saved?.pages?.size)
         assertEquals(listOf("speed", "hr"), saved?.pages?.first()?.fields)
     }
 
     @Test
     fun `nothing usable or reset means defaults`() = runTest {
-        SaveDataPagesUseCase(repository)(DataPagesLayout(listOf(DataPageLayout(listOf("unknown")))), known)
-        assertNull(ObserveDataPagesUseCase(repository)(known).first())
+        SaveDataPagesUseCase(repository, profiles)(DataPagesLayout(listOf(DataPageLayout(listOf("unknown")))), known)
+        assertNull(ObserveDataPagesUseCase(repository, profiles)(known).first())
 
-        SaveDataPagesUseCase(repository)(DataPagesLayout(listOf(DataPageLayout(listOf("speed")))), known)
-        ResetDataPagesUseCase(repository)()
-        assertNull(ObserveDataPagesUseCase(repository)(known).first())
+        SaveDataPagesUseCase(repository, profiles)(DataPagesLayout(listOf(DataPageLayout(listOf("speed")))), known)
+        ResetDataPagesUseCase(repository, profiles)()
+        assertNull(ObserveDataPagesUseCase(repository, profiles)(known).first())
     }
 
     @Test
@@ -46,7 +48,7 @@ class DataPageUseCasesTest {
 
         assertEquals(
             DataPageLimits.MAX_FIELDS,
-            ObserveDataPagesUseCase(repository)(known).first()?.pages?.single()?.fields?.size,
+            ObserveDataPagesUseCase(repository, profiles)(known).first()?.pages?.single()?.fields?.size,
         )
     }
 

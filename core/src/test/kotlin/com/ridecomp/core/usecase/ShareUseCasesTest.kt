@@ -1,6 +1,7 @@
 package com.ridecomp.core.usecase
 
 import com.ridecomp.core.repository.NewActivity
+import com.ridecomp.core.testing.FakeActivityProfileRepository
 import com.ridecomp.core.testing.FakeActivityRepository
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeExportFileStore
@@ -18,7 +19,7 @@ class ShareUseCasesTest {
     private val handler = FakeExportedFileHandler()
     private val store = FakeExportFileStore()
     private val export = ExportActivityUseCase(
-        ExportFitUseCase(repository, store, FakeClock(), ZoneOffset.UTC),
+        ExportFitUseCase(repository, store, FakeClock(), ZoneOffset.UTC, FakeActivityProfileRepository()),
         ExportGpxUseCase(repository, store, ZoneOffset.UTC),
     )
 

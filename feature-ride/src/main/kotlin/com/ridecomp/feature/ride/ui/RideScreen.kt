@@ -122,6 +122,7 @@ fun RideScreen(
                 hasGpsFix = live.value.hasGpsFix,
                 batteryMode = live.value.batteryMode,
                 sensors = live.value.sensors.snapshot.states,
+                isGpsEnabled = live.value.isGpsEnabled,
             )
         }
         RideBanners(live.value, onAction)
