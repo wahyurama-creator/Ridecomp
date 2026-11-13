@@ -108,4 +108,41 @@
     <string name="safety_error_too_soon">Tunggu satu menit sebelum SMS uji berikutnya.</string>
     <string name="safety_error_send_failed">SMS gagal dikirim. Periksa sinyal dan pulsa.</string>
     <string name="settings_safety_subtitle">Deteksi insiden, kontak darurat</string>
+    <string name="settings_backup_subtitle">Simpan ride kamu di luar HP ini</string>
+    <string name="backup_title">Backup &amp; restore</string>
+    <string name="backup_last">Backup terakhir: %1$s</string>
+    <string name="backup_never">Belum ada backup. Semua ride hanya ada di HP ini.</string>
+    <string name="backup_password_enabled">Lindungi dengan kata sandi (disarankan)</string>
+    <string name="backup_password_warning">Kata sandi lupa = backup tidak bisa dibuka selamanya.</string>
+    <string name="backup_password">Kata sandi</string>
+    <string name="backup_password_confirm">Ulangi kata sandi</string>
+    <plurals name="backup_password_rule">
+        <item quantity="other">Minimal %1$d karakter, kedua isian sama.</item>
+    </plurals>
+    <string name="backup_create">Buat backup</string>
+    <plurals name="backup_created">
+        <item quantity="other">Backup dibuat berisi %1$d ride.</item>
+    </plurals>
+    <string name="backup_restore_header">RESTORE</string>
+    <string name="backup_restore_hint">Restore mengganti semua data di HP ini. Kontak darurat perlu diisi ulang sesudahnya.</string>
+    <string name="backup_restore_choose">Pilih file backup</string>
+    <string name="backup_encrypted_hint">Backup ini dilindungi. Masukkan kata sandinya.</string>
+    <string name="backup_unlock">Buka backup</string>
+    <plurals name="backup_summary">
+        <item quantity="other">Backup tanggal %1$s · %2$d ride · RideComp %3$s</item>
+    </plurals>
+    <string name="backup_restore_warning">Semua ride dan pengaturan di HP ini akan diganti. Salinan pengaman data saat ini disimpan di HP.</string>
+    <string name="backup_restore_final">Yakin? Ini tidak bisa dibatalkan dari app.</string>
+    <string name="backup_restore_confirm">Ganti semua data</string>
+    <string name="backup_restore_confirm_final">Ya, restore sekarang</string>
+    <string name="backup_restored">Restore siap. RideComp dimulai ulang untuk menyelesaikannya. Isi lagi kontak darurat di Keselamatan.</string>
+    <string name="backup_restart">Mulai ulang RideComp</string>
+    <string name="backup_cancel">Batal</string>
+    <string name="backup_working">Sedang diproses… biarkan app tetap terbuka.</string>
+    <string name="backup_error_password">Kata sandi salah atau backup rusak.</string>
+    <string name="backup_error_invalid">File ini bukan backup RideComp yang valid.</string>
+    <string name="backup_error_too_large">Backup ini terlalu besar untuk di-restore.</string>
+    <string name="backup_error_newer">Backup ini dari RideComp yang lebih baru. Perbarui RideComp dulu.</string>
+    <string name="backup_error_ride">Selesaikan ride yang sedang berjalan dulu.</string>
+    <string name="backup_error_write">File tidak bisa ditulis atau dibaca. Coba lokasi lain.</string>
 </resources>

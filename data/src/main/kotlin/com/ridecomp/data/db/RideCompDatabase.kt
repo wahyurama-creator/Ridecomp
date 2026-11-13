@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.ridecomp.data.backup.PendingRestore
 import com.ridecomp.data.db.dao.ActivityDao
 import com.ridecomp.data.db.dao.ActivityProfileDao
 import com.ridecomp.data.db.dao.EmergencyContactDao
@@ -75,11 +76,14 @@ abstract class RideCompDatabase : RoomDatabase() {
          * Builds the database in internal storage (SEC-STO-01). Destructive migration is never enabled:
          * users' rides must survive every update (DATA-02).
          */
-        fun build(context: Context): RideCompDatabase =
-            Room.databaseBuilder(context.applicationContext, RideCompDatabase::class.java, DbNames.DATABASE_FILE)
+        fun build(context: Context): RideCompDatabase {
+            // A restore staged by the previous run replaces the data before anything opens it (12-FEATURE-SPECS §12.5).
+            PendingRestore.applyIfPresent(context)
+            return Room.databaseBuilder(context.applicationContext, RideCompDatabase::class.java, DbNames.DATABASE_FILE)
                 .apply { RideCompMigrations.ALL.forEach { addMigrations(it) } }
                 .addCallback(SeedCallback)
                 .build()
+        }
     }
 }
 

@@ -1,6 +1,7 @@
 package com.ridecomp.app.di
 
 import com.ridecomp.app.AppViewModel
+import com.ridecomp.core.engine.backup.BackupManifestCodec
 import com.ridecomp.core.engine.safety.IncidentManager
 import com.ridecomp.core.engine.sensors.BleScanner
 import com.ridecomp.core.engine.sensors.SensorRepository
@@ -11,6 +12,7 @@ import com.ridecomp.core.repository.ProfileRepository
 import com.ridecomp.core.repository.SafetyRepository
 import com.ridecomp.core.repository.SettingsRepository
 import com.ridecomp.core.source.AccelerometerSource
+import com.ridecomp.core.source.AppRestarter
 import com.ridecomp.core.source.BatteryLevelSource
 import com.ridecomp.core.source.Clock
 import com.ridecomp.core.source.DispatcherProvider
@@ -23,6 +25,11 @@ import com.ridecomp.core.source.SmsGateway
 import com.ridecomp.core.testing.FakeAccelerometerSource
 import com.ridecomp.core.testing.FakeActivityProfileRepository
 import com.ridecomp.core.testing.FakeActivityRepository
+import com.ridecomp.core.testing.FakeAppRestarter
+import com.ridecomp.core.testing.FakeBackupDatabase
+import com.ridecomp.core.testing.FakeBackupFiles
+import com.ridecomp.core.testing.FakeBackupManifestCodec
+import com.ridecomp.core.testing.FakeBackupStateRepository
 import com.ridecomp.core.testing.FakeBatteryLevelSource
 import com.ridecomp.core.testing.FakeBleScanner
 import com.ridecomp.core.testing.FakeClock
@@ -40,6 +47,9 @@ import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.testing.FakeSmsGateway
 import com.ridecomp.core.testing.RecordingLogger
 import com.ridecomp.core.testing.TestDispatcherProvider
+import com.ridecomp.core.usecase.BackupDatabase
+import com.ridecomp.core.usecase.BackupFiles
+import com.ridecomp.core.usecase.BackupStateRepository
 import com.ridecomp.core.usecase.ExportFileStore
 import com.ridecomp.core.usecase.ExportedFileHandler
 import com.ridecomp.feature.history.viewmodel.ActivityDetailViewModel
@@ -52,10 +62,13 @@ import com.ridecomp.feature.ride.viewmodel.PreRideViewModel
 import com.ridecomp.feature.ride.viewmodel.RideViewModel
 import com.ridecomp.feature.ride.viewmodel.SummaryViewModel
 import com.ridecomp.feature.sensors.viewmodel.SensorsViewModel
+import com.ridecomp.feature.settings.viewmodel.BackupViewModel
 import com.ridecomp.feature.settings.viewmodel.OnboardingViewModel
 import com.ridecomp.feature.settings.viewmodel.ProfileViewModel
 import com.ridecomp.feature.settings.viewmodel.RideSettingsViewModel
 import com.ridecomp.feature.settings.viewmodel.SafetyViewModel
+import java.io.File
+import java.nio.file.Files
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -78,6 +91,8 @@ import org.koin.java.KoinJavaComponent.getKoin
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class AppModulesTest {
+    private val tempDir: File = Files.createTempDirectory("app-modules").toFile()
+
     private val fakes = module {
         single<Clock> { FakeClock() }
         single<DispatcherProvider> { TestDispatcherProvider() }
@@ -99,6 +114,11 @@ class AppModulesTest {
         single<PickedContactReader> { FakePickedContactReader() }
         single<IncidentRepository> { FakeIncidentRepository() }
         single<AccelerometerSource> { FakeAccelerometerSource() }
+        single<BackupDatabase> { FakeBackupDatabase(tempDir) }
+        single<BackupFiles> { FakeBackupFiles(tempDir) }
+        single<BackupStateRepository> { FakeBackupStateRepository() }
+        single<BackupManifestCodec> { FakeBackupManifestCodec() }
+        single<AppRestarter> { FakeAppRestarter() }
     }
 
     @BeforeTest
@@ -135,6 +155,7 @@ class AppModulesTest {
         assertNotNull(koin.get<DataPagesEditorViewModel> { parametersOf(1L) })
         assertNotNull(koin.get<ActivityProfilesViewModel>())
         assertNotNull(koin.get<SafetyViewModel>())
+        assertNotNull(koin.get<BackupViewModel>())
         assertNotNull(koin.get<IncidentManager>())
         assertNotNull(koin.get<ActivityProfileEditorViewModel> { parametersOf(1L) })
     }

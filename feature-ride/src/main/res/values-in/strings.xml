@@ -145,6 +145,14 @@
     <string name="profile_pages_own">Halaman khusus profil ini</string>
     <string name="profile_pages_general">Sama dengan halaman umum</string>
     <string name="profile_pages_use_general">Pakai halaman umum</string>
+    <plurals name="home_backup_never">
+        <item quantity="other">Belum ada backup · %1$d ride hanya ada di HP ini</item>
+    </plurals>
+    <plurals name="home_backup_days">
+        <item quantity="other">Backup terakhir %1$d hari lalu</item>
+    </plurals>
+    <string name="home_backup_now">Buat sekarang</string>
+    <string name="home_backup_later">Nanti</string>
     <string name="incident_question">Apakah kamu baik-baik saja?</string>
     <string name="incident_countdown_hint">Jika tidak dijawab, kontak darurat menerima SMS berisi lokasimu.</string>
     <string name="incident_ok">SAYA BAIK-BAIK SAJA</string>

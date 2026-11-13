@@ -110,4 +110,44 @@
     <string name="safety_error_too_soon">Wait one minute before the next test SMS.</string>
     <string name="safety_error_send_failed">SMS could not be sent. Check signal and credit.</string>
     <string name="settings_safety_subtitle">Incident detection, emergency contacts</string>
+    <string name="settings_backup_subtitle">Keep your rides safe outside this phone</string>
+    <string name="backup_title">Backup &amp; restore</string>
+    <string name="backup_last">Last backup: %1$s</string>
+    <string name="backup_never">No backup yet. All rides exist only on this phone.</string>
+    <string name="backup_password_enabled">Protect with a password (recommended)</string>
+    <string name="backup_password_warning">A forgotten password means the backup can never be opened.</string>
+    <string name="backup_password">Password</string>
+    <string name="backup_password_confirm">Repeat password</string>
+    <plurals name="backup_password_rule">
+        <item quantity="one">At least %1$d character, both fields equal.</item>
+        <item quantity="other">At least %1$d characters, both fields equal.</item>
+    </plurals>
+    <string name="backup_create">Create backup</string>
+    <plurals name="backup_created">
+        <item quantity="one">Backup created with %1$d ride.</item>
+        <item quantity="other">Backup created with %1$d rides.</item>
+    </plurals>
+    <string name="backup_restore_header">RESTORE</string>
+    <string name="backup_restore_hint">Restoring replaces all data on this phone. Emergency contacts must be added again afterwards.</string>
+    <string name="backup_restore_choose">Choose backup file</string>
+    <string name="backup_encrypted_hint">This backup is protected. Enter its password.</string>
+    <string name="backup_unlock">Open backup</string>
+    <plurals name="backup_summary">
+        <item quantity="one">Backup of %1$s · %2$d ride · RideComp %3$s</item>
+        <item quantity="other">Backup of %1$s · %2$d rides · RideComp %3$s</item>
+    </plurals>
+    <string name="backup_restore_warning">All rides and settings on this phone will be replaced. A safety copy of the current data is kept on the phone.</string>
+    <string name="backup_restore_final">Are you sure? This cannot be undone from the app.</string>
+    <string name="backup_restore_confirm">Replace all data</string>
+    <string name="backup_restore_confirm_final">Yes, restore now</string>
+    <string name="backup_restored">Restore ready. RideComp restarts to finish. Add your emergency contacts again in Safety.</string>
+    <string name="backup_restart">Restart RideComp</string>
+    <string name="backup_cancel">Cancel</string>
+    <string name="backup_working">Working… keep the app open.</string>
+    <string name="backup_error_password">Wrong password or damaged backup.</string>
+    <string name="backup_error_invalid">This file is not a valid RideComp backup.</string>
+    <string name="backup_error_too_large">This backup is too large to restore.</string>
+    <string name="backup_error_newer">This backup comes from a newer RideComp. Update RideComp first.</string>
+    <string name="backup_error_ride">Finish the current ride first.</string>
+    <string name="backup_error_write">The file could not be written or read. Try another location.</string>
 </resources>

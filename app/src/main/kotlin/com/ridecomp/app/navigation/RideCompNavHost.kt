@@ -27,6 +27,7 @@ import com.ridecomp.feature.ride.ui.RideRoute
 import com.ridecomp.feature.ride.ui.SummaryRoute
 import com.ridecomp.feature.routes.ui.RoutesRoute
 import com.ridecomp.feature.sensors.ui.SensorsRoute
+import com.ridecomp.feature.settings.ui.BackupRoute
 import com.ridecomp.feature.settings.ui.BatteryHelpRoute
 import com.ridecomp.feature.settings.ui.OnboardingRoute
 import com.ridecomp.feature.settings.ui.ProfileRoute
@@ -48,6 +49,7 @@ object AppRoutes {
     const val DATA_PAGES = "data_pages?$ARG_PROFILE_ID={$ARG_PROFILE_ID}"
     const val ACTIVITY_PROFILES = "activity_profiles"
     const val SAFETY = "safety"
+    const val BACKUP = "backup"
     const val ACTIVITY_PROFILE = "activity_profile/{$ARG_PROFILE_ID}"
 
     fun dataPages(profileId: Long? = null): String =
@@ -114,6 +116,7 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
             DataPagesEditorRoute(onDone = { navController.popBackStack() }, profileId = profileId)
         }
         composable(AppRoutes.SAFETY) { SafetyRoute() }
+        composable(AppRoutes.BACKUP) { BackupRoute() }
         composable(AppRoutes.ACTIVITY_PROFILES) {
             ActivityProfilesRoute(onOpen = { navController.navigate(AppRoutes.activityProfile(it)) })
         }
@@ -136,6 +139,7 @@ private fun NavGraphBuilder.rideGraph(navController: NavHostController) {
         HomeRoute(
             onOpenPreRide = { navController.navigate(AppRoutes.PRE_RIDE) },
             onOpenRide = { navController.navigate(AppRoutes.RIDE) { launchSingleTop = true } },
+            onOpenBackup = { navController.navigate(AppRoutes.BACKUP) },
         )
     }
     composable(AppRoutes.PRE_RIDE) {
@@ -200,7 +204,8 @@ private fun openSection(section: SettingsSection, navController: NavHostControll
         SettingsSection.DATA_PAGES -> navController.navigate(AppRoutes.dataPages())
         SettingsSection.ACTIVITY_PROFILES -> navController.navigate(AppRoutes.ACTIVITY_PROFILES)
         SettingsSection.SAFETY -> navController.navigate(AppRoutes.SAFETY)
-        SettingsSection.BACKUP, SettingsSection.OFFLINE_MAPS -> Unit
+        SettingsSection.BACKUP -> navController.navigate(AppRoutes.BACKUP)
+        SettingsSection.OFFLINE_MAPS -> Unit
     }
 }
 

@@ -2,7 +2,9 @@ package com.ridecomp.app.di
 
 import com.ridecomp.core.usecase.AddEmergencyContactUseCase
 import com.ridecomp.core.usecase.AddPickedContactUseCase
+import com.ridecomp.core.usecase.BackupWriter
 import com.ridecomp.core.usecase.CompleteOnboardingUseCase
+import com.ridecomp.core.usecase.CreateBackupUseCase
 import com.ridecomp.core.usecase.DeleteActivityProfileUseCase
 import com.ridecomp.core.usecase.DeleteActivityUseCase
 import com.ridecomp.core.usecase.DuplicateActivityProfileUseCase
@@ -22,10 +24,12 @@ import com.ridecomp.core.usecase.LoadRideChartUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfileUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
+import com.ridecomp.core.usecase.ObserveBackupReminderUseCase
 import com.ridecomp.core.usecase.ObserveDataPagesUseCase
 import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
 import com.ridecomp.core.usecase.ObserveHistoryCountUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
+import com.ridecomp.core.usecase.ObserveLastBackupUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
 import com.ridecomp.core.usecase.ObserveOnboardingDoneUseCase
 import com.ridecomp.core.usecase.ObserveProfileChoiceUseCase
@@ -36,10 +40,13 @@ import com.ridecomp.core.usecase.ObserveSavedSensorsUseCase
 import com.ridecomp.core.usecase.PairSensorUseCase
 import com.ridecomp.core.usecase.PerformIncidentActionUseCase
 import com.ridecomp.core.usecase.PerformRideActionUseCase
+import com.ridecomp.core.usecase.ReadBackupSummaryUseCase
 import com.ridecomp.core.usecase.ReadBatteryUseCase
 import com.ridecomp.core.usecase.RemoveEmergencyContactUseCase
 import com.ridecomp.core.usecase.RenameActivityUseCase
 import com.ridecomp.core.usecase.ResetDataPagesUseCase
+import com.ridecomp.core.usecase.RestartAfterRestoreUseCase
+import com.ridecomp.core.usecase.RestoreBackupUseCase
 import com.ridecomp.core.usecase.SaveActivityFileUseCase
 import com.ridecomp.core.usecase.SaveActivityProfileUseCase
 import com.ridecomp.core.usecase.SaveDataPagesUseCase
@@ -51,7 +58,9 @@ import com.ridecomp.core.usecase.SelectActivityProfileUseCase
 import com.ridecomp.core.usecase.SendTestSmsUseCase
 import com.ridecomp.core.usecase.SetSafetyEnabledUseCase
 import com.ridecomp.core.usecase.ShareActivityFileUseCase
+import com.ridecomp.core.usecase.SnoozeBackupReminderUseCase
 import com.ridecomp.core.usecase.StartRideUseCase
+import com.ridecomp.core.usecase.SuggestBackupFileNameUseCase
 import com.ridecomp.core.usecase.SuggestExportFileNameUseCase
 import com.ridecomp.platform.export.AndroidExportFileStore
 import com.ridecomp.platform.export.AndroidExportedFileHandler
@@ -90,6 +99,15 @@ val useCaseModule = module {
     factory { ObserveGpsStatusUseCase(get()) }
     factory { ReadBatteryUseCase(get()) }
     factory { PerformIncidentActionUseCase(get()) }
+    factory { BackupWriter(get(), get(), get(), get(), get()) }
+    factory { CreateBackupUseCase(get(), get(), get(), get(), get(), get()) }
+    factory { ReadBackupSummaryUseCase(get(), get(), get()) }
+    factory { RestoreBackupUseCase(get(), get(), get(), get(), get(), get()) }
+    factory { ObserveBackupReminderUseCase(get(), get(), get()) }
+    factory { SnoozeBackupReminderUseCase(get(), get()) }
+    factory { RestartAfterRestoreUseCase(get()) }
+    factory { SuggestBackupFileNameUseCase(get(), get()) }
+    factory { ObserveLastBackupUseCase(get()) }
     factory { ExportActivityUseCase(get(), get()) }
     factory { ShareActivityFileUseCase(get(), get()) }
     factory { SaveActivityFileUseCase(get(), get()) }
