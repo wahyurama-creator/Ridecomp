@@ -101,8 +101,8 @@ Spesifikasi detail fitur tambahan: `../12-FEATURE-SPECS.md`.
 - [x] T4.2 Segmen pribadi: buat dari aktivitas/tanjakan, `SegmentMatcher` setelah ride, layar Segmen (§9.1–9.2).
 - [x] T4.3 Live segment saat ride: deteksi start, field Segmen, selisih vs PR, banner hasil (§9.3).
 - [x] T4.4 `TrainingLoadCalculator` (power/HR), tabel `daily_training` inkremental, layar Latihan dengan grafik & ringkasan mingguan (§10).
-- [ ] T4.5 Kartu share Story/Kotak dengan opsi privasi, render offline, share via FileProvider (§11).
-- [ ] T4.6 Unit test: best efforts dengan data sintetis (termasuk pause di tengah), pencocokan segmen (lewat sebagian, arah terbalik, GPS noise), nilai referensi TSS/TRIMP, CTL/ATL inkremental saat ride dihapus.
+- [x] T4.5 Kartu share Story/Kotak dengan opsi privasi, render offline, share via FileProvider (§11).
+- [x] T4.6 Unit test: best efforts dengan data sintetis (termasuk pause di tengah), pencocokan segmen (lewat sebagian, arah terbalik, GPS noise), nilai referensi TSS/TRIMP, CTL/ATL inkremental saat ride dihapus.
 
 **DoD:** PR dan segmen terdeteksi benar pada 3 ride uji di rute yang sama; grafik latihan konsisten setelah menambah/menghapus ride; kartu share tidak memuat awal/akhir rute saat opsi privasi aktif.
 

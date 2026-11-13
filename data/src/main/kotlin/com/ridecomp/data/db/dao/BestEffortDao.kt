@@ -59,4 +59,7 @@ interface BestEffortDao {
 
     @Query("SELECT DISTINCT profile_kind FROM ${DbNames.TABLE_BEST_EFFORTS}")
     fun observeKinds(): Flow<List<String>>
+
+    @Query("SELECT COUNT(*) FROM ${DbNames.TABLE_BEST_EFFORTS} WHERE activity_id = :activityId AND is_pr = 1")
+    suspend fun countRecords(activityId: Long): Int
 }

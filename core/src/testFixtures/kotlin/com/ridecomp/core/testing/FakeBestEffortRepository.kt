@@ -43,4 +43,6 @@ public class FakeBestEffortRepository(private val activities: ActivityRepository
 
     override fun observeKinds(): Flow<List<ActivityKind>> =
         stored.map { all -> all.values.map { it.first }.distinct().sorted() }
+
+    override suspend fun countRecords(activityId: Long): Int = stored.value[activityId]?.second?.count { it.isPr } ?: 0
 }

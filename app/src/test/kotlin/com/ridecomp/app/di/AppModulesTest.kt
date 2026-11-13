@@ -57,6 +57,7 @@ import com.ridecomp.core.testing.FakeSafetyRepository
 import com.ridecomp.core.testing.FakeSegmentRepository
 import com.ridecomp.core.testing.FakeSensorRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
+import com.ridecomp.core.testing.FakeShareCardFiles
 import com.ridecomp.core.testing.FakeSmsGateway
 import com.ridecomp.core.testing.FakeTrainingRepository
 import com.ridecomp.core.testing.RecordingLogger
@@ -66,6 +67,7 @@ import com.ridecomp.core.usecase.BackupFiles
 import com.ridecomp.core.usecase.BackupStateRepository
 import com.ridecomp.core.usecase.ExportFileStore
 import com.ridecomp.core.usecase.ExportedFileHandler
+import com.ridecomp.core.usecase.ShareCardFiles
 import com.ridecomp.feature.history.viewmodel.ActivityDetailViewModel
 import com.ridecomp.feature.history.viewmodel.HistoryViewModel
 import com.ridecomp.feature.ride.viewmodel.ActivityProfileEditorViewModel
@@ -92,6 +94,7 @@ import com.ridecomp.feature.training.viewmodel.RecordsViewModel
 import com.ridecomp.feature.training.viewmodel.SegmentDetailViewModel
 import com.ridecomp.feature.training.viewmodel.SegmentEditorViewModel
 import com.ridecomp.feature.training.viewmodel.SegmentsViewModel
+import com.ridecomp.feature.training.viewmodel.ShareCardViewModel
 import com.ridecomp.feature.training.viewmodel.TrainingViewModel
 import java.io.File
 import java.nio.file.Files
@@ -151,6 +154,7 @@ class AppModulesTest {
         single<BestEffortRepository> { FakeBestEffortRepository(get()) }
         single<SegmentRepository> { FakeSegmentRepository(get()) }
         single<TrainingRepository> { FakeTrainingRepository(FakeActivityRepository()) }
+        single<ShareCardFiles> { FakeShareCardFiles() }
         single<ActivityAnalysisRepository> { FakeActivityAnalysisRepository(FakeActivityRepository()) }
         factory<LicenseTextReader> { LicenseTextReader { "" } }
     }
@@ -187,6 +191,7 @@ class AppModulesTest {
         assertNotNull(koin.get<NewRecordsViewModel> { parametersOf(1L) })
         assertNotNull(koin.get<SegmentsViewModel>())
         assertNotNull(koin.get<TrainingViewModel>())
+        assertNotNull(koin.get<ShareCardViewModel> { parametersOf(1L) })
         assertNotNull(koin.get<SegmentDetailViewModel> { parametersOf(1L) })
         assertNotNull(koin.get<SegmentEditorViewModel> { parametersOf(1L) })
         assertNotNull(koin.get<RideSettingsViewModel>())

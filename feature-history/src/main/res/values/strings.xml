@@ -72,4 +72,5 @@
     <string name="detail_tab_cadence">Cadence</string>
     <string name="detail_tab_power">Power</string>
     <string name="detail_create_segment">Create a segment from this ride</string>
+    <string name="detail_share_card">Share a card (WhatsApp, Instagram)</string>
 </resources>

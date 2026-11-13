@@ -81,4 +81,27 @@
     <string name="training_week_load">Load</string>
     <string name="training_zones">Heart-rate zones this week</string>
     <string name="training_zone">Z%1$d</string>
+    <!-- Share card (T4.5, 12-FEATURE-SPECS §11) -->
+    <string name="share_title">Share</string>
+    <string name="share_missing">This ride was deleted.</string>
+    <string name="share_format">Format</string>
+    <string name="share_format_story">Story 9:16</string>
+    <string name="share_format_square">Square 1:1</string>
+    <string name="share_hide_ends">Hide start and end of the route</string>
+    <string name="share_hide_ends_hint">Protects where you live (500 m)</string>
+    <string name="share_show_track">Show the route line</string>
+    <string name="share_dark">Dark card</string>
+    <string name="share_stats">Statistics (up to 4)</string>
+    <string name="share_stat_distance">Distance</string>
+    <string name="share_stat_time">Time</string>
+    <string name="share_stat_ascent">Climbing</string>
+    <string name="share_stat_speed">Avg speed</string>
+    <string name="share_stat_heart_rate">Avg HR</string>
+    <string name="share_stat_power">Avg power</string>
+    <string name="share_send">Share to WhatsApp / Instagram</string>
+    <string name="share_footer" translatable="false">RideComp</string>
+    <plurals name="share_footer_records">
+        <item quantity="one">%1$d NEW RECORD · RideComp</item>
+        <item quantity="other">%1$d NEW RECORDS · RideComp</item>
+    </plurals>
 </resources>

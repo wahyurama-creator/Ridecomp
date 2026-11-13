@@ -71,6 +71,7 @@ fun ActivityDetailRoute(
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
     onCreateSegment: (() -> Unit)? = null,
+    onShareCard: (() -> Unit)? = null,
     viewModel: ActivityDetailViewModel = koinViewModel { parametersOf(activityId) },
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -92,6 +93,7 @@ fun ActivityDetailRoute(
         onOpenStravaHelp = onOpenStravaHelp,
         onBack = onBack,
         onCreateSegment = onCreateSegment,
+        onShareCard = onShareCard,
         modifier = modifier,
     )
 }
@@ -106,6 +108,8 @@ fun ActivityDetailScreen(
     onBack: () -> Unit = {},
     /** Opens the segment editor (T4.2); null hides the action. */
     onCreateSegment: (() -> Unit)? = null,
+    /** Opens the share card editor (T4.5); null hides the action. */
+    onShareCard: (() -> Unit)? = null,
 ) {
     val activity = state.activity
     ScreenScaffold(
@@ -136,6 +140,7 @@ fun ActivityDetailScreen(
                 Totals(activity.totals, format)
                 Charts(state)
                 Laps(state, format)
+                onShareCard?.let { ShareCardButton(it) }
                 Actions(state, onEvent, onSaveFit, onOpenStravaHelp, onCreateSegment)
             }
         }
@@ -365,4 +370,15 @@ private fun ChartKind.color(): Color = when (this) {
     ChartKind.ELEVATION -> RideCompTheme.colors.track
     ChartKind.HEART_RATE -> RideCompTheme.colors.danger
     ChartKind.POWER -> RideCompTheme.colors.warn
+}
+
+/** "Bagikan" as an image card for WhatsApp/Instagram (13-UI-SCREENS #21). */
+@Composable
+private fun ShareCardButton(onClick: () -> Unit) {
+    BigButton(
+        text = stringResource(R.string.detail_share_card),
+        onClick = onClick,
+        size = BigButtonSize.SECONDARY,
+        iconRes = UiR.drawable.ic_share,
+    )
 }

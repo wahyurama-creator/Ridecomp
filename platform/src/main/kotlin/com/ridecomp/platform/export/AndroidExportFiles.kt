@@ -19,6 +19,9 @@ object ExportPaths {
     /** Sub-folder of filesDir that the FileProvider exposes (res/xml/file_paths.xml). */
     const val EXPORT_DIRECTORY = "exports"
 
+    /** Sub-folder of cacheDir for share card images (res/xml/file_paths.xml, 12-FEATURE-SPECS §11). */
+    const val SHARE_DIRECTORY = "share"
+
     /** Authority suffix appended to the application id. */
     const val AUTHORITY_SUFFIX = ".fileprovider"
 }

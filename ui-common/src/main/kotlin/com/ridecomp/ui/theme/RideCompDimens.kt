@@ -89,6 +89,9 @@ object RideCompDimens {
 
     /** Label column of the zone bars ("Z1"…"Z5", Training tab). */
     val zoneLabelWidth = 28.dp
+
+    /** Share card preview (13-UI-SCREENS #21): the 9:16 card is fitted into this height. */
+    val shareCardPreviewHeight = 440.dp
     val routeMapHeight = 220.dp
     val turnDistanceSize = 44.sp
 

@@ -7,6 +7,7 @@ import com.ridecomp.core.usecase.AnalyzeActivitiesUseCase
 import com.ridecomp.core.usecase.BackupWriter
 import com.ridecomp.core.usecase.BestEffortsStep
 import com.ridecomp.core.usecase.CheckGpsAvailabilityUseCase
+import com.ridecomp.core.usecase.ClearShareCardsUseCase
 import com.ridecomp.core.usecase.CompleteOnboardingUseCase
 import com.ridecomp.core.usecase.CreateBackupUseCase
 import com.ridecomp.core.usecase.CreateSegmentFromActivityUseCase
@@ -38,6 +39,7 @@ import com.ridecomp.core.usecase.HasProfileUseCase
 import com.ridecomp.core.usecase.ImportGpxUseCase
 import com.ridecomp.core.usecase.ImportOfflineMapUseCase
 import com.ridecomp.core.usecase.LoadRideChartUseCase
+import com.ridecomp.core.usecase.LoadShareCardUseCase
 import com.ridecomp.core.usecase.LoadTrackOutlineUseCase
 import com.ridecomp.core.usecase.LoadWeekZonesUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfileUseCase
@@ -94,6 +96,8 @@ import com.ridecomp.core.usecase.SelectActivityProfileUseCase
 import com.ridecomp.core.usecase.SendTestSmsUseCase
 import com.ridecomp.core.usecase.SetSafetyEnabledUseCase
 import com.ridecomp.core.usecase.ShareActivityFileUseCase
+import com.ridecomp.core.usecase.ShareCardFiles
+import com.ridecomp.core.usecase.ShareCardImageUseCase
 import com.ridecomp.core.usecase.SnoozeBackupReminderUseCase
 import com.ridecomp.core.usecase.StartRideUseCase
 import com.ridecomp.core.usecase.SuggestBackupFileNameUseCase
@@ -102,6 +106,7 @@ import com.ridecomp.core.usecase.TrainingCalendar
 import com.ridecomp.core.usecase.TrainingLoadStep
 import com.ridecomp.platform.export.AndroidExportFileStore
 import com.ridecomp.platform.export.AndroidExportedFileHandler
+import com.ridecomp.platform.export.AndroidShareCardFiles
 import java.time.ZoneId
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
@@ -110,6 +115,7 @@ import org.koin.dsl.module
 val useCaseModule = module {
     single<ExportFileStore> { AndroidExportFileStore(androidContext(), get()) }
     single<ExportedFileHandler> { AndroidExportedFileHandler(androidContext(), get()) }
+    single<ShareCardFiles> { AndroidShareCardFiles(androidContext(), get()) }
     factory { ZoneId.systemDefault() }
 
     factory { GetRecoverableRideUseCase(get()) }
@@ -216,6 +222,9 @@ val useCaseModule = module {
     factory { RecomputeTrainingUseCase(get(), get(), get()) }
     factory { ObserveTrainingUseCase(get(), get()) }
     factory { LoadWeekZonesUseCase(get(), get(), get(), get(), get()) }
+    factory { LoadShareCardUseCase(get(), get(), get(), get()) }
+    factory { ShareCardImageUseCase(get(), get()) }
+    factory { ClearShareCardsUseCase(get()) }
     factory { ObserveSegmentsUseCase(get()) }
     factory { ObserveSegmentUseCase(get()) }
     factory { ObserveSegmentEffortsUseCase(get()) }
