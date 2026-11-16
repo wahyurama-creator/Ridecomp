@@ -16,6 +16,11 @@ public class FakeShareCardFiles : ShareCardFiles {
         shared += fileName
     }
 
+    override suspend fun saveTo(destinationUri: String, png: ByteArray): Boolean {
+        saved[destinationUri] = png
+        return true
+    }
+
     override suspend fun clear() {
         saved.clear()
     }

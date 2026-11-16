@@ -67,6 +67,9 @@ interface SegmentDao {
     )
     suspend fun bestBefore(segmentId: Long, beforeStartedAt: Long): Double?
 
+    @Query("SELECT COUNT(*) FROM ${DbNames.TABLE_SEGMENT_EFFORTS} WHERE activity_id = :activityId AND is_pr = 1")
+    suspend fun countRecords(activityId: Long): Int
+
     @Query("DELETE FROM ${DbNames.TABLE_SEGMENT_EFFORTS} WHERE activity_id = :activityId")
     suspend fun deleteEffortsForActivity(activityId: Long)
 

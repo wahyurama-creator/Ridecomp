@@ -7,14 +7,19 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.lifecycle.viewModelScope
 import com.ridecomp.core.engine.share.ShareCardConfig
 import com.ridecomp.core.engine.share.ShareCardLine
+import com.ridecomp.core.engine.share.ShareDetail
+import com.ridecomp.core.engine.share.ShareDetails
 import com.ridecomp.core.engine.share.ShareFormat
+import com.ridecomp.core.engine.share.SharePalette
 import com.ridecomp.core.engine.share.SharePoint
 import com.ridecomp.core.engine.share.ShareStat
+import com.ridecomp.core.engine.share.ShareTemplate
 import com.ridecomp.core.model.RideTotals
 import com.ridecomp.core.model.UnitSystem
 import com.ridecomp.core.source.DispatcherProvider
 import com.ridecomp.core.usecase.LoadShareCardUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
+import com.ridecomp.core.usecase.SaveShareCardUseCase
 import com.ridecomp.core.usecase.ShareCardData
 import com.ridecomp.core.usecase.ShareCardImageUseCase
 import com.ridecomp.core.util.runCatchingCancellable
@@ -22,73 +27,151 @@ import com.ridecomp.ui.udf.NoEffect
 import com.ridecomp.ui.udf.UdfViewModel
 import java.io.ByteArrayOutputStream
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
+/** What happens with the captured card. */
+sealed interface ShareAction {
+    data object Share : ShareAction
+
+    /** "Simpan gambar": the SAF document the rider picked. */
+    data class SaveTo(val uri: String) : ShareAction
+}
+
+/** Loads the rider's photo for the photo template, scaled down to about [maxSidePx] (memory, MEM-06). */
+fun interface SharePhotoLoader {
+    suspend fun load(uri: String, maxSidePx: Int): ImageBitmap?
+}
 
 @Immutable
 data class ShareCardUiState(
     val data: ShareCardData? = null,
+    val template: ShareTemplate = ShareTemplate.POSTER,
+    val palette: SharePalette = SharePalette.SUNSET,
     val format: ShareFormat = ShareFormat.STORY,
     val isDark: Boolean = true,
+    /** Classic and poster without a background: a transparent PNG (the sticker always is). */
+    val isBackgroundTransparent: Boolean = false,
     /** Privacy (§11): first and last 500 m hidden, on by default. */
     val isEndsHidden: Boolean = true,
     val isTrackShown: Boolean = true,
     val stats: ImmutableList<ShareStat> = persistentListOf(),
+    val details: ImmutableSet<ShareDetail> = persistentSetOf(),
     /** The line as drawn, already trimmed and projected. */
     val line: ImmutableList<SharePoint> = persistentListOf(),
+    val photo: ImageBitmap? = null,
     val unitSystem: UnitSystem = UnitSystem.METRIC,
-    val isSharing: Boolean = false,
-    /** The last share failed (out of memory, no app to share with…). */
+    /** The card is being captured for this action; options are locked meanwhile. */
+    val pending: ShareAction? = null,
+    /** The last share or save failed (out of memory, storage, no app to share with…). */
     val isShareFailed: Boolean = false,
+    val isSaved: Boolean = false,
     val isMissing: Boolean = false,
 ) {
+    val isSharing: Boolean get() = pending != null
+
+    /** True when the exported PNG has no background (preview shows a dark checkerboard behind it). */
+    val isTransparent: Boolean
+        get() = template == ShareTemplate.STICKER ||
+            (isBackgroundTransparent && (template == ShareTemplate.CLASSIC || template == ShareTemplate.POSTER))
+
     /** Statistics this ride has data for, in display order. */
     val availableStats: ImmutableList<ShareStat>
         get() = data?.activity?.totals?.let(::available).orEmpty().toImmutableList()
+
+    /** Details this ride has data for. */
+    val availableDetails: ImmutableList<ShareDetail>
+        get() = data?.details?.let(::availableDetails).orEmpty().toImmutableList()
 }
 
 sealed interface ShareCardUiEvent {
-    data class SetFormat(val format: ShareFormat) : ShareCardUiEvent
+    /** A change of how the card looks: it only changes the state. */
+    sealed interface Style : ShareCardUiEvent {
+        fun reduce(state: ShareCardUiState): ShareCardUiState
+    }
 
-    data class SetDark(val isDark: Boolean) : ShareCardUiEvent
+    data class SetTemplate(val template: ShareTemplate) : Style {
+        override fun reduce(state: ShareCardUiState) = state.copy(template = template, isSaved = false)
+    }
+
+    data class SetPalette(val palette: SharePalette) : Style {
+        override fun reduce(state: ShareCardUiState) = state.copy(palette = palette)
+    }
+
+    data class SetFormat(val format: ShareFormat) : Style {
+        override fun reduce(state: ShareCardUiState) = state.copy(format = format)
+    }
+
+    data class SetDark(val isDark: Boolean) : Style {
+        override fun reduce(state: ShareCardUiState) = state.copy(isDark = isDark)
+    }
+
+    data class SetBackgroundTransparent(val isTransparent: Boolean) : Style {
+        override fun reduce(state: ShareCardUiState) = state.copy(isBackgroundTransparent = isTransparent)
+    }
+
+    data class SetTrackShown(val isShown: Boolean) : Style {
+        override fun reduce(state: ShareCardUiState) = state.copy(isTrackShown = isShown)
+    }
+
+    /** Adds or removes a statistic (at most 4). */
+    data class ToggleStat(val stat: ShareStat) : Style {
+        override fun reduce(state: ShareCardUiState) = state.copy(stats = toggled(state.stats, stat).toImmutableList())
+    }
+
+    data class ToggleDetail(val detail: ShareDetail) : Style {
+        override fun reduce(state: ShareCardUiState): ShareCardUiState {
+            val details = if (detail in state.details) state.details - detail else state.details + detail
+            return state.copy(details = details.toImmutableSet())
+        }
+    }
 
     data class SetEndsHidden(val isHidden: Boolean) : ShareCardUiEvent
 
-    data class SetTrackShown(val isShown: Boolean) : ShareCardUiEvent
+    /** A photo picked with the Photo Picker (no permission needed). */
+    data class PhotoPicked(val uri: String) : ShareCardUiEvent
 
-    /** Adds or removes a statistic (at most 4). */
-    data class ToggleStat(val stat: ShareStat) : ShareCardUiEvent
-
-    /** "Bagikan": the card is drawn at full size, then [Captured]. */
-    data object Rendering : ShareCardUiEvent
+    /** Share or save: the card is drawn at full size, then [Captured]. */
+    data class Render(val action: ShareAction) : ShareCardUiEvent
 
     /** The card drawn at its real pixel size. */
     data class Captured(val image: ImageBitmap) : ShareCardUiEvent
 }
 
-/** Share card editor (T4.5, 13-UI-SCREENS #21, 12-FEATURE-SPECS §11). */
+/** Share card editor (T4.5/T4.5b, 13-UI-SCREENS #21, 12-FEATURE-SPECS §11). */
+/** Use cases of the share card editor. */
+data class ShareCardUseCases(
+    val load: LoadShareCardUseCase,
+    val observeSettings: ObserveRideSettingsUseCase,
+    val share: ShareCardImageUseCase,
+    val save: SaveShareCardUseCase,
+)
+
 class ShareCardViewModel(
     activityId: Long,
-    load: LoadShareCardUseCase,
-    observeSettings: ObserveRideSettingsUseCase,
-    private val share: ShareCardImageUseCase,
+    private val useCases: ShareCardUseCases,
+    private val photos: SharePhotoLoader,
     private val dispatchers: DispatcherProvider,
 ) : UdfViewModel<ShareCardUiState, ShareCardUiEvent, NoEffect>(ShareCardUiState()) {
     init {
         viewModelScope.launch {
-            val data = load(activityId)
+            val data = useCases.load(activityId)
             if (data == null) {
                 updateState { copy(isMissing = true) }
                 return@launch
             }
             val stats = available(data.activity.totals).take(ShareCardConfig.MAX_STATS)
-            updateState { copy(data = data, stats = stats.toImmutableList()) }
+            val details = availableDetails(data.details).toImmutableSet()
+            updateState { copy(data = data, stats = stats.toImmutableList(), details = details) }
             refreshLine()
         }
         viewModelScope.launch {
-            observeSettings().collect { settings -> updateState { copy(unitSystem = settings.unitSystem) } }
+            useCases.observeSettings().collect { settings -> updateState { copy(unitSystem = settings.unitSystem) } }
         }
     }
 
@@ -96,24 +179,38 @@ class ShareCardViewModel(
         // The card is being captured: options stay as they are so the image matches the preview.
         if (currentState.isSharing && event !is ShareCardUiEvent.Captured) return
         when (event) {
-            is ShareCardUiEvent.SetFormat -> updateState { copy(format = event.format) }
-            is ShareCardUiEvent.SetDark -> updateState { copy(isDark = event.isDark) }
+            is ShareCardUiEvent.Style -> updateState { event.reduce(this) }
             is ShareCardUiEvent.SetEndsHidden -> {
                 updateState { copy(isEndsHidden = event.isHidden) }
                 viewModelScope.launch { refreshLine() }
             }
-            is ShareCardUiEvent.SetTrackShown -> updateState { copy(isTrackShown = event.isShown) }
-            is ShareCardUiEvent.ToggleStat -> updateState { copy(stats = toggled(stats, event.stat).toImmutableList()) }
-            ShareCardUiEvent.Rendering -> updateState { copy(isSharing = true, isShareFailed = false) }
-            is ShareCardUiEvent.Captured -> if (currentState.isSharing) shareCard(event.image)
+            is ShareCardUiEvent.PhotoPicked -> viewModelScope.launch {
+                val photo = runCatchingCancellable {
+                    photos.load(event.uri, ShareCardConfig.STORY_HEIGHT_PX)
+                }.getOrNull()
+                updateState { copy(photo = photo ?: this.photo, template = ShareTemplate.PHOTO) }
+            }
+            is ShareCardUiEvent.Render -> updateState {
+                copy(pending = event.action, isShareFailed = false, isSaved = false)
+            }
+            is ShareCardUiEvent.Captured -> currentState.pending?.let { finish(it, event.image) }
         }
     }
 
-    /** A failure (memory, storage, no app to share with) is shown, never a crash; the button comes back. */
-    private fun shareCard(image: ImageBitmap) {
+    /** A failure (memory, storage, no app to share with) is shown, never a crash; the buttons come back. */
+    private fun finish(action: ShareAction, image: ImageBitmap) {
         viewModelScope.launch {
-            val result = runCatchingCancellable { share(encodePng(image)) }
-            updateState { copy(isSharing = false, isShareFailed = result.isFailure) }
+            val result = runCatchingCancellable {
+                val png = encodePng(image)
+                when (action) {
+                    ShareAction.Share -> useCases.share(png).let { true }
+                    is ShareAction.SaveTo -> useCases.save(action.uri, png)
+                }
+            }
+            val isDone = result.getOrNull() == true
+            updateState {
+                copy(pending = null, isShareFailed = !isDone, isSaved = isDone && action is ShareAction.SaveTo)
+            }
         }
     }
 
@@ -138,12 +235,6 @@ class ShareCardViewModel(
         val line = withContext(dispatchers.default) { ShareCardLine.of(data.line, isHidden) }
         updateState { copy(line = line.toImmutableList()) }
     }
-
-    private fun toggled(current: List<ShareStat>, stat: ShareStat): List<ShareStat> = when {
-        stat in current -> current - stat
-        current.size >= ShareCardConfig.MAX_STATS -> current
-        else -> ShareStat.entries.filter { it in current || it == stat }
-    }
 }
 
 /** Statistics with data: heart rate and power only when measured (estimated power never shows, §11). */
@@ -157,3 +248,22 @@ private fun available(totals: RideTotals): List<ShareStat> = ShareStat.entries.f
 
 /** PNG is lossless; the value is ignored by the encoder but required by the API. */
 private const val PNG_QUALITY = 100
+
+/** Details with data: zones only with heart rate, badges only with a record. */
+private fun availableDetails(details: ShareDetails): List<ShareDetail> = ShareDetail.entries.filter { detail ->
+    when (detail) {
+        ShareDetail.ELEVATION -> details.elevationM.isNotEmpty()
+        ShareDetail.HEART_RATE_ZONES -> details.zonesS.isNotEmpty()
+        // One bar alone says nothing: splits from 2 km.
+        ShareDetail.SPLITS -> details.splitsS.size >= MIN_SPLITS
+        ShareDetail.BADGES -> details.records + details.segmentRecords > 0
+    }
+}
+
+private fun toggled(current: List<ShareStat>, stat: ShareStat): List<ShareStat> = when {
+    stat in current -> current - stat
+    current.size >= ShareCardConfig.MAX_STATS -> current
+    else -> ShareStat.entries.filter { it in current || it == stat }
+}
+
+private const val MIN_SPLITS = 2

@@ -54,4 +54,9 @@ public class FakeSegmentRepository(private val activities: ActivityRepository) :
     override suspend fun replaceForActivity(activityId: Long, efforts: List<SegmentEffort>) {
         this.efforts.value = this.efforts.value.filterNot { it.activityId == activityId } + efforts
     }
+
+    override suspend fun countRecords(activityId: Long): Int = efforts.value.count {
+        it.activityId == activityId &&
+            it.isPr
+    }
 }

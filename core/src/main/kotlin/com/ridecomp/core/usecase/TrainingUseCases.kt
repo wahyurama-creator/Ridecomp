@@ -23,6 +23,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.withContext
 
+/** The rider's FTP, HR max (from age when empty), resting HR and sex for loads and zones. */
+public class GetLoadInputsUseCase(private val profiles: ProfileRepository, private val clock: Clock) {
+    public suspend operator fun invoke(): LoadInputs = LoadInputs.of(profiles.get(), clock.nowMs())
+}
+
 /** Local dates of the phone's time zone (daily training is per local day, 05-DATA-MODEL). */
 public class TrainingCalendar(private val clock: Clock, private val zone: () -> ZoneId = ZoneId::systemDefault) {
     public fun dateOf(ms: Long): LocalDate = Instant.ofEpochMilli(ms).atZone(zone()).toLocalDate()

@@ -95,9 +95,37 @@
     <string name="share_stat_speed">Avg speed</string>
     <string name="share_stat_heart_rate">Avg HR</string>
     <string name="share_stat_power">Avg power</string>
-    <string name="share_send">Bagikan ke WhatsApp / Instagram</string>
-    <plurals name="share_footer_records">
-        <item quantity="other">%1$d PR BARU · RideComp</item>
-    </plurals>
     <string name="share_failed">Kartu gagal dibagikan. Coba lagi, atau tutup aplikasi lain bila memori HP penuh.</string>
+    <!-- Kartu share v2 (T4.5b) -->
+    <string name="share_template_classic">Klasik</string>
+    <string name="share_template_poster">Poster</string>
+    <string name="share_template_photo">Foto</string>
+    <string name="share_template_sticker">Stiker</string>
+    <string name="share_palette_sunset">Senja</string>
+    <string name="share_palette_ocean">Laut</string>
+    <string name="share_palette_forest">Hutan</string>
+    <string name="share_palette_night">Malam</string>
+    <string name="share_transparent">Latar transparan</string>
+    <string name="share_transparent_hint">Disimpan tanpa latar untuk ditempel di foto atau videomu sendiri.</string>
+    <string name="share_pick_photo">Pilih foto</string>
+    <string name="share_change_photo">Ganti foto</string>
+    <string name="share_sticker_hint">Stiker transparan: simpan, lalu tempel di atas foto atau video di Instagram Story.</string>
+    <string name="share_details">Detail latihan</string>
+    <string name="share_detail_elevation">Elevasi</string>
+    <string name="share_detail_zones">Zona detak jantung</string>
+    <string name="share_detail_splits">Split per km</string>
+    <string name="share_detail_badges">Lencana rekor</string>
+    <string name="share_saved">Gambar tersimpan.</string>
+    <plurals name="share_badge_records">
+        <item quantity="other">%1$d PR BARU</item>
+    </plurals>
+    <plurals name="share_badge_segments">
+        <item quantity="other">%1$d PR SEGMEN</item>
+    </plurals>
+    <string name="share_customize">Sesuaikan</string>
+    <string name="share_privacy">Privasi</string>
+    <string name="share_background">Latar</string>
+    <string name="share_style_page">Gaya %1$s, geser untuk gaya lain</string>
+    <string name="share_save_short">Simpan</string>
+    <string name="share_send_short">Bagikan</string>
 </resources>

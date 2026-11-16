@@ -51,6 +51,8 @@ class SegmentRepositoryImpl(private val dao: SegmentDao) : SegmentRepository {
     override suspend fun bestBefore(segmentId: Long, beforeStartedAtMs: Long): Double? =
         dao.bestBefore(segmentId, beforeStartedAtMs)
 
+    override suspend fun countRecords(activityId: Long): Int = dao.countRecords(activityId)
+
     override suspend fun replaceForActivity(activityId: Long, efforts: List<SegmentEffort>) {
         dao.replaceEffortsForActivity(
             activityId,

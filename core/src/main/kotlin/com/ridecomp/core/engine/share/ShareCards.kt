@@ -1,6 +1,9 @@
 package com.ridecomp.core.engine.share
 
+import com.ridecomp.core.config.Units
+import com.ridecomp.core.engine.efforts.BestEffortConfig
 import com.ridecomp.core.engine.geo.GeoMath
+import com.ridecomp.core.engine.track.RideTrack
 import kotlin.math.cos
 
 /** Share card rules (12-FEATURE-SPECS §11). */
@@ -20,6 +23,78 @@ public object ShareCardConfig {
     public const val FILE_PREFIX: String = "RideComp_card_"
     public const val FILE_EXTENSION: String = ".png"
     public const val MIME_TYPE: String = "image/png"
+
+    /** Points of the elevation strip on a card. */
+    public const val PROFILE_POINTS: Int = 80
+
+    /** Split length (one bar per kilometre). */
+    public const val SPLIT_M: Double = 1_000.0
+
+    /** At most this many split bars fit on a card; longer rides show the first ones. */
+    public const val MAX_SPLITS: Int = 20
+}
+
+/** Look of a card (T4.5b). */
+public enum class ShareTemplate {
+    /** Plain dark/light card (T4.5). */
+    CLASSIC,
+
+    /** Big numbers on a colour gradient, glowing route line, elevation strip. */
+    POSTER,
+
+    /** The rider's own photo behind the route and numbers. */
+    PHOTO,
+
+    /** Route and numbers only, transparent PNG to put on a photo or video in an Instagram Story. */
+    STICKER,
+}
+
+/** Colour pairs of the poster gradient (defined as colours in the design system). */
+public enum class SharePalette { SUNSET, OCEAN, FOREST, NIGHT }
+
+/** Extra training details a card can show (T4.5b "Detail latihan"). */
+public enum class ShareDetail { ELEVATION, HEART_RATE_ZONES, SPLITS, BADGES }
+
+/** Training details of a ride for a card; empty lists when the ride has no such data. */
+public data class ShareDetails(
+    /** Altitude every few hundred metres, oldest first; null = no altitude there. */
+    val elevationM: List<Double?> = emptyList(),
+    /** Seconds in heart-rate zones Z1..Z5. */
+    val zonesS: List<Long> = emptyList(),
+    /** Moving seconds of each full kilometre. */
+    val splitsS: List<Double> = emptyList(),
+    /** New personal records and segment records of the ride. */
+    val records: Int = 0,
+    val segmentRecords: Int = 0,
+)
+
+/** Splits and elevation strip of a ride for a card (moving time: pauses never count, like best efforts). */
+public object ShareCardDetails {
+    public fun splits(track: RideTrack): List<Double> {
+        val splits = mutableListOf<Double>()
+        var splitStartMoving = 0.0
+        var moving = 0.0
+        var nextMark = ShareCardConfig.SPLIT_M
+        for (i in 1 until track.size) {
+            val gapS = (track.timeMs(i) - track.timeMs(i - 1)).toDouble() / Units.MS_PER_SECOND
+            moving += if (gapS <= BestEffortConfig.MAX_CONTINUOUS_GAP_S) gapS else BestEffortConfig.SAMPLE_INTERVAL_S
+            if (track.distanceM(i) - track.distanceM(0) >= nextMark) {
+                splits += moving - splitStartMoving
+                splitStartMoving = moving
+                nextMark += ShareCardConfig.SPLIT_M
+                if (splits.size == ShareCardConfig.MAX_SPLITS) break
+            }
+        }
+        return splits
+    }
+
+    public fun elevation(track: RideTrack): List<Double?> {
+        if (track.size < 2) return emptyList()
+        val step = (track.size - 1).toDouble() / (ShareCardConfig.PROFILE_POINTS - 1)
+        return (0 until ShareCardConfig.PROFILE_POINTS).map { n ->
+            track.altitudeM((n * step).toInt().coerceAtMost(track.size - 1)).takeUnless(Double::isNaN)
+        }.takeIf { values -> values.any { it != null } }.orEmpty()
+    }
 }
 
 public enum class ShareFormat(public val widthPx: Int, public val heightPx: Int) {

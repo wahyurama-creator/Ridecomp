@@ -33,3 +33,4 @@ secrets.properties
 
 # Laporan scan lokal
 dependency-check-report.*
+.kotlin/
