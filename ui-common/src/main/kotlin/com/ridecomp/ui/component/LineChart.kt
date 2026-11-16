@@ -89,9 +89,9 @@ fun LineChart(
     }
 }
 
-private data class ChartBounds(val minX: Double, val width: Double, val minY: Double, val height: Double)
+internal data class ChartBounds(val minX: Double, val width: Double, val minY: Double, val height: Double)
 
-private fun List<ChartValue>.bounds(): ChartBounds? {
+internal fun List<ChartValue>.bounds(): ChartBounds? {
     val ys = mapNotNull { it.y }
     if (size < 2 || ys.isEmpty()) return null
     val minX = first().x

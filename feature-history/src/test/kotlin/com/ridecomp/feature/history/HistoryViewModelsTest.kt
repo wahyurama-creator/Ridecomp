@@ -35,6 +35,7 @@ import com.ridecomp.feature.history.viewmodel.ActivityDetailUiEvent
 import com.ridecomp.feature.history.viewmodel.ActivityDetailUseCases
 import com.ridecomp.feature.history.viewmodel.ActivityDetailViewModel
 import com.ridecomp.feature.history.viewmodel.ChartKind
+import com.ridecomp.feature.history.viewmodel.ChartStatKind
 import com.ridecomp.feature.history.viewmodel.FileMessage
 import com.ridecomp.feature.history.viewmodel.HistoryUiEvent
 import com.ridecomp.feature.history.viewmodel.HistoryViewModel
@@ -139,6 +140,34 @@ class HistoryViewModelsTest {
     }
 
     @Test
+    fun `chart summary uses the ride totals and the route follows the gps points`() = runTest {
+        val id = repository.create(NewActivity("u1", "Ride", FakeClock.DEFAULT_START_MS))
+        val totals = RideTotals(distanceM = 5_000.0, movingS = 1_000, avgSpeedMps = 5.0, maxSpeedMps = 10.0)
+        repository.finish(id, "Ride", totals, FakeClock.DEFAULT_START_MS + 1_000)
+        repository.appendSamples(
+            id,
+            (1..5).map {
+                RideSample(
+                    it * 1_000L,
+                    latDeg = -7.0 + it * 0.001,
+                    lonDeg = 110.0,
+                    distanceM = it * 10.0,
+                    speedMps = 4.0,
+                )
+            } + RideSample(6_000L, distanceM = 60.0, speedMps = 4.0),
+        )
+
+        val state = detailViewModel(id).uiState.value
+
+        val stats = state.charts.single { it.kind == ChartKind.SPEED }.stats
+        assertEquals(listOf(ChartStatKind.AVG, ChartStatKind.MAX), stats.map { it.kind })
+        assertEquals(18.0, stats[0].value, DELTA)
+        assertEquals(36.0, stats[1].value, DELTA)
+        // The last sample has no fix: left out of the route.
+        assertEquals(5, state.route.size)
+    }
+
+    @Test
     fun `sensor charts appear when the ride has sensor data`() = runTest {
         val id = savedRide(FakeClock.DEFAULT_START_MS)
         repository.appendSamples(
@@ -201,3 +230,5 @@ class HistoryViewModelsTest {
         assertEquals("RideComp_20260101_0000.fit", detailViewModel(id).suggestedFileName(ExportFormat.FIT))
     }
 }
+
+private const val DELTA = 1e-9

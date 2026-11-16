@@ -69,6 +69,10 @@ object RideCompDimens {
     val bannerIconSize = 32.dp
     val contentMaxWidth = 600.dp
     val chartHeight = 140.dp
+    val chartHeightLarge = 180.dp
+    val chartLabelGap = 6.dp
+    val iconTileSize = 40.dp
+    val routeSketchHeight = 180.dp
     val onboardingProgressHeight = 4.dp
     val gpsWaitOuter = 200.dp
     val gpsWaitInner = 140.dp
