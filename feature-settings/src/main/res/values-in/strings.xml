@@ -338,4 +338,9 @@
     <string name="settings_strava_not_connected">Belum terhubung</string>
     <string name="strava_auto_upload">Upload ride otomatis</string>
     <string name="strava_auto_upload_hint">Setelah ride disimpan, ride langsung dikirim ke Strava selama RideComp terbuka (dengan internet).</string>
+    <string name="strava_disconnect">Putuskan Strava</string>
+    <string name="strava_disconnect_title">Putuskan Strava?</string>
+    <string name="strava_disconnect_message">RideComp tidak lagi punya akses ke akun Strava dan berhenti meng-upload. Ride yang sudah ada di Strava tetap ada. Anda bisa menghubungkan lagi nanti.</string>
+    <string name="strava_message_disconnected">Terputus. RideComp tidak lagi punya akses ke Strava.</string>
+    <string name="strava_message_disconnected_locally">Terputus di HP ini. Tidak ada internet untuk memberi tahu Strava: hapus RideComp di strava.com/settings/apps agar pasti.</string>
 </resources>
