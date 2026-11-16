@@ -178,11 +178,12 @@ Agent meninjau **diff** task dan menjawab setiap poin (Ya / Tidak / N/A + catata
 |---|---|---|
 | Rekaman lokasi & rute rumah | App lain membaca file; export membocorkan alamat rumah | Internal storage, FileProvider terbatas, zona privasi (opsional), tidak ada external storage |
 | Data HR (kesehatan) | Bocor lewat log/backup/crash log | Log disanitasi, aturan backup, tanpa SDK pihak ketiga |
-| Token & secret Strava | Dicuri dari storage/log/backup | Keystore, dikecualikan dari backup, tidak di-log, revoke saat disconnect |
+| Token & secret Strava (Fase 5) | Dicuri dari storage/log/backup; app lain/halaman web memalsukan redirect | Satu berkas AES-256-GCM dengan kunci Android Keystore di `noBackupFilesDir` (tidak ikut backup/transfer, tidak terbaca di HP lain), `toString` model menyamarkan nilai, tidak pernah di-log (hanya kode status HTTP), revoke + hapus lokal saat putus (D-79). Sisa risiko: HP yang di-root bisa mengekstrak secret — diterima untuk app API pribadi (SEC-AUTH-04) |
 | Integritas app | Library berbahaya/terkompromi | SUP-01..11 |
 | Stabilitas | GPX/BLE berbahaya membuat crash atau hang | Validasi input, batas ukuran, XXE dimatikan, fuzz test |
 | Komponen app | App lain memicu service/activity | `exported=false`, PendingIntent immutable, validasi intent |
-| Alur OAuth | Redirect palsu/CSRF | `state`, PKCE bila didukung, redirect dicocokkan persis, Custom Tabs |
+| Alur OAuth (Fase 5) | Redirect palsu/CSRF; app lain mendaftarkan skema `ridecomp://` dan mencegat code | `state` acak 256-bit sekali pakai (dibandingkan constant-time), redirect `ridecomp://localhost/strava-auth` dicocokkan persis (skema, host, path, tanpa port/userinfo/fragment), nilai query dibatasi panjang; dibuka di app Strava/browser (bukan WebView). PKCE tidak didukung Strava: code curian tidak berguna tanpa Client Secret yang hanya ada di HP pengguna |
+| Upload Strava & jaringan (Fase 5) | Data ride terkirim tanpa sengaja; balasan server berbahaya; MITM | Upload hanya atas ketukan pengguna atau saat upload otomatis diaktifkan (default mati); HTTPS saja, trust anchor sistem, tanpa redirect, timeout, balasan dibatasi 64 KB dan divalidasi; domain hanya `www.strava.com` & `api-v3.strava.com`; tidak ada data lain yang dikirim |
 | SMS darurat | Bug/penyalahgunaan mengirim SMS massal (biaya), nomor kontak bocor | SEC-SMS-01..07 |
 | Sensor BLE (Fase 2) | Perangkat asing di sekitar diiklankan sebagai HR/CSC/CP; paket rusak/berlebihan | Hanya sensor yang dipasangkan pengguna yang disambung (alamat tersimpan); parser memvalidasi panjang & rentang (STB-09); operasi GATT bertimeout; data hanya dipakai untuk metrik (tidak ada perintah tulis ke sensor) |
 | Deteksi insiden (Fase 2) | Alarm palsu mengirim SMS; insiden nyata terlewat | Hitung mundur 30 dtk + tombol batal (juga di notifikasi), ambang di `IncidentConfig` dikalibrasi lewat L17, penjelasan keterbatasan di layar Keselamatan |
