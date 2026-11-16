@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.ridecomp.app.navigation.IncomingGpx
+import com.ridecomp.app.navigation.IncomingStravaAuth
 import com.ridecomp.ui.theme.RideCompTheme
 
 /** Single activity hosting the Compose UI. */
@@ -13,7 +14,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        if (savedInstanceState == null) IncomingGpx.offer(intent)
+        if (savedInstanceState == null) {
+            IncomingGpx.offer(intent)
+            IncomingStravaAuth.offer(intent)
+        }
         setContent {
             RideCompTheme {
                 RideCompApp()
@@ -24,5 +28,6 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         IncomingGpx.offer(intent)
+        IncomingStravaAuth.offer(intent)
     }
 }

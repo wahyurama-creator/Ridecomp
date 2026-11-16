@@ -30,6 +30,8 @@ import com.ridecomp.core.source.PickedContactReader
 import com.ridecomp.core.source.RideController
 import com.ridecomp.core.source.SafetyMessages
 import com.ridecomp.core.source.SmsGateway
+import com.ridecomp.core.source.StravaAccountStore
+import com.ridecomp.core.source.StravaApi
 import com.ridecomp.core.testing.FakeAccelerometerSource
 import com.ridecomp.core.testing.FakeActivityAnalysisRepository
 import com.ridecomp.core.testing.FakeActivityProfileRepository
@@ -61,6 +63,8 @@ import com.ridecomp.core.testing.FakeSensorRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.testing.FakeShareCardFiles
 import com.ridecomp.core.testing.FakeSmsGateway
+import com.ridecomp.core.testing.FakeStravaAccountStore
+import com.ridecomp.core.testing.FakeStravaApi
 import com.ridecomp.core.testing.FakeTrainingRepository
 import com.ridecomp.core.testing.RecordingLogger
 import com.ridecomp.core.testing.TestDispatcherProvider
@@ -92,6 +96,7 @@ import com.ridecomp.feature.settings.viewmodel.ProfileViewModel
 import com.ridecomp.feature.settings.viewmodel.RideSettingsViewModel
 import com.ridecomp.feature.settings.viewmodel.SafetyViewModel
 import com.ridecomp.feature.settings.viewmodel.SettingsViewModel
+import com.ridecomp.feature.settings.viewmodel.StravaViewModel
 import com.ridecomp.feature.training.viewmodel.NewRecordsViewModel
 import com.ridecomp.feature.training.viewmodel.RecordsViewModel
 import com.ridecomp.feature.training.viewmodel.SegmentDetailViewModel
@@ -163,6 +168,8 @@ class AppModulesTest {
         factory<SharePhotoLoader> { SharePhotoLoader { _, _ -> null } }
         single<ActivityAnalysisRepository> { FakeActivityAnalysisRepository(FakeActivityRepository()) }
         factory<LicenseTextReader> { LicenseTextReader { "" } }
+        single<StravaAccountStore> { FakeStravaAccountStore() }
+        single<StravaApi> { FakeStravaApi() }
     }
 
     @BeforeTest
@@ -211,6 +218,7 @@ class AppModulesTest {
         assertNotNull(koin.get<ActivityProfilesViewModel>())
         assertNotNull(koin.get<SafetyViewModel>())
         assertNotNull(koin.get<BackupViewModel>())
+        assertNotNull(koin.get<StravaViewModel>())
         assertNotNull(koin.get<RoutesViewModel>())
         assertNotNull(koin.get<RouteDetailViewModel> { parametersOf(1L) })
         assertNotNull(koin.get<IncidentManager>())

@@ -14,6 +14,8 @@ import com.ridecomp.feature.settings.viewmodel.RideSettingsViewModel
 import com.ridecomp.feature.settings.viewmodel.SafetyUseCases
 import com.ridecomp.feature.settings.viewmodel.SafetyViewModel
 import com.ridecomp.feature.settings.viewmodel.SettingsViewModel
+import com.ridecomp.feature.settings.viewmodel.StravaUseCases
+import com.ridecomp.feature.settings.viewmodel.StravaViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -21,7 +23,7 @@ import org.koin.dsl.module
 /** ViewModels of the settings feature; use cases come from the app graph. */
 val settingsFeatureModule = module {
     viewModel { ProfileViewModel(get(), get(), get()) }
-    viewModel { SettingsViewModel(get(), get(), get(), get(), get()) }
+    viewModel { SettingsViewModel(get(), get(), get(), get(), get(), get()) }
     factory { OfflineMapsUseCases(get(), get(), get(), get()) }
     viewModel { OfflineMapsViewModel(get()) }
     viewModel { RideSettingsViewModel(get(), get()) }
@@ -33,4 +35,6 @@ val settingsFeatureModule = module {
     viewModel { BackupViewModel(get()) }
     factory<LicenseTextReader> { AndroidLicenseTextReader(androidContext()) }
     viewModel { OssLicensesViewModel(get(), get()) }
+    factory { StravaUseCases(get(), get(), get(), get()) }
+    viewModel { StravaViewModel(get()) }
 }

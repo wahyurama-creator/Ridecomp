@@ -73,6 +73,7 @@ object RideCompDimens {
     val chartLabelGap = 6.dp
     val iconTileSize = 40.dp
     val formatBadgeWidth = 44.dp
+    val stepBadgeSize = 24.dp
     val routeSketchHeight = 180.dp
     val onboardingProgressHeight = 4.dp
     val gpsWaitOuter = 200.dp

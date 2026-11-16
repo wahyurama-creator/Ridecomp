@@ -3,11 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!--
-      MapLibre (D-64) declares these for online tiles. RideComp maps are local PMTiles files and the app
-      has no network feature: removed so the app stays offline (SEC-NET). ACCESS_NETWORK_STATE (normal
-      permission, no data access) is kept because MapLibre checks connectivity.
+      INTERNET only for the optional Strava upload (Phase 5, D-79): HTTPS to www.strava.com and
+      api-v3.strava.com (SEC-NET-03). Maps stay local PMTiles files. ACCESS_WIFI_STATE (MapLibre, online
+      tiles) is still removed; ACCESS_NETWORK_STATE is kept because MapLibre checks connectivity.
     -->
-    <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" tools:node="remove" />
 
     <application
@@ -24,10 +24,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.RideComp"
         tools:targetApi="tiramisu">
-        <!-- Exported: launcher activity (SEC-PLT-01). -->
+        <!--
+            Exported: launcher activity (SEC-PLT-01). singleTask so the Strava redirect returns to the
+            running app (onNewIntent) instead of opening a second copy on top of the browser.
+        -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -48,6 +52,21 @@
                 <data android:mimeType="application/gpx" />
                 <data android:mimeType="text/xml" />
                 <data android:mimeType="application/xml" />
+            </intent-filter>
+            <!--
+                Strava OAuth redirect (T5.2, SEC-AUTH-03): exactly ridecomp://localhost/strava-auth. BROWSABLE
+                is required for the browser to return here; the app checks the random state (SEC-AUTH-02).
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="localhost"
+                    android:path="/strava-auth"
+                    android:scheme="ridecomp" />
             </intent-filter>
         </activity>
         <!-- SEC-PLT-04: FileProvider for exported FIT/GPX files; not exported, temporary grants only. -->
