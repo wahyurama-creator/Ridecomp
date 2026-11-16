@@ -17,6 +17,9 @@ interface StravaUploadDao {
     @Upsert
     suspend fun upsert(entity: StravaUploadEntity)
 
+    @Query("SELECT activity_id FROM strava_uploads WHERE state IN (:states)")
+    fun observeIdsInStates(states: List<String>): Flow<List<Long>>
+
     @Query("SELECT * FROM strava_uploads WHERE state IN (:states) ORDER BY updated_at")
     suspend fun getInStates(states: List<String>): List<StravaUploadEntity>
 }

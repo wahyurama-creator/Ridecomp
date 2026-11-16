@@ -60,6 +60,11 @@ public class StravaUploadRequests {
     }
 }
 
+/** Rides already on Strava ("Di Strava" in the history list). */
+public class ObserveRidesOnStravaUseCase(private val uploads: StravaUploadRepository) {
+    public operator fun invoke(): Flow<Set<Long>> = uploads.observeOnStrava()
+}
+
 public class ObserveStravaUploadUseCase(private val uploads: StravaUploadRepository) {
     public operator fun invoke(activityId: Long): Flow<StravaUpload?> = uploads.observe(activityId)
 }

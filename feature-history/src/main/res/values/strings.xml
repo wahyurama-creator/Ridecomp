@@ -112,4 +112,5 @@
     <string name="detail_strava_view">View on Strava</string>
     <string name="detail_strava_on_strava">This ride is on Strava</string>
     <string name="detail_strava_sent">Sent</string>
+    <string name="history_on_strava">On Strava</string>
 </resources>
