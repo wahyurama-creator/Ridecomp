@@ -47,6 +47,20 @@ public object StravaConfig {
     /** Upload replies above this size are not trusted (SEC-NET-04). */
     public const val MAX_RESPONSE_BYTES: Int = 64 * 1024
 
+    /** Status checks: Strava allows at most one per second; a ride usually takes a few seconds. */
+    public const val POLL_INTERVAL_MS: Long = 2_000
+    public const val MAX_POLLS: Int = 30
+
+    /** Auto-upload looks at this many latest rides after each save. */
+    public const val AUTO_UPLOAD_RECENT_RIDES: Int = 5
+
+    /** `sport_type` of every upload (RideComp records bike rides). */
+    public const val SPORT_TYPE: String = "Ride"
+    public const val DATA_TYPE_FIT: String = "fit"
+
+    /** "<file> duplicate of activity 123" (sometimes with a link): the existing activity id. */
+    public val DUPLICATE_PATTERN: Regex = Regex("duplicate of\\D*(\\d+)", RegexOption.IGNORE_CASE)
+
     /** REST base URL for [nowMs] (migration to api-v3 in 2027, T5.4). */
     public fun apiBaseUrl(nowMs: Long): String = if (nowMs >= NEW_API_FROM_MS) NEW_API_BASE_URL else LEGACY_API_BASE_URL
 }

@@ -349,4 +349,6 @@
     <string name="strava_message_no_browser">No browser or Strava app found to open the page.</string>
     <string name="settings_strava_connected">Connected</string>
     <string name="settings_strava_not_connected">Not connected</string>
+    <string name="strava_auto_upload">Upload rides automatically</string>
+    <string name="strava_auto_upload_hint">After you save a ride it goes to Strava by itself while RideComp is open (with internet).</string>
 </resources>

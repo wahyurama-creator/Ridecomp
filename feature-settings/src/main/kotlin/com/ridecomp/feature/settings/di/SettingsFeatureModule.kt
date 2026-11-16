@@ -35,6 +35,6 @@ val settingsFeatureModule = module {
     viewModel { BackupViewModel(get()) }
     factory<LicenseTextReader> { AndroidLicenseTextReader(androidContext()) }
     viewModel { OssLicensesViewModel(get(), get()) }
-    factory { StravaUseCases(get(), get(), get(), get()) }
+    factory { StravaUseCases(get(), get(), get(), get(), get()) }
     viewModel { StravaViewModel(get()) }
 }

@@ -6,6 +6,8 @@ import com.ridecomp.core.config.Units
 import com.ridecomp.core.model.Activity
 import com.ridecomp.core.model.Lap
 import com.ridecomp.core.model.RideTotals
+import com.ridecomp.core.model.StravaStatus
+import com.ridecomp.core.model.StravaUpload
 import com.ridecomp.core.model.UnitSystem
 import com.ridecomp.core.source.DispatcherProvider
 import com.ridecomp.core.usecase.ChartPoint
@@ -15,6 +17,9 @@ import com.ridecomp.core.usecase.GetLapsUseCase
 import com.ridecomp.core.usecase.LoadRideChartUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
+import com.ridecomp.core.usecase.ObserveStravaStatusUseCase
+import com.ridecomp.core.usecase.ObserveStravaUploadUseCase
+import com.ridecomp.core.usecase.QueueStravaUploadUseCase
 import com.ridecomp.core.usecase.SaveActivityFileUseCase
 import com.ridecomp.core.usecase.ShareActivityFileUseCase
 import com.ridecomp.core.usecase.SuggestExportFileNameUseCase
@@ -44,6 +49,9 @@ data class ActivityDetailUiState(
     val unitSystem: UnitSystem = UnitSystem.METRIC,
     val isWorking: Boolean = false,
     val message: FileMessage? = null,
+    /** Null while loading; the upload row needs a connected account (T5.3). */
+    val stravaStatus: StravaStatus? = null,
+    val stravaUpload: StravaUpload? = null,
 )
 
 sealed interface ActivityDetailUiEvent {
@@ -53,6 +61,9 @@ sealed interface ActivityDetailUiEvent {
     data class SaveTo(val format: ExportFormat, val destinationUri: String) : ActivityDetailUiEvent
 
     data object Delete : ActivityDetailUiEvent
+
+    /** Queue (or retry) the upload to Strava. */
+    data object UploadToStrava : ActivityDetailUiEvent
 
     data object MessageShown : ActivityDetailUiEvent
 }
@@ -74,9 +85,17 @@ data class ActivityDetailUseCases(
 )
 
 /** Activity detail (T1.13): totals, charts, laps; export/share FIT & GPX (T1.14); delete. */
+/** Strava upload of the ride (T5.3). */
+data class ActivityStravaUseCases(
+    val observeStatus: ObserveStravaStatusUseCase,
+    val observeUpload: ObserveStravaUploadUseCase,
+    val queueUpload: QueueStravaUploadUseCase,
+)
+
 class ActivityDetailViewModel(
     private val activityId: Long,
     useCases: ActivityDetailUseCases,
+    private val strava: ActivityStravaUseCases,
     private val dispatchers: DispatcherProvider,
 ) : UdfViewModel<ActivityDetailUiState, ActivityDetailUiEvent, ActivityDetailEffect>(ActivityDetailUiState()) {
     private val observeActivity = useCases.observeActivity
@@ -92,6 +111,12 @@ class ActivityDetailViewModel(
             observeActivity(activityId).collect { activity ->
                 updateState { copy(activity = activity, isMissing = activity == null) }
             }
+        }
+        viewModelScope.launch {
+            strava.observeStatus().collect { status -> updateState { copy(stravaStatus = status) } }
+        }
+        viewModelScope.launch {
+            strava.observeUpload(activityId).collect { upload -> updateState { copy(stravaUpload = upload) } }
         }
         viewModelScope.launch {
             useCases.observeSettings().collect { settings ->
@@ -115,6 +140,7 @@ class ActivityDetailViewModel(
                 sendEffect(ActivityDetailEffect.Deleted)
             }
             ActivityDetailUiEvent.MessageShown -> updateState { copy(message = null) }
+            ActivityDetailUiEvent.UploadToStrava -> viewModelScope.launch { strava.queueUpload(activityId) }
         }
     }
 

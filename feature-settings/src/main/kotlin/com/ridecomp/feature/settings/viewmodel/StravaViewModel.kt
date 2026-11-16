@@ -7,6 +7,7 @@ import com.ridecomp.core.model.StravaStatus
 import com.ridecomp.core.usecase.CompleteStravaAuthUseCase
 import com.ridecomp.core.usecase.ObserveStravaStatusUseCase
 import com.ridecomp.core.usecase.SaveStravaAppUseCase
+import com.ridecomp.core.usecase.SetStravaAutoUploadUseCase
 import com.ridecomp.core.usecase.StartStravaAuthUseCase
 import com.ridecomp.core.usecase.StravaAppError
 import com.ridecomp.core.usecase.StravaAuthError
@@ -49,6 +50,8 @@ sealed interface StravaUiEvent {
 
     data object OpenApiPage : StravaUiEvent
 
+    data class SetAutoUpload(val isOn: Boolean) : StravaUiEvent
+
     /** No app could open the link. */
     data object OpenFailed : StravaUiEvent
 
@@ -69,6 +72,7 @@ data class StravaUseCases(
     val saveApp: SaveStravaAppUseCase,
     val startAuth: StartStravaAuthUseCase,
     val completeAuth: CompleteStravaAuthUseCase,
+    val setAutoUpload: SetStravaAutoUploadUseCase,
 )
 
 /** Strava connection (Phase 5, T5.1–T5.2): set up the rider's API app, then authorize RideComp. */
@@ -91,6 +95,7 @@ class StravaViewModel(private val useCases: StravaUseCases) :
                 useCases.startAuth()?.let { sendEffect(StravaEffect.OpenUrl(it)) }
             }
             // Never dropped, even while another action runs: the code is single use.
+            is StravaUiEvent.SetAutoUpload -> work { useCases.setAutoUpload(event.isOn) }
             StravaUiEvent.OpenApiPage -> sendEffect(StravaEffect.OpenUrl(StravaConfig.API_SETTINGS_URL))
             StravaUiEvent.OpenFailed -> updateState { copy(message = StravaMessage.NO_BROWSER) }
             is StravaUiEvent.Redirect -> work(isForced = true) { complete(event.redirect) }

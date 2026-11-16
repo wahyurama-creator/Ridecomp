@@ -98,6 +98,13 @@ class MigrationSqlTest {
     }
 
     @Test
+    fun `migration 6 to 7 matches the exported Strava uploads table`() {
+        val executed = executedSql { RideCompMigrations.MIGRATION_6_7.migrate(it) }
+
+        assertEquals(exportedCreateSql(7, DbNames.TABLE_STRAVA_UPLOADS), executed)
+    }
+
+    @Test
     fun `every schema version has a migration path`() {
         val versions = File(SCHEMA_DIR).listFiles().orEmpty().mapNotNull { it.nameWithoutExtension.toIntOrNull() }
 

@@ -28,4 +28,25 @@ public interface StravaApi {
 
     /** Revokes [token] (and so the whole grant). */
     public suspend fun revoke(app: StravaApp, token: String): Outcome<Unit, StravaError>
+
+    /** `POST /uploads` (multipart): sends the FIT file at [StravaUploadRequest.filePath]. */
+    public suspend fun upload(
+        accessToken: String,
+        request: StravaUploadRequest,
+    ): Outcome<StravaUploadReply, StravaError>
+
+    /** `GET /uploads/{id}`. */
+    public suspend fun uploadStatus(accessToken: String, uploadId: Long): Outcome<StravaUploadReply, StravaError>
 }
+
+/** What is sent with a FIT file (04-INTEGRATIONS §E.2). */
+public data class StravaUploadRequest(
+    val filePath: String,
+    val fileName: String,
+    val name: String,
+    /** The ride's UUID: Strava uses it to spot the same file sent twice. */
+    val externalId: String,
+)
+
+/** Strava's upload record: [activityId] once processed, [error] when it failed. */
+public data class StravaUploadReply(val id: Long, val activityId: Long?, val error: String?)

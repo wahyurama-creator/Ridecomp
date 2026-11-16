@@ -4,6 +4,9 @@ import app.cash.turbine.test
 import com.ridecomp.core.model.ActivityStatus
 import com.ridecomp.core.model.RideSample
 import com.ridecomp.core.model.RideTotals
+import com.ridecomp.core.model.StravaAccount
+import com.ridecomp.core.model.StravaStatus
+import com.ridecomp.core.model.StravaUploadState
 import com.ridecomp.core.repository.NewActivity
 import com.ridecomp.core.testing.FakeActivityProfileRepository
 import com.ridecomp.core.testing.FakeActivityRepository
@@ -11,6 +14,9 @@ import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeExportFileStore
 import com.ridecomp.core.testing.FakeExportedFileHandler
 import com.ridecomp.core.testing.FakeSettingsRepository
+import com.ridecomp.core.testing.FakeStravaAccountStore
+import com.ridecomp.core.testing.FakeStravaApi
+import com.ridecomp.core.testing.FakeStravaUploadRepository
 import com.ridecomp.core.testing.FakeTrainingRepository
 import com.ridecomp.core.testing.TestDispatcherProvider
 import com.ridecomp.core.usecase.DeleteActivityUseCase
@@ -25,15 +31,20 @@ import com.ridecomp.core.usecase.ObserveHistoryCountUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveMonthTotalsUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
+import com.ridecomp.core.usecase.ObserveStravaStatusUseCase
+import com.ridecomp.core.usecase.ObserveStravaUploadUseCase
+import com.ridecomp.core.usecase.QueueStravaUploadUseCase
 import com.ridecomp.core.usecase.RecomputeTrainingUseCase
 import com.ridecomp.core.usecase.SaveActivityFileUseCase
 import com.ridecomp.core.usecase.ShareActivityFileUseCase
+import com.ridecomp.core.usecase.StravaUploadRequests
 import com.ridecomp.core.usecase.SuggestExportFileNameUseCase
 import com.ridecomp.core.usecase.TrainingCalendar
 import com.ridecomp.feature.history.viewmodel.ActivityDetailEffect
 import com.ridecomp.feature.history.viewmodel.ActivityDetailUiEvent
 import com.ridecomp.feature.history.viewmodel.ActivityDetailUseCases
 import com.ridecomp.feature.history.viewmodel.ActivityDetailViewModel
+import com.ridecomp.feature.history.viewmodel.ActivityStravaUseCases
 import com.ridecomp.feature.history.viewmodel.ChartKind
 import com.ridecomp.feature.history.viewmodel.ChartStatKind
 import com.ridecomp.feature.history.viewmodel.FileMessage
@@ -44,6 +55,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
@@ -70,6 +82,9 @@ class HistoryViewModelsTest {
     fun tearDown() {
         Dispatchers.resetMain()
     }
+
+    private val stravaStore = FakeStravaAccountStore()
+    private val stravaUploads = FakeStravaUploadRepository()
 
     private suspend fun savedRide(startedAt: Long): Long {
         val id = repository.create(NewActivity("u$startedAt", "Ride $startedAt", startedAt))
@@ -120,7 +135,12 @@ class HistoryViewModelsTest {
                 ),
             ),
         )
-        return ActivityDetailViewModel(id, useCases, TestDispatcherProvider(dispatcher))
+        val strava = ActivityStravaUseCases(
+            ObserveStravaStatusUseCase(stravaStore),
+            ObserveStravaUploadUseCase(stravaUploads),
+            QueueStravaUploadUseCase(stravaUploads, StravaUploadRequests(), FakeClock()),
+        )
+        return ActivityDetailViewModel(id, useCases, strava, TestDispatcherProvider(dispatcher))
     }
 
     @Test
@@ -165,6 +185,19 @@ class HistoryViewModelsTest {
         assertEquals(36.0, stats[1].value, DELTA)
         // The last sample has no fix: left out of the route.
         assertEquals(5, state.route.size)
+    }
+
+    @Test
+    fun `strava row follows the account and queues the ride`() = runTest {
+        val id = savedRide(FakeClock.DEFAULT_START_MS)
+        val viewModel = detailViewModel(id)
+        assertEquals(StravaStatus.NotSetUp, viewModel.uiState.value.stravaStatus)
+
+        stravaStore.account.value = StravaAccount(app = FakeStravaApi.APP, tokens = FakeStravaApi.GRANT.tokens)
+        viewModel.onEvent(ActivityDetailUiEvent.UploadToStrava)
+
+        assertIs<StravaStatus.Connected>(viewModel.uiState.value.stravaStatus)
+        assertEquals(StravaUploadState.QUEUED, viewModel.uiState.value.stravaUpload?.state)
     }
 
     @Test

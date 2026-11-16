@@ -29,13 +29,11 @@ public class ObserveStravaStatusUseCase(private val store: StravaAccountStore) {
 }
 
 internal fun StravaAccount.status(): StravaStatus {
-    val app = app ?: return StravaStatus.NotSetUp
-    return if (tokens ==
-        null
-    ) {
-        StravaStatus.NotConnected(app.clientId)
-    } else {
-        StravaStatus.Connected(app.clientId, athleteName)
+    val app = app
+    return when {
+        app == null -> StravaStatus.NotSetUp
+        tokens == null -> StravaStatus.NotConnected(app.clientId)
+        else -> StravaStatus.Connected(app.clientId, athleteName, isAutoUpload = autoUploadFromMs != null)
     }
 }
 

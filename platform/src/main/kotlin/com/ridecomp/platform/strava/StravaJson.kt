@@ -4,6 +4,7 @@ import com.ridecomp.core.model.StravaAccount
 import com.ridecomp.core.model.StravaApp
 import com.ridecomp.core.model.StravaTokens
 import com.ridecomp.core.source.StravaGrant
+import com.ridecomp.core.source.StravaUploadReply
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -21,6 +22,15 @@ internal object StravaJson {
         StravaGrant(tokens, json.optJSONObject(ATHLETE)?.displayName())
     }
 
+    /** `{"id":…, "activity_id":…|null, "error":…|null, "status":…}` of an upload. */
+    fun uploadReply(text: String): StravaUploadReply? = parse(text) { json ->
+        StravaUploadReply(
+            id = json.optLong(ID).takeIf { it > 0 } ?: return@parse null,
+            activityId = json.optLong(ACTIVITY_ID).takeIf { !json.isNull(ACTIVITY_ID) && it > 0 },
+            error = json.optString(ERROR).takeIf { !json.isNull(ERROR) && it.isNotBlank() }?.take(MAX_ERROR_LENGTH),
+        )
+    }
+
     fun encodeAccount(account: StravaAccount): String = JSONObject().apply {
         account.app?.let {
             put(CLIENT_ID, it.clientId)
@@ -33,6 +43,7 @@ internal object StravaJson {
         }
         account.athleteName?.let { put(ATHLETE_NAME, it) }
         account.pendingState?.let { put(PENDING_STATE, it) }
+        account.autoUploadFromMs?.let { put(AUTO_UPLOAD_FROM, it) }
     }.toString()
 
     fun decodeAccount(text: String): StravaAccount? = parse(text) { json ->
@@ -51,6 +62,7 @@ internal object StravaJson {
             },
             athleteName = json.optString(ATHLETE_NAME).takeIf { it.isNotEmpty() },
             pendingState = json.optString(PENDING_STATE).takeIf { it.isNotEmpty() },
+            autoUploadFromMs = json.optLong(AUTO_UPLOAD_FROM).takeIf { json.has(AUTO_UPLOAD_FROM) },
         )
     }
 
@@ -81,4 +93,9 @@ internal object StravaJson {
     private const val PENDING_STATE = "pending_state"
     private const val MAX_TOKEN_LENGTH = 512
     private const val MAX_NAME_LENGTH = 60
+    private const val MAX_ERROR_LENGTH = 300
+    private const val ID = "id"
+    private const val ACTIVITY_ID = "activity_id"
+    private const val ERROR = "error"
+    private const val AUTO_UPLOAD_FROM = "auto_upload_from"
 }
