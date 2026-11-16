@@ -180,3 +180,17 @@ Sebagai alternatif FIT: track dengan `time`, `ele`, dan extension Garmin TrackPo
 - Base URL baru `https://api-v3.strava.com` tersedia mulai 4 Januari 2027; migrasi wajib sebelum 1 Juni 2027. Simpan base URL sebagai konfigurasi.
 - Disconnect memakai `POST /oauth/revoke` (pengganti `oauth/deauthorize` yang pensiun 1 Juni 2027).
 - Sebelum mengimplementasikan, agent **wajib** membaca dokumentasi & changelog developer Strava terbaru dan melaporkan perbedaan dengan spesifikasi ini.
+
+**Hasil pemeriksaan T5.0 (2026-11-17, dokumentasi & changelog developers.strava.com):**
+| Topik | Spesifikasi lama | Temuan | Keputusan |
+|---|---|---|---|
+| Halaman otorisasi Android | Custom Tabs | `https://www.strava.com/oauth/mobile/authorize` membuka **aplikasi Strava** bila terpasang (versi ≥ 75), jika tidak membuka browser | Dibuka dengan `Intent.ACTION_VIEW` (browser eksternal/app Strava, SEC-AUTH-01) — tanpa dependency Custom Tabs (DEP-02) |
+| PKCE | "bila didukung" | **Tidak didukung**; `client_secret` wajib saat tukar code dan refresh | `state` acak 256-bit + redirect cocok persis; code tanpa secret tidak berguna (risiko sisa didokumentasikan, SEC-AUTH-04) |
+| Redirect | custom scheme | Host redirect harus sama dengan *Authorization Callback Domain*; `localhost` selalu diizinkan | Callback Domain = `localhost`; redirect `ridecomp://localhost/strava-auth` |
+| Refresh token | — | **Rotasi**: refresh token lama langsung tidak berlaku; access token 6 jam, refresh mengembalikan token yang sama bila sisa > 1 jam; respons berisi `scope` yang disetujui | Token baru disimpan sebelum dipakai; refresh bila sisa < 5 menit; satu refresh pada satu waktu (mutex); scope tanpa `activity:write` ditolak |
+| Upload | `POST /uploads` | Multipart `file`, `data_type=fit`, `name`, `description`, `trainer`, `commute`, `external_id`, `sport_type` | Kirim `name`, `external_id` (UUID ride), `sport_type=Ride` |
+| Polling | 2–5 dtk, ~1 menit | Maks 1 kali/detik; status teks "still being processed" / "ready" / "error" / "deleted"; duplikat: `error` berisi "duplicate of activity <id>" | Interval 2 dtk, maks 60 dtk lalu dilanjutkan pada proses antrian berikutnya; duplikat → tersambung ke aktivitas yang ada |
+| Revoke | `POST /oauth/revoke` | `https://www.strava.com/oauth/revoke`, HTTP Basic `client_id:client_secret`, `token` + `token_type_hint`; `/oauth/deauthorize` pensiun 1 Jun 2027 | Revoke refresh token, token lokal dihapus walau revoke gagal (offline) |
+| Base URL | dapat dikonfigurasi | `https://api-v3.strava.com` mulai 4 Jan 2027, wajib sebelum 1 Jun 2027; header `Authorization: Bearer` didukung | Base URL dipilih menurut tanggal (`StravaConfig`), OAuth tetap di `www.strava.com` |
+
+**Domain yang dihubungi (SEC-NET-03):** `www.strava.com` (OAuth), `www.strava.com/api/v3` hingga 3 Jan 2027 lalu `api-v3.strava.com`. Tidak ada domain lain; izin `INTERNET` diaktifkan kembali hanya untuk modul ini.
