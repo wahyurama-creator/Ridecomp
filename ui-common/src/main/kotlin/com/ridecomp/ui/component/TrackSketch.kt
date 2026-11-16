@@ -10,6 +10,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -35,6 +37,9 @@ fun TrackSketch(
     description: String,
     modifier: Modifier = Modifier,
     highlight: IntRange? = null,
+    lineColor: Color = RideCompTheme.colors.textTertiary,
+    /** Start (green) and finish (accent) dots: a whole ride, not a part of it. */
+    hasEndpoints: Boolean = false,
 ) {
     val colors = RideCompTheme.colors
     val projection = remember(points) { Projection.of(points) }
@@ -49,8 +54,15 @@ fun TrackSketch(
     ) {
         val fit = projection ?: return@Canvas
         val stroke = Stroke(width = RideCompDimens.chartStroke.toPx() * STROKE_SCALE, cap = StrokeCap.Round)
-        drawPath(path(points, points.indices, fit), color = colors.textTertiary, style = stroke)
+        drawPath(path(points, points.indices, fit), color = lineColor, style = stroke)
         highlight?.let { range -> drawPath(path(points, range, fit), color = colors.accent, style = stroke) }
+        if (hasEndpoints) {
+            val radius = RideCompDimens.markerDotRadius.toPx()
+            drawCircle(colors.surface, radius * DOT_RING_SCALE, offset(points.first(), fit))
+            drawCircle(colors.ok, radius, offset(points.first(), fit))
+            drawCircle(colors.surface, radius * DOT_RING_SCALE, offset(points.last(), fit))
+            drawCircle(colors.accent, radius, offset(points.last(), fit))
+        }
     }
 }
 
@@ -76,19 +88,28 @@ private class Projection(
 }
 
 private fun DrawScope.path(points: List<MapPoint>, range: IntRange, fit: Projection): Path {
-    val scale = minOf(size.width / fit.spanX, size.height / fit.spanY)
-    val offsetX = (size.width - fit.spanX * scale) / 2
-    val offsetY = (size.height - fit.spanY * scale) / 2
     val path = Path()
     range.filter { it in points.indices }.forEachIndexed { n, i ->
-        val x = (offsetX + (points[i].lonDeg * fit.lonScale - fit.minX) * scale).toFloat()
-        val y = (size.height - offsetY - (points[i].latDeg - fit.minY) * scale).toFloat()
-        if (n == 0) path.moveTo(x, y) else path.lineTo(x, y)
+        val point = offset(points[i], fit)
+        if (n == 0) path.moveTo(point.x, point.y) else path.lineTo(point.x, point.y)
     }
     return path
 }
 
+private fun DrawScope.offset(point: MapPoint, fit: Projection): Offset {
+    val scale = minOf(size.width / fit.spanX, size.height / fit.spanY)
+    val offsetX = (size.width - fit.spanX * scale) / 2
+    val offsetY = (size.height - fit.spanY * scale) / 2
+    return Offset(
+        x = (offsetX + (point.lonDeg * fit.lonScale - fit.minX) * scale).toFloat(),
+        y = (size.height - offsetY - (point.latDeg - fit.minY) * scale).toFloat(),
+    )
+}
+
 private const val STROKE_SCALE = 1.5f
+
+/** The surface ring around an end dot, so it stands out on the line. */
+private const val DOT_RING_SCALE = 1.6f
 
 /** A line along a meridian or parallel still needs a non-zero span to be fitted. */
 private const val MIN_SPAN_DEG = 1e-9

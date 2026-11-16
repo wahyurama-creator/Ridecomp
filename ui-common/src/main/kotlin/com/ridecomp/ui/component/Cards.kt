@@ -29,6 +29,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import com.ridecomp.ui.R
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
@@ -147,6 +150,8 @@ fun ListCardRow(
     leading: (@Composable () -> Unit)? = null,
     /** False for pick lists, where the row selects instead of opening a screen. */
     hasChevron: Boolean = true,
+    /** Danger-colored title (delete). */
+    isDestructive: Boolean = false,
 ) {
     val colors = RideCompTheme.colors
     Column(modifier = modifier.fillMaxWidth()) {
@@ -161,7 +166,11 @@ fun ListCardRow(
         ) {
             leading?.invoke()
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = title, style = RideCompTheme.typography.bodyStrong, color = colors.textPrimary)
+                Text(
+                    text = title,
+                    style = RideCompTheme.typography.bodyStrong,
+                    color = if (isDestructive) colors.danger else colors.textPrimary,
+                )
                 if (subtitle != null) {
                     Text(text = subtitle, style = RideCompTheme.typography.caption, color = colors.textSecondary)
                 }
@@ -209,7 +218,14 @@ fun StatCard(label: String, value: String, modifier: Modifier = Modifier, unit: 
 
 /** One cell of a [StatGrid]: label, big value, small caption ("max 54.3 km/h"). */
 @Immutable
-data class StatItem(val label: String, val value: String, val caption: String? = null, val isLabelWarn: Boolean = false)
+data class StatItem(
+    val label: String,
+    val value: String,
+    val caption: String? = null,
+    val isLabelWarn: Boolean = false,
+    /** Drawn small after the value ("24.6 km/h"), so a narrow cell keeps the number on one line. */
+    val unit: String? = null,
+)
 
 /** Statistics grid with 1 dp dividers inside a rounded `surface` card (13-UI-SCREENS #10). */
 @Composable
@@ -241,7 +257,21 @@ fun StatGrid(items: ImmutableList<StatItem>, modifier: Modifier = Modifier, colu
                             style = RideCompTheme.typography.navLabel,
                             color = if (item.isLabelWarn) colors.warnText else colors.textSecondary,
                         )
-                        Text(text = item.value, style = RideCompTheme.typography.statValue, color = colors.textPrimary)
+                        Text(
+                            text = buildAnnotatedString {
+                                append(item.value)
+                                item.unit?.let { unit ->
+                                    withStyle(
+                                        SpanStyle(fontSize = RideCompDimens.captionSize, color = colors.textSecondary),
+                                    ) {
+                                        append(" ")
+                                        append(unit)
+                                    }
+                                }
+                            },
+                            style = RideCompTheme.typography.statValue,
+                            color = colors.textPrimary,
+                        )
                         item.caption?.let {
                             Text(text = it, style = RideCompTheme.typography.navLabel, color = colors.textSecondary)
                         }

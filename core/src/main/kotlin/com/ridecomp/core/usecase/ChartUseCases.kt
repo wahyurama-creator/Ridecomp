@@ -13,6 +13,9 @@ public data class ChartPoint(
     val heartRateBpm: Int?,
     val cadenceRpm: Int?,
     val powerW: Int?,
+    /** Position, for the route sketch of the detail screen; null without a GPS fix. */
+    val latDeg: Double? = null,
+    val lonDeg: Double? = null,
 )
 
 /**
@@ -42,5 +45,14 @@ public class LoadRideChartUseCase(private val repository: ActivityRepository) {
         return result
     }
 
-    private fun RideSample.toChartPoint() = ChartPoint(distanceM, speedMps, altitudeM, heartRateBpm, cadenceRpm, powerW)
+    private fun RideSample.toChartPoint() = ChartPoint(
+        distanceM,
+        speedMps,
+        altitudeM,
+        heartRateBpm,
+        cadenceRpm,
+        powerW,
+        latDeg,
+        lonDeg,
+    )
 }
