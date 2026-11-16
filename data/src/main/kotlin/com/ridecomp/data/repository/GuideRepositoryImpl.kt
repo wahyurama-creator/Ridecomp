@@ -10,9 +10,13 @@ import com.ridecomp.data.mapper.SettingsKeys
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /** Rider level and closed tips as two settings rows; unknown stored values are ignored. */
 class GuideRepositoryImpl(private val dao: SettingsDao) : GuideRepository {
+    private val mutex = Mutex()
+
     override fun observe(): Flow<GuidePreferences> = combine(
         dao.observe(SettingsKeys.GUIDE_LEVEL),
         dao.observe(SettingsKeys.GUIDE_DISMISSED_TIPS),
@@ -22,16 +26,13 @@ class GuideRepositoryImpl(private val dao: SettingsDao) : GuideRepository {
         dao.upsert(SettingEntity(SettingsKeys.GUIDE_LEVEL, level.storageValue))
     }
 
+    /** Read-modify-write under a lock so two tips closed at once are both kept (single instance). */
     override suspend fun dismiss(tip: GuideTip) {
-        val dismissed = parse(dao.get(SettingsKeys.GUIDE_DISMISSED_TIPS)) + tip
-        dao.upsert(
-            SettingEntity(
-                SettingsKeys.GUIDE_DISMISSED_TIPS,
-                dismissed.joinToString(SEPARATOR) {
-                    it.storageKey
-                },
-            ),
-        )
+        mutex.withLock {
+            val dismissed = parse(dao.get(SettingsKeys.GUIDE_DISMISSED_TIPS)) + tip
+            val stored = dismissed.joinToString(SEPARATOR) { it.storageKey }
+            dao.upsert(SettingEntity(SettingsKeys.GUIDE_DISMISSED_TIPS, stored))
+        }
     }
 
     override suspend fun resetTips() {

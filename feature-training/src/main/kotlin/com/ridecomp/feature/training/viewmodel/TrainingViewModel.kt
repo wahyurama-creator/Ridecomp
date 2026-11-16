@@ -3,6 +3,7 @@ package com.ridecomp.feature.training.viewmodel
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.viewModelScope
 import com.ridecomp.core.model.UnitSystem
+import com.ridecomp.core.usecase.ExtendTrainingToTodayUseCase
 import com.ridecomp.core.usecase.LoadWeekZonesUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveTrainingUseCase
@@ -30,8 +31,11 @@ class TrainingViewModel(
     observeTraining: ObserveTrainingUseCase,
     loadZones: LoadWeekZonesUseCase,
     observeSettings: ObserveRideSettingsUseCase,
+    extendToToday: ExtendTrainingToTodayUseCase,
 ) : UdfViewModel<TrainingUiState, Unit, NoEffect>(TrainingUiState()) {
     init {
+        // Days without rides since the last one: fitness and fatigue decay up to today.
+        viewModelScope.launch { extendToToday() }
         viewModelScope.launch {
             observeTraining().collectLatest { overview ->
                 updateState { copy(overview = overview) }

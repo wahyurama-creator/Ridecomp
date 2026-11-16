@@ -37,6 +37,9 @@ public interface AnalysisStep {
     public val version: Int
 
     public suspend fun analyze(activity: Activity, track: RideTrack)
+
+    /** Called once after each batch of rides (work that should not repeat per ride). */
+    public suspend fun afterBatch() {}
 }
 
 /** Reads a ride's whole track into a [RideTrack], page by page on the IO dispatcher (bounded, MEM-01). */
@@ -58,15 +61,37 @@ public class ReadRideTrackUseCase(
     }
 }
 
-/** Asks the running app to analyze again (e.g. after a segment was created). Single instance. */
+/**
+ * Asks the running app to analyze again (e.g. after a segment was created) and remembers which steps were
+ * asked for, so a ride being analyzed at that moment runs them again too. Single instance.
+ */
 public class AnalysisRequests {
     private val requests =
         MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    private val lock = Any()
+    private var generation = 0L
+    private val recent = ArrayDeque<Pair<Long, Int>>()
 
     public val flow: Flow<Unit> = requests.asSharedFlow()
 
-    public fun request() {
+    /** Steps from [fromVersion] on must run again on every ride. */
+    public fun request(fromVersion: Int) {
+        synchronized(lock) {
+            generation++
+            recent.addLast(generation to fromVersion)
+            while (recent.size > MAX_REMEMBERED) recent.removeFirst()
+        }
         requests.tryEmit(Unit)
+    }
+
+    public fun generation(): Long = synchronized(lock) { generation }
+
+    /** The lowest step version asked for after [since], or null when nothing was asked. */
+    public fun lowestRequestedSince(since: Long): Int? =
+        synchronized(lock) { recent.filter { it.first > since }.minOfOrNull { it.second } }
+
+    private companion object {
+        const val MAX_REMEMBERED = 32
     }
 }
 
@@ -77,7 +102,7 @@ public class RequestReanalysisUseCase(
 ) {
     public suspend operator fun invoke(fromVersion: Int) {
         analysis.resetAnalysis(toVersion = fromVersion - 1)
-        requests.request()
+        requests.request(fromVersion)
     }
 }
 
@@ -91,6 +116,7 @@ public class AnalyzeActivitiesUseCase(
     private val analysis: ActivityAnalysisRepository,
     private val readTrack: ReadRideTrackUseCase,
     steps: List<AnalysisStep>,
+    private val requests: AnalysisRequests,
     private val logger: Logger,
 ) {
     private val steps = steps.sortedBy { it.version }
@@ -98,20 +124,35 @@ public class AnalyzeActivitiesUseCase(
 
     public suspend operator fun invoke() {
         mutex.withLock {
-            while (true) {
-                val pending = analysis.getPendingAnalysis(AnalysisConfig.VERSION, AnalysisConfig.BATCH_SIZE)
-                if (pending.isEmpty()) break
-                pending.forEach { (activity, doneVersion) -> analyze(activity, doneVersion) }
+            // A database failure here must not crash the app: the next start retries (D-67).
+            runCatchingCancellable { analyzePending() }
+                .onFailure { error -> logger.error(TAG, error) { "Analysis stopped; retried at the next start" } }
+        }
+    }
+
+    private suspend fun analyzePending() {
+        while (true) {
+            val pending = analysis.getPendingAnalysis(AnalysisConfig.VERSION, AnalysisConfig.BATCH_SIZE)
+            if (pending.isEmpty()) break
+            pending.forEach { (activity, doneVersion) -> analyze(activity, doneVersion) }
+            steps.forEach { step ->
+                runCatchingCancellable { step.afterBatch() }
+                    .onFailure { error -> logger.error(TAG, error) { "Analysis batch step failed" } }
             }
         }
     }
 
     private suspend fun analyze(activity: Activity, doneVersion: Int) {
+        val generation = requests.generation()
         runCatchingCancellable {
             val track = readTrack(activity.id)
             steps.filter { it.version > doneVersion }.forEach { it.analyze(activity, track) }
         }.onFailure { error -> logger.error(TAG, error) { "Analysis failed for ride ${activity.id}; skipped" } }
-        analysis.markAnalyzed(activity.id, AnalysisConfig.VERSION)
+        // A segment created meanwhile: stop before the asked step so the ride is picked up again. The
+        // expected version guards against a reset of rides already above it.
+        val reached = requests.lowestRequestedSince(generation)?.let { minOf(AnalysisConfig.VERSION, it - 1) }
+            ?: AnalysisConfig.VERSION
+        analysis.markAnalyzed(activity.id, reached, expectedVersion = doneVersion)
     }
 
     private companion object {

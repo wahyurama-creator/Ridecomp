@@ -59,7 +59,8 @@ class OnboardingViewModel(
             OnboardingUiEvent.Back -> updateState { OnboardingStep.entries.getOrElse(ordinal - 1) { this } }
             is OnboardingUiEvent.ChooseLevel -> viewModelScope.launch {
                 setRiderLevel(event.level)
-                updateState { OnboardingStep.entries.getOrElse(ordinal + 1) { this } }
+                // A double tap must not skip the profile step.
+                updateState { if (this == OnboardingStep.LEVEL) OnboardingStep.PROFILE else this }
             }
             OnboardingUiEvent.Finished -> viewModelScope.launch {
                 completeOnboarding()

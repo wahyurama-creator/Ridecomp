@@ -44,6 +44,7 @@ class SegmentUseCasesTest {
         analysis,
         readTrack,
         listOf(otherStep, SegmentsStep(segments, dispatchers)),
+        requests,
         RecordingLogger(),
     )
 
@@ -97,6 +98,25 @@ class SegmentUseCasesTest {
         assertEquals(100.0, summary.bestElapsedS ?: 0.0, ONE_SAMPLE_S)
         assertEquals(1_000.0, summary.segment.lengthM, ONE_SAMPLE_M)
         assertEquals(10.0, summary.segment.gainM, ONE_SAMPLE_M)
+    }
+
+    @Test
+    fun `a ride whose version is lowered during its analysis is analyzed again`() = runTest(dispatcher) {
+        ride(id = 1, startedAtMs = 1 * DAY_MS, speedMps = 10.0)
+        var runs = 0
+        val lowering = object : AnalysisStep {
+            override val version = AnalysisConfig.SEGMENTS_VERSION
+
+            override suspend fun analyze(activity: Activity, track: RideTrack) {
+                // A segment created meanwhile, while this never-analyzed ride is being analyzed.
+                if (runs++ == 0) reanalyze(AnalysisConfig.SEGMENTS_VERSION)
+            }
+        }
+
+        AnalyzeActivitiesUseCase(analysis, readTrack, listOf(lowering), requests, RecordingLogger())()
+
+        assertEquals(2, runs)
+        assertEquals(AnalysisConfig.VERSION, activities.analyzedVersions[1])
     }
 
     @Test

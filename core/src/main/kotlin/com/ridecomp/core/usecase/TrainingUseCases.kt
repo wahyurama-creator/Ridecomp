@@ -35,16 +35,26 @@ public class TrainingCalendar(private val clock: Clock, private val zone: () -> 
     public fun weekStart(): LocalDate = today().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
 }
 
-/** Recomputes the daily trend from the day of [fromMs] to today (12-FEATURE-SPECS §10.2, incremental). */
+/**
+ * Recomputes the daily trend from the day of [fromMs] to today (12-FEATURE-SPECS §10.2, incremental). Days
+ * are only stored when something is computed, so the start is the day after the latest stored day before
+ * [fromMs]: the days in between are filled and fitness/fatigue decay instead of restarting from zero.
+ */
 public class RecomputeTrainingUseCase(
     private val training: TrainingRepository,
     private val calendar: TrainingCalendar,
     private val dispatchers: DispatcherProvider,
 ) {
     public suspend operator fun invoke(fromMs: Long) {
-        val from = calendar.dateOf(fromMs)
+        val changed = calendar.dateOf(fromMs)
+        val dayBefore = training.latestDayBefore(changed)
+        val from = dayBefore?.date?.plusDays(1)?.takeIf { it < changed } ?: changed
         val loads = training.loadsSince(calendar.startOfDayMs(from))
-        val dayBefore = training.getDay(from.minusDays(1))
+        if (dayBefore == null && loads.isEmpty()) {
+            // No load left from here on (e.g. the only ride was deleted): clear what was stored.
+            training.replaceFrom(from, emptyList())
+            return
+        }
         val days = withContext(dispatchers.default) {
             val byDate = loads.groupBy { calendar.dateOf(it.startedAtMs) }.mapValues { (_, l) -> l.sumOf { it.load } }
             TrainingTrend.compute(from, maxOf(from, calendar.today()), dayBefore, byDate)
@@ -53,7 +63,20 @@ public class RecomputeTrainingUseCase(
     }
 }
 
-/** Analysis step 3 (T4.4): the ride's load, then the trend from its day on. */
+/** Extends the trend to today (fitness and fatigue decay on days without rides); on opening the Training tab. */
+public class ExtendTrainingToTodayUseCase(
+    private val recompute: RecomputeTrainingUseCase,
+    private val calendar: TrainingCalendar,
+) {
+    public suspend operator fun invoke() {
+        recompute(calendar.startOfDayMs(calendar.today()))
+    }
+}
+
+/**
+ * Analysis step 3 (T4.4): the ride's load; the trend is recomputed once per batch from the earliest changed
+ * day (not once per ride: the first run over many old rides would rewrite the table again and again).
+ */
 public class TrainingLoadStep(
     private val training: TrainingRepository,
     private val profiles: ProfileRepository,
@@ -67,8 +90,17 @@ public class TrainingLoadStep(
         val inputs = LoadInputs.of(profiles.get(), clock.nowMs())
         val load = withContext(dispatchers.default) { TrainingLoadCalculator.calculate(track, activity.totals, inputs) }
         training.setRideLoad(activity.id, load)
-        recompute(activity.startedAtMs)
+        earliestChangedMs = minOf(earliestChangedMs ?: activity.startedAtMs, activity.startedAtMs)
     }
+
+    override suspend fun afterBatch() {
+        val from = earliestChangedMs ?: return
+        earliestChangedMs = null
+        recompute(from)
+    }
+
+    /** Only touched under the analysis mutex. */
+    private var earliestChangedMs: Long? = null
 }
 
 /** Everything the Training tab shows except zones (13-UI-SCREENS #20). */
@@ -109,11 +141,14 @@ public class LoadWeekZonesUseCase(
     private val profiles: ProfileRepository,
     private val calendar: TrainingCalendar,
     private val clock: Clock,
+    private val dispatchers: DispatcherProvider,
 ) {
     public suspend operator fun invoke(): List<Long> {
         val hrMax = LoadInputs.of(profiles.get(), clock.nowMs()).hrMaxBpm ?: return emptyList()
         val rides = training.rideIdsSince(calendar.startOfDayMs(calendar.weekStart()))
-        return rides.map { ZoneTime.heartRate(readTrack(it), hrMax) }
+        return rides.map { id ->
+            readTrack(id).let { withContext(dispatchers.default) { ZoneTime.heartRate(it, hrMax) } }
+        }
             .filter { it.isNotEmpty() }
             .reduceOrNull { total, ride -> total.zip(ride) { a, b -> a + b } }
             .orEmpty()

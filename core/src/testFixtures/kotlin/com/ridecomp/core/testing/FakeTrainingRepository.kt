@@ -26,7 +26,8 @@ public class FakeTrainingRepository(private val activities: FakeActivityReposito
         .filter { it.startedAtMs >= sinceMs }
         .mapNotNull { activity -> loads.value[activity.id]?.let { DatedLoad(activity.startedAtMs, it.load) } }
 
-    override suspend fun getDay(date: LocalDate): DailyTraining? = days.value[date]
+    override suspend fun latestDayBefore(date: LocalDate): DailyTraining? =
+        days.value.values.filter { it.date < date }.maxByOrNull { it.date }
 
     override suspend fun replaceFrom(from: LocalDate, days: List<DailyTraining>) {
         this.days.value = this.days.value.filterKeys { it < from } + days.associateBy { it.date }

@@ -99,4 +99,5 @@
     <plurals name="share_footer_records">
         <item quantity="other">%1$d PR BARU · RideComp</item>
     </plurals>
+    <string name="share_failed">Kartu gagal dibagikan. Coba lagi, atau tutup aplikasi lain bila memori HP penuh.</string>
 </resources>

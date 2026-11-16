@@ -23,7 +23,6 @@ import com.ridecomp.ui.udf.UdfViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -147,7 +146,8 @@ class SegmentEditorViewModel(
 ) : UdfViewModel<SegmentEditorUiState, SegmentEditorUiEvent, SegmentEditorEffect>(SegmentEditorUiState()) {
     init {
         viewModelScope.launch {
-            val name = observeActivity(activityId).filterNotNull().first().name
+            // A deleted ride gives an empty editor (nothing to save) instead of waiting forever.
+            val name = observeActivity(activityId).first()?.name.orEmpty()
             val outline = loadOutline(activityId)
             val total = outline.lastOrNull()?.distanceM ?: 0.0
             updateState {

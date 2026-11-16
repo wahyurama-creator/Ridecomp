@@ -164,8 +164,10 @@ public class FakeActivityAnalysisRepository(private val activities: FakeActivity
         .take(limit)
         .map { PendingAnalysis(it, activities.analyzedVersions[it.id] ?: 0) }
 
-    override suspend fun markAnalyzed(activityId: Long, version: Int) {
-        activities.analyzedVersions[activityId] = version
+    override suspend fun markAnalyzed(activityId: Long, version: Int, expectedVersion: Int) {
+        if ((activities.analyzedVersions[activityId] ?: 0) == expectedVersion) {
+            activities.analyzedVersions[activityId] = version
+        }
     }
 
     override suspend fun resetAnalysis(toVersion: Int) {

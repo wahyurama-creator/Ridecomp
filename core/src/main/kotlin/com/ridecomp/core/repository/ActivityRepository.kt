@@ -78,7 +78,8 @@ public interface ActivityAnalysisRepository {
      */
     public suspend fun getPendingAnalysis(version: Int, limit: Int): List<PendingAnalysis>
 
-    public suspend fun markAnalyzed(activityId: Long, version: Int)
+    /** Sets [version] unless the ride's version is no longer [expectedVersion] (lowered meanwhile). */
+    public suspend fun markAnalyzed(activityId: Long, version: Int, expectedVersion: Int)
 
     /** Lowers every ride above [toVersion] to it, so the later steps run again. */
     public suspend fun resetAnalysis(toVersion: Int)

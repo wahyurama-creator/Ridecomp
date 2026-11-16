@@ -21,7 +21,8 @@ class TrainingRepositoryImpl(private val dao: TrainingDao) : TrainingRepository 
     override suspend fun loadsSince(sinceMs: Long): List<DatedLoad> =
         dao.loadsSince(sinceMs).map { DatedLoad(it.startedAt, it.load) }
 
-    override suspend fun getDay(date: LocalDate): DailyTraining? = dao.getDay(date.toString())?.toDomain()
+    override suspend fun latestDayBefore(date: LocalDate): DailyTraining? =
+        dao.latestDayBefore(date.toString())?.toDomain()
 
     override suspend fun replaceFrom(from: LocalDate, days: List<DailyTraining>) {
         dao.replaceFrom(

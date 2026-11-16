@@ -44,6 +44,7 @@ class BestEffortUseCasesTest {
         analysis,
         readTrack,
         listOf(BestEffortsStep(efforts, evaluate, kindOf)),
+        AnalysisRequests(),
         logger,
     )
 
@@ -114,6 +115,7 @@ class BestEffortUseCasesTest {
             analysis,
             readTrack,
             listOf(BestEffortsStep(failingRepository, evaluate, kindOf)),
+            AnalysisRequests(),
             logger,
         )
 

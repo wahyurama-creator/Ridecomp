@@ -161,6 +161,13 @@ private fun Editor(state: ShareCardUiState, onEvent: (ShareCardUiEvent) -> Unit)
                 )
             }
         }
+        if (state.isShareFailed) {
+            Text(
+                text = stringResource(R.string.share_failed),
+                style = RideCompTheme.typography.caption,
+                color = RideCompTheme.colors.warnText,
+            )
+        }
         BigButton(
             text = stringResource(R.string.share_send),
             onClick = { onEvent(ShareCardUiEvent.Rendering) },
@@ -187,7 +194,8 @@ private fun CardCapture(state: ShareCardUiState, onEvent: (ShareCardUiEvent) -> 
                 .drawWithContent { layer.record { this@drawWithContent.drawContent() } },
         )
     }
-    LaunchedEffect(state.format, state.isDark, state.stats, state.line, state.isTrackShown) {
+    // Composed only while sharing, and the options are locked meanwhile: one capture per tap.
+    LaunchedEffect(Unit) {
         // Two frames: the card is laid out and its layer recorded before reading it.
         withFrameNanos { }
         withFrameNanos { }

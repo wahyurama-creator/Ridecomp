@@ -57,6 +57,30 @@ class TrainingUseCasesTest {
     }
 
     @Test
+    fun `days between rides are filled and fitness decays instead of restarting from zero`() = runTest(dispatcher) {
+        // The first ride is analyzed on its own day, the next one 8 days later.
+        clock.setWallClock(LocalDate.of(2026, 11, 2).atTime(20, 0).toInstant(ZoneOffset.UTC).toEpochMilli())
+        ride(id = 1, day = 2, load = 100.0)
+        clock.setWallClock(LocalDate.of(2026, 11, 10).atTime(20, 0).toInstant(ZoneOffset.UTC).toEpochMilli())
+        ride(id = 2, day = 10, load = 0.0)
+
+        val days = training.observeDays(LocalDate.of(2026, 11, 1)).first()
+
+        assertEquals((2..10).map { LocalDate.of(2026, 11, it) }, days.map { it.date })
+        val afterFirst = days.first().ctl
+        assertEquals(afterFirst * (1 - 1 / 42.0).let { f -> Math.pow(f, 8.0) }, days.last().ctl, 1e-9)
+    }
+
+    @Test
+    fun `deleting the only ride clears its trend`() = runTest(dispatcher) {
+        ride(id = 1, day = 9, load = 50.0)
+
+        DeleteActivityUseCase(activities, recompute)(1)
+
+        assertEquals(emptyList(), training.observeDays(LocalDate.of(2026, 11, 1)).first())
+    }
+
+    @Test
     fun `the overview gives this week's totals and the methods used`() = runTest(dispatcher) {
         ride(id = 1, day = 9, load = 50.0)
         ride(id = 2, day = 10, load = 30.0)

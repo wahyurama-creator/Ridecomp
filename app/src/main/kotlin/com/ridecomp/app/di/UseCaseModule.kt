@@ -26,6 +26,7 @@ import com.ridecomp.core.usecase.ExportFileStore
 import com.ridecomp.core.usecase.ExportFitUseCase
 import com.ridecomp.core.usecase.ExportGpxUseCase
 import com.ridecomp.core.usecase.ExportedFileHandler
+import com.ridecomp.core.usecase.ExtendTrainingToTodayUseCase
 import com.ridecomp.core.usecase.ForgetSensorUseCase
 import com.ridecomp.core.usecase.GetActivityKindUseCase
 import com.ridecomp.core.usecase.GetFreeStorageUseCase
@@ -211,6 +212,7 @@ val useCaseModule = module {
                 SegmentsStep(get(), get()),
                 TrainingLoadStep(get(), get(), get(), get(), get()),
             ),
+            requests = get(),
             logger = get(),
         )
     }
@@ -225,7 +227,8 @@ val useCaseModule = module {
     factory { TrainingCalendar(get()) }
     factory { RecomputeTrainingUseCase(get(), get(), get()) }
     factory { ObserveTrainingUseCase(get(), get()) }
-    factory { LoadWeekZonesUseCase(get(), get(), get(), get(), get()) }
+    factory { LoadWeekZonesUseCase(get(), get(), get(), get(), get(), get()) }
+    factory { ExtendTrainingToTodayUseCase(get(), get()) }
     factory { LoadShareCardUseCase(get(), get(), get(), get()) }
     factory { ShareCardImageUseCase(get(), get()) }
     factory { ClearShareCardsUseCase(get()) }

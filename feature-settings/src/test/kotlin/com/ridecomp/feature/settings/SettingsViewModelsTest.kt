@@ -200,6 +200,8 @@ class SettingsViewModelsTest {
         assertEquals(OnboardingStep.LEVEL, viewModel.uiState.value)
 
         viewModel.onEvent(OnboardingUiEvent.ChooseLevel(RiderLevel.EXPERIENCED))
+        // A double tap must not skip the profile step.
+        viewModel.onEvent(OnboardingUiEvent.ChooseLevel(RiderLevel.EXPERIENCED))
 
         assertEquals(OnboardingStep.PROFILE, viewModel.uiState.value)
         assertEquals(RiderLevel.EXPERIENCED, guide.state.value.level)
