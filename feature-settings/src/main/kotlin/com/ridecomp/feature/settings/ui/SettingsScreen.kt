@@ -53,6 +53,7 @@ enum class SettingsSection(@param:StringRes val titleRes: Int, val taskId: Strin
     BACKUP(R.string.settings_backup),
     BATTERY_HELP(R.string.settings_battery_help),
     OPEN_SOURCE_LICENSES(R.string.settings_licenses),
+    HELP(R.string.guide_help_title),
 
     /** Debug builds only (simulated GPS, 07-TEST-PLAN §2). */
     DEVELOPER(R.string.settings_developer),
@@ -73,6 +74,7 @@ private val RIDE_SECTIONS = listOf(
     SettingsSection.SAFETY,
 )
 private val APP_SECTIONS = listOf(
+    SettingsSection.HELP,
     SettingsSection.DATA_PAGES,
     SettingsSection.OFFLINE_MAPS,
     SettingsSection.LANGUAGE,
@@ -201,7 +203,7 @@ private fun SettingsSection.summary(state: SettingsUiState): Pair<String?, Value
         SettingsSection.BACKUP -> stringResource(R.string.settings_backup_value) to ValueTone.NORMAL
         SettingsSection.OFFLINE_MAPS -> offlineMapsSummary(state) to ValueTone.NORMAL
         SettingsSection.DATA_PAGES, SettingsSection.BATTERY_HELP,
-        SettingsSection.OPEN_SOURCE_LICENSES, SettingsSection.DEVELOPER,
+        SettingsSection.OPEN_SOURCE_LICENSES, SettingsSection.HELP, SettingsSection.DEVELOPER,
         -> null to ValueTone.NORMAL
     }
 }

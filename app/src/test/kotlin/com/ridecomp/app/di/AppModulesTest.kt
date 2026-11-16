@@ -9,6 +9,7 @@ import com.ridecomp.core.repository.ActivityAnalysisRepository
 import com.ridecomp.core.repository.ActivityProfileRepository
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.BestEffortRepository
+import com.ridecomp.core.repository.GuideRepository
 import com.ridecomp.core.repository.IncidentRepository
 import com.ridecomp.core.repository.OfflineMapRepository
 import com.ridecomp.core.repository.ProfileRepository
@@ -45,6 +46,7 @@ import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeExportFileStore
 import com.ridecomp.core.testing.FakeExportedFileHandler
 import com.ridecomp.core.testing.FakeGpxDocumentSource
+import com.ridecomp.core.testing.FakeGuideRepository
 import com.ridecomp.core.testing.FakeIncidentRepository
 import com.ridecomp.core.testing.FakeLocationSource
 import com.ridecomp.core.testing.FakeOfflineMapRepository
@@ -81,6 +83,7 @@ import com.ridecomp.feature.routes.viewmodel.RouteDetailViewModel
 import com.ridecomp.feature.routes.viewmodel.RoutesViewModel
 import com.ridecomp.feature.sensors.viewmodel.SensorsViewModel
 import com.ridecomp.feature.settings.viewmodel.BackupViewModel
+import com.ridecomp.feature.settings.viewmodel.GuideViewModel
 import com.ridecomp.feature.settings.viewmodel.LicenseTextReader
 import com.ridecomp.feature.settings.viewmodel.OfflineMapsViewModel
 import com.ridecomp.feature.settings.viewmodel.OnboardingViewModel
@@ -155,6 +158,7 @@ class AppModulesTest {
         single<SegmentRepository> { FakeSegmentRepository(get()) }
         single<TrainingRepository> { FakeTrainingRepository(FakeActivityRepository()) }
         single<ShareCardFiles> { FakeShareCardFiles() }
+        single<GuideRepository> { FakeGuideRepository() }
         single<ActivityAnalysisRepository> { FakeActivityAnalysisRepository(FakeActivityRepository()) }
         factory<LicenseTextReader> { LicenseTextReader { "" } }
     }
@@ -187,6 +191,7 @@ class AppModulesTest {
         assertNotNull(koin.get<SettingsViewModel>())
         assertNotNull(koin.get<OfflineMapsViewModel>())
         assertNotNull(koin.get<OssLicensesViewModel>())
+        assertNotNull(koin.get<GuideViewModel>())
         assertNotNull(koin.get<RecordsViewModel>())
         assertNotNull(koin.get<NewRecordsViewModel> { parametersOf(1L) })
         assertNotNull(koin.get<SegmentsViewModel>())

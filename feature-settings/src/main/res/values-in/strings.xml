@@ -235,4 +235,63 @@
     <string name="licenses_apache_libraries">AndroidX, Jetpack Compose, Room, Kotlin, kotlinx, Koin, MapLibre Java, OkHttp, Okio, Gson, Timber</string>
     <string name="licenses_openstreetmap">Data peta OpenStreetMap</string>
     <string name="licenses_various">BSD, MIT, Boost, FreeType, dan lainnya</string>
+    <!-- Topik bantuan (Fase 4G, TG.2) -->
+    <string name="guide_first_ride_title">Ride pertamamu</string>
+    <string name="guide_first_ride_summary">Mulai, jeda, dan simpan ride.</string>
+    <string name="guide_first_ride_body" formatted="false">1. Di tab Ride, tekan MULAI RIDE. RideComp memeriksa GPS dan baterai dulu.\n2. Tunggu sampai GPS \"Siap\", lalu tekan MULAI. Rekaman berjalan walau layar mati atau HP di saku.\n3. Geser layar ke kiri/kanan untuk pindah halaman data (kecepatan, jarak, peta, tanjakan, lap).\n4. Berhenti di lampu merah? Rekaman jeda otomatis dan lanjut sendiri saat kamu jalan lagi.\n5. Selesai: tekan PAUSE, lalu SELESAI &amp; SIMPAN. Beri nama ride, lalu tekan Simpan.\nTips: ketuk dua kali layar ride untuk menyembunyikan/menampilkan tombol.</string>
+    <string name="guide_routes_gpx_title">Rute &amp; file GPX</string>
+    <string name="guide_routes_gpx_summary">Apa itu GPX dan cara memasukkannya.</string>
+    <string name="guide_routes_gpx_body" formatted="false">GPX adalah file berisi garis rute (jalur yang akan kamu lewati). Kamu bisa membuatnya di Strava, Komoot, RideWithGPS, atau mendapatkannya dari teman/komunitas.\n1. Unduh atau simpan file .gpx ke HP (misalnya dari email atau WhatsApp).\n2. Buka tab Rute, tekan Import GPX, lalu pilih filenya. Bisa juga: buka file .gpx dari file manager → pilih RideComp.\n3. Rute muncul di daftar dengan jarak, tanjakan, dan profil elevasi.\n4. Tekan rute → Ride rute ini untuk mulai mengikuti rute tersebut.\nTanjakan dan belokan tajam pada rute dideteksi otomatis saat import.</string>
+    <string name="guide_navigation_title">Mengikuti rute</string>
+    <string name="guide_navigation_summary">Peringatan keluar jalur, belokan, dan tanjakan.</string>
+    <string name="guide_navigation_body" formatted="false">Saat mengikuti rute, halaman Peta menunjukkan rute (oranye), bagian yang sudah dilalui (biru), dan posisimu.\n• Keluar jalur lebih dari ~50 m selama 10 detik: HP bergetar panjang dan berbunyi, muncul banner merah. Saat kembali ke rute: getar dua kali.\n• Belokan tajam: peringatan sekitar 150 m dan 30 m sebelumnya.\n• Tanjakan: peringatan 500 m sebelumnya, lalu halaman tanjakan menunjukkan sisa jarak, sisa naik, dan grade.\nGeser peta untuk melihat sekitar; tekan tombol posisi untuk kembali mengikuti.</string>
+    <string name="guide_offline_maps_title">Peta offline</string>
+    <string name="guide_offline_maps_summary">Peta tanpa internet dari file .pmtiles.</string>
+    <string name="guide_offline_maps_body" formatted="false">RideComp tidak memakai internet, jadi peta disimpan sebagai file di HP.\n1. Di komputer, buat file wilayah dengan alat \"pmtiles\" dari build peta Protomaps (data OpenStreetMap), misalnya untuk satu provinsi.\n2. Salin file .pmtiles ke HP.\n3. Buka Setelan → Peta offline → Impor file peta.\n4. Peta muncul di detail rute dan di halaman Peta saat ride, bila wilayahnya mencakup rute.\nTanpa file peta, RideComp tetap menampilkan garis rute (mode breadcrumb). Mode hemat baterai juga memakai breadcrumb.</string>
+    <string name="guide_sensors_title">Menyambungkan sensor</string>
+    <string name="guide_sensors_summary">Detak jantung, cadence, kecepatan, dan power.</string>
+    <string name="guide_sensors_body" formatted="false">Sensor Bluetooth menambah data yang tidak bisa diukur HP: detak jantung (sabuk dada/gelang), cadence (putaran pedal), kecepatan roda, dan power meter.\n1. Nyalakan sensor (pakai sabuk HR, putar pedal/roda agar sensor bangun).\n2. Buka tab Sensor; pencarian berjalan otomatis (tekan Scan ulang bila perlu).\n3. Pilih sensor yang muncul untuk memasangkannya. Cukup sekali.\n4. Saat ride berikutnya, sensor tersambung otomatis. Indikator HR/CAD/PWR di bagian atas layar ride berwarna hijau bila tersambung.\nSensor putus di tengah ride? Rekaman tetap jalan dan RideComp mencoba menyambung ulang.</string>
+    <string name="guide_export_strava_title">Export FIT &amp; upload ke Strava</string>
+    <string name="guide_export_strava_summary">Kirim ride ke Strava atau aplikasi lain.</string>
+    <string name="guide_export_strava_body" formatted="false">FIT adalah format file ride standar yang dibaca Strava, Garmin Connect, TrainingPeaks, dan lainnya.\n1. Buka ride di Riwayat.\n2. Tekan Bagikan → pilih aplikasi Strava (atau Drive/WhatsApp). Atau tekan Export FIT untuk menyimpannya ke folder Download.\n3. Di Strava web: Upload aktivitas → File → pilih file .fit.\nPower hasil estimasi tidak dimasukkan ke file FIT agar data power-mu tetap jujur.</string>
+    <string name="guide_backup_title">Backup &amp; pindah HP</string>
+    <string name="guide_backup_summary">Jaga riwayat ride agar tidak hilang.</string>
+    <string name="guide_backup_body" formatted="false">Semua data RideComp ada di HP ini saja. Backup berkala agar tidak hilang saat HP rusak atau ganti HP.\n1. Setelan → Backup &amp; export data → Buat backup.\n2. Pilih tempat simpan, misalnya Google Drive. Aktifkan kata sandi agar file aman bila dibaca orang lain.\n3. Di HP baru: pasang RideComp → Setelan → Backup &amp; export data → Restore dari file → masukkan kata sandi.\nKontak darurat tidak ikut backup demi privasi; isi lagi setelah restore.</string>
+    <string name="guide_records_segments_title">Rekor &amp; segmen</string>
+    <string name="guide_records_segments_summary">PR otomatis dan \"segmen\" milikmu sendiri.</string>
+    <string name="guide_records_segments_body" formatted="false">Rekor (PR) dihitung otomatis setiap ride disimpan: jarak tercepat (1–100 km), power terbaik (bila punya power meter), ride terjauh, tanjakan terbanyak. Lihat di Riwayat → Rekor.\nSegmen adalah potongan jalan favorit yang ingin kamu ukur waktunya, seperti segmen Strava tapi tanpa internet.\n1. Buka ride di Riwayat → Buat segmen dari ride ini → geser dua pegangan ke awal dan akhir → Simpan. Atau dari rute: Jadikan segmen pada tanjakan.\n2. Ride berikutnya yang melewati segmen itu searah dicocokkan otomatis.\n3. Saat ride, mendekati segmen muncul banner; selama segmen layar menunjukkan selisih waktu dengan rekormu.</string>
+    <string name="guide_training_title">Beban latihan</string>
+    <string name="guide_training_summary">Fitness, kelelahan, dan form.</string>
+    <string name="guide_training_body" formatted="false">Tab Latihan memperkirakan seberapa berat latihanmu dari detak jantung (atau power meter + FTP).\n• Fitness: rata-rata beban 6 minggu — naik bila latihan rutin.\n• Kelelahan: beban 7 hari terakhir.\n• Form: fitness dikurangi kelelahan — positif berarti segar, negatif berarti lelah.\nAgar terisi: pakai sensor detak jantung dan isi HR maks (atau tahun lahir) di Setelan → Profil pengendara. Ini perkiraan untuk tren, bukan nilai medis.</string>
+    <string name="guide_share_card_title">Kartu share</string>
+    <string name="guide_share_card_summary">Bagikan ride ke WhatsApp atau Instagram.</string>
+    <string name="guide_share_card_body" formatted="false">1. Buka ride di Riwayat → Bagikan kartu.\n2. Pilih Story (9:16) atau Kotak (1:1), statistik yang ingin ditampilkan (maks 4), dan tema.\n3. \"Sembunyikan awal &amp; akhir rute\" aktif secara default agar lokasi rumahmu tidak terlihat.\n4. Tekan Bagikan dan pilih WhatsApp, Instagram, atau aplikasi lain.\nKartu tidak memuat peta atau koordinat, hanya bentuk garis rute.</string>
+    <string name="guide_safety_title">Keselamatan &amp; deteksi jatuh</string>
+    <string name="guide_safety_summary">SMS darurat bila kamu jatuh.</string>
+    <string name="guide_safety_body" formatted="false">Bila diaktifkan, RideComp mendeteksi benturan keras saat ride.\n1. Setelan → Keselamatan → tambah hingga 3 kontak darurat → aktifkan Deteksi insiden.\n2. Bila terdeteksi jatuh, alarm berbunyi dan hitung mundur 30 detik muncul. Tekan SAYA BAIK-BAIK SAJA bila tidak apa-apa.\n3. Bila tidak ditekan, SMS berisi lokasimu dikirim ke kontak darurat.\nKirim SMS uji dulu agar kontak tahu. Deteksi ini tidak sempurna; tetap berhati-hati.</string>
+    <string name="guide_battery_title">Baterai &amp; HP yang mematikan app</string>
+    <string name="guide_battery_summary">Agar rekaman tidak berhenti di tengah jalan.</string>
+    <string name="guide_battery_body" formatted="false">Beberapa merek HP (Xiaomi, Oppo, Realme, Vivo, Infinix, Samsung) mematikan aplikasi di latar belakang untuk menghemat baterai, sehingga rekaman bisa berhenti.\n1. Buka Setelan → kartu kuning \"HP saya mematikan app\" dan ikuti langkah untuk merek HP-mu (izinkan Autostart / jangan batasi baterai).\n2. Saat baterai ≤ 20%, RideComp masuk mode hemat; ≤ 5%, ride disimpan darurat.\n3. Mode layar \"Redup otomatis\" atau \"Mati\" menghemat baterai paling banyak.</string>
+    <!-- Level pesepeda, tips, dan Bantuan (Fase 4G) -->
+    <string name="guide_level_title">Sudah berapa lama bersepeda?</string>
+    <string name="guide_level_text">RideComp menampilkan tips lebih banyak atau sedikit sesuai pengalamanmu. Bisa diubah nanti di Setelan → Bantuan.</string>
+    <string name="guide_level_beginner">Pemula</string>
+    <string name="guide_level_beginner_hint">Baru mulai atau kurang dari 1 tahun. Tips di setiap layar.</string>
+    <string name="guide_level_intermediate">Menengah</string>
+    <string name="guide_level_intermediate_hint">1–3 tahun, rutin bersepeda. Tips untuk fitur lanjutan saja.</string>
+    <string name="guide_level_experienced">Berpengalaman</string>
+    <string name="guide_level_experienced_hint">Lebih dari 3 tahun atau latihan terstruktur. Tanpa tips; Bantuan tetap tersedia.</string>
+    <string name="guide_help_title">Bantuan &amp; panduan</string>
+    <string name="guide_help_level">Pengalamanmu</string>
+    <string name="guide_help_topics">Panduan</string>
+    <string name="guide_help_reset">Tampilkan lagi semua tips</string>
+    <string name="guide_help_reset_done">Tips akan tampil lagi.</string>
+    <string name="guide_tip_learn_more">Pelajari</string>
+    <string name="guide_tip_close">Tutup tips</string>
+    <string name="guide_tip_first_ride">Tekan MULAI RIDE. Rekaman tetap berjalan walau layar mati; jeda dan simpan saat selesai.</string>
+    <string name="guide_tip_routes">File GPX adalah garis rute yang dibuat di Strava, Komoot, atau sejenisnya. Import di sini dan RideComp akan memandumu.</string>
+    <string name="guide_tip_sensors">Sensor detak jantung, cadence, kecepatan, dan power tersambung lewat Bluetooth. Nyalakan sensor, lalu ketuk di daftar untuk dipasangkan sekali.</string>
+    <string name="guide_tip_export">Untuk memasukkan ride ini ke Strava, tekan Bagikan lalu pilih Strava, atau Export FIT lalu upload di strava.com.</string>
+    <string name="guide_tip_backup">Ride-mu hanya tersimpan di HP ini. Sesekali buat backup ke Google Drive agar tidak pernah hilang.</string>
+    <string name="guide_tip_offline_maps">Peta bisa dipakai tanpa internet dari file wilayah (.pmtiles) yang dibuat di komputer lalu diimpor di sini.</string>
 </resources>

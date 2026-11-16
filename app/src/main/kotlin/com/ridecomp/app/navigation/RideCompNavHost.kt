@@ -18,6 +18,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.ridecomp.app.DevTools
+import com.ridecomp.core.model.GuideTip
+import com.ridecomp.core.model.GuideTopic
 import com.ridecomp.feature.history.ui.ActivityDetailRoute
 import com.ridecomp.feature.history.ui.HistoryRoute
 import com.ridecomp.feature.history.ui.StravaHelpRoute
@@ -33,6 +35,9 @@ import com.ridecomp.feature.routes.ui.RoutesRoute
 import com.ridecomp.feature.sensors.ui.SensorsRoute
 import com.ridecomp.feature.settings.ui.BackupRoute
 import com.ridecomp.feature.settings.ui.BatteryHelpRoute
+import com.ridecomp.feature.settings.ui.GuideTip
+import com.ridecomp.feature.settings.ui.HelpRoute
+import com.ridecomp.feature.settings.ui.HelpTopicScreen
 import com.ridecomp.feature.settings.ui.OfflineMapsRoute
 import com.ridecomp.feature.settings.ui.OnboardingRoute
 import com.ridecomp.feature.settings.ui.OssLicensesRoute
@@ -69,6 +74,11 @@ object AppRoutes {
     const val BACKUP = "backup"
     const val OFFLINE_MAPS = "offline_maps"
     const val LICENSES = "licenses"
+    const val HELP = "help"
+    const val ARG_TOPIC = "topic"
+    const val HELP_TOPIC = "help/{$ARG_TOPIC}"
+
+    fun helpTopic(topic: GuideTopic): String = "help/${topic.name}"
     const val ROUTE_DETAIL = "route/{$ARG_ROUTE_ID}"
 
     fun routeDetail(routeId: Long): String = "route/$routeId"
@@ -131,6 +141,9 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
                 onOpenRoute = { navController.navigate(AppRoutes.routeDetail(it)) },
                 incomingUri = incoming,
                 onIncomingHandled = IncomingGpx::consumed,
+                tipContent = {
+                    GuideTip(GuideTip.ROUTES, onLearnMore = { navController.navigate(AppRoutes.helpTopic(it)) })
+                },
             )
         }
         composable(
@@ -154,7 +167,9 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
             )
         }
         composable(TopLevelDestination.SENSORS.route) {
-            SensorsRoute()
+            SensorsRoute(tipContent = {
+                GuideTip(GuideTip.SENSORS, onLearnMore = { navController.navigate(AppRoutes.helpTopic(it)) })
+            })
         }
         composable(TopLevelDestination.SETTINGS.route) {
             SettingsRoute(
@@ -175,9 +190,36 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
             )
         }
         composable(AppRoutes.SAFETY) { SafetyRoute(onBack = { navController.popBackStack() }) }
-        composable(AppRoutes.OFFLINE_MAPS) { OfflineMapsRoute(onBack = { navController.popBackStack() }) }
+        composable(AppRoutes.OFFLINE_MAPS) {
+            OfflineMapsRoute(
+                onBack = { navController.popBackStack() },
+                tipContent = {
+                    GuideTip(GuideTip.OFFLINE_MAPS, onLearnMore = { navController.navigate(AppRoutes.helpTopic(it)) })
+                },
+            )
+        }
         composable(AppRoutes.LICENSES) { OssLicensesRoute(onBack = { navController.popBackStack() }) }
-        composable(AppRoutes.BACKUP) { BackupRoute(onBack = { navController.popBackStack() }) }
+        composable(AppRoutes.BACKUP) {
+            BackupRoute(
+                onBack = { navController.popBackStack() },
+                tipContent = {
+                    GuideTip(GuideTip.BACKUP, onLearnMore = { navController.navigate(AppRoutes.helpTopic(it)) })
+                },
+            )
+        }
+        composable(AppRoutes.HELP) {
+            HelpRoute(
+                onOpenTopic = { navController.navigate(AppRoutes.helpTopic(it)) },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable(
+            AppRoutes.HELP_TOPIC,
+            arguments = listOf(navArgument(AppRoutes.ARG_TOPIC) { type = NavType.StringType }),
+        ) { entry ->
+            val topic = GuideTopic.entries.firstOrNull { it.name == entry.arguments?.getString(AppRoutes.ARG_TOPIC) }
+            if (topic != null) HelpTopicScreen(topic, onBack = { navController.popBackStack() })
+        }
         composable(AppRoutes.ACTIVITY_PROFILES) {
             ActivityProfilesRoute(onOpen = { navController.navigate(AppRoutes.activityProfile(it)) })
         }
@@ -201,6 +243,9 @@ private fun NavGraphBuilder.rideGraph(navController: NavHostController) {
             onOpenPreRide = { navController.navigate(AppRoutes.preRide()) },
             onOpenRide = { navController.navigate(AppRoutes.RIDE) { launchSingleTop = true } },
             onOpenBackup = { navController.navigate(AppRoutes.BACKUP) },
+            tipContent = {
+                GuideTip(GuideTip.FIRST_RIDE, onLearnMore = { navController.navigate(AppRoutes.helpTopic(it)) })
+            },
         )
     }
     preRideDestination(navController)
@@ -249,6 +294,9 @@ private fun NavGraphBuilder.historyGraph(navController: NavHostController) {
             onDeleted = { navController.popBackStack() },
             onOpenStravaHelp = { navController.navigate(AppRoutes.STRAVA_HELP) },
             onBack = { navController.popBackStack() },
+            tipContent = {
+                GuideTip(GuideTip.EXPORT, onLearnMore = { navController.navigate(AppRoutes.helpTopic(it)) })
+            },
             onCreateSegment = {
                 val id = entry.arguments?.getLong(AppRoutes.ARG_ACTIVITY_ID) ?: AppRoutes.NO_ACTIVITY
                 navController.navigate(AppRoutes.newSegment(id))
@@ -279,6 +327,7 @@ private fun openSection(section: SettingsSection, navController: NavHostControll
         SettingsSection.BACKUP -> navController.navigate(AppRoutes.BACKUP)
         SettingsSection.OFFLINE_MAPS -> navController.navigate(AppRoutes.OFFLINE_MAPS)
         SettingsSection.OPEN_SOURCE_LICENSES -> navController.navigate(AppRoutes.LICENSES)
+        SettingsSection.HELP -> navController.navigate(AppRoutes.HELP)
     }
 }
 

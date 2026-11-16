@@ -52,7 +52,12 @@ private const val BACKUP_MIME = "application/octet-stream"
 
 /** Backup & restore entry point (T2.17): SAF launchers only, the work happens in the ViewModel. */
 @Composable
-fun BackupRoute(modifier: Modifier = Modifier, onBack: () -> Unit = {}, viewModel: BackupViewModel = koinViewModel()) {
+fun BackupRoute(
+    modifier: Modifier = Modifier,
+    onBack: () -> Unit = {},
+    tipContent: (@Composable () -> Unit)? = null,
+    viewModel: BackupViewModel = koinViewModel(),
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val createLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(BACKUP_MIME)) { uri ->
         uri?.let { viewModel.onEvent(BackupUiEvent.CreateTo(it.toString())) }
@@ -67,6 +72,7 @@ fun BackupRoute(modifier: Modifier = Modifier, onBack: () -> Unit = {}, viewMode
         onOpen = { openLauncher.launch(arrayOf(BACKUP_MIME, ZIP_MIME)) },
         onBack = onBack,
         modifier = modifier,
+        tipContent = tipContent,
     )
 }
 
@@ -80,6 +86,7 @@ fun BackupScreen(
     onOpen: () -> Unit,
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
+    tipContent: (@Composable () -> Unit)? = null,
 ) {
     ScreenScaffold(
         modifier = modifier,
@@ -98,6 +105,7 @@ fun BackupScreen(
                 ),
             verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
         ) {
+            tipContent?.invoke()
             when (val restore = state.restore) {
                 null -> {
                     LastBackupCard(state.lastBackupAtMs)

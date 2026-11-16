@@ -72,7 +72,11 @@ private fun blePermissions(): Array<String> = if (Build.VERSION.SDK_INT >= Build
 
 /** Sensors entry point (UI-01, T2.1). The scan stops when the screen is no longer visible (BAT-04). */
 @Composable
-fun SensorsRoute(modifier: Modifier = Modifier, viewModel: SensorsViewModel = koinViewModel()) {
+fun SensorsRoute(
+    modifier: Modifier = Modifier,
+    tipContent: (@Composable () -> Unit)? = null,
+    viewModel: SensorsViewModel = koinViewModel(),
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     // Either result re-checks the blocker and starts the scan when it is gone.
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -94,6 +98,7 @@ fun SensorsRoute(modifier: Modifier = Modifier, viewModel: SensorsViewModel = ko
             }
         },
         modifier = modifier,
+        tipContent = tipContent,
     )
 }
 
@@ -105,6 +110,7 @@ fun SensorsScreen(
     onPair: (DiscoveredSensor) -> Unit,
     onFixBlocker: (ScanBlocker) -> Unit,
     modifier: Modifier = Modifier,
+    tipContent: (@Composable () -> Unit)? = null,
 ) {
     ScreenScaffold(
         modifier = modifier,
@@ -117,6 +123,7 @@ fun SensorsScreen(
             contentPadding = PaddingValues(horizontal = RideCompDimens.screenPaddingHorizontal),
             verticalArrangement = Arrangement.spacedBy(RideCompDimens.cardGap),
         ) {
+            tipContent?.let { tip -> item(key = TIP_KEY) { tip() } }
             if (isEmpty) {
                 item(key = EMPTY_KEY) { EmptyState(message = stringResource(R.string.sensors_empty)) }
             }
@@ -337,6 +344,7 @@ private fun ScanBlocker.actionRes(): Int = when (this) {
 
 private const val SAVED_HEADER_KEY = "saved_header"
 private const val EMPTY_KEY = "empty"
+private const val TIP_KEY = "tip"
 private const val INFO_KEY = "info"
 private const val FOUND_HEADER_KEY = "found_header"
 private const val SAVED_KEY_PREFIX = "saved_"
