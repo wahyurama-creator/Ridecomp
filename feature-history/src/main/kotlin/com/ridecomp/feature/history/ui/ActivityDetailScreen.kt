@@ -3,6 +3,7 @@ package com.ridecomp.feature.history.ui
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,7 +11,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -24,9 +27,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.config.Units
 import com.ridecomp.core.model.RideTotals
@@ -476,12 +482,82 @@ private fun ExportSection(
                 title = stringResource(R.string.detail_strava_help),
                 subtitle = stringResource(R.string.detail_strava_help_subtitle),
                 onClick = onOpenStravaHelp,
-                hasDivider = false,
                 leading = { IconTile(UiR.drawable.ic_info, tint = colors.ok) },
+            )
+            FormatHelp()
+        }
+    }
+}
+
+/** "Apa itu FIT dan GPX?": opens in place, so a new rider can choose without leaving the screen. */
+@Composable
+private fun FormatHelp() {
+    val colors = RideCompTheme.colors
+    var isOpen by rememberSaveable { mutableStateOf(false) }
+    ListCardRow(
+        title = stringResource(R.string.detail_formats_title),
+        subtitle = stringResource(R.string.detail_formats_subtitle),
+        onClick = { isOpen = !isOpen },
+        hasDivider = false,
+        hasChevron = false,
+        leading = { IconTile(UiR.drawable.ic_help, tint = colors.ok) },
+        trailing = {
+            Icon(
+                painter = painterResource(UiR.drawable.ic_chevron_down),
+                contentDescription = null,
+                tint = colors.textSecondary,
+                modifier = Modifier
+                    .size(RideCompDimens.iconSize)
+                    .rotate(if (isOpen) HALF_TURN_DEG else 0f),
+            )
+        },
+    )
+    if (isOpen) {
+        Column(
+            modifier = Modifier.padding(
+                start = RideCompDimens.cardPaddingHorizontal,
+                end = RideCompDimens.cardPaddingHorizontal,
+                bottom = RideCompDimens.cardPaddingVertical,
+            ),
+            verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm),
+        ) {
+            FormatInfo(stringResource(R.string.detail_format_fit), stringResource(R.string.detail_format_fit_text))
+            FormatInfo(stringResource(R.string.detail_format_gpx), stringResource(R.string.detail_format_gpx_text))
+            Text(
+                text = stringResource(R.string.detail_formats_advice),
+                style = RideCompTheme.typography.caption,
+                color = colors.ok,
             )
         }
     }
 }
+
+/** A format name as a small badge, then what the file holds and where it goes. */
+@Composable
+private fun FormatInfo(name: String, text: String) {
+    val colors = RideCompTheme.colors
+    Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm)) {
+        Text(
+            text = name,
+            style = RideCompTheme.typography.navLabel,
+            color = colors.accent,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .width(RideCompDimens.formatBadgeWidth)
+                .clip(RoundedCornerShape(RideCompDimens.cornerRadius))
+                .background(colors.accentTint)
+                .padding(vertical = RideCompDimens.spacingXs),
+        )
+        Text(
+            text = text,
+            style = RideCompTheme.typography.caption,
+            color = colors.textSecondary,
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+private const val HALF_TURN_DEG = 180f
 
 @Composable
 private fun MoreSection(onEvent: (ActivityDetailUiEvent) -> Unit, onCreateSegment: (() -> Unit)?) {

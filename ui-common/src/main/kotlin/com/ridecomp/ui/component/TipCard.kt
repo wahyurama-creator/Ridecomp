@@ -36,13 +36,28 @@ fun TipCard(
     modifier: Modifier = Modifier,
 ) {
     val colors = RideCompTheme.colors
-    RideCompCard(modifier = modifier) {
+    // The whole card opens the Help topic (a large touch target, UI-07); the link only says so.
+    RideCompCard(modifier = modifier, onClick = onLearnMore) {
         Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm)) {
             IconTile(R.drawable.ic_info, tint = colors.ok)
-            Column(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingXs),
+            ) {
                 Text(text = title, style = RideCompTheme.typography.bodyStrong, color = colors.textPrimary)
                 Text(text = text, style = RideCompTheme.typography.caption, color = colors.textSecondary)
-                LinkText(text = learnMoreLabel, onClick = onLearnMore)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingXs),
+                ) {
+                    Text(text = learnMoreLabel, style = RideCompTheme.typography.navLabel, color = colors.accent)
+                    Icon(
+                        painterResource(R.drawable.ic_chevron_right),
+                        contentDescription = null,
+                        tint = colors.accent,
+                        modifier = Modifier.size(RideCompDimens.statusIconSize),
+                    )
+                }
             }
             // A light close icon: the tip should not look like an action of the screen.
             Box(

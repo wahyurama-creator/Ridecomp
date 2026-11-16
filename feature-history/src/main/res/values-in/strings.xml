@@ -90,4 +90,11 @@
     <string name="detail_send_gpx_subtitle">Untuk Komoot atau aplikasi peta</string>
     <string name="detail_strava_help_subtitle">Langkah demi langkah</string>
     <string name="detail_create_segment_subtitle">Pilih bagian ride ini di grafik</string>
+    <string name="detail_formats_title">Apa itu FIT dan GPX?</string>
+    <string name="detail_formats_subtitle">File mana yang dipilih</string>
+    <string name="detail_format_fit">FIT</string>
+    <string name="detail_format_fit_text">Rekaman ride yang lengkap: rute, waktu, kecepatan, tanjakan, detak jantung, kadens, dan power. Format yang dipakai cycling computer (Garmin, Wahoo). Pilih ini untuk Strava, Garmin Connect, atau TrainingPeaks.</string>
+    <string name="detail_format_gpx">GPX</string>
+    <string name="detail_format_gpx_text">Terutama garis rute beserta waktunya, tanpa data sensor lengkap. Pilih ini untuk membagikan rute ke teman atau mengikutinya lagi di Komoot atau aplikasi peta.</string>
+    <string name="detail_formats_advice">Ragu? Pilih FIT: semua yang terekam tetap tersimpan.</string>
 </resources>
