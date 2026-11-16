@@ -58,8 +58,11 @@ interface ActivityDao {
     )
     suspend fun getPendingAnalysis(version: Int, limit: Int): List<ActivityEntity>
 
-    @Query("UPDATE ${DbNames.TABLE_ACTIVITIES} SET analysis_version = :version WHERE id = :id")
-    suspend fun setAnalysisVersion(id: Long, version: Int)
+    @Query(
+        "UPDATE ${DbNames.TABLE_ACTIVITIES} SET analysis_version = :version " +
+            "WHERE id = :id AND analysis_version = :expectedVersion",
+    )
+    suspend fun setAnalysisVersion(id: Long, version: Int, expectedVersion: Int)
 
     @Query("UPDATE ${DbNames.TABLE_ACTIVITIES} SET analysis_version = :version WHERE analysis_version > :version")
     suspend fun lowerAnalysisVersion(version: Int)

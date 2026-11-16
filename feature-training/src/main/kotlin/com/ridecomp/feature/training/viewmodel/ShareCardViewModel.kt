@@ -17,6 +17,7 @@ import com.ridecomp.core.usecase.LoadShareCardUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ShareCardData
 import com.ridecomp.core.usecase.ShareCardImageUseCase
+import com.ridecomp.core.util.runCatchingCancellable
 import com.ridecomp.ui.udf.NoEffect
 import com.ridecomp.ui.udf.UdfViewModel
 import java.io.ByteArrayOutputStream
@@ -39,6 +40,8 @@ data class ShareCardUiState(
     val line: ImmutableList<SharePoint> = persistentListOf(),
     val unitSystem: UnitSystem = UnitSystem.METRIC,
     val isSharing: Boolean = false,
+    /** The last share failed (out of memory, no app to share with…). */
+    val isShareFailed: Boolean = false,
     val isMissing: Boolean = false,
 ) {
     /** Statistics this ride has data for, in display order. */
@@ -90,6 +93,8 @@ class ShareCardViewModel(
     }
 
     override fun onEvent(event: ShareCardUiEvent) {
+        // The card is being captured: options stay as they are so the image matches the preview.
+        if (currentState.isSharing && event !is ShareCardUiEvent.Captured) return
         when (event) {
             is ShareCardUiEvent.SetFormat -> updateState { copy(format = event.format) }
             is ShareCardUiEvent.SetDark -> updateState { copy(isDark = event.isDark) }
@@ -99,17 +104,24 @@ class ShareCardViewModel(
             }
             is ShareCardUiEvent.SetTrackShown -> updateState { copy(isTrackShown = event.isShown) }
             is ShareCardUiEvent.ToggleStat -> updateState { copy(stats = toggled(stats, event.stat).toImmutableList()) }
-            ShareCardUiEvent.Rendering -> updateState { copy(isSharing = true) }
-            is ShareCardUiEvent.Captured -> viewModelScope.launch {
-                share(encodePng(event.image))
-                updateState { copy(isSharing = false) }
-            }
+            ShareCardUiEvent.Rendering -> updateState { copy(isSharing = true, isShareFailed = false) }
+            is ShareCardUiEvent.Captured -> if (currentState.isSharing) shareCard(event.image)
+        }
+    }
+
+    /** A failure (memory, storage, no app to share with) is shown, never a crash; the button comes back. */
+    private fun shareCard(image: ImageBitmap) {
+        viewModelScope.launch {
+            val result = runCatchingCancellable { share(encodePng(image)) }
+            updateState { copy(isSharing = false, isShareFailed = result.isFailure) }
         }
     }
 
     /** PNG of the card on the CPU dispatcher; the software copy is released right after (MEM-06). */
     private suspend fun encodePng(image: ImageBitmap): ByteArray = withContext(dispatchers.default) {
-        val software = image.asAndroidBitmap().copy(Bitmap.Config.ARGB_8888, false)
+        val software = requireNotNull(image.asAndroidBitmap().copy(Bitmap.Config.ARGB_8888, false)) {
+            "Card bitmap copy failed"
+        }
         try {
             ByteArrayOutputStream().use { out ->
                 software.compress(Bitmap.CompressFormat.PNG, PNG_QUALITY, out)

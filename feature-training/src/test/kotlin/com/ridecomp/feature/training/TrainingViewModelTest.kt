@@ -13,6 +13,7 @@ import com.ridecomp.core.testing.FakeProfileRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.testing.FakeTrainingRepository
 import com.ridecomp.core.testing.TestDispatcherProvider
+import com.ridecomp.core.usecase.ExtendTrainingToTodayUseCase
 import com.ridecomp.core.usecase.LoadWeekZonesUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveTrainingUseCase
@@ -58,8 +59,16 @@ class TrainingViewModelTest {
 
     private fun viewModel() = TrainingViewModel(
         ObserveTrainingUseCase(training, calendar),
-        LoadWeekZonesUseCase(training, ReadRideTrackUseCase(activities, dispatchers), profiles, calendar, clock),
+        LoadWeekZonesUseCase(
+            training,
+            ReadRideTrackUseCase(activities, dispatchers),
+            profiles,
+            calendar,
+            clock,
+            dispatchers,
+        ),
         ObserveRideSettingsUseCase(FakeSettingsRepository()),
+        ExtendTrainingToTodayUseCase(RecomputeTrainingUseCase(training, calendar, dispatchers), calendar),
     )
 
     @Test

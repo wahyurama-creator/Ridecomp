@@ -104,4 +104,5 @@
         <item quantity="one">%1$d NEW RECORD · RideComp</item>
         <item quantity="other">%1$d NEW RECORDS · RideComp</item>
     </plurals>
+    <string name="share_failed">The card could not be shared. Try again, or close other apps if the phone is short on memory.</string>
 </resources>

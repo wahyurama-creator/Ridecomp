@@ -28,8 +28,8 @@ interface TrainingDao {
     )
     suspend fun loadsSince(sinceMs: Long): List<DatedLoadRow>
 
-    @Query("SELECT * FROM ${DbNames.TABLE_DAILY_TRAINING} WHERE date = :date")
-    suspend fun getDay(date: String): DailyTrainingEntity?
+    @Query("SELECT * FROM ${DbNames.TABLE_DAILY_TRAINING} WHERE date < :date ORDER BY date DESC LIMIT 1")
+    suspend fun latestDayBefore(date: String): DailyTrainingEntity?
 
     @Query("DELETE FROM ${DbNames.TABLE_DAILY_TRAINING} WHERE date >= :from")
     suspend fun deleteFrom(from: String)

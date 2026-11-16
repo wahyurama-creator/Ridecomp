@@ -15,7 +15,7 @@ val trainingFeatureModule = module {
     viewModel { RecordsViewModel(get(), get(), get()) }
     viewModel { params -> NewRecordsViewModel(params.get(), get(), get()) }
     viewModel { SegmentsViewModel(get(), get()) }
-    viewModel { TrainingViewModel(get(), get(), get()) }
+    viewModel { TrainingViewModel(get(), get(), get(), get()) }
     viewModel { params -> ShareCardViewModel(params.get(), get(), get(), get(), get()) }
     viewModel { params -> SegmentDetailViewModel(params.get(), get(), get(), get(), get()) }
     viewModel { params -> SegmentEditorViewModel(params.get(), get(), get(), get(), get()) }

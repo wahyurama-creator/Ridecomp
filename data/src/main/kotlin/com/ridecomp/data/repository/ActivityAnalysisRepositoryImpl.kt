@@ -12,8 +12,8 @@ class ActivityAnalysisRepositoryImpl(private val activityDao: ActivityDao) : Act
             entity.toDomain()?.let { PendingAnalysis(it, entity.analysisVersion) }
         }
 
-    override suspend fun markAnalyzed(activityId: Long, version: Int) {
-        activityDao.setAnalysisVersion(activityId, version)
+    override suspend fun markAnalyzed(activityId: Long, version: Int, expectedVersion: Int) {
+        activityDao.setAnalysisVersion(activityId, version, expectedVersion)
     }
 
     override suspend fun resetAnalysis(toVersion: Int) {

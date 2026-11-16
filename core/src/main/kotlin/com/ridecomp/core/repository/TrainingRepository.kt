@@ -25,7 +25,8 @@ public interface TrainingRepository {
     /** Loads of saved rides started at or after [sinceMs]. */
     public suspend fun loadsSince(sinceMs: Long): List<DatedLoad>
 
-    public suspend fun getDay(date: LocalDate): DailyTraining?
+    /** The latest stored day strictly before [date], the starting point of a recompute. */
+    public suspend fun latestDayBefore(date: LocalDate): DailyTraining?
 
     /** Replaces every day from [from] on with [days] in one transaction. */
     public suspend fun replaceFrom(from: LocalDate, days: List<DailyTraining>)
