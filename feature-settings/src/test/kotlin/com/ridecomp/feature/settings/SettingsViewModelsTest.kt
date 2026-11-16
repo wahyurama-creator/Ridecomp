@@ -1,24 +1,34 @@
 package com.ridecomp.feature.settings
 
 import app.cash.turbine.test
+import com.ridecomp.core.model.GuidePreferences
+import com.ridecomp.core.model.GuideTip
 import com.ridecomp.core.model.RideSettings
+import com.ridecomp.core.model.RiderLevel
 import com.ridecomp.core.model.RiderProfile
 import com.ridecomp.core.model.RidingPosition
 import com.ridecomp.core.model.ScreenMode
 import com.ridecomp.core.model.Surface
 import com.ridecomp.core.testing.FakeClock
+import com.ridecomp.core.testing.FakeGuideRepository
 import com.ridecomp.core.testing.FakeLocationSource
 import com.ridecomp.core.testing.FakeProfileRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.usecase.CompleteOnboardingUseCase
+import com.ridecomp.core.usecase.DismissTipUseCase
 import com.ridecomp.core.usecase.EstimateHrMaxUseCase
 import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
+import com.ridecomp.core.usecase.ObserveGuideUseCase
 import com.ridecomp.core.usecase.ObserveProfileUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ProfileField
+import com.ridecomp.core.usecase.ResetTipsUseCase
 import com.ridecomp.core.usecase.SaveProfileUseCase
 import com.ridecomp.core.usecase.SaveRideSettingsUseCase
+import com.ridecomp.core.usecase.SetRiderLevelUseCase
 import com.ridecomp.feature.settings.ui.PhoneBrand
+import com.ridecomp.feature.settings.viewmodel.GuideUiEvent
+import com.ridecomp.feature.settings.viewmodel.GuideViewModel
 import com.ridecomp.feature.settings.viewmodel.OnboardingEffect
 import com.ridecomp.feature.settings.viewmodel.OnboardingStep
 import com.ridecomp.feature.settings.viewmodel.OnboardingUiEvent
@@ -160,7 +170,11 @@ class SettingsViewModelsTest {
     fun `onboarding walks through the steps and completes`() = runTest {
         val settings = FakeSettingsRepository()
         val viewModel =
-            OnboardingViewModel(CompleteOnboardingUseCase(settings), ObserveGpsStatusUseCase(FakeLocationSource()))
+            OnboardingViewModel(
+                CompleteOnboardingUseCase(settings),
+                ObserveGpsStatusUseCase(FakeLocationSource()),
+                SetRiderLevelUseCase(FakeGuideRepository()),
+            )
 
         viewModel.onEvent(OnboardingUiEvent.Back)
         assertEquals(OnboardingStep.PERMISSIONS, viewModel.uiState.value)
@@ -172,6 +186,39 @@ class SettingsViewModelsTest {
             assertEquals(OnboardingEffect.Done, awaitItem())
         }
         assertTrue(settings.observeOnboardingDone().first())
+    }
+
+    @Test
+    fun `the level step stores the rider's experience and moves on`() = runTest {
+        val guide = FakeGuideRepository()
+        val viewModel = OnboardingViewModel(
+            CompleteOnboardingUseCase(FakeSettingsRepository()),
+            ObserveGpsStatusUseCase(FakeLocationSource()),
+            SetRiderLevelUseCase(guide),
+        )
+        viewModel.onEvent(OnboardingUiEvent.Next)
+        assertEquals(OnboardingStep.LEVEL, viewModel.uiState.value)
+
+        viewModel.onEvent(OnboardingUiEvent.ChooseLevel(RiderLevel.EXPERIENCED))
+
+        assertEquals(OnboardingStep.PROFILE, viewModel.uiState.value)
+        assertEquals(RiderLevel.EXPERIENCED, guide.state.value.level)
+    }
+
+    @Test
+    fun `closing a tip hides it, resetting shows it again`() = runTest {
+        val guide = FakeGuideRepository(GuidePreferences(RiderLevel.BEGINNER))
+        val viewModel = GuideViewModel(
+            ObserveGuideUseCase(guide),
+            SetRiderLevelUseCase(guide),
+            DismissTipUseCase(guide),
+            ResetTipsUseCase(guide),
+        )
+
+        viewModel.onEvent(GuideUiEvent.Dismiss(GuideTip.ROUTES))
+        assertEquals(false, viewModel.uiState.value.preferences?.shows(GuideTip.ROUTES))
+        viewModel.onEvent(GuideUiEvent.ResetTips)
+        assertEquals(true, viewModel.uiState.value.preferences?.shows(GuideTip.ROUTES))
     }
 
     @Test

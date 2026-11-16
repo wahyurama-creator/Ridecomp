@@ -5,6 +5,7 @@ import com.ridecomp.core.repository.ActivityAnalysisRepository
 import com.ridecomp.core.repository.ActivityProfileRepository
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.BestEffortRepository
+import com.ridecomp.core.repository.GuideRepository
 import com.ridecomp.core.repository.IncidentRepository
 import com.ridecomp.core.repository.ProfileRepository
 import com.ridecomp.core.repository.RouteRepository
@@ -21,6 +22,7 @@ import com.ridecomp.data.repository.ActivityAnalysisRepositoryImpl
 import com.ridecomp.data.repository.ActivityProfileRepositoryImpl
 import com.ridecomp.data.repository.ActivityRepositoryImpl
 import com.ridecomp.data.repository.BestEffortRepositoryImpl
+import com.ridecomp.data.repository.GuideRepositoryImpl
 import com.ridecomp.data.repository.IncidentRepositoryImpl
 import com.ridecomp.data.repository.ProfileRepositoryImpl
 import com.ridecomp.data.repository.RouteRepositoryImpl
@@ -61,6 +63,7 @@ val dataModule = module {
     single<ActivityAnalysisRepository> { ActivityAnalysisRepositoryImpl(get()) }
     single<SegmentRepository> { SegmentRepositoryImpl(get()) }
     single<TrainingRepository> { TrainingRepositoryImpl(get()) }
+    single<GuideRepository> { GuideRepositoryImpl(get()) }
     single<BackupDatabase> { RoomBackupDatabase(androidContext(), get(), get(), get()) }
     single<BackupStateRepository> { BackupStateRepositoryImpl(get()) }
 }

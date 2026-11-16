@@ -17,6 +17,7 @@ import com.ridecomp.core.usecase.DeleteActivityUseCase
 import com.ridecomp.core.usecase.DeleteOfflineMapUseCase
 import com.ridecomp.core.usecase.DeleteRouteUseCase
 import com.ridecomp.core.usecase.DeleteSegmentUseCase
+import com.ridecomp.core.usecase.DismissTipUseCase
 import com.ridecomp.core.usecase.DuplicateActivityProfileUseCase
 import com.ridecomp.core.usecase.EstimateHrMaxUseCase
 import com.ridecomp.core.usecase.EvaluateBestEffortsUseCase
@@ -48,6 +49,7 @@ import com.ridecomp.core.usecase.ObserveActivityUseCase
 import com.ridecomp.core.usecase.ObserveBackupReminderUseCase
 import com.ridecomp.core.usecase.ObserveDataPagesUseCase
 import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
+import com.ridecomp.core.usecase.ObserveGuideUseCase
 import com.ridecomp.core.usecase.ObserveHistoryCountUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveLastBackupUseCase
@@ -81,6 +83,7 @@ import com.ridecomp.core.usecase.RenameActivityUseCase
 import com.ridecomp.core.usecase.RenameRouteUseCase
 import com.ridecomp.core.usecase.RequestReanalysisUseCase
 import com.ridecomp.core.usecase.ResetDataPagesUseCase
+import com.ridecomp.core.usecase.ResetTipsUseCase
 import com.ridecomp.core.usecase.RestartAfterRestoreUseCase
 import com.ridecomp.core.usecase.RestoreBackupUseCase
 import com.ridecomp.core.usecase.ReverseRouteUseCase
@@ -94,6 +97,7 @@ import com.ridecomp.core.usecase.ScanSensorsUseCase
 import com.ridecomp.core.usecase.SegmentsStep
 import com.ridecomp.core.usecase.SelectActivityProfileUseCase
 import com.ridecomp.core.usecase.SendTestSmsUseCase
+import com.ridecomp.core.usecase.SetRiderLevelUseCase
 import com.ridecomp.core.usecase.SetSafetyEnabledUseCase
 import com.ridecomp.core.usecase.ShareActivityFileUseCase
 import com.ridecomp.core.usecase.ShareCardFiles
@@ -225,6 +229,10 @@ val useCaseModule = module {
     factory { LoadShareCardUseCase(get(), get(), get(), get()) }
     factory { ShareCardImageUseCase(get(), get()) }
     factory { ClearShareCardsUseCase(get()) }
+    factory { ObserveGuideUseCase(get()) }
+    factory { SetRiderLevelUseCase(get()) }
+    factory { DismissTipUseCase(get()) }
+    factory { ResetTipsUseCase(get()) }
     factory { ObserveSegmentsUseCase(get()) }
     factory { ObserveSegmentUseCase(get()) }
     factory { ObserveSegmentEffortsUseCase(get()) }

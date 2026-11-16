@@ -29,7 +29,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ridecomp.core.model.RiderLevel
 import com.ridecomp.core.usecase.GpsStatus
 import com.ridecomp.feature.settings.R
 import com.ridecomp.feature.settings.viewmodel.OnboardingEffect
@@ -54,6 +57,7 @@ import com.ridecomp.feature.settings.viewmodel.ProfileViewModel
 import com.ridecomp.ui.R as UiR
 import com.ridecomp.ui.component.BigButton
 import com.ridecomp.ui.component.BigButtonSize
+import com.ridecomp.ui.component.BigButtonStyle
 import com.ridecomp.ui.component.LinkText
 import com.ridecomp.ui.component.OnboardingProgress
 import com.ridecomp.ui.component.RideCompCard
@@ -97,6 +101,11 @@ fun OnboardingRoute(
             OnboardingStep.PERMISSIONS -> PermissionsStep(onNext = {
                 viewModel.onEvent(OnboardingUiEvent.Next)
             }, header)
+            OnboardingStep.LEVEL -> LevelStep(
+                onChoose = { viewModel.onEvent(OnboardingUiEvent.ChooseLevel(it)) },
+                onBack = { viewModel.onEvent(OnboardingUiEvent.Back) },
+                header = header,
+            )
             OnboardingStep.PROFILE -> ProfileForm(
                 state = profileState,
                 onEvent = profileViewModel::onEvent,
@@ -158,6 +167,26 @@ private fun StepLayout(content: @Composable () -> Unit, buttons: @Composable () 
             ) { buttons() }
         }
     }
+}
+
+/** Experience (Phase 4G, owner request): beginner is preselected; it decides how many tips show. */
+@Composable
+private fun LevelStep(onChoose: (RiderLevel) -> Unit, onBack: () -> Unit, header: @Composable () -> Unit) {
+    var selected by rememberSaveable { mutableStateOf(RiderLevel.BEGINNER) }
+    StepLayout(
+        content = {
+            header()
+            RiderLevelChooser(selected = selected, onSelect = { selected = it })
+        },
+        buttons = {
+            BigButton(text = stringResource(R.string.onboarding_next), onClick = { onChoose(selected) })
+            BigButton(
+                text = stringResource(R.string.onboarding_back_label),
+                onClick = onBack,
+                style = BigButtonStyle.TEXT,
+            )
+        },
+    )
 }
 
 /** #1: location (required), nearby devices and notifications, then the "don't kill the app" card. */
@@ -417,6 +446,7 @@ private fun Context.batteryExemptionIntent(): Intent =
 @StringRes
 private fun OnboardingStep.titleRes(): Int = when (this) {
     OnboardingStep.PERMISSIONS -> R.string.onboarding_permissions_title
+    OnboardingStep.LEVEL -> R.string.guide_level_title
     OnboardingStep.PROFILE -> R.string.onboarding_profile_title
     OnboardingStep.READY -> R.string.onboarding_ready_title
 }
@@ -424,6 +454,7 @@ private fun OnboardingStep.titleRes(): Int = when (this) {
 @StringRes
 private fun OnboardingStep.textRes(): Int = when (this) {
     OnboardingStep.PERMISSIONS -> R.string.onboarding_permissions_text
+    OnboardingStep.LEVEL -> R.string.guide_level_text
     OnboardingStep.PROFILE -> R.string.onboarding_profile_text
     OnboardingStep.READY -> R.string.onboarding_ready_text
 }

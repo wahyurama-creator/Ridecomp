@@ -248,4 +248,63 @@
     <string name="licenses_apache_2" translatable="false">Apache License 2.0</string>
     <string name="licenses_odbl" translatable="false">Open Database License (ODbL) 1.0</string>
     <string name="licenses_various">BSD, MIT, Boost, FreeType and others</string>
+    <!-- Help topics (Phase 4G, TG.2) -->
+    <string name="guide_first_ride_title">Your first ride</string>
+    <string name="guide_first_ride_summary">Start, pause and save a ride.</string>
+    <string name="guide_first_ride_body" formatted="false">1. On the Ride tab, tap START RIDE. RideComp checks GPS and battery first.\n2. Wait until GPS is \"Ready\", then tap START. Recording continues with the screen off or the phone in a pocket.\n3. Swipe left/right to change data pages (speed, distance, map, climb, lap).\n4. Stopped at a red light? Recording pauses automatically and resumes when you ride again.\n5. Done: tap PAUSE, then FINISH &amp; SAVE. Name the ride and tap Save.\nTip: double-tap the ride screen to hide or show the buttons.</string>
+    <string name="guide_routes_gpx_title">Routes &amp; GPX files</string>
+    <string name="guide_routes_gpx_summary">What GPX is and how to add one.</string>
+    <string name="guide_routes_gpx_body" formatted="false">A GPX file holds a route line (the way you will ride). Make one in Strava, Komoot or RideWithGPS, or get it from friends or your club.\n1. Download or save the .gpx file to your phone (from email or WhatsApp, for example).\n2. Open the Routes tab, tap Import GPX and pick the file. Or open the .gpx file from a file manager and choose RideComp.\n3. The route appears in the list with its distance, climbing and elevation profile.\n4. Tap the route → Ride this route to start following it.\nClimbs and sharp turns are found automatically when you import.</string>
+    <string name="guide_navigation_title">Following a route</string>
+    <string name="guide_navigation_summary">Off-route, turn and climb alerts.</string>
+    <string name="guide_navigation_body" formatted="false">While following a route, the Map page shows the route (orange), the part already ridden (blue) and your position.\n• More than ~50 m off the route for 10 seconds: a long buzz, a beep and a red banner. Back on the route: two short buzzes.\n• Sharp turns: alerts about 150 m and 30 m before.\n• Climbs: an alert 500 m before, then the climb page shows distance and climbing left and the grade.\nDrag the map to look around; tap the position button to follow again.</string>
+    <string name="guide_offline_maps_title">Offline maps</string>
+    <string name="guide_offline_maps_summary">Maps without internet from .pmtiles files.</string>
+    <string name="guide_offline_maps_body" formatted="false">RideComp does not use the internet, so maps are kept as files on the phone.\n1. On a computer, make a region file with the \"pmtiles\" tool from the Protomaps map build (OpenStreetMap data), for example for one province.\n2. Copy the .pmtiles file to the phone.\n3. Open Settings → Offline maps → Import map file.\n4. The map shows on the route detail and on the Map page while riding when the region covers the route.\nWithout a map file RideComp still shows the route line (breadcrumb mode). Battery saver also uses the breadcrumb.</string>
+    <string name="guide_sensors_title">Connecting sensors</string>
+    <string name="guide_sensors_summary">Heart rate, cadence, speed and power.</string>
+    <string name="guide_sensors_body" formatted="false">Bluetooth sensors add data the phone cannot measure: heart rate (chest strap/armband), cadence (pedal turns), wheel speed and power meters.\n1. Wake the sensor (wear the HR strap, turn the pedals or wheel).\n2. Open the Sensors tab; the search starts by itself (tap Scan again if needed).\n3. Tap the sensor that appears to pair it. Only once.\n4. On your next ride the sensor connects by itself. The HR/CAD/PWR marks at the top of the ride screen turn green when connected.\nA sensor drops out mid-ride? Recording continues and RideComp keeps trying to reconnect.</string>
+    <string name="guide_export_strava_title">Export FIT &amp; upload to Strava</string>
+    <string name="guide_export_strava_summary">Send a ride to Strava or another app.</string>
+    <string name="guide_export_strava_body" formatted="false">FIT is the standard ride file read by Strava, Garmin Connect, TrainingPeaks and others.\n1. Open the ride in History.\n2. Tap Share → choose Strava (or Drive/WhatsApp). Or tap Export FIT to keep it in Downloads.\n3. On Strava\'s website: Upload activity → File → pick the .fit file.\nEstimated power is never written to the FIT file, so your power data stays honest.</string>
+    <string name="guide_backup_title">Backup &amp; changing phones</string>
+    <string name="guide_backup_summary">Keep your ride history safe.</string>
+    <string name="guide_backup_body" formatted="false">All RideComp data lives on this phone only. Back up regularly so nothing is lost if the phone breaks or you change phones.\n1. Settings → Backup &amp; export data → Create backup.\n2. Choose where to save it, for example Google Drive. Turn on a password so others cannot read the file.\n3. On the new phone: install RideComp → Settings → Backup &amp; export data → Choose backup file → password.\nEmergency contacts are not in the backup for privacy; add them again after restoring.</string>
+    <string name="guide_records_segments_title">Records &amp; segments</string>
+    <string name="guide_records_segments_summary">Automatic PRs and your own segments.</string>
+    <string name="guide_records_segments_body" formatted="false">Records (PRs) are found every time you save a ride: fastest distances (1–100 km), best power (with a power meter), longest ride, most climbing. See History → Records.\nA segment is a favourite stretch of road you want to time, like a Strava segment but offline.\n1. Open a ride in History → Create a segment from this ride → drag the two handles to the start and end → Save. Or on a route: Make segment on a climb.\n2. Later rides over it in the same direction are matched automatically.\n3. While riding, a banner shows as you approach; on the segment the screen shows how far ahead or behind your record you are.</string>
+    <string name="guide_training_title">Training load</string>
+    <string name="guide_training_summary">Fitness, fatigue and form.</string>
+    <string name="guide_training_body" formatted="false">The Training tab estimates how hard you train from heart rate (or a power meter with your FTP).\n• Fitness: average load over 6 weeks — rises with regular training.\n• Fatigue: load of the last 7 days.\n• Form: fitness minus fatigue — positive means fresh, negative means tired.\nTo fill it in: ride with a heart-rate sensor and enter HR max (or birth year) in Settings → Rider profile. These are estimates for trends, not medical values.</string>
+    <string name="guide_share_card_title">Share card</string>
+    <string name="guide_share_card_summary">Share a ride on WhatsApp or Instagram.</string>
+    <string name="guide_share_card_body" formatted="false">1. Open the ride in History → Share a card.\n2. Choose Story (9:16) or Square (1:1), the statistics to show (up to 4) and the theme.\n3. \"Hide start and end of the route\" is on by default so your home is not visible.\n4. Tap Share and choose WhatsApp, Instagram or another app.\nThe card has no map and no coordinates, only the shape of the route.</string>
+    <string name="guide_safety_title">Safety &amp; crash detection</string>
+    <string name="guide_safety_summary">Emergency SMS if you crash.</string>
+    <string name="guide_safety_body" formatted="false">When turned on, RideComp detects hard impacts while riding.\n1. Settings → Safety → add up to 3 emergency contacts → turn on Incident detection.\n2. If a crash is detected, an alarm sounds and a 30-second countdown appears. Tap I\'M OK if you are fine.\n3. If nobody taps it, an SMS with your location goes to your emergency contacts.\nSend a test SMS first so your contacts know. Detection is not perfect; ride carefully.</string>
+    <string name="guide_battery_title">Battery &amp; phones that kill the app</string>
+    <string name="guide_battery_summary">So recording never stops mid-ride.</string>
+    <string name="guide_battery_body" formatted="false">Some phone makers (Xiaomi, Oppo, Realme, Vivo, Infinix, Samsung) stop apps in the background to save battery, which can stop recording.\n1. Open Settings → the yellow \"My phone kills the app\" card and follow the steps for your phone (allow Autostart / don\'t restrict battery).\n2. At ≤ 20% battery RideComp switches to saver mode; at ≤ 5% the ride is saved as an emergency file.\n3. The \"Auto dim\" or \"Off\" screen mode saves the most battery.</string>
+    <!-- Rider level, tips and Help (Phase 4G) -->
+    <string name="guide_level_title">How long have you been cycling?</string>
+    <string name="guide_level_text">RideComp shows more or fewer tips depending on your experience. You can change this later in Settings → Help.</string>
+    <string name="guide_level_beginner">Beginner</string>
+    <string name="guide_level_beginner_hint">New to cycling or less than 1 year. Tips on every screen.</string>
+    <string name="guide_level_intermediate">Intermediate</string>
+    <string name="guide_level_intermediate_hint">1–3 years, riding regularly. Tips for advanced features only.</string>
+    <string name="guide_level_experienced">Experienced</string>
+    <string name="guide_level_experienced_hint">More than 3 years or structured training. No tips; Help is always there.</string>
+    <string name="guide_help_title">Help &amp; guides</string>
+    <string name="guide_help_level">Your experience</string>
+    <string name="guide_help_topics">Guides</string>
+    <string name="guide_help_reset">Show all tips again</string>
+    <string name="guide_help_reset_done">Tips will show again.</string>
+    <string name="guide_tip_learn_more">Learn more</string>
+    <string name="guide_tip_close">Close tip</string>
+    <string name="guide_tip_first_ride">Tap START RIDE. The ride keeps recording with the screen off; pause and save when you finish.</string>
+    <string name="guide_tip_routes">A GPX file is a route line made in Strava, Komoot or similar. Import it here and RideComp guides you along it.</string>
+    <string name="guide_tip_sensors">Heart-rate, cadence, speed and power sensors connect over Bluetooth. Wake the sensor, then tap it in the list to pair once.</string>
+    <string name="guide_tip_export">To put this ride on Strava, tap Share and choose Strava, or Export FIT and upload it on strava.com.</string>
+    <string name="guide_tip_backup">Your rides live only on this phone. Make a backup to Google Drive now and then so you never lose them.</string>
+    <string name="guide_tip_offline_maps">Maps work without internet from region files (.pmtiles) you make on a computer and import here.</string>
 </resources>

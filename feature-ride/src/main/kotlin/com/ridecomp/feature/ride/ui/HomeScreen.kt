@@ -74,6 +74,7 @@ fun HomeRoute(
     onOpenRide: () -> Unit,
     modifier: Modifier = Modifier,
     onOpenBackup: () -> Unit = {},
+    tipContent: (@Composable () -> Unit)? = null,
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -88,11 +89,17 @@ fun HomeRoute(
             HomeEffect.OpenBackup -> onOpenBackup()
         }
     }
-    HomeScreen(state = state, onEvent = viewModel::onEvent, modifier = modifier)
+    HomeScreen(state = state, onEvent = viewModel::onEvent, modifier = modifier, tipContent = tipContent)
 }
 
+/** [tipContent]: the first-ride tip of the guide (Phase 4G), from the app. */
 @Composable
-fun HomeScreen(state: HomeUiState, onEvent: (HomeUiEvent) -> Unit, modifier: Modifier = Modifier) {
+fun HomeScreen(
+    state: HomeUiState,
+    onEvent: (HomeUiEvent) -> Unit,
+    modifier: Modifier = Modifier,
+    tipContent: (@Composable () -> Unit)? = null,
+) {
     var isDiscardDialogShown by remember { mutableStateOf(false) }
     val format = remember(state.unitSystem) { UnitFormatter(state.unitSystem) }
     Column(
@@ -109,6 +116,7 @@ fun HomeScreen(state: HomeUiState, onEvent: (HomeUiEvent) -> Unit, modifier: Mod
         verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
     ) {
         HomeHeader(state.battery)
+        tipContent?.invoke()
         val recoverable = state.recoverable
         if (recoverable != null) {
             RecoveryCard(recoverable, format, onEvent, onDiscard = { isDiscardDialogShown = true })

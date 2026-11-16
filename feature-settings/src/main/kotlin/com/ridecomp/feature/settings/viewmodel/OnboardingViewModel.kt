@@ -1,9 +1,11 @@
 package com.ridecomp.feature.settings.viewmodel
 
 import androidx.lifecycle.viewModelScope
+import com.ridecomp.core.model.RiderLevel
 import com.ridecomp.core.usecase.CompleteOnboardingUseCase
 import com.ridecomp.core.usecase.GpsStatus
 import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
+import com.ridecomp.core.usecase.SetRiderLevelUseCase
 import com.ridecomp.ui.udf.UdfViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,12 +18,16 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /** Onboarding steps in order (02-DESIGN §3.1, 13-UI-SCREENS #1, #2, #22). */
-enum class OnboardingStep { PERMISSIONS, PROFILE, READY }
+/** Steps in order; LEVEL (Phase 4G) asks how experienced the rider is. */
+enum class OnboardingStep { PERMISSIONS, LEVEL, PROFILE, READY }
 
 sealed interface OnboardingUiEvent {
     data object Next : OnboardingUiEvent
 
     data object Back : OnboardingUiEvent
+
+    /** The rider's experience (Phase 4G): stored, then the next step. */
+    data class ChooseLevel(val level: RiderLevel) : OnboardingUiEvent
 
     /** "Mulai pakai RideComp" or "Lewati" on the last step. */
     data object Finished : OnboardingUiEvent
@@ -39,6 +45,7 @@ sealed interface OnboardingEffect {
 class OnboardingViewModel(
     private val completeOnboarding: CompleteOnboardingUseCase,
     observeGps: ObserveGpsStatusUseCase,
+    private val setRiderLevel: SetRiderLevelUseCase,
 ) : UdfViewModel<OnboardingStep, OnboardingUiEvent, OnboardingEffect>(OnboardingStep.PERMISSIONS) {
     val gpsStatus: StateFlow<GpsStatus?> = uiState
         .map { it == OnboardingStep.READY }
@@ -50,6 +57,10 @@ class OnboardingViewModel(
         when (event) {
             OnboardingUiEvent.Next -> updateState { OnboardingStep.entries.getOrElse(ordinal + 1) { this } }
             OnboardingUiEvent.Back -> updateState { OnboardingStep.entries.getOrElse(ordinal - 1) { this } }
+            is OnboardingUiEvent.ChooseLevel -> viewModelScope.launch {
+                setRiderLevel(event.level)
+                updateState { OnboardingStep.entries.getOrElse(ordinal + 1) { this } }
+            }
             OnboardingUiEvent.Finished -> viewModelScope.launch {
                 completeOnboarding()
                 sendEffect(OnboardingEffect.Done)

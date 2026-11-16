@@ -61,6 +61,7 @@ private val MAP_MIME_TYPES = arrayOf("application/octet-stream", "application/vn
 fun OfflineMapsRoute(
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
+    tipContent: (@Composable () -> Unit)? = null,
     viewModel: OfflineMapsViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -74,6 +75,7 @@ fun OfflineMapsRoute(
         onImport = { picker.launch(MAP_MIME_TYPES) },
         onBack = onBack,
         modifier = modifier,
+        tipContent = tipContent,
     )
 }
 
@@ -88,6 +90,7 @@ fun OfflineMapsScreen(
     onImport: () -> Unit,
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
+    tipContent: (@Composable () -> Unit)? = null,
 ) {
     ScreenScaffold(
         modifier = modifier,
@@ -118,6 +121,7 @@ fun OfflineMapsScreen(
                 ),
             verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
         ) {
+            tipContent?.invoke()
             StorageCard(state)
             if (state.maps.isNotEmpty()) {
                 SectionHeader(stringResource(R.string.offline_maps_saved), horizontalPadding = RideCompDimens.none)

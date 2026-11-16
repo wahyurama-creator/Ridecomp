@@ -60,6 +60,7 @@ fun RoutesRoute(
     modifier: Modifier = Modifier,
     incomingUri: String? = null,
     onIncomingHandled: () -> Unit = {},
+    tipContent: (@Composable () -> Unit)? = null,
     viewModel: RoutesViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -84,6 +85,7 @@ fun RoutesRoute(
         onOpenRoute = onOpenRoute,
         onErrorShown = { viewModel.onEvent(RoutesUiEvent.ErrorShown) },
         modifier = modifier,
+        tipContent = tipContent,
     )
 }
 
@@ -94,6 +96,7 @@ fun RoutesScreen(
     onOpenRoute: (Long) -> Unit,
     onErrorShown: () -> Unit,
     modifier: Modifier = Modifier,
+    tipContent: (@Composable () -> Unit)? = null,
 ) {
     ScreenScaffold(
         modifier = modifier,
@@ -108,6 +111,9 @@ fun RoutesScreen(
             }
         },
     ) {
+        tipContent?.let {
+            Box(modifier = Modifier.padding(horizontal = RideCompDimens.screenPaddingHorizontal)) { it() }
+        }
         Box(modifier = Modifier.weight(1f)) {
             if (state.isLoaded && state.routes.isEmpty()) {
                 EmptyState(message = stringResource(R.string.routes_empty))

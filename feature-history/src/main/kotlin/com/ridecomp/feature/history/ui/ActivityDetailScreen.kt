@@ -72,6 +72,7 @@ fun ActivityDetailRoute(
     onBack: () -> Unit = {},
     onCreateSegment: (() -> Unit)? = null,
     onShareCard: (() -> Unit)? = null,
+    tipContent: (@Composable () -> Unit)? = null,
     viewModel: ActivityDetailViewModel = koinViewModel { parametersOf(activityId) },
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -94,6 +95,7 @@ fun ActivityDetailRoute(
         onBack = onBack,
         onCreateSegment = onCreateSegment,
         onShareCard = onShareCard,
+        tipContent = tipContent,
         modifier = modifier,
     )
 }
@@ -110,6 +112,8 @@ fun ActivityDetailScreen(
     onCreateSegment: (() -> Unit)? = null,
     /** Opens the share card editor (T4.5); null hides the action. */
     onShareCard: (() -> Unit)? = null,
+    /** The export tip of the guide (Phase 4G), from the app. */
+    tipContent: (@Composable () -> Unit)? = null,
 ) {
     val activity = state.activity
     ScreenScaffold(
@@ -140,6 +144,7 @@ fun ActivityDetailScreen(
                 Totals(activity.totals, format)
                 Charts(state)
                 Laps(state, format)
+                tipContent?.invoke()
                 onShareCard?.let { ShareCardButton(it) }
                 Actions(state, onEvent, onSaveFit, onOpenStravaHelp, onCreateSegment)
             }
