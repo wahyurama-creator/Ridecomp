@@ -114,7 +114,7 @@ Spesifikasi detail fitur tambahan: `../12-FEATURE-SPECS.md`.
 **DoD:** pengguna baru (pemula) bisa menjelaskan & melakukan import GPX, sambung sensor, backup, dan export tanpa bantuan.
 
 ## Fase 5 — Strava API (opsional; hanya bila disetujui)
-- [ ] T5.0 Baca dokumentasi & changelog Strava terbaru; laporkan perbedaan dengan `04-INTEGRATIONS.md` §E.2.
+- [x] T5.0 Baca dokumentasi & changelog Strava terbaru; laporkan perbedaan dengan `04-INTEGRATIONS.md` §E.2.
 - [ ] T5.1 Layar setup: input Client ID/Secret + panduan membuat app API.
 - [ ] T5.2 OAuth via Custom Tabs (scope `activity:write`, `state` acak, PKCE bila didukung, redirect dicocokkan persis), token di Keystore & dikecualikan dari backup, refresh token (SEC-AUTH-*).
 - [ ] T5.3 Upload FIT + polling status + antrian retry + penanganan duplikat.
