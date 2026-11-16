@@ -7,6 +7,9 @@ import com.ridecomp.core.usecase.AnalyzeActivitiesUseCase
 import com.ridecomp.core.usecase.ClearShareCardsUseCase
 import com.ridecomp.core.usecase.ObserveHistoryCountUseCase
 import com.ridecomp.core.usecase.ObserveOnboardingDoneUseCase
+import com.ridecomp.core.usecase.ProcessStravaUploadsUseCase
+import com.ridecomp.core.usecase.QueueNewRidesForStravaUseCase
+import com.ridecomp.core.usecase.StravaUploadRequests
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -15,6 +18,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+/** The Strava upload queue as the app runs it (T5.3), grouped to keep the constructor short (KT-05). */
+data class StravaQueue(
+    val requests: StravaUploadRequests,
+    val queueNewRides: QueueNewRidesForStravaUseCase,
+    val process: ProcessStravaUploadsUseCase,
+)
 
 /**
  * Where the app starts: null while loading, then onboarding (first launch) or home. While the app is open it
@@ -28,6 +38,7 @@ class AppViewModel(
     analysisRequests: AnalysisRequests,
     analyze: AnalyzeActivitiesUseCase,
     clearShareCards: ClearShareCardsUseCase,
+    strava: StravaQueue,
 ) : ViewModel() {
     val isOnboardingDone: StateFlow<Boolean?> = observeOnboardingDone()
         .map<Boolean, Boolean?> { it }
@@ -38,6 +49,14 @@ class AppViewModel(
         viewModelScope.launch { clearShareCards() }
         viewModelScope.launch {
             merge(observeRideCount().distinctUntilChanged(), analysisRequests.flow).collectLatest { analyze() }
+        }
+        // Strava uploads (T5.3): at start, after each saved ride (auto-upload) and when a ride is queued.
+        // One run at a time, never cancelled mid-upload.
+        viewModelScope.launch {
+            merge(observeRideCount().distinctUntilChanged().map { }, strava.requests.flow).collect {
+                strava.queueNewRides()
+                strava.process()
+            }
         }
     }
 

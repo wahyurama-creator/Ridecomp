@@ -1,6 +1,7 @@
 package com.ridecomp.app.di
 
 import com.ridecomp.app.AppViewModel
+import com.ridecomp.app.StravaQueue
 import com.ridecomp.feature.history.di.historyFeatureModule
 import com.ridecomp.feature.ride.di.rideFeatureModule
 import com.ridecomp.feature.routes.di.routesFeatureModule
@@ -13,7 +14,8 @@ import org.koin.dsl.module
 
 /** App-level ViewModels. */
 val appModule = module {
-    viewModel { AppViewModel(get(), get(), get(), get(), get()) }
+    factory { StravaQueue(get(), get(), get()) }
+    viewModel { AppViewModel(get(), get(), get(), get(), get(), get()) }
 }
 
 /** Every Koin module of the app, wired once in the composition root (ARCH-02). */

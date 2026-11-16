@@ -49,6 +49,7 @@ import com.ridecomp.ui.component.LinkText
 import com.ridecomp.ui.component.RideCompCard
 import com.ridecomp.ui.component.RideCompTextField
 import com.ridecomp.ui.component.ScreenScaffold
+import com.ridecomp.ui.component.SwitchRow
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
 import com.ridecomp.ui.theme.RideCompDimens
@@ -312,6 +313,14 @@ private fun ConnectedCard(status: StravaStatus.Connected, onEvent: (StravaUiEven
                 )
             }
         }
+    }
+    RideCompCard(contentPadding = false) {
+        SwitchRow(
+            label = stringResource(R.string.strava_auto_upload),
+            description = stringResource(R.string.strava_auto_upload_hint),
+            isChecked = status.isAutoUpload,
+            onCheckedChange = { onEvent(StravaUiEvent.SetAutoUpload(it)) },
+        )
     }
     LinkText(stringResource(R.string.strava_change_app), onClick = { onEvent(StravaUiEvent.EditApp) })
 }

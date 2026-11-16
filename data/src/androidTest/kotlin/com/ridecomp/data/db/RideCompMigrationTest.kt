@@ -91,6 +91,28 @@ class RideCompMigrationTest {
     }
 
     @Test
+    fun migrate_6_to_7_adds_strava_uploads_deleted_with_the_ride() {
+        helper.createDatabase(TEST_DB_7, 6).apply {
+            execSQL(
+                "INSERT INTO activities (id, uuid, name, status, started_at, elapsed_s, moving_s, distance_m, " +
+                    "ascent_m, descent_m, avg_speed, max_speed, last_checkpoint_at, analysis_version) " +
+                    "VALUES (1, 'u1', 'Evening ride', 'finished', 1000, 60, 50, 400.0, 3.0, 2.0, 8.0, 10.0, 2000, 3)",
+            )
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(TEST_DB_7, 7, true, RideCompMigrations.MIGRATION_6_7)
+
+        db.execSQL("INSERT INTO strava_uploads (activity_id, state, updated_at) VALUES (1, 'queued', 5)")
+        db.execSQL("PRAGMA foreign_keys = ON")
+        db.execSQL("DELETE FROM activities WHERE id = 1")
+        db.query("SELECT COUNT(*) FROM strava_uploads").use { cursor ->
+            cursor.moveToFirst()
+            assertEquals(0, cursor.getInt(0))
+        }
+    }
+
+    @Test
     fun all_migrations_open_on_latest_schema() {
         helper.createDatabase(TEST_DB_ALL, 1).close()
 
@@ -108,6 +130,7 @@ class RideCompMigrationTest {
         const val TEST_DB = "migration-test.db"
         const val TEST_DB_ALL = "migration-all-test.db"
         const val TEST_DB_3 = "migration-3-test.db"
+        const val TEST_DB_7 = "migration-7-test.db"
         const val TEST_DB_6 = "migration-6-test.db"
     }
 }

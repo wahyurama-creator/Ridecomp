@@ -1,5 +1,7 @@
 package com.ridecomp.feature.history.ui
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
@@ -30,12 +32,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ridecomp.core.config.StravaConfig
 import com.ridecomp.core.config.Units
 import com.ridecomp.core.model.RideTotals
+import com.ridecomp.core.model.StravaStatus
+import com.ridecomp.core.model.StravaUploadError
+import com.ridecomp.core.model.StravaUploadState
 import com.ridecomp.core.usecase.ExportFormat
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.history.R
@@ -92,8 +100,10 @@ fun ActivityDetailRoute(
     onCreateSegment: (() -> Unit)? = null,
     onShareCard: (() -> Unit)? = null,
     tipContent: (@Composable () -> Unit)? = null,
+    onOpenStravaSettings: () -> Unit = {},
     viewModel: ActivityDetailViewModel = koinViewModel { parametersOf(activityId) },
 ) {
+    val context = LocalContext.current
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     ObserveEffects(viewModel.effects) { effect ->
         when (effect) {
@@ -115,6 +125,16 @@ fun ActivityDetailRoute(
         onCreateSegment = onCreateSegment,
         onShareCard = onShareCard,
         tipContent = tipContent,
+        onOpenStravaSettings = onOpenStravaSettings,
+        onOpenStravaActivity = { stravaId ->
+            try {
+                context.startActivity(
+                    Intent(Intent.ACTION_VIEW, "${StravaConfig.ACTIVITY_URL_PREFIX}$stravaId".toUri()),
+                )
+            } catch (_: ActivityNotFoundException) {
+                // No browser: the row keeps saying the ride is on Strava.
+            }
+        },
         modifier = modifier,
     )
 }
@@ -133,6 +153,9 @@ fun ActivityDetailScreen(
     onShareCard: (() -> Unit)? = null,
     /** The export tip of the guide (Phase 4G), from the app. */
     tipContent: (@Composable () -> Unit)? = null,
+    /** Strava (T5.3): connect first, or open the uploaded activity. */
+    onOpenStravaSettings: () -> Unit = {},
+    onOpenStravaActivity: (Long) -> Unit = {},
 ) {
     val activity = state.activity
     ScreenScaffold(
@@ -166,7 +189,9 @@ fun ActivityDetailScreen(
                 Charts(state, format)
                 Laps(state, format)
                 tipContent?.invoke()
-                ExportSection(state, onEvent, onSaveFit, onOpenStravaHelp)
+                ExportSection(state, onEvent, onSaveFit, onOpenStravaHelp) {
+                    StravaRow(state, onEvent, onOpenStravaSettings, onOpenStravaActivity)
+                }
                 MoreSection(onEvent, onCreateSegment)
             }
         }
@@ -450,6 +475,7 @@ private fun ExportSection(
     onEvent: (ActivityDetailUiEvent) -> Unit,
     onSaveFit: () -> Unit,
     onOpenStravaHelp: () -> Unit,
+    stravaRow: @Composable () -> Unit,
 ) {
     val colors = RideCompTheme.colors
 
@@ -458,6 +484,7 @@ private fun ExportSection(
     Column {
         SectionHeader(stringResource(R.string.detail_section_export), horizontalPadding = RideCompDimens.none)
         ListCard {
+            stravaRow()
             ListCardRow(
                 title = stringResource(R.string.detail_send_fit_title),
                 subtitle = stringResource(R.string.detail_send_fit_subtitle),
@@ -487,6 +514,96 @@ private fun ExportSection(
             FormatHelp()
         }
     }
+}
+
+/**
+ * Upload to Strava (T5.3): connect first when needed, then one tap; while the ride is on its way the row
+ * says where it is, and once on Strava it opens the activity.
+ */
+@Composable
+private fun StravaRow(
+    state: ActivityDetailUiState,
+    onEvent: (ActivityDetailUiEvent) -> Unit,
+    onOpenSettings: () -> Unit,
+    onOpenActivity: (Long) -> Unit,
+) {
+    val upload = state.stravaUpload
+    val stravaId = upload?.stravaActivityId
+    val isConnected = state.stravaStatus is StravaStatus.Connected
+    val row = when {
+        upload?.state?.isOnStrava == true && stravaId != null -> StravaRowLook(
+            R.string.detail_strava_view,
+            R.string.detail_strava_on_strava,
+            onClick = { onOpenActivity(stravaId) },
+            isDone = true,
+        )
+        !isConnected -> StravaRowLook(
+            R.string.detail_strava_upload,
+            R.string.detail_strava_connect_first,
+            onOpenSettings,
+        )
+        upload?.state == StravaUploadState.PROCESSING ->
+            StravaRowLook(R.string.detail_strava_upload, R.string.detail_strava_processing, onClick = null)
+        upload?.state == StravaUploadState.QUEUED -> StravaRowLook(
+            R.string.detail_strava_upload,
+            upload.error.queuedText(),
+            onClick = { onEvent(ActivityDetailUiEvent.UploadToStrava) },
+        )
+        upload?.state == StravaUploadState.FAILED -> StravaRowLook(
+            R.string.detail_strava_retry,
+            upload.error.failedText(),
+            onClick = { onEvent(ActivityDetailUiEvent.UploadToStrava) },
+            isFailed = true,
+        )
+        else -> StravaRowLook(
+            R.string.detail_strava_upload,
+            R.string.detail_strava_upload_subtitle,
+            onClick = { onEvent(ActivityDetailUiEvent.UploadToStrava) },
+        )
+    }
+    val colors = RideCompTheme.colors
+    ListCardRow(
+        title = stringResource(row.titleRes),
+        subtitle = stringResource(row.subtitleRes),
+        value = if (row.isDone) stringResource(R.string.detail_strava_sent) else null,
+        valueTone = ValueTone.OK,
+        onClick = row.onClick,
+        leading = {
+            IconTile(
+                if (row.isDone) UiR.drawable.ic_check else UiR.drawable.ic_upload,
+                tint = when {
+                    row.isDone -> colors.ok
+                    row.isFailed -> colors.danger
+                    else -> colors.accent
+                },
+            )
+        },
+    )
+}
+
+private class StravaRowLook(
+    @param:StringRes val titleRes: Int,
+    @param:StringRes val subtitleRes: Int,
+    val onClick: (() -> Unit)?,
+    val isDone: Boolean = false,
+    val isFailed: Boolean = false,
+)
+
+@StringRes
+private fun StravaUploadError?.queuedText(): Int = when (this) {
+    StravaUploadError.OFFLINE -> R.string.detail_strava_waiting_internet
+    StravaUploadError.RATE_LIMITED, StravaUploadError.SERVER -> R.string.detail_strava_busy
+    StravaUploadError.NOT_CONNECTED, StravaUploadError.REJECTED, StravaUploadError.FILE, null ->
+        R.string.detail_strava_sending
+}
+
+@StringRes
+private fun StravaUploadError?.failedText(): Int = when (this) {
+    StravaUploadError.NOT_CONNECTED -> R.string.detail_strava_failed_account
+    StravaUploadError.REJECTED -> R.string.detail_strava_failed_rejected
+    StravaUploadError.FILE -> R.string.detail_strava_failed_file
+    StravaUploadError.OFFLINE, StravaUploadError.RATE_LIMITED, StravaUploadError.SERVER, null ->
+        R.string.detail_strava_failed
 }
 
 /** "Apa itu FIT dan GPX?": opens in place, so a new rider can choose without leaving the screen. */

@@ -97,4 +97,19 @@
     <string name="detail_format_gpx">GPX</string>
     <string name="detail_format_gpx_text">Mainly the route line with times, without the full sensor data. Pick it to share the route with a friend or to follow it again in Komoot or a map app.</string>
     <string name="detail_formats_advice">Not sure? Pick FIT: it keeps everything you recorded.</string>
+    <string name="detail_strava_upload">Upload to Strava</string>
+    <string name="detail_strava_upload_subtitle">Straight to your Strava account</string>
+    <string name="detail_strava_connect_first">Connect your Strava account first (once)</string>
+    <string name="detail_strava_sending">Sending…</string>
+    <string name="detail_strava_processing">Strava is processing the ride…</string>
+    <string name="detail_strava_waiting_internet">Waiting for internet; sent automatically</string>
+    <string name="detail_strava_busy">Strava is busy; tried again later</string>
+    <string name="detail_strava_retry">Upload failed: try again</string>
+    <string name="detail_strava_failed">Could not upload. Tap to try again.</string>
+    <string name="detail_strava_failed_account">The Strava connection ended. Connect again in Settings.</string>
+    <string name="detail_strava_failed_rejected">Strava could not read this ride.</string>
+    <string name="detail_strava_failed_file">The ride file could not be made.</string>
+    <string name="detail_strava_view">View on Strava</string>
+    <string name="detail_strava_on_strava">This ride is on Strava</string>
+    <string name="detail_strava_sent">Sent</string>
 </resources>

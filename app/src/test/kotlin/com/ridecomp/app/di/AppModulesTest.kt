@@ -17,6 +17,7 @@ import com.ridecomp.core.repository.RouteRepository
 import com.ridecomp.core.repository.SafetyRepository
 import com.ridecomp.core.repository.SegmentRepository
 import com.ridecomp.core.repository.SettingsRepository
+import com.ridecomp.core.repository.StravaUploadRepository
 import com.ridecomp.core.repository.TrainingRepository
 import com.ridecomp.core.source.AccelerometerSource
 import com.ridecomp.core.source.AppRestarter
@@ -65,6 +66,7 @@ import com.ridecomp.core.testing.FakeShareCardFiles
 import com.ridecomp.core.testing.FakeSmsGateway
 import com.ridecomp.core.testing.FakeStravaAccountStore
 import com.ridecomp.core.testing.FakeStravaApi
+import com.ridecomp.core.testing.FakeStravaUploadRepository
 import com.ridecomp.core.testing.FakeTrainingRepository
 import com.ridecomp.core.testing.RecordingLogger
 import com.ridecomp.core.testing.TestDispatcherProvider
@@ -170,6 +172,7 @@ class AppModulesTest {
         factory<LicenseTextReader> { LicenseTextReader { "" } }
         single<StravaAccountStore> { FakeStravaAccountStore() }
         single<StravaApi> { FakeStravaApi() }
+        single<StravaUploadRepository> { FakeStravaUploadRepository() }
     }
 
     @BeforeTest

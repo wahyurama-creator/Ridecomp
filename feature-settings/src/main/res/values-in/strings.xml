@@ -336,4 +336,6 @@
     <string name="strava_message_no_browser">Tidak ada browser atau app Strava untuk membuka halaman.</string>
     <string name="settings_strava_connected">Terhubung</string>
     <string name="settings_strava_not_connected">Belum terhubung</string>
+    <string name="strava_auto_upload">Upload ride otomatis</string>
+    <string name="strava_auto_upload_hint">Setelah ride disimpan, ride langsung dikirim ke Strava selama RideComp terbuka (dengan internet).</string>
 </resources>

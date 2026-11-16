@@ -18,6 +18,7 @@ import com.ridecomp.data.db.dao.RouteDao
 import com.ridecomp.data.db.dao.SegmentDao
 import com.ridecomp.data.db.dao.SensorDao
 import com.ridecomp.data.db.dao.SettingsDao
+import com.ridecomp.data.db.dao.StravaUploadDao
 import com.ridecomp.data.db.dao.TrackPointDao
 import com.ridecomp.data.db.dao.TrainingDao
 import com.ridecomp.data.db.entity.ActivityEntity
@@ -38,6 +39,7 @@ import com.ridecomp.data.db.entity.SegmentEntity
 import com.ridecomp.data.db.entity.SegmentPointEntity
 import com.ridecomp.data.db.entity.SensorEntity
 import com.ridecomp.data.db.entity.SettingEntity
+import com.ridecomp.data.db.entity.StravaUploadEntity
 import com.ridecomp.data.db.entity.TrackPointEntity
 
 /**
@@ -65,6 +67,7 @@ import com.ridecomp.data.db.entity.TrackPointEntity
         SegmentPointEntity::class,
         SegmentEffortEntity::class,
         DailyTrainingEntity::class,
+        StravaUploadEntity::class,
     ],
     version = RideCompDatabase.VERSION,
     exportSchema = true,
@@ -98,8 +101,10 @@ abstract class RideCompDatabase : RoomDatabase() {
 
     abstract fun trainingDao(): TrainingDao
 
+    abstract fun stravaUploadDao(): StravaUploadDao
+
     companion object {
-        const val VERSION = 6
+        const val VERSION = 7
 
         /**
          * Builds the database in internal storage (SEC-STO-01). Destructive migration is never enabled:
@@ -227,6 +232,18 @@ object RideCompMigrations {
         }
     }
 
+    /** v7: the Strava upload of each ride (Phase 5, T5.3, D-79). */
+    val MIGRATION_6_7: Migration = object : Migration(6, 7) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `${DbNames.TABLE_STRAVA_UPLOADS}` (" +
+                    "`activity_id` INTEGER NOT NULL, `state` TEXT NOT NULL, `upload_id` INTEGER, " +
+                    "`strava_activity_id` INTEGER, `error` TEXT, `updated_at` INTEGER NOT NULL, " +
+                    "PRIMARY KEY(`activity_id`), FOREIGN KEY(`activity_id`) $CASCADE_ACTIVITIES )",
+            )
+        }
+    }
+
     private const val CASCADE_ACTIVITIES =
         "REFERENCES `${DbNames.TABLE_ACTIVITIES}`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE"
     private const val CASCADE_SEGMENTS =
@@ -284,7 +301,8 @@ object RideCompMigrations {
         )
     }
 
-    val ALL: List<Migration> = listOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+    val ALL: List<Migration> =
+        listOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
 }
 
 /** New installs get the built-in profiles too (existing ones get them from MIGRATION_2_3). */

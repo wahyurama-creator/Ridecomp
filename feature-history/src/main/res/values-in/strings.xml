@@ -97,4 +97,19 @@
     <string name="detail_format_gpx">GPX</string>
     <string name="detail_format_gpx_text">Terutama garis rute beserta waktunya, tanpa data sensor lengkap. Pilih ini untuk membagikan rute ke teman atau mengikutinya lagi di Komoot atau aplikasi peta.</string>
     <string name="detail_formats_advice">Ragu? Pilih FIT: semua yang terekam tetap tersimpan.</string>
+    <string name="detail_strava_upload">Upload ke Strava</string>
+    <string name="detail_strava_upload_subtitle">Langsung ke akun Strava Anda</string>
+    <string name="detail_strava_connect_first">Hubungkan akun Strava dulu (sekali saja)</string>
+    <string name="detail_strava_sending">Mengirim…</string>
+    <string name="detail_strava_processing">Strava sedang memproses ride…</string>
+    <string name="detail_strava_waiting_internet">Menunggu internet; dikirim otomatis</string>
+    <string name="detail_strava_busy">Strava sedang sibuk; dicoba lagi nanti</string>
+    <string name="detail_strava_retry">Upload gagal: coba lagi</string>
+    <string name="detail_strava_failed">Gagal upload. Ketuk untuk mencoba lagi.</string>
+    <string name="detail_strava_failed_account">Koneksi Strava terputus. Hubungkan lagi di Pengaturan.</string>
+    <string name="detail_strava_failed_rejected">Strava tidak bisa membaca ride ini.</string>
+    <string name="detail_strava_failed_file">File ride tidak bisa dibuat.</string>
+    <string name="detail_strava_view">Lihat di Strava</string>
+    <string name="detail_strava_on_strava">Ride ini sudah ada di Strava</string>
+    <string name="detail_strava_sent">Terkirim</string>
 </resources>

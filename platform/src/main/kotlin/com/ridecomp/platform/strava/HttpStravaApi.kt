@@ -3,21 +3,27 @@ package com.ridecomp.platform.strava
 import com.ridecomp.core.config.StravaConfig
 import com.ridecomp.core.model.StravaApp
 import com.ridecomp.core.model.StravaError
+import com.ridecomp.core.source.Clock
 import com.ridecomp.core.source.DispatcherProvider
 import com.ridecomp.core.source.Logger
 import com.ridecomp.core.source.StravaApi
 import com.ridecomp.core.source.StravaGrant
+import com.ridecomp.core.source.StravaUploadReply
+import com.ridecomp.core.source.StravaUploadRequest
 import com.ridecomp.core.util.Outcome
 import com.ridecomp.core.util.asFailure
 import com.ridecomp.core.util.asSuccess
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.IOException
 import java.io.InputStream
+import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.Base64
+import java.util.UUID
 import javax.net.ssl.HttpsURLConnection
 import kotlinx.coroutines.withContext
 
@@ -26,7 +32,11 @@ import kotlinx.coroutines.withContext
  * (network_security_config), timeouts, no redirects followed, replies size-limited and validated
  * (SEC-NET-01..04). Tokens and replies are never logged, only the status code.
  */
-class HttpStravaApi(private val dispatchers: DispatcherProvider, private val logger: Logger) : StravaApi {
+class HttpStravaApi(
+    private val clock: Clock,
+    private val dispatchers: DispatcherProvider,
+    private val logger: Logger,
+) : StravaApi {
     override suspend fun exchangeCode(app: StravaApp, code: String): Outcome<StravaGrant, StravaError> = grant(
         app,
         listOf(GRANT_TYPE to "authorization_code", CODE to code),
@@ -43,8 +53,8 @@ class HttpStravaApi(private val dispatchers: DispatcherProvider, private val log
             HttpRequest(
                 url = StravaConfig.REVOKE_URL,
                 headers = mapOf(AUTHORIZATION to "$BASIC $basic"),
-                body = form(listOf(TOKEN to token, TOKEN_TYPE_HINT to REFRESH_TOKEN)),
                 contentType = FORM_CONTENT_TYPE,
+                writeBody = { out -> out.write(form(listOf(TOKEN to token, TOKEN_TYPE_HINT to REFRESH_TOKEN))) },
             ),
         )
         return when (reply) {
@@ -53,15 +63,81 @@ class HttpStravaApi(private val dispatchers: DispatcherProvider, private val log
         }
     }
 
+    override suspend fun upload(
+        accessToken: String,
+        request: StravaUploadRequest,
+    ): Outcome<StravaUploadReply, StravaError> {
+        val boundary = BOUNDARY_PREFIX + UUID.randomUUID().toString().replace("-", "")
+        val fields = listOf(
+            DATA_TYPE to StravaConfig.DATA_TYPE_FIT,
+            NAME to request.name,
+            EXTERNAL_ID to request.externalId,
+            SPORT_TYPE to StravaConfig.SPORT_TYPE,
+        )
+        val reply = send(
+            HttpRequest(
+                url = apiUrl(UPLOADS_PATH),
+                headers = mapOf(AUTHORIZATION to "$BEARER $accessToken"),
+                contentType = "$MULTIPART_CONTENT_TYPE$boundary",
+                writeBody = { out -> writeMultipart(out, boundary, fields, request) },
+            ),
+        )
+        return reply.toUploadReply()
+    }
+
+    override suspend fun uploadStatus(accessToken: String, uploadId: Long): Outcome<StravaUploadReply, StravaError> =
+        send(
+            HttpRequest(
+                url = apiUrl("$UPLOADS_PATH/$uploadId"),
+                headers = mapOf(AUTHORIZATION to "$BEARER $accessToken"),
+                method = GET,
+            ),
+        ).toUploadReply()
+
+    private fun Outcome<String, StravaError>.toUploadReply(): Outcome<StravaUploadReply, StravaError> = when (this) {
+        is Outcome.Success -> StravaJson.uploadReply(value)?.asSuccess() ?: StravaError.BAD_RESPONSE.asFailure()
+        is Outcome.Failure -> this
+    }
+
+    /** The REST base URL moves to api-v3.strava.com in 2027 (T5.4). */
+    private fun apiUrl(path: String): String = StravaConfig.apiBaseUrl(clock.nowMs()) + path
+
+    /** Text fields, then the FIT file streamed from disk (never fully in memory). */
+    private fun writeMultipart(
+        out: OutputStream,
+        boundary: String,
+        fields: List<Pair<String, String>>,
+        request: StravaUploadRequest,
+    ) {
+        fun line(text: String = "") = out.write("$text$CRLF".toByteArray(StandardCharsets.UTF_8))
+        fields.forEach { (name, value) ->
+            line("--$boundary")
+            line("$CONTENT_DISPOSITION: form-data; name=\"$name\"")
+            line()
+            line(value)
+        }
+        line("--$boundary")
+        line("$CONTENT_DISPOSITION: form-data; name=\"$FILE\"; filename=\"${request.fileName.safeFileName()}\"")
+        line("$CONTENT_TYPE: $OCTET_STREAM")
+        line()
+        File(request.filePath).inputStream().use { it.copyTo(out, BUFFER_BYTES) }
+        line()
+        line("--$boundary--")
+    }
+
+    /** Header-safe file name (no quotes or line breaks). */
+    private fun String.safeFileName(): String = filter { it.isLetterOrDigit() || it in SAFE_NAME_CHARS }
+
     private suspend fun grant(app: StravaApp, params: List<Pair<String, String>>): Outcome<StravaGrant, StravaError> {
         val body = form(listOf(CLIENT_ID to app.clientId, CLIENT_SECRET to app.clientSecret) + params)
-        return when (val reply = send(HttpRequest(StravaConfig.TOKEN_URL, emptyMap(), body, FORM_CONTENT_TYPE))) {
+        val request = HttpRequest(StravaConfig.TOKEN_URL, emptyMap(), FORM_CONTENT_TYPE, writeBody = { it.write(body) })
+        return when (val reply = send(request)) {
             is Outcome.Success -> StravaJson.grant(reply.value)?.asSuccess() ?: StravaError.BAD_RESPONSE.asFailure()
             is Outcome.Failure -> reply
         }
     }
 
-    /** POSTs [request] and returns the reply text of a 2xx answer. */
+    /** Sends [request] and returns the reply text of a 2xx answer. */
     internal suspend fun send(request: HttpRequest): Outcome<String, StravaError> = withContext(dispatchers.io) {
         val connection = try {
             URL(request.url).openConnection() as? HttpsURLConnection
@@ -71,18 +147,21 @@ class HttpStravaApi(private val dispatchers: DispatcherProvider, private val log
         } ?: return@withContext StravaError.OFFLINE.asFailure()
         try {
             connection.apply {
-                requestMethod = POST
+                requestMethod = request.method
                 connectTimeout = StravaConfig.CONNECT_TIMEOUT_MS
                 readTimeout = StravaConfig.READ_TIMEOUT_MS
                 instanceFollowRedirects = false
                 useCaches = false
-                doOutput = true
-                setRequestProperty(CONTENT_TYPE, request.contentType)
                 setRequestProperty(ACCEPT, JSON_CONTENT_TYPE)
                 request.headers.forEach { (name, value) -> setRequestProperty(name, value) }
-                setFixedLengthStreamingMode(request.body.size)
             }
-            connection.outputStream.use { it.write(request.body) }
+            request.writeBody?.let { write ->
+                connection.doOutput = true
+                connection.setRequestProperty(CONTENT_TYPE, request.contentType)
+                // Streamed in chunks: a long ride's FIT file is never held in memory (MEM-01).
+                connection.setChunkedStreamingMode(0)
+                connection.outputStream.use(write)
+            }
             val status = connection.responseCode
             if (status !in HTTP_OK_RANGE) {
                 logger.info(TAG) { "Strava replied $status" }
@@ -124,13 +203,28 @@ class HttpStravaApi(private val dispatchers: DispatcherProvider, private val log
     internal class HttpRequest(
         val url: String,
         val headers: Map<String, String>,
-        val body: ByteArray,
-        val contentType: String,
+        val contentType: String? = null,
+        val method: String = POST,
+        val writeBody: ((OutputStream) -> Unit)? = null,
     )
 
     private companion object {
         const val TAG = "Strava"
         const val POST = "POST"
+        const val GET = "GET"
+        const val BEARER = "Bearer"
+        const val UPLOADS_PATH = "/uploads"
+        const val MULTIPART_CONTENT_TYPE = "multipart/form-data; boundary="
+        const val BOUNDARY_PREFIX = "RideComp"
+        const val CONTENT_DISPOSITION = "Content-Disposition"
+        const val OCTET_STREAM = "application/octet-stream"
+        const val CRLF = "\r\n"
+        const val DATA_TYPE = "data_type"
+        const val NAME = "name"
+        const val EXTERNAL_ID = "external_id"
+        const val SPORT_TYPE = "sport_type"
+        const val FILE = "file"
+        const val SAFE_NAME_CHARS = "._-"
         const val CONTENT_TYPE = "Content-Type"
         const val ACCEPT = "Accept"
         const val AUTHORIZATION = "Authorization"

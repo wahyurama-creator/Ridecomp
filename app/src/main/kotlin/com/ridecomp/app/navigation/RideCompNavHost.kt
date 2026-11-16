@@ -315,6 +315,7 @@ private fun NavGraphBuilder.historyGraph(navController: NavHostController) {
                 val id = entry.arguments?.getLong(AppRoutes.ARG_ACTIVITY_ID) ?: AppRoutes.NO_ACTIVITY
                 navController.navigate(AppRoutes.shareCard(id))
             },
+            onOpenStravaSettings = { navController.navigate(AppRoutes.STRAVA) },
         )
     }
 }

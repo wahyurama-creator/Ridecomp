@@ -80,7 +80,7 @@ val platformModule = module {
     single<BatteryLevelSource> { AndroidBatteryLevelSource(androidContext()) }
     single<IdGenerator> { UuidIdGenerator() }
     single<StravaAccountStore> { AndroidStravaAccountStore(androidContext(), get(), get()) }
-    single<StravaApi> { HttpStravaApi(get(), get()) }
+    single<StravaApi> { HttpStravaApi(get(), get(), get()) }
     single<RideNameProvider> { AndroidRideNameProvider(androidContext()) }
     single { AlertPlayer(androidContext()) }
     single { RideStateHolder() }

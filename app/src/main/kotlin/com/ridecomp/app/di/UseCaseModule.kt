@@ -4,6 +4,7 @@ import com.ridecomp.core.usecase.AddEmergencyContactUseCase
 import com.ridecomp.core.usecase.AddPickedContactUseCase
 import com.ridecomp.core.usecase.AnalysisRequests
 import com.ridecomp.core.usecase.AnalyzeActivitiesUseCase
+import com.ridecomp.core.usecase.AuthorizedStravaApi
 import com.ridecomp.core.usecase.BackupWriter
 import com.ridecomp.core.usecase.BestEffortsStep
 import com.ridecomp.core.usecase.CheckGpsAvailabilityUseCase
@@ -74,11 +75,15 @@ import com.ridecomp.core.usecase.ObserveSegmentEffortsUseCase
 import com.ridecomp.core.usecase.ObserveSegmentUseCase
 import com.ridecomp.core.usecase.ObserveSegmentsUseCase
 import com.ridecomp.core.usecase.ObserveStravaStatusUseCase
+import com.ridecomp.core.usecase.ObserveStravaUploadUseCase
 import com.ridecomp.core.usecase.ObserveTrainingUseCase
 import com.ridecomp.core.usecase.PairSensorUseCase
 import com.ridecomp.core.usecase.PerformIncidentActionUseCase
 import com.ridecomp.core.usecase.PerformRideActionUseCase
 import com.ridecomp.core.usecase.PreviewNewRecordsUseCase
+import com.ridecomp.core.usecase.ProcessStravaUploadsUseCase
+import com.ridecomp.core.usecase.QueueNewRidesForStravaUseCase
+import com.ridecomp.core.usecase.QueueStravaUploadUseCase
 import com.ridecomp.core.usecase.ReadBackupSummaryUseCase
 import com.ridecomp.core.usecase.ReadBatteryUseCase
 import com.ridecomp.core.usecase.ReadRideTrackUseCase
@@ -106,12 +111,14 @@ import com.ridecomp.core.usecase.SelectActivityProfileUseCase
 import com.ridecomp.core.usecase.SendTestSmsUseCase
 import com.ridecomp.core.usecase.SetRiderLevelUseCase
 import com.ridecomp.core.usecase.SetSafetyEnabledUseCase
+import com.ridecomp.core.usecase.SetStravaAutoUploadUseCase
 import com.ridecomp.core.usecase.ShareActivityFileUseCase
 import com.ridecomp.core.usecase.ShareCardFiles
 import com.ridecomp.core.usecase.ShareCardImageUseCase
 import com.ridecomp.core.usecase.SnoozeBackupReminderUseCase
 import com.ridecomp.core.usecase.StartRideUseCase
 import com.ridecomp.core.usecase.StartStravaAuthUseCase
+import com.ridecomp.core.usecase.StravaUploadRequests
 import com.ridecomp.core.usecase.SuggestBackupFileNameUseCase
 import com.ridecomp.core.usecase.SuggestExportFileNameUseCase
 import com.ridecomp.core.usecase.TrainingCalendar
@@ -255,4 +262,12 @@ val useCaseModule = module {
     factory { CompleteStravaAuthUseCase(get(), get()) }
     // Single: one token refresh at a time (Strava rotates refresh tokens).
     single { GetStravaAccessTokenUseCase(get(), get(), get()) }
+    single { StravaUploadRequests() }
+    factory { ObserveStravaUploadUseCase(get()) }
+    factory { QueueStravaUploadUseCase(get(), get(), get()) }
+    factory { SetStravaAutoUploadUseCase(get(), get()) }
+    factory { QueueNewRidesForStravaUseCase(get(), get(), get(), get()) }
+    // Single: one queue run at a time.
+    factory { AuthorizedStravaApi(get(), get()) }
+    single { ProcessStravaUploadsUseCase(get(), get(), get(), get(), get(), get()) }
 }

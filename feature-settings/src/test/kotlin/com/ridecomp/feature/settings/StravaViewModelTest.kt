@@ -3,11 +3,13 @@ package com.ridecomp.feature.settings
 import app.cash.turbine.test
 import com.ridecomp.core.model.StravaAccount
 import com.ridecomp.core.model.StravaStatus
+import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeStravaAccountStore
 import com.ridecomp.core.testing.FakeStravaApi
 import com.ridecomp.core.usecase.CompleteStravaAuthUseCase
 import com.ridecomp.core.usecase.ObserveStravaStatusUseCase
 import com.ridecomp.core.usecase.SaveStravaAppUseCase
+import com.ridecomp.core.usecase.SetStravaAutoUploadUseCase
 import com.ridecomp.core.usecase.StartStravaAuthUseCase
 import com.ridecomp.core.usecase.StravaAppError
 import com.ridecomp.core.usecase.StravaAuthRedirect
@@ -53,6 +55,7 @@ class StravaViewModelTest {
             SaveStravaAppUseCase(store),
             StartStravaAuthUseCase(store, SecureRandom()),
             CompleteStravaAuthUseCase(store, api),
+            SetStravaAutoUploadUseCase(store, FakeClock()),
         ),
     )
 
@@ -89,6 +92,8 @@ class StravaViewModelTest {
 
         assertEquals(StravaStatus.Connected("12345", "Rider One"), viewModel.uiState.value.status)
         assertEquals(StravaMessage.CONNECTED, viewModel.uiState.value.message)
+        viewModel.onEvent(StravaUiEvent.SetAutoUpload(true))
+        assertEquals(StravaStatus.Connected("12345", "Rider One", isAutoUpload = true), viewModel.uiState.value.status)
         viewModel.onEvent(StravaUiEvent.MessageShown)
         assertNull(viewModel.uiState.value.message)
     }
