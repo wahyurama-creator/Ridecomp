@@ -93,7 +93,7 @@ Tidak ada (DEP-02). OAuth memakai `ACTION_VIEW`, HTTP memakai `HttpsURLConnectio
 - **Belum diuji dengan akun Strava sungguhan** (lihat §6).
 - **Path base URL `api-v3`:** diasumsikan `https://api-v3.strava.com/uploads`, yaitu pengganti `/api/v3`. Perlu dicek ulang saat Strava merilisnya (Jan 2027).
 - **Upload hanya saat app terbuka:** ride yang tertunda karena offline dikirim saat app dibuka berikutnya.
-- **Daftar Riwayat** belum menampilkan tanda "di Strava" (hanya di detail).
+- ~~Daftar Riwayat belum menampilkan tanda "di Strava"~~ — selesai di T5.5 (label "Di Strava").
 - **Skema `ridecomp://`** bisa didaftarkan app lain. Code yang dicegat tidak berguna tanpa Client Secret, tetapi otorisasi pengguna bisa gagal.
 
 ## 10. Cara menguji (untuk pemilik proyek)

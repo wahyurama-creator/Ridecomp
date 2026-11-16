@@ -112,4 +112,5 @@
     <string name="detail_strava_view">Lihat di Strava</string>
     <string name="detail_strava_on_strava">Ride ini sudah ada di Strava</string>
     <string name="detail_strava_sent">Terkirim</string>
+    <string name="history_on_strava">Di Strava</string>
 </resources>

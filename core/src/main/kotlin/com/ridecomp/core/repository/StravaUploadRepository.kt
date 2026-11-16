@@ -11,6 +11,9 @@ public interface StravaUploadRepository {
 
     public suspend fun save(upload: StravaUpload)
 
+    /** Ids of the rides already on Strava (done or linked duplicate), for the history list. */
+    public fun observeOnStrava(): Flow<Set<Long>>
+
     /** Uploads still on their way (queued or processing), oldest first. */
     public suspend fun getActive(): List<StravaUpload>
 }

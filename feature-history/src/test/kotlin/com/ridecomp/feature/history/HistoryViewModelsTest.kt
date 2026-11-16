@@ -6,6 +6,7 @@ import com.ridecomp.core.model.RideSample
 import com.ridecomp.core.model.RideTotals
 import com.ridecomp.core.model.StravaAccount
 import com.ridecomp.core.model.StravaStatus
+import com.ridecomp.core.model.StravaUpload
 import com.ridecomp.core.model.StravaUploadState
 import com.ridecomp.core.repository.NewActivity
 import com.ridecomp.core.testing.FakeActivityProfileRepository
@@ -31,6 +32,7 @@ import com.ridecomp.core.usecase.ObserveHistoryCountUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveMonthTotalsUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
+import com.ridecomp.core.usecase.ObserveRidesOnStravaUseCase
 import com.ridecomp.core.usecase.ObserveStravaStatusUseCase
 import com.ridecomp.core.usecase.ObserveStravaUploadUseCase
 import com.ridecomp.core.usecase.QueueStravaUploadUseCase
@@ -101,8 +103,12 @@ class HistoryViewModelsTest {
             ObserveRideSettingsUseCase(settings),
             ObserveMonthTotalsUseCase(repository, FakeClock()),
             FakeClock(),
+            ObserveRidesOnStravaUseCase(stravaUploads),
         )
+        stravaUploads.save(StravaUpload(3, StravaUploadState.DONE, 1, 2))
+        stravaUploads.save(StravaUpload(4, StravaUploadState.QUEUED))
 
+        assertEquals(setOf(3L), viewModel.uiState.value.onStrava)
         assertEquals(20, viewModel.uiState.value.rides.size)
         assertEquals(45L, viewModel.uiState.value.rides.first().startedAtMs)
         viewModel.onEvent(HistoryUiEvent.LoadMore)

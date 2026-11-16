@@ -11,11 +11,15 @@ import com.ridecomp.core.usecase.ObserveHistoryCountUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveMonthTotalsUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
+import com.ridecomp.core.usecase.ObserveRidesOnStravaUseCase
 import com.ridecomp.ui.udf.NoEffect
 import com.ridecomp.ui.udf.UdfViewModel
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -32,6 +36,8 @@ data class HistoryUiState(
     val month: PeriodTotals = PeriodTotals(),
     /** Now, for "Hari ini · 05:31" labels; from the injected clock. */
     val nowMs: Long = 0,
+    /** Rides already on Strava (T5.3). */
+    val onStrava: ImmutableSet<Long> = persistentSetOf(),
 ) {
     val hasMore: Boolean get() = rides.size < totalCount
 }
@@ -49,6 +55,7 @@ class HistoryViewModel(
     observeSettings: ObserveRideSettingsUseCase,
     observeMonth: ObserveMonthTotalsUseCase,
     clock: Clock,
+    observeOnStrava: ObserveRidesOnStravaUseCase,
 ) : UdfViewModel<HistoryUiState, HistoryUiEvent, NoEffect>(HistoryUiState()) {
     private val loadedCount = MutableStateFlow(ActivityConfig.HISTORY_PAGE_SIZE)
 
@@ -68,7 +75,10 @@ class HistoryViewModel(
                     month,
                     clock.nowMs(),
                 )
-            }.collect { state -> updateState { state } }
+            }.collect { state -> updateState { state.copy(onStrava = onStrava) } }
+        }
+        viewModelScope.launch {
+            observeOnStrava().collect { ids -> updateState { copy(onStrava = ids.toImmutableSet()) } }
         }
     }
 

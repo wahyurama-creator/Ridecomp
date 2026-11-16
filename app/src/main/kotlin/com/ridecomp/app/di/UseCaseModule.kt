@@ -68,6 +68,7 @@ import com.ridecomp.core.usecase.ObserveProfileChoiceUseCase
 import com.ridecomp.core.usecase.ObserveProfileUseCase
 import com.ridecomp.core.usecase.ObserveRecordKindsUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
+import com.ridecomp.core.usecase.ObserveRidesOnStravaUseCase
 import com.ridecomp.core.usecase.ObserveRouteUseCase
 import com.ridecomp.core.usecase.ObserveRoutesUseCase
 import com.ridecomp.core.usecase.ObserveSafetyUseCase
@@ -266,6 +267,7 @@ val useCaseModule = module {
     single { GetStravaAccessTokenUseCase(get(), get(), get()) }
     single { StravaUploadRequests() }
     factory { ObserveStravaUploadUseCase(get()) }
+    factory { ObserveRidesOnStravaUseCase(get()) }
     factory { QueueStravaUploadUseCase(get(), get(), get()) }
     factory { SetStravaAutoUploadUseCase(get(), get()) }
     factory { QueueNewRidesForStravaUseCase(get(), get(), get(), get()) }

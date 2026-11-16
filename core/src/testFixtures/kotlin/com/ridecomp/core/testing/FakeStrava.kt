@@ -30,6 +30,9 @@ class FakeStravaUploadRepository : StravaUploadRepository {
         uploads.update { it + (upload.activityId to upload) }
     }
 
+    override fun observeOnStrava(): Flow<Set<Long>> =
+        uploads.map { all -> all.values.filter { it.state.isOnStrava }.map { it.activityId }.toSet() }
+
     override suspend fun getActive(): List<StravaUpload> =
         uploads.value.values.filter { it.state.isActive }.sortedBy { it.updatedAtMs }
 }

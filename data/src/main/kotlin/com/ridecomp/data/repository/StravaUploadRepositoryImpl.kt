@@ -19,6 +19,11 @@ class StravaUploadRepositoryImpl(private val dao: StravaUploadDao) : StravaUploa
         dao.upsert(StravaUploadMapper.toEntity(upload))
     }
 
+    override fun observeOnStrava(): Flow<Set<Long>> = dao
+        .observeIdsInStates(StravaUploadState.entries.filter { it.isOnStrava }.map(StravaUploadMapper::storedName))
+        .map { it.toSet() }
+        .distinctUntilChanged()
+
     override suspend fun getActive(): List<StravaUpload> = dao
         .getInStates(StravaUploadState.entries.filter { it.isActive }.map(StravaUploadMapper::storedName))
         .map(StravaUploadMapper::toDomain)

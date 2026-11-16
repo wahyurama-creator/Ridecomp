@@ -168,7 +168,13 @@ private fun ActivitiesTab(
         ) {
             item { MonthCard(state.month, formatter) }
             items(state.rides, key = { it.id }) { ride ->
-                ActivityCard(ride, formatter, state.nowMs, onClick = { onOpenActivity(ride.id) })
+                ActivityCard(
+                    ride,
+                    formatter,
+                    state.nowMs,
+                    isOnStrava = ride.id in state.onStrava,
+                    onClick = { onOpenActivity(ride.id) },
+                )
             }
         }
     }
@@ -208,9 +214,16 @@ private fun MonthStat(label: String, value: String, modifier: Modifier) {
 
 /** Ride card: name, export status, relative time, distance · time · climbing (13-UI-SCREENS #11). */
 @Composable
-private fun ActivityCard(ride: Activity, format: UnitFormatter, nowMs: Long, onClick: () -> Unit) {
+private fun ActivityCard(
+    ride: Activity,
+    format: UnitFormatter,
+    nowMs: Long,
+    isOnStrava: Boolean,
+    onClick: () -> Unit,
+) {
     val colors = RideCompTheme.colors
-    val isExported = ride.fitExportedAtMs != null
+    // On Strava says more than "FIT exported": the ride is where most riders want it.
+    val isExported = isOnStrava || ride.fitExportedAtMs != null
     RideCompCard(onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -221,7 +234,11 @@ private fun ActivityCard(ride: Activity, format: UnitFormatter, nowMs: Long, onC
             )
             Text(
                 text = stringResource(
-                    if (isExported) R.string.history_fit_exported else R.string.history_fit_not_exported,
+                    when {
+                        isOnStrava -> R.string.history_on_strava
+                        isExported -> R.string.history_fit_exported
+                        else -> R.string.history_fit_not_exported
+                    },
                 ),
                 style = RideCompTheme.typography.caption.copy(fontWeight = FontWeight.Bold),
                 color = if (isExported) colors.ok else colors.warnText,
