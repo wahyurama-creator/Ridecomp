@@ -98,6 +98,7 @@ import com.ridecomp.feature.training.viewmodel.SegmentDetailViewModel
 import com.ridecomp.feature.training.viewmodel.SegmentEditorViewModel
 import com.ridecomp.feature.training.viewmodel.SegmentsViewModel
 import com.ridecomp.feature.training.viewmodel.ShareCardViewModel
+import com.ridecomp.feature.training.viewmodel.SharePhotoLoader
 import com.ridecomp.feature.training.viewmodel.TrainingViewModel
 import java.io.File
 import java.nio.file.Files
@@ -159,6 +160,7 @@ class AppModulesTest {
         single<TrainingRepository> { FakeTrainingRepository(FakeActivityRepository()) }
         single<ShareCardFiles> { FakeShareCardFiles() }
         single<GuideRepository> { FakeGuideRepository() }
+        factory<SharePhotoLoader> { SharePhotoLoader { _, _ -> null } }
         single<ActivityAnalysisRepository> { FakeActivityAnalysisRepository(FakeActivityRepository()) }
         factory<LicenseTextReader> { LicenseTextReader { "" } }
     }

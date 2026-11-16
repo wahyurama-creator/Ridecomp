@@ -32,6 +32,7 @@ import com.ridecomp.core.usecase.GetActivityKindUseCase
 import com.ridecomp.core.usecase.GetFreeStorageUseCase
 import com.ridecomp.core.usecase.GetLapsUseCase
 import com.ridecomp.core.usecase.GetLiveSegmentsUseCase
+import com.ridecomp.core.usecase.GetLoadInputsUseCase
 import com.ridecomp.core.usecase.GetRecoverableRideUseCase
 import com.ridecomp.core.usecase.GetRideProfileUseCase
 import com.ridecomp.core.usecase.GetRouteGuidanceUseCase
@@ -94,6 +95,7 @@ import com.ridecomp.core.usecase.SaveDataPagesUseCase
 import com.ridecomp.core.usecase.SaveProfileUseCase
 import com.ridecomp.core.usecase.SaveRideSettingsUseCase
 import com.ridecomp.core.usecase.SaveRiderNameUseCase
+import com.ridecomp.core.usecase.SaveShareCardUseCase
 import com.ridecomp.core.usecase.ScanSensorsUseCase
 import com.ridecomp.core.usecase.SegmentsStep
 import com.ridecomp.core.usecase.SelectActivityProfileUseCase
@@ -229,7 +231,9 @@ val useCaseModule = module {
     factory { ObserveTrainingUseCase(get(), get()) }
     factory { LoadWeekZonesUseCase(get(), get(), get(), get(), get(), get()) }
     factory { ExtendTrainingToTodayUseCase(get(), get()) }
-    factory { LoadShareCardUseCase(get(), get(), get(), get()) }
+    factory { GetLoadInputsUseCase(get(), get()) }
+    factory { LoadShareCardUseCase(get(), get(), get(), get(), get(), get()) }
+    factory { SaveShareCardUseCase(get()) }
     factory { ShareCardImageUseCase(get(), get()) }
     factory { ClearShareCardsUseCase(get()) }
     factory { ObserveGuideUseCase(get()) }

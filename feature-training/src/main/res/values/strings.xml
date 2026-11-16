@@ -98,11 +98,40 @@
     <string name="share_stat_speed">Avg speed</string>
     <string name="share_stat_heart_rate">Avg HR</string>
     <string name="share_stat_power">Avg power</string>
-    <string name="share_send">Share to WhatsApp / Instagram</string>
     <string name="share_footer" translatable="false">RideComp</string>
-    <plurals name="share_footer_records">
-        <item quantity="one">%1$d NEW RECORD · RideComp</item>
-        <item quantity="other">%1$d NEW RECORDS · RideComp</item>
-    </plurals>
     <string name="share_failed">The card could not be shared. Try again, or close other apps if the phone is short on memory.</string>
+    <!-- Share card v2 (T4.5b) -->
+    <string name="share_template_classic">Classic</string>
+    <string name="share_template_poster">Poster</string>
+    <string name="share_template_photo">Photo</string>
+    <string name="share_template_sticker">Sticker</string>
+    <string name="share_palette_sunset">Sunset</string>
+    <string name="share_palette_ocean">Ocean</string>
+    <string name="share_palette_forest">Forest</string>
+    <string name="share_palette_night">Night</string>
+    <string name="share_transparent">Transparent background</string>
+    <string name="share_transparent_hint">Saved without a background to place on your own photo or video.</string>
+    <string name="share_pick_photo">Choose a photo</string>
+    <string name="share_change_photo">Change photo</string>
+    <string name="share_sticker_hint">A transparent sticker: save it, then add it on top of a photo or video in your Instagram Story.</string>
+    <string name="share_details">Training details</string>
+    <string name="share_detail_elevation">Elevation</string>
+    <string name="share_detail_zones">Heart-rate zones</string>
+    <string name="share_detail_splits">Splits per km</string>
+    <string name="share_detail_badges">Record badges</string>
+    <string name="share_saved">Image saved.</string>
+    <plurals name="share_badge_records">
+        <item quantity="one">%1$d NEW PR</item>
+        <item quantity="other">%1$d NEW PRS</item>
+    </plurals>
+    <plurals name="share_badge_segments">
+        <item quantity="one">%1$d SEGMENT PR</item>
+        <item quantity="other">%1$d SEGMENT PRS</item>
+    </plurals>
+    <string name="share_customize">Customize</string>
+    <string name="share_privacy">Privacy</string>
+    <string name="share_background">Background</string>
+    <string name="share_style_page">Style %1$s, swipe for another</string>
+    <string name="share_save_short">Save</string>
+    <string name="share_send_short">Share</string>
 </resources>

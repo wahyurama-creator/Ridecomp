@@ -34,6 +34,9 @@ public interface SegmentRepository {
     /** Fastest elapsed time over the segment among rides started before [beforeStartedAtMs]. */
     public suspend fun bestBefore(segmentId: Long, beforeStartedAtMs: Long): Double?
 
+    /** Segment records a ride set (share card badge). */
+    public suspend fun countRecords(activityId: Long): Int
+
     /** Replaces the segment efforts of a ride in one transaction (re-analysis is idempotent). */
     public suspend fun replaceForActivity(activityId: Long, efforts: List<SegmentEffort>)
 }

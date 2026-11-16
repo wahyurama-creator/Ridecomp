@@ -1,6 +1,8 @@
 package com.ridecomp.feature.training
 
+import com.ridecomp.core.engine.share.ShareDetail
 import com.ridecomp.core.engine.share.ShareStat
+import com.ridecomp.core.engine.share.ShareTemplate
 import com.ridecomp.core.model.Activity
 import com.ridecomp.core.model.ActivityStatus
 import com.ridecomp.core.model.RideSample
@@ -8,19 +10,25 @@ import com.ridecomp.core.model.RideTotals
 import com.ridecomp.core.testing.FakeActivityRepository
 import com.ridecomp.core.testing.FakeBestEffortRepository
 import com.ridecomp.core.testing.FakeClock
+import com.ridecomp.core.testing.FakeProfileRepository
+import com.ridecomp.core.testing.FakeSegmentRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.testing.FakeShareCardFiles
 import com.ridecomp.core.testing.TestDispatcherProvider
+import com.ridecomp.core.usecase.GetLoadInputsUseCase
 import com.ridecomp.core.usecase.LoadShareCardUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ReadRideTrackUseCase
+import com.ridecomp.core.usecase.SaveShareCardUseCase
 import com.ridecomp.core.usecase.ShareCardImageUseCase
 import com.ridecomp.feature.training.viewmodel.ShareCardUiEvent
+import com.ridecomp.feature.training.viewmodel.ShareCardUseCases
 import com.ridecomp.feature.training.viewmodel.ShareCardViewModel
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -33,6 +41,7 @@ class ShareCardViewModelTest {
     private val dispatcher = UnconfinedTestDispatcher()
     private val dispatchers = TestDispatcherProvider(dispatcher)
     private val activities = FakeActivityRepository()
+    private val files = FakeShareCardFiles()
 
     @BeforeTest
     fun setUp() {
@@ -67,14 +76,20 @@ class ShareCardViewModelTest {
 
     private fun viewModel() = ShareCardViewModel(
         1,
-        LoadShareCardUseCase(
-            activities,
-            FakeBestEffortRepository(activities),
-            ReadRideTrackUseCase(activities, dispatchers),
-            dispatchers,
+        ShareCardUseCases(
+            LoadShareCardUseCase(
+                activities,
+                FakeBestEffortRepository(activities),
+                FakeSegmentRepository(activities),
+                GetLoadInputsUseCase(FakeProfileRepository(), FakeClock()),
+                ReadRideTrackUseCase(activities, dispatchers),
+                dispatchers,
+            ),
+            ObserveRideSettingsUseCase(FakeSettingsRepository()),
+            ShareCardImageUseCase(files, FakeClock()),
+            SaveShareCardUseCase(files),
         ),
-        ObserveRideSettingsUseCase(FakeSettingsRepository()),
-        ShareCardImageUseCase(FakeShareCardFiles(), FakeClock()),
+        { _, _ -> null },
         dispatchers,
     )
 
@@ -106,5 +121,20 @@ class ShareCardViewModelTest {
 
         viewModel.onEvent(ShareCardUiEvent.SetEndsHidden(false))
         assertEquals(301, viewModel.uiState.value.line.size)
+    }
+
+    @Test
+    fun `the sticker and the transparent switch give a transparent card, splits are offered`() {
+        val viewModel = viewModel()
+        assertEquals(ShareTemplate.POSTER, viewModel.uiState.value.template)
+        assertTrue(ShareDetail.SPLITS in viewModel.uiState.value.availableDetails)
+        assertFalse(viewModel.uiState.value.isTransparent)
+
+        viewModel.onEvent(ShareCardUiEvent.SetBackgroundTransparent(true))
+        assertTrue(viewModel.uiState.value.isTransparent)
+        viewModel.onEvent(ShareCardUiEvent.SetTemplate(ShareTemplate.PHOTO))
+        assertFalse(viewModel.uiState.value.isTransparent)
+        viewModel.onEvent(ShareCardUiEvent.SetTemplate(ShareTemplate.STICKER))
+        assertTrue(viewModel.uiState.value.isTransparent)
     }
 }

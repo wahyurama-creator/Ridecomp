@@ -230,3 +230,25 @@ val LightRideCompColors = RideCompColors(
 )
 
 val LocalRideCompColors = staticCompositionLocalOf { DarkRideCompColors }
+
+/**
+ * Colours of share card images (T4.5b), not of the app screens: poster gradients, the dark checkerboard shown
+ * behind transparent cards in the preview only, and the shadow that keeps sticker text readable on any photo.
+ */
+object ShareCardColors {
+    val SunsetTop = Color(0xFFFF6A13)
+    val SunsetBottom = Color(0xFF6A1B9A)
+    val OceanTop = Color(0xFF00B4DB)
+    val OceanBottom = Color(0xFF0D3B66)
+    val ForestTop = Color(0xFF2ECC71)
+    val ForestBottom = Color(0xFF0B3D2E)
+    val NightTop = Color(0xFF3A3D40)
+    val NightBottom = Color(0xFF0B0F14)
+    val PosterText = Color(0xFFFFFFFF)
+    val PosterSoftText = Color(0xCCFFFFFF)
+    val PosterTrack = Color(0x33FFFFFF)
+    val PhotoScrim = Color(0x99000000)
+    val TextShadow = Color(0xB3000000)
+    val CheckerDark = Color(0xFF1E1E1E)
+    val CheckerLight = Color(0xFF2E2E2E)
+}

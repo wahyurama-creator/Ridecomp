@@ -4,9 +4,11 @@ import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import com.ridecomp.core.engine.share.ShareCardConfig
 import com.ridecomp.core.source.DispatcherProvider
 import com.ridecomp.core.usecase.ShareCardFiles
+import com.ridecomp.core.util.runCatchingCancellable
 import java.io.File
 import kotlinx.coroutines.withContext
 
@@ -36,6 +38,15 @@ class AndroidShareCardFiles(private val context: Context, private val dispatcher
         val chooser = Intent.createChooser(send, fileName)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
         context.startActivity(chooser)
+    }
+
+    override suspend fun saveTo(destinationUri: String, png: ByteArray): Boolean = withContext(dispatchers.io) {
+        runCatchingCancellable {
+            val output = requireNotNull(context.contentResolver.openOutputStream(destinationUri.toUri())) {
+                "Cannot open destination"
+            }
+            output.use { it.write(png) }
+        }.isSuccess
     }
 
     override suspend fun clear() {

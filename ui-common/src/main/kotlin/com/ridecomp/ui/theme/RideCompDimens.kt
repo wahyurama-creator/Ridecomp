@@ -33,6 +33,9 @@ object RideCompDimens {
     val buttonHeightPrimary = 72.dp
     val buttonHeightSecondary = 64.dp
     val buttonHeightTertiary = 56.dp
+
+    /** Off the ride screen only (share page actions): the minimum touch target. */
+    val buttonHeightCompact = 48.dp
     val buttonHeightIncident = 120.dp
     val lapButtonWidth = 120.dp
     val chipHeight = 48.dp
@@ -92,6 +95,12 @@ object RideCompDimens {
 
     /** Share card preview (13-UI-SCREENS #21): the 9:16 card is fitted into this height. */
     val shareCardPreviewHeight = 440.dp
+
+    /** Checkerboard behind a transparent card in the preview (never exported). */
+    val checkerCell = 12.dp
+
+    /** Colour swatch of the poster palette under the share preview. */
+    val swatchSize = 32.dp
     val routeMapHeight = 220.dp
     val turnDistanceSize = 44.sp
 

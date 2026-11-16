@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -22,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import com.ridecomp.ui.R
 import com.ridecomp.ui.preview.RideCompPreview
@@ -75,6 +77,9 @@ enum class BigButtonSize(val height: Dp) {
     PRIMARY(RideCompDimens.buttonHeightPrimary),
     SECONDARY(RideCompDimens.buttonHeightSecondary),
     TERTIARY(RideCompDimens.buttonHeightTertiary),
+
+    /** Small actions off the ride screen (share page). */
+    COMPACT(RideCompDimens.buttonHeightCompact),
     INCIDENT(RideCompDimens.buttonHeightIncident),
 }
 
@@ -98,6 +103,12 @@ fun BigButton(
         modifier = modifier.fillMaxWidth().heightIn(min = size.height),
         shape = RoundedCornerShape(if (isLarge) RideCompDimens.cornerRadiusHero else RideCompDimens.cornerRadiusButton),
         border = look.border?.let { BorderStroke(RideCompDimens.borderSelected, it) },
+        // Compact buttons sit side by side: less padding so the label stays on one line.
+        contentPadding = if (size == BigButtonSize.COMPACT) {
+            PaddingValues(horizontal = RideCompDimens.spacingSm)
+        } else {
+            ButtonDefaults.ContentPadding
+        },
         colors = ButtonDefaults.buttonColors(
             containerColor = look.container,
             contentColor = look.content,
@@ -117,11 +128,14 @@ fun BigButton(
                 text = text,
                 style = when {
                     isLarge -> RideCompTheme.typography.buttonLarge
-                    size == BigButtonSize.TERTIARY -> RideCompTheme.typography.buttonSmall
+                    size == BigButtonSize.TERTIARY || size == BigButtonSize.COMPACT ->
+                        RideCompTheme.typography.buttonSmall
                     else -> RideCompTheme.typography.button
                 },
                 color = Color.Unspecified,
                 textAlign = TextAlign.Center,
+                maxLines = if (size == BigButtonSize.COMPACT) 1 else Int.MAX_VALUE,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }
