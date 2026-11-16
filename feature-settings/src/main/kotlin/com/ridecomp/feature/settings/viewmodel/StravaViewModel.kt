@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.ridecomp.core.config.StravaConfig
 import com.ridecomp.core.model.StravaStatus
 import com.ridecomp.core.usecase.CompleteStravaAuthUseCase
+import com.ridecomp.core.usecase.DisconnectStravaUseCase
 import com.ridecomp.core.usecase.ObserveStravaStatusUseCase
 import com.ridecomp.core.usecase.SaveStravaAppUseCase
 import com.ridecomp.core.usecase.SetStravaAutoUploadUseCase
@@ -18,7 +19,19 @@ import com.ridecomp.ui.udf.UdfViewModel
 import kotlinx.coroutines.launch
 
 /** One-time message of the Strava screen. */
-enum class StravaMessage { CONNECTED, DENIED, MISSING_SCOPE, OFFLINE, REJECTED, FAILED, NO_BROWSER }
+enum class StravaMessage {
+    CONNECTED,
+    DENIED,
+    MISSING_SCOPE,
+    OFFLINE,
+    REJECTED,
+    FAILED,
+    NO_BROWSER,
+    DISCONNECTED,
+
+    /** Tokens forgotten here, but Strava could not be told (offline). */
+    DISCONNECTED_LOCALLY,
+}
 
 @Immutable
 data class StravaUiState(
@@ -36,21 +49,26 @@ data class StravaUiState(
 }
 
 sealed interface StravaUiEvent {
-    data class ClientIdChanged(val value: String) : StravaUiEvent
+    /** Events of the API app form. */
+    sealed interface Form : StravaUiEvent
 
-    data class ClientSecretChanged(val value: String) : StravaUiEvent
+    data class ClientIdChanged(val value: String) : Form
 
-    data object SaveApp : StravaUiEvent
+    data class ClientSecretChanged(val value: String) : Form
 
-    data object EditApp : StravaUiEvent
+    data object SaveApp : Form
 
-    data object CancelEdit : StravaUiEvent
+    data object EditApp : Form
+
+    data object CancelEdit : Form
 
     data object Connect : StravaUiEvent
 
     data object OpenApiPage : StravaUiEvent
 
     data class SetAutoUpload(val isOn: Boolean) : StravaUiEvent
+
+    data object Disconnect : StravaUiEvent
 
     /** No app could open the link. */
     data object OpenFailed : StravaUiEvent
@@ -73,6 +91,7 @@ data class StravaUseCases(
     val startAuth: StartStravaAuthUseCase,
     val completeAuth: CompleteStravaAuthUseCase,
     val setAutoUpload: SetStravaAutoUploadUseCase,
+    val disconnect: DisconnectStravaUseCase,
 )
 
 /** Strava connection (Phase 5, T5.1–T5.2): set up the rider's API app, then authorize RideComp. */
@@ -86,20 +105,32 @@ class StravaViewModel(private val useCases: StravaUseCases) :
 
     override fun onEvent(event: StravaUiEvent) {
         when (event) {
+            is StravaUiEvent.Form -> onForm(event)
+            StravaUiEvent.Connect -> work {
+                useCases.startAuth()?.let { sendEffect(StravaEffect.OpenUrl(it)) }
+            }
+            is StravaUiEvent.SetAutoUpload -> work { useCases.setAutoUpload(event.isOn) }
+            StravaUiEvent.Disconnect -> work {
+                val isRevoked = useCases.disconnect()
+                updateState {
+                    copy(message = if (isRevoked) StravaMessage.DISCONNECTED else StravaMessage.DISCONNECTED_LOCALLY)
+                }
+            }
+            StravaUiEvent.OpenApiPage -> sendEffect(StravaEffect.OpenUrl(StravaConfig.API_SETTINGS_URL))
+            StravaUiEvent.OpenFailed -> updateState { copy(message = StravaMessage.NO_BROWSER) }
+            // Never dropped, even while another action runs: the code is single use.
+            is StravaUiEvent.Redirect -> work(isForced = true) { complete(event.redirect) }
+            StravaUiEvent.MessageShown -> updateState { copy(message = null) }
+        }
+    }
+
+    private fun onForm(event: StravaUiEvent.Form) {
+        when (event) {
             is StravaUiEvent.ClientIdChanged -> updateState { copy(clientId = event.value, appError = null) }
             is StravaUiEvent.ClientSecretChanged -> updateState { copy(clientSecret = event.value, appError = null) }
             StravaUiEvent.SaveApp -> saveApp()
             StravaUiEvent.EditApp -> updateState { copy(isEditingApp = true, clientId = "", clientSecret = "") }
             StravaUiEvent.CancelEdit -> updateState { copy(isEditingApp = false, clientSecret = "", appError = null) }
-            StravaUiEvent.Connect -> work {
-                useCases.startAuth()?.let { sendEffect(StravaEffect.OpenUrl(it)) }
-            }
-            // Never dropped, even while another action runs: the code is single use.
-            is StravaUiEvent.SetAutoUpload -> work { useCases.setAutoUpload(event.isOn) }
-            StravaUiEvent.OpenApiPage -> sendEffect(StravaEffect.OpenUrl(StravaConfig.API_SETTINGS_URL))
-            StravaUiEvent.OpenFailed -> updateState { copy(message = StravaMessage.NO_BROWSER) }
-            is StravaUiEvent.Redirect -> work(isForced = true) { complete(event.redirect) }
-            StravaUiEvent.MessageShown -> updateState { copy(message = null) }
         }
     }
 

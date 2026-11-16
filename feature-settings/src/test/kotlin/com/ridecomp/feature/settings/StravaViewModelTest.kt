@@ -7,6 +7,7 @@ import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeStravaAccountStore
 import com.ridecomp.core.testing.FakeStravaApi
 import com.ridecomp.core.usecase.CompleteStravaAuthUseCase
+import com.ridecomp.core.usecase.DisconnectStravaUseCase
 import com.ridecomp.core.usecase.ObserveStravaStatusUseCase
 import com.ridecomp.core.usecase.SaveStravaAppUseCase
 import com.ridecomp.core.usecase.SetStravaAutoUploadUseCase
@@ -56,6 +57,7 @@ class StravaViewModelTest {
             StartStravaAuthUseCase(store, SecureRandom()),
             CompleteStravaAuthUseCase(store, api),
             SetStravaAutoUploadUseCase(store, FakeClock()),
+            DisconnectStravaUseCase(store, api),
         ),
     )
 
@@ -94,6 +96,10 @@ class StravaViewModelTest {
         assertEquals(StravaMessage.CONNECTED, viewModel.uiState.value.message)
         viewModel.onEvent(StravaUiEvent.SetAutoUpload(true))
         assertEquals(StravaStatus.Connected("12345", "Rider One", isAutoUpload = true), viewModel.uiState.value.status)
+
+        viewModel.onEvent(StravaUiEvent.Disconnect)
+        assertEquals(StravaStatus.NotConnected("12345"), viewModel.uiState.value.status)
+        assertEquals(StravaMessage.DISCONNECTED, viewModel.uiState.value.message)
         viewModel.onEvent(StravaUiEvent.MessageShown)
         assertNull(viewModel.uiState.value.message)
     }

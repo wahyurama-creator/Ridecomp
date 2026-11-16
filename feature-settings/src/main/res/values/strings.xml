@@ -351,4 +351,9 @@
     <string name="settings_strava_not_connected">Not connected</string>
     <string name="strava_auto_upload">Upload rides automatically</string>
     <string name="strava_auto_upload_hint">After you save a ride it goes to Strava by itself while RideComp is open (with internet).</string>
+    <string name="strava_disconnect">Disconnect Strava</string>
+    <string name="strava_disconnect_title">Disconnect Strava?</string>
+    <string name="strava_disconnect_message">RideComp loses access to your Strava account and stops uploading. Rides already on Strava stay there. You can connect again later.</string>
+    <string name="strava_message_disconnected">Disconnected. RideComp no longer has access to Strava.</string>
+    <string name="strava_message_disconnected_locally">Disconnected on this phone. No internet to tell Strava: remove RideComp at strava.com/settings/apps to be sure.</string>
 </resources>

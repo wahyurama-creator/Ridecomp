@@ -118,7 +118,7 @@ Spesifikasi detail fitur tambahan: `../12-FEATURE-SPECS.md`.
 - [x] T5.1 Layar setup: input Client ID/Secret + panduan membuat app API.
 - [x] T5.2 OAuth via Custom Tabs (scope `activity:write`, `state` acak, PKCE bila didukung, redirect dicocokkan persis), token di Keystore & dikecualikan dari backup, refresh token (SEC-AUTH-*).
 - [x] T5.3 Upload FIT + polling status + antrian retry + penanganan duplikat.
-- [ ] T5.4 Disconnect (`/oauth/revoke`), base URL dapat dikonfigurasi (migrasi `api-v3` 2027).
+- [x] T5.4 Disconnect (`/oauth/revoke`), base URL dapat dikonfigurasi (migrasi `api-v3` 2027).
 
 **DoD:** ride tersimpan otomatis ter-upload ke Strava; mode offline mengantrikan upload.
 

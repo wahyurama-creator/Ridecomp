@@ -194,3 +194,20 @@ public class GetStravaAccessTokenUseCase(
             }
         }
 }
+
+/**
+ * Disconnect (T5.4, SEC-AUTH-06): revokes the grant at Strava (`/oauth/revoke`, which replaces the retired
+ * `deauthorize`), then always forgets the tokens here, even offline, so the phone keeps no access. The API
+ * app stays so the rider can connect again; auto-upload is turned off. False when Strava could not be told
+ * (the rider can remove access on strava.com/settings/apps).
+ */
+public class DisconnectStravaUseCase(private val store: StravaAccountStore, private val api: StravaApi) {
+    public suspend operator fun invoke(): Boolean {
+        val account = store.get()
+        val app = account.app
+        val tokens = account.tokens
+        val isRevoked = app == null || tokens == null || api.revoke(app, tokens.refreshToken) is Outcome.Success
+        store.update { it.copy(tokens = null, athleteName = null, autoUploadFromMs = null, pendingState = null) }
+        return isRevoked
+    }
+}

@@ -173,4 +173,29 @@ class StravaUseCasesTest {
         assertNull(store.account.value.tokens)
         assertEquals(StravaError.NOT_CONNECTED, token().errorOrNull())
     }
+
+    @Test
+    fun `disconnect revokes and always forgets the tokens`() = runTest {
+        val disconnect = DisconnectStravaUseCase(store, api)
+        val tokens = StravaTokens("access1", "refresh1", 10)
+        store.account.value =
+            StravaAccount(app = FakeStravaApi.APP, tokens = tokens, athleteName = "R", autoUploadFromMs = 5)
+
+        assertTrue(disconnect())
+        assertEquals(listOf("refresh1"), api.revokedTokens)
+        assertEquals(StravaAccount(app = FakeStravaApi.APP), store.account.value)
+
+        store.account.value = StravaAccount(app = FakeStravaApi.APP, tokens = tokens)
+        api.revokeResult = StravaError.OFFLINE.asFailure()
+        assertFalse(disconnect())
+        assertNull(store.account.value.tokens)
+        assertTrue(disconnect())
+    }
+
+    @Test
+    fun `api base url moves to api-v3 on 4 January 2027`() {
+        assertEquals(StravaConfig.LEGACY_API_BASE_URL, StravaConfig.apiBaseUrl(StravaConfig.NEW_API_FROM_MS - 1))
+        assertEquals(StravaConfig.NEW_API_BASE_URL, StravaConfig.apiBaseUrl(StravaConfig.NEW_API_FROM_MS))
+        assertEquals(1_799_020_800_000, StravaConfig.NEW_API_FROM_MS)
+    }
 }

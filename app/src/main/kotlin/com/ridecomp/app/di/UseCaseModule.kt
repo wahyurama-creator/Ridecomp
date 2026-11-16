@@ -19,6 +19,7 @@ import com.ridecomp.core.usecase.DeleteActivityUseCase
 import com.ridecomp.core.usecase.DeleteOfflineMapUseCase
 import com.ridecomp.core.usecase.DeleteRouteUseCase
 import com.ridecomp.core.usecase.DeleteSegmentUseCase
+import com.ridecomp.core.usecase.DisconnectStravaUseCase
 import com.ridecomp.core.usecase.DismissTipUseCase
 import com.ridecomp.core.usecase.DuplicateActivityProfileUseCase
 import com.ridecomp.core.usecase.EstimateHrMaxUseCase
@@ -260,6 +261,7 @@ val useCaseModule = module {
     factory { SaveStravaAppUseCase(get()) }
     factory { StartStravaAuthUseCase(get(), SecureRandom()) }
     factory { CompleteStravaAuthUseCase(get(), get()) }
+    factory { DisconnectStravaUseCase(get(), get()) }
     // Single: one token refresh at a time (Strava rotates refresh tokens).
     single { GetStravaAccessTokenUseCase(get(), get(), get()) }
     single { StravaUploadRequests() }

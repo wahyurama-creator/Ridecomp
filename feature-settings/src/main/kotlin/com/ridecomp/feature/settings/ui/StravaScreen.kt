@@ -16,6 +16,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,6 +47,7 @@ import com.ridecomp.ui.component.BigButton
 import com.ridecomp.ui.component.BigButtonSize
 import com.ridecomp.ui.component.BigButtonStyle
 import com.ridecomp.ui.component.CardTone
+import com.ridecomp.ui.component.ConfirmDialog
 import com.ridecomp.ui.component.IconTile
 import com.ridecomp.ui.component.LinkText
 import com.ridecomp.ui.component.RideCompCard
@@ -322,7 +326,25 @@ private fun ConnectedCard(status: StravaStatus.Connected, onEvent: (StravaUiEven
             onCheckedChange = { onEvent(StravaUiEvent.SetAutoUpload(it)) },
         )
     }
-    LinkText(stringResource(R.string.strava_change_app), onClick = { onEvent(StravaUiEvent.EditApp) })
+    var isConfirmShown by rememberSaveable { mutableStateOf(false) }
+    BigButton(
+        text = stringResource(R.string.strava_disconnect),
+        onClick = { isConfirmShown = true },
+        style = BigButtonStyle.TEXT_DANGER,
+    )
+    if (isConfirmShown) {
+        ConfirmDialog(
+            title = stringResource(R.string.strava_disconnect_title),
+            message = stringResource(R.string.strava_disconnect_message),
+            confirmLabel = stringResource(R.string.strava_disconnect),
+            dismissLabel = stringResource(R.string.strava_cancel),
+            onConfirm = {
+                isConfirmShown = false
+                onEvent(StravaUiEvent.Disconnect)
+            },
+            onDismiss = { isConfirmShown = false },
+        )
+    }
 }
 
 @Composable
@@ -335,6 +357,8 @@ private fun MessageBanner(message: StravaMessage, onShown: () -> Unit) {
         StravaMessage.REJECTED -> R.string.strava_message_rejected to AlertSeverity.DANGER
         StravaMessage.FAILED -> R.string.strava_message_failed to AlertSeverity.DANGER
         StravaMessage.NO_BROWSER -> R.string.strava_message_no_browser to AlertSeverity.WARN
+        StravaMessage.DISCONNECTED -> R.string.strava_message_disconnected to AlertSeverity.OK
+        StravaMessage.DISCONNECTED_LOCALLY -> R.string.strava_message_disconnected_locally to AlertSeverity.WARN
     }
     AlertBanner(
         message = stringResource(textRes),
