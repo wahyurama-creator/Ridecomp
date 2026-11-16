@@ -16,6 +16,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.ridecomp.app.navigation.AppRoutes
 import com.ridecomp.app.navigation.IncomingGpx
+import com.ridecomp.app.navigation.IncomingStravaAuth
 import com.ridecomp.app.navigation.RideCompNavHost
 import com.ridecomp.app.navigation.TopLevelDestination
 import com.ridecomp.app.navigation.navigateToTopLevel
@@ -42,6 +43,11 @@ fun RideCompApp(modifier: Modifier = Modifier, viewModel: AppViewModel = koinVie
     // A GPX opened from another app: show the routes tab, which imports it (onboarding comes first).
     LaunchedEffect(incomingGpx, done) {
         if (incomingGpx != null && done) navController.navigateToTopLevel(TopLevelDestination.ROUTES)
+    }
+    val stravaRedirect by IncomingStravaAuth.redirect.collectAsStateWithLifecycle()
+    // Back from Strava's authorize page: the Strava screen finishes the connection.
+    LaunchedEffect(stravaRedirect, done) {
+        if (stravaRedirect != null && done) navController.navigate(AppRoutes.STRAVA) { launchSingleTop = true }
     }
     Scaffold(
         modifier = modifier,

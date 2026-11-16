@@ -9,6 +9,7 @@ import com.ridecomp.core.usecase.BestEffortsStep
 import com.ridecomp.core.usecase.CheckGpsAvailabilityUseCase
 import com.ridecomp.core.usecase.ClearShareCardsUseCase
 import com.ridecomp.core.usecase.CompleteOnboardingUseCase
+import com.ridecomp.core.usecase.CompleteStravaAuthUseCase
 import com.ridecomp.core.usecase.CreateBackupUseCase
 import com.ridecomp.core.usecase.CreateSegmentFromActivityUseCase
 import com.ridecomp.core.usecase.CreateSegmentFromClimbUseCase
@@ -37,6 +38,7 @@ import com.ridecomp.core.usecase.GetRecoverableRideUseCase
 import com.ridecomp.core.usecase.GetRideProfileUseCase
 import com.ridecomp.core.usecase.GetRouteGuidanceUseCase
 import com.ridecomp.core.usecase.GetRoutePointsUseCase
+import com.ridecomp.core.usecase.GetStravaAccessTokenUseCase
 import com.ridecomp.core.usecase.HandleRecoveredRideUseCase
 import com.ridecomp.core.usecase.HasProfileUseCase
 import com.ridecomp.core.usecase.ImportGpxUseCase
@@ -71,6 +73,7 @@ import com.ridecomp.core.usecase.ObserveSavedSensorsUseCase
 import com.ridecomp.core.usecase.ObserveSegmentEffortsUseCase
 import com.ridecomp.core.usecase.ObserveSegmentUseCase
 import com.ridecomp.core.usecase.ObserveSegmentsUseCase
+import com.ridecomp.core.usecase.ObserveStravaStatusUseCase
 import com.ridecomp.core.usecase.ObserveTrainingUseCase
 import com.ridecomp.core.usecase.PairSensorUseCase
 import com.ridecomp.core.usecase.PerformIncidentActionUseCase
@@ -96,6 +99,7 @@ import com.ridecomp.core.usecase.SaveProfileUseCase
 import com.ridecomp.core.usecase.SaveRideSettingsUseCase
 import com.ridecomp.core.usecase.SaveRiderNameUseCase
 import com.ridecomp.core.usecase.SaveShareCardUseCase
+import com.ridecomp.core.usecase.SaveStravaAppUseCase
 import com.ridecomp.core.usecase.ScanSensorsUseCase
 import com.ridecomp.core.usecase.SegmentsStep
 import com.ridecomp.core.usecase.SelectActivityProfileUseCase
@@ -107,6 +111,7 @@ import com.ridecomp.core.usecase.ShareCardFiles
 import com.ridecomp.core.usecase.ShareCardImageUseCase
 import com.ridecomp.core.usecase.SnoozeBackupReminderUseCase
 import com.ridecomp.core.usecase.StartRideUseCase
+import com.ridecomp.core.usecase.StartStravaAuthUseCase
 import com.ridecomp.core.usecase.SuggestBackupFileNameUseCase
 import com.ridecomp.core.usecase.SuggestExportFileNameUseCase
 import com.ridecomp.core.usecase.TrainingCalendar
@@ -114,6 +119,7 @@ import com.ridecomp.core.usecase.TrainingLoadStep
 import com.ridecomp.platform.export.AndroidExportFileStore
 import com.ridecomp.platform.export.AndroidExportedFileHandler
 import com.ridecomp.platform.export.AndroidShareCardFiles
+import java.security.SecureRandom
 import java.time.ZoneId
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
@@ -243,4 +249,10 @@ val useCaseModule = module {
     factory { ObserveSegmentsUseCase(get()) }
     factory { ObserveSegmentUseCase(get()) }
     factory { ObserveSegmentEffortsUseCase(get()) }
+    factory { ObserveStravaStatusUseCase(get()) }
+    factory { SaveStravaAppUseCase(get()) }
+    factory { StartStravaAuthUseCase(get(), SecureRandom()) }
+    factory { CompleteStravaAuthUseCase(get(), get()) }
+    // Single: one token refresh at a time (Strava rotates refresh tokens).
+    single { GetStravaAccessTokenUseCase(get(), get(), get()) }
 }

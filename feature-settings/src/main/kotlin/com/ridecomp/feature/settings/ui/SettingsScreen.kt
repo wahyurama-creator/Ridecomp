@@ -51,6 +51,7 @@ enum class SettingsSection(@param:StringRes val titleRes: Int, val taskId: Strin
     OFFLINE_MAPS(R.string.settings_offline_maps),
     LANGUAGE(R.string.settings_language),
     BACKUP(R.string.settings_backup),
+    STRAVA(R.string.settings_strava),
     BATTERY_HELP(R.string.settings_battery_help),
     OPEN_SOURCE_LICENSES(R.string.settings_licenses),
     HELP(R.string.guide_help_title),
@@ -79,6 +80,7 @@ private val APP_SECTIONS = listOf(
     SettingsSection.OFFLINE_MAPS,
     SettingsSection.LANGUAGE,
     SettingsSection.BACKUP,
+    SettingsSection.STRAVA,
     SettingsSection.OPEN_SOURCE_LICENSES,
     SettingsSection.DEVELOPER,
 )
@@ -191,21 +193,26 @@ private fun SettingsSection.summary(state: SettingsUiState): Pair<String?, Value
             settings.eatIntervalMin?.toString() ?: stringResource(R.string.settings_none),
         ) to ValueTone.NORMAL
         SettingsSection.SAFETY -> safetySummary(state)
-        SettingsSection.LANGUAGE -> stringResource(
-            if (settings.unitSystem ==
-                UnitSystem.METRIC
-            ) {
-                R.string.settings_units_metric
-            } else {
-                R.string.settings_units_imperial
-            },
-        ) to ValueTone.NORMAL
+        SettingsSection.LANGUAGE -> unitsSummary(settings.unitSystem) to ValueTone.NORMAL
         SettingsSection.BACKUP -> stringResource(R.string.settings_backup_value) to ValueTone.NORMAL
         SettingsSection.OFFLINE_MAPS -> offlineMapsSummary(state) to ValueTone.NORMAL
+        SettingsSection.STRAVA -> stravaSummary(state)
         SettingsSection.DATA_PAGES, SettingsSection.BATTERY_HELP,
         SettingsSection.OPEN_SOURCE_LICENSES, SettingsSection.HELP, SettingsSection.DEVELOPER,
         -> null to ValueTone.NORMAL
     }
+}
+
+@Composable
+private fun unitsSummary(unitSystem: UnitSystem): String = stringResource(
+    if (unitSystem == UnitSystem.METRIC) R.string.settings_units_metric else R.string.settings_units_imperial,
+)
+
+@Composable
+private fun stravaSummary(state: SettingsUiState): Pair<String, ValueTone> = if (state.isStravaConnected) {
+    stringResource(R.string.settings_strava_connected) to ValueTone.OK
+} else {
+    stringResource(R.string.settings_strava_not_connected) to ValueTone.NORMAL
 }
 
 @Composable

@@ -4,11 +4,13 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.viewModelScope
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RiderProfile
+import com.ridecomp.core.model.StravaStatus
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveOfflineMapsUseCase
 import com.ridecomp.core.usecase.ObserveProfileUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveSafetyUseCase
+import com.ridecomp.core.usecase.ObserveStravaStatusUseCase
 import com.ridecomp.core.usecase.SafetyState
 import com.ridecomp.ui.udf.NoEffect
 import com.ridecomp.ui.udf.UdfViewModel
@@ -24,6 +26,7 @@ data class SettingsUiState(
     val safety: SafetyState? = null,
     val offlineMapCount: Int = 0,
     val offlineMapBytes: Long = 0,
+    val isStravaConnected: Boolean = false,
 )
 
 /** Settings overview: read-only summaries; every change happens on the section's own screen. */
@@ -33,6 +36,7 @@ class SettingsViewModel(
     observeRideSettings: ObserveRideSettingsUseCase,
     observeSafety: ObserveSafetyUseCase,
     observeOfflineMaps: ObserveOfflineMapsUseCase,
+    observeStrava: ObserveStravaStatusUseCase,
 ) : UdfViewModel<SettingsUiState, Unit, NoEffect>(SettingsUiState()) {
     init {
         viewModelScope.launch {
@@ -44,12 +48,23 @@ class SettingsViewModel(
                 ->
                 SettingsUiState(profile, profiles.size, settings, safety)
             }.collect { state ->
-                updateState { state.copy(offlineMapCount = offlineMapCount, offlineMapBytes = offlineMapBytes) }
+                updateState {
+                    state.copy(
+                        offlineMapCount = offlineMapCount,
+                        offlineMapBytes = offlineMapBytes,
+                        isStravaConnected = isStravaConnected,
+                    )
+                }
             }
         }
         viewModelScope.launch {
             observeOfflineMaps().collect { maps ->
                 updateState { copy(offlineMapCount = maps.size, offlineMapBytes = maps.sumOf { it.sizeBytes }) }
+            }
+        }
+        viewModelScope.launch {
+            observeStrava().collect { status ->
+                updateState { copy(isStravaConnected = status is StravaStatus.Connected) }
             }
         }
     }

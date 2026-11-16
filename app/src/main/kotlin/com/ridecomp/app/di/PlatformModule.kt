@@ -27,6 +27,8 @@ import com.ridecomp.core.source.RideController
 import com.ridecomp.core.source.RideNameProvider
 import com.ridecomp.core.source.SafetyMessages
 import com.ridecomp.core.source.SmsGateway
+import com.ridecomp.core.source.StravaAccountStore
+import com.ridecomp.core.source.StravaApi
 import com.ridecomp.core.usecase.BackupFiles
 import com.ridecomp.core.usecase.ExportFitUseCase
 import com.ridecomp.core.usecase.GetLiveSegmentsUseCase
@@ -54,6 +56,8 @@ import com.ridecomp.platform.safety.AndroidSmsGateway
 import com.ridecomp.platform.service.RecordingDependencies
 import com.ridecomp.platform.service.RideStateHolder
 import com.ridecomp.platform.service.ServiceRideController
+import com.ridecomp.platform.strava.AndroidStravaAccountStore
+import com.ridecomp.platform.strava.HttpStravaApi
 import com.ridecomp.platform.system.AndroidClock
 import com.ridecomp.platform.system.AndroidLogger
 import com.ridecomp.platform.system.StandardDispatcherProvider
@@ -75,6 +79,8 @@ val platformModule = module {
     single<PressureSource> { AndroidPressureSource(androidContext(), get()) }
     single<BatteryLevelSource> { AndroidBatteryLevelSource(androidContext()) }
     single<IdGenerator> { UuidIdGenerator() }
+    single<StravaAccountStore> { AndroidStravaAccountStore(androidContext(), get(), get()) }
+    single<StravaApi> { HttpStravaApi(get(), get()) }
     single<RideNameProvider> { AndroidRideNameProvider(androidContext()) }
     single { AlertPlayer(androidContext()) }
     single { RideStateHolder() }

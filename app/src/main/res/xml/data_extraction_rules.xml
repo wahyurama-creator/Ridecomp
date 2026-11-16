@@ -4,7 +4,8 @@
     Cloud backup: nothing. Ride data contains home locations and health data; RideComp has its own
     (optionally encrypted) backup & restore (F-19), and the PRD keeps data on the device only.
     Device-to-device transfer (local, cable/Wi-Fi Direct): rides and settings are copied so a new phone
-    keeps its history. Secrets added later (Strava token, Phase 5) must be excluded here.
+    keeps its history. The Strava app and tokens (Phase 5, D-79) live in noBackupFilesDir, which Android
+    leaves out of both, and are encrypted with a Keystore key that never leaves this phone.
 -->
 <data-extraction-rules>
     <cloud-backup>

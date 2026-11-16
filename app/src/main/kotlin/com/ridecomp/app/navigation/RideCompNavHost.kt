@@ -46,6 +46,7 @@ import com.ridecomp.feature.settings.ui.RideSettingsRoute
 import com.ridecomp.feature.settings.ui.SafetyRoute
 import com.ridecomp.feature.settings.ui.SettingsRoute
 import com.ridecomp.feature.settings.ui.SettingsSection
+import com.ridecomp.feature.settings.ui.StravaRoute
 import com.ridecomp.feature.training.ui.NewRecordsCard
 import com.ridecomp.feature.training.ui.RecordsRoute
 import com.ridecomp.feature.training.ui.SegmentDetailRoute
@@ -74,6 +75,7 @@ object AppRoutes {
     const val BACKUP = "backup"
     const val OFFLINE_MAPS = "offline_maps"
     const val LICENSES = "licenses"
+    const val STRAVA = "strava"
     const val HELP = "help"
     const val ARG_TOPIC = "topic"
     const val HELP_TOPIC = "help/{$ARG_TOPIC}"
@@ -199,6 +201,14 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
             )
         }
         composable(AppRoutes.LICENSES) { OssLicensesRoute(onBack = { navController.popBackStack() }) }
+        composable(AppRoutes.STRAVA) {
+            val redirect by IncomingStravaAuth.redirect.collectAsStateWithLifecycle()
+            StravaRoute(
+                onBack = { navController.popBackStack() },
+                redirect = redirect,
+                onRedirectHandled = IncomingStravaAuth::consumed,
+            )
+        }
         composable(AppRoutes.BACKUP) {
             BackupRoute(
                 onBack = { navController.popBackStack() },
@@ -310,25 +320,33 @@ private fun NavGraphBuilder.historyGraph(navController: NavHostController) {
 }
 
 private fun openSection(section: SettingsSection, navController: NavHostController, context: Context) {
-    when (section) {
-        SettingsSection.PROFILE -> navController.navigate(AppRoutes.PROFILE)
-        SettingsSection.RIDE_SCREEN_BATTERY, SettingsSection.AUTO_PAUSE, SettingsSection.REMINDERS ->
-            navController.navigate(AppRoutes.RIDE_SETTINGS)
-        SettingsSection.BATTERY_HELP -> navController.navigate(AppRoutes.BATTERY_HELP)
-        SettingsSection.DEVELOPER -> navController.navigate(AppRoutes.DEVELOPER)
-        SettingsSection.LANGUAGE -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.startActivity(
-                Intent(Settings.ACTION_APP_LOCALE_SETTINGS, (PACKAGE_SCHEME + context.packageName).toUri()),
-            )
-        }
-        SettingsSection.DATA_PAGES -> navController.navigate(AppRoutes.dataPages())
-        SettingsSection.ACTIVITY_PROFILES -> navController.navigate(AppRoutes.ACTIVITY_PROFILES)
-        SettingsSection.SAFETY -> navController.navigate(AppRoutes.SAFETY)
-        SettingsSection.BACKUP -> navController.navigate(AppRoutes.BACKUP)
-        SettingsSection.OFFLINE_MAPS -> navController.navigate(AppRoutes.OFFLINE_MAPS)
-        SettingsSection.OPEN_SOURCE_LICENSES -> navController.navigate(AppRoutes.LICENSES)
-        SettingsSection.HELP -> navController.navigate(AppRoutes.HELP)
+    val route = section.route()
+    if (route != null) {
+        navController.navigate(route)
+    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        // Language: per-app language lives in Android settings from Android 13.
+        context.startActivity(
+            Intent(Settings.ACTION_APP_LOCALE_SETTINGS, (PACKAGE_SCHEME + context.packageName).toUri()),
+        )
     }
+}
+
+/** The screen of a settings entry; null for the language, which opens Android settings. */
+private fun SettingsSection.route(): String? = when (this) {
+    SettingsSection.PROFILE -> AppRoutes.PROFILE
+    SettingsSection.RIDE_SCREEN_BATTERY, SettingsSection.AUTO_PAUSE, SettingsSection.REMINDERS ->
+        AppRoutes.RIDE_SETTINGS
+    SettingsSection.BATTERY_HELP -> AppRoutes.BATTERY_HELP
+    SettingsSection.DEVELOPER -> AppRoutes.DEVELOPER
+    SettingsSection.LANGUAGE -> null
+    SettingsSection.DATA_PAGES -> AppRoutes.dataPages()
+    SettingsSection.ACTIVITY_PROFILES -> AppRoutes.ACTIVITY_PROFILES
+    SettingsSection.SAFETY -> AppRoutes.SAFETY
+    SettingsSection.BACKUP -> AppRoutes.BACKUP
+    SettingsSection.STRAVA -> AppRoutes.STRAVA
+    SettingsSection.OFFLINE_MAPS -> AppRoutes.OFFLINE_MAPS
+    SettingsSection.OPEN_SOURCE_LICENSES -> AppRoutes.LICENSES
+    SettingsSection.HELP -> AppRoutes.HELP
 }
 
 /** Switches tab without stacking duplicates and keeps each tab's state. */
