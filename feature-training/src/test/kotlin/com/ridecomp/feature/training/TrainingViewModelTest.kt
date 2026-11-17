@@ -11,10 +11,12 @@ import com.ridecomp.core.testing.FakeActivityRepository
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeProfileRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
+import com.ridecomp.core.testing.FakeTrainingPlanRepository
 import com.ridecomp.core.testing.FakeTrainingRepository
 import com.ridecomp.core.testing.TestDispatcherProvider
 import com.ridecomp.core.usecase.ExtendTrainingToTodayUseCase
 import com.ridecomp.core.usecase.LoadWeekZonesUseCase
+import com.ridecomp.core.usecase.ObserveActivePlanUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveTrainingUseCase
 import com.ridecomp.core.usecase.ReadRideTrackUseCase
@@ -69,6 +71,7 @@ class TrainingViewModelTest {
         ),
         ObserveRideSettingsUseCase(FakeSettingsRepository()),
         ExtendTrainingToTodayUseCase(RecomputeTrainingUseCase(training, calendar, dispatchers), calendar),
+        ObserveActivePlanUseCase(FakeTrainingPlanRepository(), calendar),
     )
 
     @Test

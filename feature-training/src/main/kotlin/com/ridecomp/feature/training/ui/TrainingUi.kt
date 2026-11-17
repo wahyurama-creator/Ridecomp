@@ -28,6 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.config.Units
 import com.ridecomp.core.engine.training.LoadMethod
 import com.ridecomp.core.engine.training.TrainingConfig
+import com.ridecomp.core.model.PlanRef
 import com.ridecomp.core.usecase.TrainingOverview
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.training.R
@@ -49,18 +50,25 @@ import org.koin.androidx.compose.koinViewModel
 
 /** Training tab of History (T4.4, 13-UI-SCREENS #20). Values are estimates for trends (§10). */
 @Composable
-fun TrainingRoute(modifier: Modifier = Modifier, viewModel: TrainingViewModel = koinViewModel()) {
+fun TrainingRoute(
+    modifier: Modifier = Modifier,
+    onOpenPlans: () -> Unit = {},
+    onOpenPlan: (PlanRef) -> Unit = {},
+    viewModel: TrainingViewModel = koinViewModel(),
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    TrainingContent(state, modifier)
+    TrainingContent(state, modifier, onOpenPlans, onOpenPlan)
 }
 
+/** The training plan card first (T7.4), then the load overview once there are rides with load. */
 @Composable
-fun TrainingContent(state: TrainingUiState, modifier: Modifier = Modifier) {
+fun TrainingContent(
+    state: TrainingUiState,
+    modifier: Modifier = Modifier,
+    onOpenPlans: () -> Unit = {},
+    onOpenPlan: (PlanRef) -> Unit = {},
+) {
     val overview = state.overview ?: return
-    if (!state.hasLoad) {
-        EmptyState(message = stringResource(R.string.training_empty), modifier = modifier)
-        return
-    }
     val formatter = remember(state.unitSystem) { UnitFormatter(state.unitSystem) }
     Column(
         modifier = modifier
@@ -72,6 +80,11 @@ fun TrainingContent(state: TrainingUiState, modifier: Modifier = Modifier) {
             ),
         verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
     ) {
+        PlanCard(state.activePlan, onOpenPlans, onOpenPlan)
+        if (!state.hasLoad) {
+            EmptyState(message = stringResource(R.string.training_empty))
+            return@Column
+        }
         Text(
             text = stringResource(R.string.training_disclaimer),
             style = RideCompTheme.typography.caption,

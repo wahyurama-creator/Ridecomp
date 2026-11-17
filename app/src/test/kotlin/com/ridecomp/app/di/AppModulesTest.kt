@@ -6,6 +6,8 @@ import com.ridecomp.core.engine.safety.IncidentManager
 import com.ridecomp.core.engine.sensors.BleScanner
 import com.ridecomp.core.engine.sensors.SensorRepository
 import com.ridecomp.core.model.AppLanguage
+import com.ridecomp.core.model.BuiltInPlan
+import com.ridecomp.core.model.PlanRef
 import com.ridecomp.core.repository.ActivityAnalysisRepository
 import com.ridecomp.core.repository.ActivityProfileRepository
 import com.ridecomp.core.repository.ActivityRepository
@@ -21,6 +23,7 @@ import com.ridecomp.core.repository.SafetyRepository
 import com.ridecomp.core.repository.SegmentRepository
 import com.ridecomp.core.repository.SettingsRepository
 import com.ridecomp.core.repository.StravaUploadRepository
+import com.ridecomp.core.repository.TrainingPlanRepository
 import com.ridecomp.core.repository.TrainingRepository
 import com.ridecomp.core.source.AccelerometerSource
 import com.ridecomp.core.source.AppLanguageStore
@@ -75,6 +78,7 @@ import com.ridecomp.core.testing.FakeSmsGateway
 import com.ridecomp.core.testing.FakeStravaAccountStore
 import com.ridecomp.core.testing.FakeStravaApi
 import com.ridecomp.core.testing.FakeStravaUploadRepository
+import com.ridecomp.core.testing.FakeTrainingPlanRepository
 import com.ridecomp.core.testing.FakeTrainingRepository
 import com.ridecomp.core.testing.RecordingLogger
 import com.ridecomp.core.testing.TestDispatcherProvider
@@ -114,6 +118,9 @@ import com.ridecomp.feature.settings.viewmodel.SafetyViewModel
 import com.ridecomp.feature.settings.viewmodel.SettingsViewModel
 import com.ridecomp.feature.settings.viewmodel.StravaViewModel
 import com.ridecomp.feature.training.viewmodel.NewRecordsViewModel
+import com.ridecomp.feature.training.viewmodel.PlanBuilderViewModel
+import com.ridecomp.feature.training.viewmodel.PlanDetailViewModel
+import com.ridecomp.feature.training.viewmodel.PlansViewModel
 import com.ridecomp.feature.training.viewmodel.RecordsViewModel
 import com.ridecomp.feature.training.viewmodel.SegmentDetailViewModel
 import com.ridecomp.feature.training.viewmodel.SegmentEditorViewModel
@@ -165,6 +172,7 @@ class AppModulesTest {
         single<ActivityProfileRepository> { FakeActivityProfileRepository() }
         single<BikeRepository> { FakeBikeRepository() }
         single<BikeComponentRepository> { FakeBikeComponentRepository() }
+        single<TrainingPlanRepository> { FakeTrainingPlanRepository() }
         single<SafetyRepository> { FakeSafetyRepository() }
         single<SmsGateway> { FakeSmsGateway() }
         single<SafetyMessages> { FakeSafetyMessages() }
@@ -213,6 +221,15 @@ class AppModulesTest {
     fun tearDown() {
         stopKoin()
         Dispatchers.resetMain()
+    }
+
+    @Test
+    fun `training plan view models resolve from the app graph`() {
+        val koin = getKoin()
+
+        assertNotNull(koin.get<PlansViewModel>())
+        assertNotNull(koin.get<PlanDetailViewModel> { parametersOf(PlanRef.BuiltIn(BuiltInPlan.ZONE2_BASE)) })
+        assertNotNull(koin.get<PlanBuilderViewModel> { parametersOf(null) })
     }
 
     @Test

@@ -129,4 +129,66 @@
     <string name="share_save_short">Simpan</string>
     <string name="share_send_short">Bagikan</string>
     <string name="training_trend_later">Garis tren muncul setelah Anda ride di beberapa hari berbeda.</string>
+
+    <!-- Rencana latihan (T7.4) -->
+    <string name="plan_card_title">Rencana latihan</string>
+    <string name="plan_card_none">Pilih tujuan (base zona 2, persiapan lomba, Gran Fondo) atau buat sendiri; latihan hari ini tampil di sini.</string>
+    <string name="plan_card_week">%1$s · minggu %2$d/%3$d</string>
+    <string name="plan_card_today">Hari ini: %1$s</string>
+    <string name="plan_card_finished">Rencana selesai. Mantap!</string>
+    <string name="plans_title">Rencana latihan</string>
+    <string name="plans_back">Kembali</string>
+    <string name="plans_intro">Rencana memberi tahu apa yang dikayuh tiap hari. Latihan memakai zona: detak jantung, power bila punya power meter, atau cukup dengan rasa.</string>
+    <string name="plans_build">Buat rencana sendiri</string>
+    <string name="plans_followed">✓ Diikuti</string>
+    <plurals name="plans_size">
+        <item quantity="other">%1$s · %2$d ride</item>
+    </plurals>
+    <plurals name="plans_weeks">
+        <item quantity="other">%1$d minggu</item>
+    </plurals>
+    <string name="plan_zone2_base">Base Zona 2</string>
+    <string name="plan_zone2_base_description">Membangun daya tahan dengan ride santai di zona 2; dasar untuk semua tujuan. Minggu keempat lebih ringan.</string>
+    <string name="plan_race_prep">Persiapan lomba</string>
+    <string name="plan_race_prep_description">Base dulu, lalu latihan ambang dan VO2max; minggu terakhir lebih ringan agar segar di hari lomba.</string>
+    <string name="plan_gran_fondo">Gran Fondo 100 km</string>
+    <string name="plan_gran_fondo_description">Ride panjang akhir pekan naik sampai ±4 jam, dengan tempo di hari biasa; siap untuk 100 km.</string>
+    <string name="plan_custom_default_name">Rencanaku</string>
+    <string name="plan_rest_day">Istirahat</string>
+    <string name="plan_session_summary">%1$s · %2$d mnt</string>
+    <string name="plan_minutes">%1$d mnt</string>
+    <string name="plan_week">Minggu %1$d</string>
+    <string name="plan_day">Hari %1$d</string>
+    <string name="plan_today_label">Hari ini · %1$d</string>
+    <string name="plan_start">Mulai rencana ini hari ini</string>
+    <string name="plan_start_replaces">Memulainya menggantikan rencana yang sedang diikuti.</string>
+    <string name="plan_stop">Berhenti mengikuti</string>
+    <string name="plan_followed_since">✓ Kamu sedang mengikuti rencana ini</string>
+    <string name="plan_edit">Ubah</string>
+    <string name="plan_delete">Hapus rencana</string>
+    <string name="plan_delete_title">Hapus rencana ini?</string>
+    <string name="plan_delete_message">Riwayat ride tetap ada; hanya rencananya yang dihapus.</string>
+    <string name="plan_cancel">Batal</string>
+    <string name="plan_ok">OK</string>
+    <string name="plan_zones_title">Arti zona</string>
+    <string name="plan_builder_title">Rencana baru</string>
+    <string name="plan_builder_edit_title">Ubah rencana</string>
+    <string name="plan_builder_name">Nama (mis. Persiapan Tour de Borobudur)</string>
+    <string name="plan_builder_weeks">Berapa minggu</string>
+    <string name="plan_builder_week">Satu minggu</string>
+    <string name="plan_builder_week_hint">Ketuk hari untuk mengatur istirahat atau ride; minggu ini berulang sepanjang rencana. Hari 1 adalah hari kamu mulai.</string>
+    <string name="plan_builder_intensity">Zona</string>
+    <string name="plan_builder_duration">Durasi</string>
+    <string name="plan_builder_save">Simpan rencana</string>
+    <string name="plan_builder_no_rides">Tambahkan minimal satu ride dalam seminggu.</string>
+    <string name="intensity_recovery">Zona 1 · Pemulihan</string>
+    <string name="intensity_endurance">Zona 2 · Daya tahan</string>
+    <string name="intensity_tempo">Zona 3 · Tempo</string>
+    <string name="intensity_threshold">Zona 4 · Ambang</string>
+    <string name="intensity_vo2max">Zona 5 · VO2max</string>
+    <string name="intensity_recovery_how">Sangat ringan, kaki sekadar berputar (usaha 1–2 dari 10).</string>
+    <string name="intensity_endurance_how">Ringan: masih bisa ngobrol kalimat penuh (usaha 3–4 dari 10).</string>
+    <string name="intensity_tempo_how">Sedang: napas lebih cepat, hanya bisa bicara pendek (usaha 5–6 dari 10).</string>
+    <string name="intensity_threshold_how">Berat: mis. 2–4 × 8–15 menit di zona 4, kayuh santai di antaranya (usaha 7–8 dari 10).</string>
+    <string name="intensity_vo2max_how">Sangat berat: mis. 5 × 3 menit di zona 5, 3 menit santai di antaranya (usaha 9 dari 10).</string>
 </resources>

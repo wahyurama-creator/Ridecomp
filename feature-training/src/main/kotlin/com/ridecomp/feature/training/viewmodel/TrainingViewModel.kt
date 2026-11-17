@@ -3,8 +3,10 @@ package com.ridecomp.feature.training.viewmodel
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.viewModelScope
 import com.ridecomp.core.model.UnitSystem
+import com.ridecomp.core.usecase.ActivePlan
 import com.ridecomp.core.usecase.ExtendTrainingToTodayUseCase
 import com.ridecomp.core.usecase.LoadWeekZonesUseCase
+import com.ridecomp.core.usecase.ObserveActivePlanUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveTrainingUseCase
 import com.ridecomp.core.usecase.TrainingOverview
@@ -22,6 +24,8 @@ data class TrainingUiState(
     /** Seconds in heart-rate zones Z1..Z5 this week; empty without HR data or HR max. */
     val zonesS: ImmutableList<Long> = persistentListOf(),
     val unitSystem: UnitSystem = UnitSystem.METRIC,
+    /** The plan being followed (T7.4); null = none. */
+    val activePlan: ActivePlan? = null,
 ) {
     val hasLoad: Boolean get() = overview?.methods?.isNotEmpty() == true
 }
@@ -32,8 +36,10 @@ class TrainingViewModel(
     loadZones: LoadWeekZonesUseCase,
     observeSettings: ObserveRideSettingsUseCase,
     extendToToday: ExtendTrainingToTodayUseCase,
+    observeActivePlan: ObserveActivePlanUseCase,
 ) : UdfViewModel<TrainingUiState, Unit, NoEffect>(TrainingUiState()) {
     init {
+        viewModelScope.launch { observeActivePlan().collect { plan -> updateState { copy(activePlan = plan) } } }
         // Days without rides since the last one: fitness and fatigue decay up to today.
         viewModelScope.launch { extendToToday() }
         viewModelScope.launch {

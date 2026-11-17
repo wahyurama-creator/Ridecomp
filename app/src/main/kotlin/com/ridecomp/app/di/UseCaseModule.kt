@@ -18,6 +18,7 @@ import com.ridecomp.core.usecase.DeleteActivityProfileUseCase
 import com.ridecomp.core.usecase.DeleteActivityUseCase
 import com.ridecomp.core.usecase.DeleteBikeUseCase
 import com.ridecomp.core.usecase.DeleteComponentUseCase
+import com.ridecomp.core.usecase.DeleteCustomPlanUseCase
 import com.ridecomp.core.usecase.DeleteOfflineMapUseCase
 import com.ridecomp.core.usecase.DeleteRouteUseCase
 import com.ridecomp.core.usecase.DeleteSegmentUseCase
@@ -37,6 +38,7 @@ import com.ridecomp.core.usecase.GetActivityKindUseCase
 import com.ridecomp.core.usecase.GetAppLanguageUseCase
 import com.ridecomp.core.usecase.GetBikeUseCase
 import com.ridecomp.core.usecase.GetComponentUseCase
+import com.ridecomp.core.usecase.GetCustomPlanUseCase
 import com.ridecomp.core.usecase.GetFreeStorageUseCase
 import com.ridecomp.core.usecase.GetLapsUseCase
 import com.ridecomp.core.usecase.GetLiveSegmentsUseCase
@@ -56,6 +58,7 @@ import com.ridecomp.core.usecase.LoadRideTrailUseCase
 import com.ridecomp.core.usecase.LoadShareCardUseCase
 import com.ridecomp.core.usecase.LoadTrackOutlineUseCase
 import com.ridecomp.core.usecase.LoadWeekZonesUseCase
+import com.ridecomp.core.usecase.ObserveActivePlanUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfileUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
@@ -75,6 +78,7 @@ import com.ridecomp.core.usecase.ObserveMonthTotalsUseCase
 import com.ridecomp.core.usecase.ObserveOfflineMapsUseCase
 import com.ridecomp.core.usecase.ObserveOnboardingDoneUseCase
 import com.ridecomp.core.usecase.ObservePersonalRecordsUseCase
+import com.ridecomp.core.usecase.ObservePlansUseCase
 import com.ridecomp.core.usecase.ObserveProfileChoiceUseCase
 import com.ridecomp.core.usecase.ObserveProfileUseCase
 import com.ridecomp.core.usecase.ObserveRecordKindsUseCase
@@ -115,6 +119,7 @@ import com.ridecomp.core.usecase.SaveActivityFileUseCase
 import com.ridecomp.core.usecase.SaveActivityProfileUseCase
 import com.ridecomp.core.usecase.SaveBikeUseCase
 import com.ridecomp.core.usecase.SaveComponentUseCase
+import com.ridecomp.core.usecase.SaveCustomPlanUseCase
 import com.ridecomp.core.usecase.SaveDataPagesUseCase
 import com.ridecomp.core.usecase.SaveProfileUseCase
 import com.ridecomp.core.usecase.SaveRideSettingsUseCase
@@ -133,8 +138,10 @@ import com.ridecomp.core.usecase.ShareActivityFileUseCase
 import com.ridecomp.core.usecase.ShareCardFiles
 import com.ridecomp.core.usecase.ShareCardImageUseCase
 import com.ridecomp.core.usecase.SnoozeBackupReminderUseCase
+import com.ridecomp.core.usecase.StartPlanUseCase
 import com.ridecomp.core.usecase.StartRideUseCase
 import com.ridecomp.core.usecase.StartStravaAuthUseCase
+import com.ridecomp.core.usecase.StopPlanUseCase
 import com.ridecomp.core.usecase.StravaUploadRequests
 import com.ridecomp.core.usecase.SuggestBackupFileNameUseCase
 import com.ridecomp.core.usecase.SuggestExportFileNameUseCase
@@ -230,6 +237,13 @@ val useCaseModule = module {
     factory { ObserveBikeChoiceUseCase(get()) }
     factory { SaveBikeUseCase(get()) }
     factory { SelectBikeUseCase(get()) }
+    factory { ObservePlansUseCase(get()) }
+    factory { GetCustomPlanUseCase(get()) }
+    factory { ObserveActivePlanUseCase(get(), get()) }
+    factory { StartPlanUseCase(get(), get()) }
+    factory { StopPlanUseCase(get()) }
+    factory { SaveCustomPlanUseCase(get()) }
+    factory { DeleteCustomPlanUseCase(get()) }
     factory { ObserveComponentWearUseCase(get()) }
     factory { ObserveBikeDistanceUseCase(get()) }
     factory { GetComponentUseCase(get()) }

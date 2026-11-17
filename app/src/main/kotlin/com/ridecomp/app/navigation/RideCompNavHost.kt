@@ -14,6 +14,7 @@ import androidx.navigation.navArgument
 import com.ridecomp.app.DevTools
 import com.ridecomp.core.model.GuideTip
 import com.ridecomp.core.model.GuideTopic
+import com.ridecomp.core.model.PlanRef
 import com.ridecomp.feature.history.ui.ActivityDetailRoute
 import com.ridecomp.feature.history.ui.HistoryRoute
 import com.ridecomp.feature.history.ui.StravaHelpRoute
@@ -48,7 +49,11 @@ import com.ridecomp.feature.settings.ui.SafetyRoute
 import com.ridecomp.feature.settings.ui.SettingsRoute
 import com.ridecomp.feature.settings.ui.SettingsSection
 import com.ridecomp.feature.settings.ui.StravaRoute
+import com.ridecomp.feature.training.model.PlanRefArg
 import com.ridecomp.feature.training.ui.NewRecordsCard
+import com.ridecomp.feature.training.ui.PlanBuilderRoute
+import com.ridecomp.feature.training.ui.PlanDetailRoute
+import com.ridecomp.feature.training.ui.PlansRoute
 import com.ridecomp.feature.training.ui.RecordsRoute
 import com.ridecomp.feature.training.ui.SegmentDetailRoute
 import com.ridecomp.feature.training.ui.SegmentEditorRoute
@@ -138,6 +143,7 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
         }
         rideGraph(navController)
         bikeGraph(navController)
+        planGraph(navController)
         historyGraph(navController)
         segmentGraph(navController)
         composable(TopLevelDestination.ROUTES.route) {
@@ -296,7 +302,7 @@ private fun NavGraphBuilder.historyGraph(navController: NavHostController) {
             segmentsContent = {
                 SegmentsRoute(onOpenSegment = { id -> navController.navigate(AppRoutes.segmentDetail(id)) })
             },
-            trainingContent = { TrainingRoute() },
+            trainingContent = { TrainingTab(navController) },
         )
     }
     composable(
@@ -366,6 +372,64 @@ object BikeRoutes {
     /** A part of a bike; [componentId] null = a new part. */
     fun bikeComponent(bikeId: Long, componentId: Long?): String =
         "bike_component/$bikeId/${componentId ?: AppRoutes.NO_ID}"
+}
+
+/** Training tab of History with its plan card (T7.4). */
+@Composable
+private fun TrainingTab(navController: NavHostController) {
+    TrainingRoute(
+        onOpenPlans = { navController.navigate(PlanRoutes.PLANS) },
+        onOpenPlan = { navController.navigate(PlanRoutes.plan(it)) },
+    )
+}
+
+/** Training plans (T7.4). */
+object PlanRoutes {
+    const val PLANS = "plans"
+    const val ARG_PLAN = "plan"
+    const val PLAN = "plan/{$ARG_PLAN}"
+    const val ARG_PLAN_ID = "planId"
+    const val BUILDER = "plan_builder?$ARG_PLAN_ID={$ARG_PLAN_ID}"
+
+    fun plan(ref: PlanRef): String = "plan/${PlanRefArg.encode(ref)}"
+
+    fun builder(planId: Long? = null): String = if (planId ==
+        null
+    ) {
+        "plan_builder"
+    } else {
+        "plan_builder?$ARG_PLAN_ID=$planId"
+    }
+}
+
+/** Plan list, plan detail and the plan builder (T7.4). */
+private fun NavGraphBuilder.planGraph(navController: NavHostController) {
+    composable(PlanRoutes.PLANS) {
+        PlansRoute(
+            onOpenPlan = { navController.navigate(PlanRoutes.plan(it)) },
+            onBuild = { navController.navigate(PlanRoutes.builder()) },
+            onBack = { navController.popBackStack() },
+        )
+    }
+    composable(PlanRoutes.PLAN, arguments = listOf(navArgument(PlanRoutes.ARG_PLAN) { type = NavType.StringType })) {
+        val ref = PlanRefArg.decode(it.arguments?.getString(PlanRoutes.ARG_PLAN))
+        if (ref != null) {
+            PlanDetailRoute(
+                ref = ref,
+                onEdit = { id -> navController.navigate(PlanRoutes.builder(id)) },
+                onBack = { navController.popBackStack() },
+            )
+        }
+    }
+    composable(PlanRoutes.BUILDER, arguments = listOf(optionalIdArgument(PlanRoutes.ARG_PLAN_ID))) { entry ->
+        PlanBuilderRoute(
+            planId = entry.optionalId(PlanRoutes.ARG_PLAN_ID),
+            onSaved = { ref ->
+                navController.navigate(PlanRoutes.plan(ref)) { popUpTo(PlanRoutes.BUILDER) { inclusive = true } }
+            },
+            onBack = { navController.popBackStack() },
+        )
+    }
 }
 
 /** Switches tab without stacking duplicates and keeps each tab's state. */

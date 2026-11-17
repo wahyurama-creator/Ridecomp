@@ -1,5 +1,6 @@
 package com.ridecomp.core.testing
 
+import com.ridecomp.core.model.ActivePlanState
 import com.ridecomp.core.model.Activity
 import com.ridecomp.core.model.ActivityProfile
 import com.ridecomp.core.model.ActivityStatus
@@ -7,6 +8,7 @@ import com.ridecomp.core.model.Bike
 import com.ridecomp.core.model.BikeComponent
 import com.ridecomp.core.model.BuiltInProfiles
 import com.ridecomp.core.model.ComponentWear
+import com.ridecomp.core.model.CustomPlan
 import com.ridecomp.core.model.DataPagesLayout
 import com.ridecomp.core.model.Lap
 import com.ridecomp.core.model.PeriodTotals
@@ -24,6 +26,7 @@ import com.ridecomp.core.repository.NewActivity
 import com.ridecomp.core.repository.PendingAnalysis
 import com.ridecomp.core.repository.ProfileRepository
 import com.ridecomp.core.repository.SettingsRepository
+import com.ridecomp.core.repository.TrainingPlanRepository
 import com.ridecomp.core.source.IdGenerator
 import com.ridecomp.core.source.RideNameProvider
 import kotlinx.coroutines.flow.Flow
@@ -320,4 +323,28 @@ public class FakeBikeComponentRepository : BikeComponentRepository {
 
     override fun observeBikeDistanceM(bikeId: Long): Flow<Double> =
         rides.map { done -> done.filter { it.bikeId == bikeId }.sumOf { it.distanceM } }
+}
+
+/** In-memory plans and the plan being followed. */
+public class FakeTrainingPlanRepository : TrainingPlanRepository {
+    public val custom: MutableStateFlow<List<CustomPlan>> = MutableStateFlow(emptyList())
+    public val active: MutableStateFlow<ActivePlanState?> = MutableStateFlow(null)
+
+    override fun observeCustomPlans(): Flow<List<CustomPlan>> = custom
+
+    override suspend fun saveCustomPlan(plan: CustomPlan): Long {
+        val id = if (plan.id == 0L) (custom.value.maxOfOrNull { it.id } ?: 0L) + 1 else plan.id
+        custom.value = custom.value.filterNot { it.id == id } + plan.copy(id = id)
+        return id
+    }
+
+    override suspend fun deleteCustomPlan(id: Long) {
+        custom.value = custom.value.filterNot { it.id == id }
+    }
+
+    override fun observeActivePlan(): Flow<ActivePlanState?> = active
+
+    override suspend fun setActivePlan(state: ActivePlanState?) {
+        active.value = state
+    }
 }
