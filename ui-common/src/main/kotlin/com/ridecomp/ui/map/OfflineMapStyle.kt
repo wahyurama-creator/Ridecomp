@@ -103,6 +103,9 @@ internal object OfflineMapStyle {
         "{\"id\":\"ridden\",\"type\":\"line\",\"source\":\"${MapSourceIds.RIDDEN}\"," +
             "\"layout\":{\"line-cap\":\"round\",\"line-join\":\"round\"}," +
             "\"paint\":{\"line-color\":${hex(colors.track)},\"line-width\":$ROUTE_WIDTH}}",
+        "{\"id\":\"marker\",\"type\":\"circle\",\"source\":\"${MapSourceIds.MARKER}\"," +
+            "\"paint\":{\"circle-radius\":$POSITION_RADIUS,\"circle-color\":${hex(colors.ok)}," +
+            "\"circle-stroke-width\":$POSITION_STROKE,\"circle-stroke-color\":${hex(colors.bg)}}}",
         "{\"id\":\"position\",\"type\":\"circle\",\"source\":\"${MapSourceIds.POSITION}\"," +
             "\"paint\":{\"circle-radius\":$POSITION_RADIUS,\"circle-color\":${hex(colors.textPrimary)}," +
             "\"circle-stroke-width\":$POSITION_STROKE,\"circle-stroke-color\":${hex(colors.bg)}}}",
@@ -146,7 +149,10 @@ internal object MapSourceIds {
     const val ROUTE = "route"
     const val RIDDEN = "ridden"
     const val POSITION = "position"
-    val ALL = listOf(ROUTE, RIDDEN, POSITION)
+
+    /** A place to go back to, e.g. the ride start (T7.2). */
+    const val MARKER = "marker"
+    val ALL = listOf(ROUTE, RIDDEN, POSITION, MARKER)
 }
 
 /** The online map (D-90). */

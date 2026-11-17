@@ -1,6 +1,7 @@
 package com.ridecomp.feature.ride.viewmodel
 
 import androidx.lifecycle.viewModelScope
+import com.ridecomp.core.engine.map.BackToStart
 import com.ridecomp.core.engine.map.TrailPoint
 import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RideAction
@@ -31,6 +32,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -39,6 +41,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -79,13 +82,14 @@ class RideViewModel(
     val liveRide: StateFlow<LiveRide> = useCases.observeLive()
 
     /**
-     * Ridden line of a GPS ride without a route: rebuilt from the stored samples (the screen may open
-     * mid-ride or after a recovery), then extended with each live position. Bounded by [RideTrail].
+     * Ridden line of a GPS ride: rebuilt from the stored samples (the screen may open mid-ride or after a
+     * recovery), then extended with each live position. Bounded by [RideTrail]. Drawn on rides without a
+     * route and used by "back to start" (T7.2).
      */
     private val trail: Flow<List<TrailPoint>> = combine(
         useCases.observeLive.activeActivityId(),
-        liveRide.map { it.routeId == null && it.isGpsEnabled }.distinctUntilChanged(),
-    ) { id, isFreeRide -> id.takeIf { isFreeRide } }
+        liveRide.map { it.isGpsEnabled }.distinctUntilChanged(),
+    ) { id, isGpsRide -> id.takeIf { isGpsRide } }
         .distinctUntilChanged()
         .flatMapLatest { id ->
             if (id == null) {
@@ -102,6 +106,29 @@ class RideViewModel(
                 }
             }
         }
+        .shareIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), replay = 1)
+
+    private val isBackToStartOn = MutableStateFlow(false)
+
+    /** Way back to the start while the rider asked for it (T7.2, D-92); null when off or without a position. */
+    val backToStart: StateFlow<BackToStart?> = isBackToStartOn
+        .flatMapLatest { isOn ->
+            if (!isOn) {
+                flowOf(null)
+            } else {
+                combine(trail, liveRide.map { it.latDeg to it.lonDeg }.distinctUntilChanged()) { points, position ->
+                    withContext(dispatchers.default) { BackToStart.of(points, position.first, position.second) }
+                }
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), null)
+
+    /** Whether "back to start" is on (it stays on until the rider turns it off). */
+    val isBackToStart: StateFlow<Boolean> = isBackToStartOn
+
+    fun toggleBackToStart() {
+        isBackToStartOn.value = !isBackToStartOn.value
+    }
 
     /** Online tiles, offline regions or none, plus the ridden line (D-90); the network is watched only while shown. */
     val map: StateFlow<RideMapView> = combine(maps.observeTiles(), trail) { tiles, points -> tiles to points }
