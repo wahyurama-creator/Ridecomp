@@ -156,6 +156,38 @@ class RideCompMigrationTest {
         }
     }
 
+    @Test
+    fun migrate_8_to_9_gives_old_rides_the_first_bike_and_parts_go_with_their_bike() {
+        helper.createDatabase(TEST_DB_9, 8).apply {
+            execSQL(
+                "INSERT INTO bikes (id, name, profile_id, weight_kg, wheel_circumference_mm) VALUES (4, '', 1, 9.0, 2105)",
+            )
+            execSQL(
+                "INSERT INTO activities (id, uuid, name, status, started_at, elapsed_s, moving_s, distance_m, " +
+                    "ascent_m, descent_m, avg_speed, max_speed, last_checkpoint_at, analysis_version) " +
+                    "VALUES (1, 'u1', 'Ride', 'finished', 1000, 60, 50, 400.0, 3.0, 2.0, 8.0, 10.0, 2000, 3)",
+            )
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(TEST_DB_9, 9, true, RideCompMigrations.MIGRATION_8_9)
+
+        db.query("SELECT bike_id FROM activities WHERE id = 1").use { cursor ->
+            cursor.moveToFirst()
+            assertEquals(4L, cursor.getLong(0))
+        }
+        db.execSQL(
+            "INSERT INTO bike_components (bike_id, type, name, installed_at, initial_distance_m, limit_m) " +
+                "VALUES (4, 'chain', '', 0, 0.0, 3000000.0)",
+        )
+        db.execSQL("PRAGMA foreign_keys = ON")
+        db.execSQL("DELETE FROM bikes WHERE id = 4")
+        db.query("SELECT COUNT(*) FROM bike_components").use { cursor ->
+            cursor.moveToFirst()
+            assertEquals(0, cursor.getInt(0))
+        }
+    }
+
     /** Road (id 1) and MTB (id 3), as seeded on a real install. */
     private fun SupportSQLiteDatabase.insertProfiles() {
         listOf(1 to "road", 3 to "mtb").forEachIndexed { order, (id, kind) ->
@@ -188,5 +220,6 @@ class RideCompMigrationTest {
         const val TEST_DB_6 = "migration-6-test.db"
         const val TEST_DB_8 = "migration-8-test.db"
         const val TEST_DB_8_EMPTY = "migration-8-empty-test.db"
+        const val TEST_DB_9 = "migration-9-test.db"
     }
 }

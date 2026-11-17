@@ -32,6 +32,8 @@ public data class RideSetup(
     val ageYears: Int? = null,
     /** Activity profile of this ride (12-FEATURE-SPECS §4); stored on the activity. */
     val profileId: Long? = null,
+    /** Bike ridden (T7.3); stored on the activity. */
+    val bikeId: Long? = null,
     /** False for Indoor: no GPS, speed and distance from the wheel sensor. */
     val isGpsEnabled: Boolean = true,
     /** Followed route (T3.6); stored on the activity. */
@@ -85,7 +87,14 @@ public class RecordingSession(
             recorder = newRecorder
             activityId =
                 repository.create(
-                    NewActivity(ids.newId(), names.defaultName(nowMs), nowMs, setup.profileId, setup.routeId),
+                    NewActivity(
+                        ids.newId(),
+                        names.defaultName(nowMs),
+                        nowMs,
+                        setup.profileId,
+                        setup.routeId,
+                        setup.bikeId,
+                    ),
                 )
             persist(started, nowMs)
         }

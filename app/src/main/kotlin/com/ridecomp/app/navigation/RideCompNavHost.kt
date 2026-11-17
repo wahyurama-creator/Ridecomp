@@ -21,6 +21,7 @@ import com.ridecomp.feature.ride.ui.ActivityProfileEditorRoute
 import com.ridecomp.feature.ride.ui.ActivityProfilesRoute
 import com.ridecomp.feature.ride.ui.BikeEditorRoute
 import com.ridecomp.feature.ride.ui.BikesRoute
+import com.ridecomp.feature.ride.ui.ComponentEditorRoute
 import com.ridecomp.feature.ride.ui.DataPagesEditorRoute
 import com.ridecomp.feature.ride.ui.HomeRoute
 import com.ridecomp.feature.ride.ui.OnboardingBikeForm
@@ -28,6 +29,7 @@ import com.ridecomp.feature.ride.ui.PreRideRoute
 import com.ridecomp.feature.ride.ui.RideRoute
 import com.ridecomp.feature.ride.ui.SummaryRoute
 import com.ridecomp.feature.ride.viewmodel.BikeTarget
+import com.ridecomp.feature.ride.viewmodel.ComponentTarget
 import com.ridecomp.feature.routes.ui.RouteDetailRoute
 import com.ridecomp.feature.routes.ui.RoutesRoute
 import com.ridecomp.feature.sensors.ui.SensorsRoute
@@ -70,12 +72,6 @@ object AppRoutes {
     const val ARG_PROFILE_ID = "profileId"
     const val DATA_PAGES = "data_pages?$ARG_PROFILE_ID={$ARG_PROFILE_ID}"
     const val ACTIVITY_PROFILES = "activity_profiles"
-    const val BIKES = "bikes"
-    const val NEW_BIKE = "bike_new"
-    const val ARG_BIKE_ID = "bikeId"
-    const val BIKE = "bike/{$ARG_BIKE_ID}"
-
-    fun bike(bikeId: Long): String = "bike/$bikeId"
     const val SAFETY = "safety"
     const val BACKUP = "backup"
     const val OFFLINE_MAPS = "offline_maps"
@@ -351,9 +347,25 @@ private fun SettingsSection.route(): String = when (this) {
 
 /** Bikes, activity profiles and data pages: setup screens of the ride feature. */
 private fun SettingsSection.rideSetupRoute(): String = when {
-    this == SettingsSection.BIKES -> AppRoutes.BIKES
+    this == SettingsSection.BIKES -> BikeRoutes.BIKES
     this == SettingsSection.DATA_PAGES -> AppRoutes.dataPages()
     else -> AppRoutes.ACTIVITY_PROFILES
+}
+
+/** Saved bikes and their parts (D-89, T7.3). */
+object BikeRoutes {
+    const val BIKES = "bikes"
+    const val NEW_BIKE = "bike_new"
+    const val ARG_BIKE_ID = "bikeId"
+    const val BIKE = "bike/{$ARG_BIKE_ID}"
+    const val ARG_COMPONENT_ID = "componentId"
+    const val BIKE_COMPONENT = "bike_component/{$ARG_BIKE_ID}/{$ARG_COMPONENT_ID}"
+
+    fun bike(bikeId: Long): String = "bike/$bikeId"
+
+    /** A part of a bike; [componentId] null = a new part. */
+    fun bikeComponent(bikeId: Long, componentId: Long?): String =
+        "bike_component/$bikeId/${componentId ?: AppRoutes.NO_ID}"
 }
 
 /** Switches tab without stacking duplicates and keeps each tab's state. */
@@ -380,7 +392,7 @@ private fun NavGraphBuilder.preRideDestination(navController: NavHostController)
             routeId = entry.optionalId(AppRoutes.ARG_ROUTE_ID),
             onCancel = { navController.popBackStack() },
             onChooseRoute = { navController.navigateToTopLevel(TopLevelDestination.ROUTES) },
-            onManageBikes = { navController.navigate(AppRoutes.BIKES) },
+            onManageBikes = { navController.navigate(BikeRoutes.BIKES) },
             onStarted = {
                 navController.navigate(AppRoutes.RIDE) {
                     popUpTo(AppRoutes.PRE_RIDE) { inclusive = true }
@@ -392,22 +404,40 @@ private fun NavGraphBuilder.preRideDestination(navController: NavHostController)
 
 /** Saved bikes (D-89): list, new bike, edit bike. */
 private fun NavGraphBuilder.bikeGraph(navController: NavHostController) {
-    composable(AppRoutes.BIKES) {
+    composable(BikeRoutes.BIKES) {
         BikesRoute(
-            onOpen = { navController.navigate(AppRoutes.bike(it)) },
-            onAdd = { navController.navigate(AppRoutes.NEW_BIKE) },
+            onOpen = { navController.navigate(BikeRoutes.bike(it)) },
+            onAdd = { navController.navigate(BikeRoutes.NEW_BIKE) },
             onBack = { navController.popBackStack() },
         )
     }
-    composable(AppRoutes.NEW_BIKE) {
+    composable(BikeRoutes.NEW_BIKE) {
         BikeEditorRoute(target = BikeTarget.New, onDone = { navController.popBackStack() })
     }
     composable(
-        AppRoutes.BIKE,
-        arguments = listOf(navArgument(AppRoutes.ARG_BIKE_ID) { type = NavType.LongType }),
+        BikeRoutes.BIKE,
+        arguments = listOf(navArgument(BikeRoutes.ARG_BIKE_ID) { type = NavType.LongType }),
     ) { entry ->
-        val bikeId = entry.arguments?.getLong(AppRoutes.ARG_BIKE_ID) ?: AppRoutes.NO_ID
-        BikeEditorRoute(target = BikeTarget.Existing(bikeId), onDone = { navController.popBackStack() })
+        val bikeId = entry.arguments?.getLong(BikeRoutes.ARG_BIKE_ID) ?: AppRoutes.NO_ID
+        BikeEditorRoute(
+            target = BikeTarget.Existing(bikeId),
+            onDone = { navController.popBackStack() },
+            onOpenComponent = { bike, component -> navController.navigate(BikeRoutes.bikeComponent(bike, component)) },
+        )
+    }
+    composable(
+        BikeRoutes.BIKE_COMPONENT,
+        arguments = listOf(
+            navArgument(BikeRoutes.ARG_BIKE_ID) { type = NavType.LongType },
+            navArgument(BikeRoutes.ARG_COMPONENT_ID) { type = NavType.LongType },
+        ),
+    ) { entry ->
+        val bikeId = entry.arguments?.getLong(BikeRoutes.ARG_BIKE_ID) ?: AppRoutes.NO_ID
+        val componentId = entry.arguments?.getLong(BikeRoutes.ARG_COMPONENT_ID)?.takeIf { it != AppRoutes.NO_ID }
+        ComponentEditorRoute(
+            target = ComponentTarget(bikeId, componentId),
+            onDone = { navController.popBackStack() },
+        )
     }
 }
 

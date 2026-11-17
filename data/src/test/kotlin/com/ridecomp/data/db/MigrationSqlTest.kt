@@ -115,6 +115,17 @@ class MigrationSqlTest {
     }
 
     @Test
+    fun `migration 8 to 9 adds the ride bike and the exported components table`() {
+        val executed = executedSql { RideCompMigrations.MIGRATION_8_9.migrate(it) }
+        val creates = executed.filter { it.startsWith(CREATE) }
+
+        assertTrue(executed.first().contains("ADD COLUMN `bike_id` INTEGER"))
+        assertTrue(executed.any { it.startsWith("UPDATE `${DbNames.TABLE_ACTIVITIES}` SET `bike_id`") })
+        assertTrue(exportedCreateSql(9, DbNames.TABLE_ACTIVITIES).contains(creates.first()))
+        assertEquals(exportedCreateSql(9, DbNames.TABLE_BIKE_COMPONENTS), creates.drop(1))
+    }
+
+    @Test
     fun `every schema version has a migration path`() {
         val versions = File(SCHEMA_DIR).listFiles().orEmpty().mapNotNull { it.nameWithoutExtension.toIntOrNull() }
 

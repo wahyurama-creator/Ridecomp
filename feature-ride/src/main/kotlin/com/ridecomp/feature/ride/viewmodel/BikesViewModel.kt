@@ -5,11 +5,14 @@ import androidx.lifecycle.viewModelScope
 import com.ridecomp.core.config.ProfileDefaults
 import com.ridecomp.core.model.ActivityProfile
 import com.ridecomp.core.model.Bike
+import com.ridecomp.core.model.ComponentWear
 import com.ridecomp.core.usecase.BikeField
 import com.ridecomp.core.usecase.DeleteBikeUseCase
 import com.ridecomp.core.usecase.GetBikeUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveBikeChoiceUseCase
+import com.ridecomp.core.usecase.ObserveBikeDistanceUseCase
+import com.ridecomp.core.usecase.ObserveComponentWearUseCase
 import com.ridecomp.core.usecase.SaveBikeUseCase
 import com.ridecomp.core.usecase.SelectBikeUseCase
 import com.ridecomp.core.util.fold
@@ -27,6 +30,8 @@ import kotlinx.coroutines.launch
 @Immutable
 data class BikesUiState(
     val bikes: ImmutableList<Bike> = persistentListOf(),
+    /** Parts that reached their limit, of any bike (T7.3). */
+    val dueComponents: ImmutableList<ComponentWear> = persistentListOf(),
     /** For the type name of each bike. */
     val profiles: ImmutableList<ActivityProfile> = persistentListOf(),
     /** The bike preselected for the next ride. */
@@ -44,11 +49,18 @@ class BikesViewModel(
     observeBikes: ObserveBikeChoiceUseCase,
     observeProfiles: ObserveActivityProfilesUseCase,
     private val selectBike: SelectBikeUseCase,
+    observeWear: ObserveComponentWearUseCase,
 ) : UdfViewModel<BikesUiState, BikesUiEvent, NoEffect>(BikesUiState()) {
     init {
         viewModelScope.launch {
-            combine(observeBikes(), observeProfiles()) { choice, profiles ->
-                BikesUiState(choice.bikes.toImmutableList(), profiles.toImmutableList(), choice.selected?.id, true)
+            combine(observeBikes(), observeProfiles(), observeWear.due()) { choice, profiles, due ->
+                BikesUiState(
+                    bikes = choice.bikes.toImmutableList(),
+                    dueComponents = due.toImmutableList(),
+                    profiles = profiles.toImmutableList(),
+                    selectedId = choice.selected?.id,
+                    isLoaded = true,
+                )
             }.collect { state -> updateState { state } }
         }
     }
@@ -86,6 +98,10 @@ data class BikeEditorUiState(
     val isDeleteAsked: Boolean = false,
     val isLoaded: Boolean = false,
     val isSaving: Boolean = false,
+    /** Parts of a saved bike with their distance (T7.3). */
+    val components: ImmutableList<ComponentWear> = persistentListOf(),
+    /** Total of the finished rides on this bike. */
+    val bikeDistanceM: Double = 0.0,
 ) {
     val isNew: Boolean get() = id == 0L
 }
@@ -121,6 +137,8 @@ data class BikeEditorUseCases(
     val observeProfiles: ObserveActivityProfilesUseCase,
     val save: SaveBikeUseCase,
     val delete: DeleteBikeUseCase,
+    val observeWear: ObserveComponentWearUseCase,
+    val observeDistance: ObserveBikeDistanceUseCase,
 )
 
 /** Adds or edits one bike: name, type, weight and wheel size (D-89). */
@@ -152,6 +170,16 @@ class BikeEditorViewModel(private val target: BikeTarget, private val useCases: 
                 canDelete = bike != null && bikes.size > 1,
                 isLoaded = true,
             )
+        }
+        bike?.let { observeParts(it.id) }
+    }
+
+    private fun observeParts(bikeId: Long) {
+        viewModelScope.launch {
+            useCases.observeWear(bikeId).collect { parts -> updateState { copy(components = parts.toImmutableList()) } }
+        }
+        viewModelScope.launch {
+            useCases.observeDistance(bikeId).collect { distance -> updateState { copy(bikeDistanceM = distance) } }
         }
     }
 

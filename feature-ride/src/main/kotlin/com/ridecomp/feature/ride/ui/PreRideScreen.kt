@@ -273,6 +273,7 @@ private fun BikePicker(state: PreRideUiState, onEvent: (PreRideUiEvent) -> Unit,
             )
             LinkText(stringResource(R.string.pre_ride_manage_bikes), onClick = onManageBikes)
         }
+        if (state.dueComponents.isNotEmpty()) DueComponentsText(state.dueComponents)
     }
 }
 

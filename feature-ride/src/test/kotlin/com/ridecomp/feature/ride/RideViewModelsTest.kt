@@ -18,6 +18,7 @@ import com.ridecomp.core.testing.FakeActivityProfileRepository
 import com.ridecomp.core.testing.FakeActivityRepository
 import com.ridecomp.core.testing.FakeBackupStateRepository
 import com.ridecomp.core.testing.FakeBatteryLevelSource
+import com.ridecomp.core.testing.FakeBikeComponentRepository
 import com.ridecomp.core.testing.FakeBikeRepository
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeLocationSource
@@ -39,6 +40,7 @@ import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
 import com.ridecomp.core.usecase.ObserveBackupReminderUseCase
 import com.ridecomp.core.usecase.ObserveBikeChoiceUseCase
+import com.ridecomp.core.usecase.ObserveComponentWearUseCase
 import com.ridecomp.core.usecase.ObserveDataPagesUseCase
 import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
@@ -173,6 +175,7 @@ class RideViewModelsTest {
                     ObserveBikeChoiceUseCase(bikes),
                     SelectBikeUseCase(bikes),
                     ObserveProfileChoiceUseCase(profiles),
+                    ObserveComponentWearUseCase(FakeBikeComponentRepository()),
                 ),
                 ObserveRouteUseCase(FakeRouteRepository()),
                 StartRideUseCase(controller),

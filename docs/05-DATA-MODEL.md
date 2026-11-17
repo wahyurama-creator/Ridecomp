@@ -97,6 +97,9 @@ Satuan, bahasa, sumber cadence prioritas, ambang mode baterai (§BM), setting ke
 ### `bikes` (skema v8, D-89)
 `id, name, profile_id, weight_kg, wheel_circumference_mm`. Sepeda tersimpan yang dipilih sebelum ride. `profile_id` = jenis sepeda (id `activity_profiles`, tanpa foreign key: profil kustom yang terhapus jatuh ke profil default saat ride mulai). `name` kosong = "Sepedaku"/"My bike" (sepeda pertama yang dibuat app). Migrasi 7→8 / `onCreate` membuat sepeda pertama dari `profile.bike_weight_kg`/`wheel_circumference_mm` dan profil terakhir dipakai (atau Road). Minimal satu sepeda selalu ada. Sepeda terakhir di `settings` `app.last_bike_id`; ride yang dipulihkan memakai sepeda terpilih itu.
 
+### `bike_components` (skema v9, T7.3, D-93)
+`id, bike_id (FK bikes, CASCADE), type (chain|tires|brake_pads|cassette|service|other), name, installed_at, initial_distance_m, limit_m?`. Jarak komponen = `initial_distance_m` + jumlah `distance_m` ride `finished` dengan `activities.bike_id` = sepedanya dan `started_at >= installed_at` (dihitung di SQL, tidak disimpan; menghapus ride ikut mengurangi). "Baru diganti" = `installed_at` sekarang, `initial_distance_m` 0. `activities.bike_id` (v9, tanpa FK, berindeks) = sepeda ride; ride sebelum v9 diberi sepeda pertama.
+
 ### `emergency_contacts`
 `id, display_name, phone_e164, sort_order` (maks 3). **Data pribadi pihak ketiga**: tidak pernah di-log atau ikut export/share (`11-SECURITY-RULES.md` SEC-SMS-*).
 

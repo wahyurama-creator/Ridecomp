@@ -7,6 +7,8 @@ import com.ridecomp.core.engine.route.RoutePoint
 import com.ridecomp.core.engine.route.RouteTurn
 import com.ridecomp.core.model.ActivityProfile
 import com.ridecomp.core.model.Bike
+import com.ridecomp.core.model.BikeComponent
+import com.ridecomp.core.model.ComponentWear
 import com.ridecomp.core.model.DataPagesLayout
 import com.ridecomp.core.model.EmergencyContact
 import com.ridecomp.core.model.IncidentRecord
@@ -79,6 +81,22 @@ public interface BikeRepository {
     public fun observeLastUsedId(): Flow<Long?>
 
     public suspend fun setLastUsedId(id: Long)
+}
+
+/** Parts of the saved bikes and their wear (`bike_components`, schema v9, T7.3). */
+public interface BikeComponentRepository {
+    /** Every part of every bike with its distance, updated when rides are saved or deleted. */
+    public fun observeWear(): Flow<List<ComponentWear>>
+
+    public suspend fun get(id: Long): BikeComponent?
+
+    /** Inserts when `id == 0`, otherwise updates; returns the id. */
+    public suspend fun save(component: BikeComponent): Long
+
+    public suspend fun delete(id: Long)
+
+    /** Total distance of the finished rides on a bike. */
+    public fun observeBikeDistanceM(bikeId: Long): Flow<Double>
 }
 
 /** Safety settings and emergency contacts (05-DATA-MODEL `emergency_contacts`). */
