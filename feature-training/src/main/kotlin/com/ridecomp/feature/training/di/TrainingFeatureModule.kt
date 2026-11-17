@@ -2,6 +2,10 @@ package com.ridecomp.feature.training.di
 
 import com.ridecomp.feature.training.viewmodel.AndroidSharePhotoLoader
 import com.ridecomp.feature.training.viewmodel.NewRecordsViewModel
+import com.ridecomp.feature.training.viewmodel.PlanBuilderViewModel
+import com.ridecomp.feature.training.viewmodel.PlanDetailUseCases
+import com.ridecomp.feature.training.viewmodel.PlanDetailViewModel
+import com.ridecomp.feature.training.viewmodel.PlansViewModel
 import com.ridecomp.feature.training.viewmodel.RecordsViewModel
 import com.ridecomp.feature.training.viewmodel.SegmentDetailViewModel
 import com.ridecomp.feature.training.viewmodel.SegmentEditorViewModel
@@ -19,7 +23,11 @@ val trainingFeatureModule = module {
     viewModel { RecordsViewModel(get(), get(), get()) }
     viewModel { params -> NewRecordsViewModel(params.get(), get(), get()) }
     viewModel { SegmentsViewModel(get(), get()) }
-    viewModel { TrainingViewModel(get(), get(), get(), get()) }
+    viewModel { TrainingViewModel(get(), get(), get(), get(), get()) }
+    viewModel { PlansViewModel(get(), get()) }
+    factory { PlanDetailUseCases(get(), get(), get(), get(), get()) }
+    viewModel { params -> PlanDetailViewModel(params.get(), get()) }
+    viewModel { params -> PlanBuilderViewModel(params.getOrNull(), get(), get()) }
     factory<SharePhotoLoader> { AndroidSharePhotoLoader(androidContext(), get()) }
     factory { ShareCardUseCases(get(), get(), get(), get()) }
     viewModel { params -> ShareCardViewModel(params.get(), get(), get(), get()) }

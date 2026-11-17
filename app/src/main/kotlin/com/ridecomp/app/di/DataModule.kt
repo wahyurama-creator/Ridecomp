@@ -15,6 +15,7 @@ import com.ridecomp.core.repository.SafetyRepository
 import com.ridecomp.core.repository.SegmentRepository
 import com.ridecomp.core.repository.SettingsRepository
 import com.ridecomp.core.repository.StravaUploadRepository
+import com.ridecomp.core.repository.TrainingPlanRepository
 import com.ridecomp.core.repository.TrainingRepository
 import com.ridecomp.core.usecase.BackupDatabase
 import com.ridecomp.core.usecase.BackupStateRepository
@@ -36,6 +37,7 @@ import com.ridecomp.data.repository.SegmentRepositoryImpl
 import com.ridecomp.data.repository.SensorRepositoryImpl
 import com.ridecomp.data.repository.SettingsRepositoryImpl
 import com.ridecomp.data.repository.StravaUploadRepositoryImpl
+import com.ridecomp.data.repository.TrainingPlanRepositoryImpl
 import com.ridecomp.data.repository.TrainingRepositoryImpl
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
@@ -67,6 +69,7 @@ val dataModule = module {
     single<ActivityProfileRepository> { ActivityProfileRepositoryImpl(get(), get()) }
     single<BikeRepository> { BikeRepositoryImpl(get(), get()) }
     single<BikeComponentRepository> { BikeComponentRepositoryImpl(get()) }
+    single<TrainingPlanRepository> { TrainingPlanRepositoryImpl(get()) }
     single<SafetyRepository> { SafetyRepositoryImpl(get(), get()) }
     single<IncidentRepository> { IncidentRepositoryImpl(get()) }
     single<RouteRepository> { RouteRepositoryImpl(get()) }

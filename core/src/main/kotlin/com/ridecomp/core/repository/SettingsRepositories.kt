@@ -5,10 +5,12 @@ import com.ridecomp.core.engine.route.Route
 import com.ridecomp.core.engine.route.RouteClimb
 import com.ridecomp.core.engine.route.RoutePoint
 import com.ridecomp.core.engine.route.RouteTurn
+import com.ridecomp.core.model.ActivePlanState
 import com.ridecomp.core.model.ActivityProfile
 import com.ridecomp.core.model.Bike
 import com.ridecomp.core.model.BikeComponent
 import com.ridecomp.core.model.ComponentWear
+import com.ridecomp.core.model.CustomPlan
 import com.ridecomp.core.model.DataPagesLayout
 import com.ridecomp.core.model.EmergencyContact
 import com.ridecomp.core.model.IncidentRecord
@@ -97,6 +99,21 @@ public interface BikeComponentRepository {
 
     /** Total distance of the finished rides on a bike. */
     public fun observeBikeDistanceM(bikeId: Long): Flow<Double>
+}
+
+/** Plans the rider built and the plan being followed (T7.4, stored in `settings`). */
+public interface TrainingPlanRepository {
+    public fun observeCustomPlans(): Flow<List<CustomPlan>>
+
+    /** Inserts when `id == 0`, otherwise updates; returns the id. */
+    public suspend fun saveCustomPlan(plan: CustomPlan): Long
+
+    public suspend fun deleteCustomPlan(id: Long)
+
+    public fun observeActivePlan(): Flow<ActivePlanState?>
+
+    /** Null stops following a plan. */
+    public suspend fun setActivePlan(state: ActivePlanState?)
 }
 
 /** Safety settings and emergency contacts (05-DATA-MODEL `emergency_contacts`). */

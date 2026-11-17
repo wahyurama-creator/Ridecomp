@@ -40,6 +40,9 @@ internal object SettingsKeys {
     const val SAFETY_LAST_TEST_SMS_AT = "safety.last_test_sms_at"
     const val GUIDE_LEVEL = "guide.rider_level"
     const val GUIDE_DISMISSED_TIPS = "guide.dismissed_tips"
+    const val TRAINING_CUSTOM_PLANS = "training.custom_plans"
+    const val TRAINING_ACTIVE_PLAN = "training.active_plan"
+    const val TRAINING_PLAN_START = "training.plan_start"
 
     /** Stored for an optional value that the user switched off (distinguishes "off" from "default"). */
     const val OFF = "off"
