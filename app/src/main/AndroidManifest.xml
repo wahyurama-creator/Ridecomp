@@ -80,6 +80,22 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+        <!--
+          Home screen widget (T9.2, D-96). RULE-EXCEPTION: exported because the launcher delivers
+          APPWIDGET_UPDATE (a protected system broadcast) to it; it reads nothing from the intent beyond the
+          widget ids and only renders local data. Requested by the owner.
+        -->
+        <receiver
+            android:name=".widget.RideCompWidget"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/ridecomp_widget_info" />
+        </receiver>
     </application>
 
 </manifest>

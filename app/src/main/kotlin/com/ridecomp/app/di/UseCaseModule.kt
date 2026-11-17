@@ -58,6 +58,7 @@ import com.ridecomp.core.usecase.LoadRideTrailUseCase
 import com.ridecomp.core.usecase.LoadShareCardUseCase
 import com.ridecomp.core.usecase.LoadTrackOutlineUseCase
 import com.ridecomp.core.usecase.LoadWeekZonesUseCase
+import com.ridecomp.core.usecase.LoadWidgetSummaryUseCase
 import com.ridecomp.core.usecase.ObserveActivePlanUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfileUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
@@ -240,6 +241,7 @@ val useCaseModule = module {
     factory { ObserveBikeChoiceUseCase(get()) }
     factory { SaveBikeUseCase(get()) }
     factory { SelectBikeUseCase(get()) }
+    factory { LoadWidgetSummaryUseCase(get(), get(), get(), get()) }
     factory { ObserveTrainerUseCase(get()) }
     factory { SetTrainerTargetUseCase(get()) }
     factory { ObservePlansUseCase(get()) }

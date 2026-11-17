@@ -1,5 +1,6 @@
 package com.ridecomp.platform.service
 
+import com.ridecomp.core.config.Units
 import com.ridecomp.core.engine.recording.RecordingSession
 import com.ridecomp.core.engine.safety.IncidentManager
 import com.ridecomp.core.engine.sensors.SensorConnector
@@ -59,6 +60,9 @@ interface RecordingDependencies {
     /** Smart trainer ERG target (T9.1). */
     val trainerControl: TrainerControl
 
+    /** Refreshes the home screen widget (T9.2); a no-op without widgets. */
+    val rideWidget: RideWidget
+
     /** Incident countdown and emergency SMS (single instance, T2.16). */
     val incidentManager: IncidentManager
     val accelerometerSource: AccelerometerSource
@@ -79,4 +83,31 @@ interface RecordingDependencies {
 /** Implemented by the Application class. */
 interface RecordingDependenciesProvider {
     val recordingDependencies: RecordingDependencies
+}
+
+/** The home screen widget, implemented in :app (T9.2). */
+fun interface RideWidget {
+    fun refresh()
+}
+
+/** Widget updates while riding at most once a minute (T9.2, BAT-03); [now] when the ride ends. */
+class ThrottledRideWidget(private val widget: RideWidget, private val clock: Clock) {
+    private var lastRefreshMs: Long? = null
+
+    fun onRideUpdate() {
+        val now = clock.nowMs()
+        val last = lastRefreshMs
+        if (last != null && now - last < REFRESH_MS) return
+        lastRefreshMs = now
+        widget.refresh()
+    }
+
+    fun now() {
+        lastRefreshMs = null
+        widget.refresh()
+    }
+
+    private companion object {
+        const val REFRESH_MS = Units.MS_PER_MINUTE
+    }
 }

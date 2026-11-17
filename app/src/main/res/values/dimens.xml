@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Home screen widget (T9.2). -->
+    <dimen name="widget_padding">14dp</dimen>
+    <dimen name="widget_gap">6dp</dimen>
+    <dimen name="widget_corner_radius">20dp</dimen>
+    <dimen name="widget_button_radius">14dp</dimen>
+    <dimen name="widget_button_height">44dp</dimen>
+    <dimen name="widget_title_size">13sp</dimen>
+    <dimen name="widget_line1_size">16sp</dimen>
+    <dimen name="widget_line2_size">13sp</dimen>
+    <dimen name="widget_button_size">15sp</dimen>
+</resources>

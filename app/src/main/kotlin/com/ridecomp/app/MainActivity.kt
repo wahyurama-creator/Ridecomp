@@ -8,6 +8,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.ridecomp.app.navigation.IncomingGpx
 import com.ridecomp.app.navigation.IncomingStravaAuth
+import com.ridecomp.app.navigation.IncomingWidget
+import com.ridecomp.app.widget.RideCompWidget
 import com.ridecomp.platform.locale.AppLocale
 import com.ridecomp.ui.theme.RideCompTheme
 
@@ -24,6 +26,7 @@ class MainActivity : ComponentActivity() {
         if (savedInstanceState == null) {
             IncomingGpx.offer(intent)
             IncomingStravaAuth.offer(intent)
+            IncomingWidget.offer(intent)
         }
         setContent {
             RideCompTheme {
@@ -36,5 +39,12 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         IncomingGpx.offer(intent)
         IncomingStravaAuth.offer(intent)
+        IncomingWidget.offer(intent)
+    }
+
+    /** Leaving the app: the widget shows the latest plan, ride and week (T9.2). */
+    override fun onStop() {
+        super.onStop()
+        RideCompWidget.refresh(this)
     }
 }
