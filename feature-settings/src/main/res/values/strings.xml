@@ -342,4 +342,5 @@
     <string name="strava_benefit_auto_text">Turn it on and every saved ride goes by itself</string>
     <string name="strava_benefit_private_title">Upload permission only</string>
     <string name="strava_benefit_private_text">RideComp cannot see your other Strava data</string>
+    <string name="strava_powered_by" translatable="false">Powered by Strava</string>
 </resources>

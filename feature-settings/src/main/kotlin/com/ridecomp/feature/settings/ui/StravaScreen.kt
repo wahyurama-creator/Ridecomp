@@ -4,12 +4,16 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -26,12 +30,17 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -133,6 +142,7 @@ fun StravaScreen(
                 StravaStatus.NotConnected -> ConnectCard(state, onEvent)
                 is StravaStatus.Connected -> ConnectedCard(status, onEvent)
             }
+            if (status is StravaStatus.NotConnected || status is StravaStatus.Connected) PoweredByStrava()
         }
     }
 }
@@ -185,11 +195,7 @@ private fun ConnectCard(state: StravaUiState, onEvent: (StravaUiEvent) -> Unit) 
             hasDivider = false,
         )
     }
-    BigButton(
-        text = stringResource(R.string.strava_connect),
-        onClick = { onEvent(StravaUiEvent.Connect) },
-        isEnabled = !state.isWorking,
-    )
+    ConnectWithStravaButton(isEnabled = !state.isWorking, onClick = { onEvent(StravaUiEvent.Connect) })
     Text(
         text = stringResource(R.string.strava_connect_hint),
         style = RideCompTheme.typography.caption,
@@ -198,6 +204,45 @@ private fun ConnectCard(state: StravaUiState, onEvent: (StravaUiEvent) -> Unit) 
         modifier = Modifier.fillMaxWidth(),
     )
 }
+
+/**
+ * Strava's own "Connect with Strava" button (brand guidelines 1.1): the official artwork at its 48 dp
+ * height, never redrawn or stretched; the touch area around it keeps the 56 dp minimum (UI-07).
+ */
+@Composable
+private fun ConnectWithStravaButton(isEnabled: Boolean, onClick: () -> Unit) {
+    val label = stringResource(R.string.strava_connect)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = RideCompDimens.touchTargetMin)
+            .clickable(enabled = isEnabled, role = Role.Button, onClickLabel = label, onClick = onClick)
+            .semantics { contentDescription = label }
+            .alpha(if (isEnabled) 1f else DISABLED_ALPHA),
+        contentAlignment = Alignment.Center,
+    ) {
+        Image(
+            painter = painterResource(UiR.drawable.btn_strava_connect_orange),
+            contentDescription = null,
+            modifier = Modifier.height(RideCompDimens.stravaButtonHeight),
+            contentScale = ContentScale.FillHeight,
+        )
+    }
+}
+
+/** "Powered by Strava" (brand guidelines 1.2), apart from and smaller than RideComp's own name. */
+@Composable
+private fun PoweredByStrava() {
+    Image(
+        painter = painterResource(UiR.drawable.logo_powered_by_strava_white),
+        contentDescription = stringResource(R.string.strava_powered_by),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(RideCompDimens.poweredByHeight),
+    )
+}
+
+private const val DISABLED_ALPHA = 0.5f
 
 /** RideComp, three dots, Strava: the two apps being linked. */
 @Composable
