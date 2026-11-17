@@ -3,6 +3,7 @@ package com.ridecomp.core.usecase
 import com.ridecomp.core.config.StravaConfig
 import com.ridecomp.core.model.StravaAccount
 import com.ridecomp.core.model.StravaError
+import com.ridecomp.core.model.StravaSetup
 import com.ridecomp.core.model.StravaStatus
 import com.ridecomp.core.model.StravaTokens
 import com.ridecomp.core.testing.FakeClock
@@ -28,38 +29,24 @@ class StravaUseCasesTest {
     private val api = FakeStravaApi()
 
     @Test
-    fun `status follows the stored account without exposing secrets`() = runTest {
-        val observe = ObserveStravaStatusUseCase(store)
-        assertEquals(StravaStatus.NotSetUp, observe().first())
-        store.account.value = StravaAccount(app = FakeStravaApi.APP)
-        assertEquals(StravaStatus.NotConnected("12345"), observe().first())
+    fun `status follows the build setup and the stored tokens`() = runTest {
+        assertEquals(StravaStatus.Unavailable, ObserveStravaStatusUseCase(store, StravaSetup("", "")).invoke().first())
+        assertEquals(
+            StravaStatus.Unavailable,
+            ObserveStravaStatusUseCase(store, StravaSetup("12345", "http://token.example")).invoke().first(),
+        )
+        val observe = ObserveStravaStatusUseCase(store, FakeStravaApi.SETUP)
+        assertEquals(StravaStatus.NotConnected, observe().first())
         store.account.value =
-            StravaAccount(app = FakeStravaApi.APP, tokens = FakeStravaApi.GRANT.tokens, athleteName = "R")
-        assertEquals(StravaStatus.Connected("12345", "R"), observe().first())
-        assertFalse(FakeStravaApi.APP.toString().contains(FakeStravaApi.APP.clientSecret))
+            StravaAccount(tokens = FakeStravaApi.GRANT.tokens, athleteName = "R", autoUploadFromMs = 1)
+        assertEquals(StravaStatus.Connected("R", isAutoUpload = true), observe().first())
         assertFalse(FakeStravaApi.GRANT.tokens.toString().contains("access1"))
     }
 
     @Test
-    fun `app values are checked and a new app drops the old tokens`() = runTest {
-        val save = SaveStravaAppUseCase(store)
-        assertEquals(StravaAppError.INVALID_CLIENT_ID, save("abc", "a".repeat(40)).errorOrNull())
-        assertEquals(StravaAppError.INVALID_CLIENT_SECRET, save("123", "short").errorOrNull())
-        store.account.value = StravaAccount(app = FakeStravaApi.APP, tokens = FakeStravaApi.GRANT.tokens)
-
-        assertTrue(save(" 12345 ", "a".repeat(40)).getOrNull() != null)
-        assertEquals(FakeStravaApi.GRANT.tokens, store.account.value.tokens)
-
-        save("999", "b".repeat(40))
-        assertEquals("999", store.account.value.app?.clientId)
-        assertNull(store.account.value.tokens)
-    }
-
-    @Test
     fun `authorization url carries the app, the exact redirect, the scope and a fresh state`() = runTest {
-        val start = StartStravaAuthUseCase(store, SecureRandom())
-        assertNull(start())
-        store.account.value = StravaAccount(app = FakeStravaApi.APP)
+        assertNull(StartStravaAuthUseCase(store, StravaSetup("", ""), SecureRandom())())
+        val start = StartStravaAuthUseCase(store, FakeStravaApi.SETUP, SecureRandom())
 
         val first = URI(requireNotNull(start()))
         val firstState = store.account.value.pendingState
@@ -77,7 +64,7 @@ class StravaUseCasesTest {
 
     @Test
     fun `a matching redirect stores the tokens and the state is used once`() = runTest {
-        store.account.value = StravaAccount(app = FakeStravaApi.APP, pendingState = "s1")
+        store.account.value = StravaAccount(pendingState = "s1")
         val complete = CompleteStravaAuthUseCase(store, api)
 
         val result = complete(StravaAuthRedirect("code1", "s1", "read,activity:write", null))
@@ -101,7 +88,7 @@ class StravaUseCasesTest {
             complete(StravaAuthRedirect("c", "s", "activity:write", null)).errorOrNull(),
         )
 
-        store.account.value = StravaAccount(app = FakeStravaApi.APP, pendingState = "s1")
+        store.account.value = StravaAccount(pendingState = "s1")
         assertEquals(
             StravaAuthError.STATE_MISMATCH,
             complete(StravaAuthRedirect("c", "evil", "activity:write", null)).errorOrNull(),
@@ -143,7 +130,7 @@ class StravaUseCasesTest {
     fun `access token is reused until close to expiry, then refreshed and the new pair stored`() = runTest {
         val clock = FakeClock(nowMs = 0)
         val tokens = StravaTokens("access1", "refresh1", expiresAtS = 3_600)
-        store.account.value = StravaAccount(app = FakeStravaApi.APP, tokens = tokens)
+        store.account.value = StravaAccount(tokens = tokens)
         val token = GetStravaAccessTokenUseCase(store, api, clock)
 
         assertEquals("access1", token().getOrNull())
@@ -161,7 +148,7 @@ class StravaUseCasesTest {
     @Test
     fun `a refused refresh disconnects, other failures keep the tokens`() = runTest {
         val tokens = StravaTokens("access1", "refresh1", expiresAtS = 0)
-        store.account.value = StravaAccount(app = FakeStravaApi.APP, tokens = tokens, athleteName = "R")
+        store.account.value = StravaAccount(tokens = tokens, athleteName = "R")
         val token = GetStravaAccessTokenUseCase(store, api, FakeClock(nowMs = 0))
 
         api.refreshResult = StravaError.OFFLINE.asFailure()
@@ -178,14 +165,13 @@ class StravaUseCasesTest {
     fun `disconnect revokes and always forgets the tokens`() = runTest {
         val disconnect = DisconnectStravaUseCase(store, api)
         val tokens = StravaTokens("access1", "refresh1", 10)
-        store.account.value =
-            StravaAccount(app = FakeStravaApi.APP, tokens = tokens, athleteName = "R", autoUploadFromMs = 5)
+        store.account.value = StravaAccount(tokens = tokens, athleteName = "R", autoUploadFromMs = 5)
 
         assertTrue(disconnect())
         assertEquals(listOf("refresh1"), api.revokedTokens)
-        assertEquals(StravaAccount(app = FakeStravaApi.APP), store.account.value)
+        assertEquals(StravaAccount(), store.account.value)
 
-        store.account.value = StravaAccount(app = FakeStravaApi.APP, tokens = tokens)
+        store.account.value = StravaAccount(tokens = tokens)
         api.revokeResult = StravaError.OFFLINE.asFailure()
         assertFalse(disconnect())
         assertNull(store.account.value.tokens)

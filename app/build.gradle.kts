@@ -13,6 +13,18 @@ android {
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = 1
         versionName = "0.1.0"
+        // Strava (D-82): RideComp's public Client ID and its token server. Not secret (the Client ID is in
+        // every authorize URL); the client secret lives only on the token server. Empty = Strava hidden.
+        buildConfigField(
+            "String",
+            "STRAVA_CLIENT_ID",
+            "\"${providers.gradleProperty("ridecomp.strava.clientId").getOrElse("")}\"",
+        )
+        buildConfigField(
+            "String",
+            "STRAVA_TOKEN_SERVER_URL",
+            "\"${providers.gradleProperty("ridecomp.strava.tokenServerUrl").getOrElse("")}\"",
+        )
     }
 
     // SEC-BLD-02/03: the release key lives outside the repo in keystore.properties (git-ignored).

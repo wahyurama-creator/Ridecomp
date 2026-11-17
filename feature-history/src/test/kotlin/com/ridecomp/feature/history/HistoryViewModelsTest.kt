@@ -142,7 +142,7 @@ class HistoryViewModelsTest {
             ),
         )
         val strava = ActivityStravaUseCases(
-            ObserveStravaStatusUseCase(stravaStore),
+            ObserveStravaStatusUseCase(stravaStore, FakeStravaApi.SETUP),
             ObserveStravaUploadUseCase(stravaUploads),
             QueueStravaUploadUseCase(stravaUploads, StravaUploadRequests(), FakeClock()),
         )
@@ -197,9 +197,9 @@ class HistoryViewModelsTest {
     fun `strava row follows the account and queues the ride`() = runTest {
         val id = savedRide(FakeClock.DEFAULT_START_MS)
         val viewModel = detailViewModel(id)
-        assertEquals(StravaStatus.NotSetUp, viewModel.uiState.value.stravaStatus)
+        assertEquals(StravaStatus.NotConnected, viewModel.uiState.value.stravaStatus)
 
-        stravaStore.account.value = StravaAccount(app = FakeStravaApi.APP, tokens = FakeStravaApi.GRANT.tokens)
+        stravaStore.account.value = StravaAccount(tokens = FakeStravaApi.GRANT.tokens)
         viewModel.onEvent(ActivityDetailUiEvent.UploadToStrava)
 
         assertIs<StravaStatus.Connected>(viewModel.uiState.value.stravaStatus)

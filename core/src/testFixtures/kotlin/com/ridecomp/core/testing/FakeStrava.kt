@@ -1,8 +1,8 @@
 package com.ridecomp.core.testing
 
 import com.ridecomp.core.model.StravaAccount
-import com.ridecomp.core.model.StravaApp
 import com.ridecomp.core.model.StravaError
+import com.ridecomp.core.model.StravaSetup
 import com.ridecomp.core.model.StravaTokens
 import com.ridecomp.core.model.StravaUpload
 import com.ridecomp.core.repository.StravaUploadRepository
@@ -60,17 +60,17 @@ class FakeStravaApi : StravaApi {
     val refreshedTokens = mutableListOf<String>()
     val revokedTokens = mutableListOf<String>()
 
-    override suspend fun exchangeCode(app: StravaApp, code: String): Outcome<StravaGrant, StravaError> {
+    override suspend fun exchangeCode(code: String): Outcome<StravaGrant, StravaError> {
         exchangedCodes += code
         return exchangeResult
     }
 
-    override suspend fun refresh(app: StravaApp, refreshToken: String): Outcome<StravaGrant, StravaError> {
+    override suspend fun refresh(refreshToken: String): Outcome<StravaGrant, StravaError> {
         refreshedTokens += refreshToken
         return refreshResult
     }
 
-    override suspend fun revoke(app: StravaApp, token: String): Outcome<Unit, StravaError> {
+    override suspend fun revoke(token: String): Outcome<Unit, StravaError> {
         revokedTokens += token
         return revokeResult
     }
@@ -99,7 +99,7 @@ class FakeStravaApi : StravaApi {
     }
 
     companion object {
-        val APP = StravaApp("12345", "a".repeat(40))
+        val SETUP = StravaSetup("12345", "https://token.example")
         val GRANT = StravaGrant(StravaTokens("access1", "refresh1", 1_000_000L), "Rider One")
         val REFRESHED = StravaGrant(StravaTokens("access2", "refresh2", 2_000_000L), null)
     }

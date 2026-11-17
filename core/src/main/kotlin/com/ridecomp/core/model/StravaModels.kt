@@ -1,8 +1,16 @@
 package com.ridecomp.core.model
 
-/** The rider's own Strava API app (SEC-AUTH-04). [toString] never shows the secret. */
-public data class StravaApp(val clientId: String, val clientSecret: String) {
-    override fun toString(): String = "StravaApp(clientId=$clientId)"
+import com.ridecomp.core.config.StravaConfig
+
+/**
+ * RideComp's Strava API app as built in (D-82): the public Client ID and the address of the token server
+ * that keeps the secret. Empty values (a build without them) make Strava unavailable.
+ */
+public data class StravaSetup(val clientId: String, val tokenServerUrl: String) {
+    public val isAvailable: Boolean
+        get() = StravaConfig.CLIENT_ID_PATTERN.matches(clientId) &&
+            tokenServerUrl.startsWith(StravaConfig.HTTPS_PREFIX) &&
+            tokenServerUrl.length > StravaConfig.HTTPS_PREFIX.length
 }
 
 /** OAuth tokens; never logged or shown (SEC-AUTH-06). */
@@ -12,7 +20,6 @@ public data class StravaTokens(val accessToken: String, val refreshToken: String
 
 /** Everything stored for Strava, encrypted on the device and kept out of backups (SEC-STO-02/03). */
 public data class StravaAccount(
-    val app: StravaApp? = null,
     val tokens: StravaTokens? = null,
     val athleteName: String? = null,
     /** `state` of an authorization in progress; survives the app being killed while the browser is open. */
@@ -21,14 +28,14 @@ public data class StravaAccount(
     val autoUploadFromMs: Long? = null,
 )
 
-/** What the screens see: no secrets. */
+/** What the screens see: no tokens. */
 public sealed interface StravaStatus {
-    public data object NotSetUp : StravaStatus
+    /** This build has no Strava app or token server configured. */
+    public data object Unavailable : StravaStatus
 
-    public data class NotConnected(val clientId: String) : StravaStatus
+    public data object NotConnected : StravaStatus
 
-    public data class Connected(val clientId: String, val athleteName: String?, val isAutoUpload: Boolean = false) :
-        StravaStatus
+    public data class Connected(val athleteName: String?, val isAutoUpload: Boolean = false) : StravaStatus
 }
 
 /** Where a ride is on its way to Strava (T5.3). */

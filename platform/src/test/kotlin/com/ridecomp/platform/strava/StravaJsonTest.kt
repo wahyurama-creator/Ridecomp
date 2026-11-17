@@ -1,7 +1,6 @@
 package com.ridecomp.platform.strava
 
 import com.ridecomp.core.model.StravaAccount
-import com.ridecomp.core.model.StravaApp
 import com.ridecomp.core.model.StravaTokens
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -37,7 +36,6 @@ class StravaJsonTest {
     @Test
     fun `account round trip`() {
         val account = StravaAccount(
-            app = StravaApp("123", "s".repeat(40)),
             tokens = StravaTokens("a", "r", 99),
             athleteName = "Rider",
             pendingState = "st",
@@ -45,5 +43,10 @@ class StravaJsonTest {
         assertEquals(account, StravaJson.decodeAccount(StravaJson.encodeAccount(account)))
         assertEquals(StravaAccount(), StravaJson.decodeAccount(StravaJson.encodeAccount(StravaAccount())))
         assertNull(StravaJson.decodeAccount("{"))
+        // A file written by the personal-app version: the old app fields are simply ignored.
+        assertEquals(
+            StravaAccount(athleteName = "R"),
+            StravaJson.decodeAccount("""{"client_id":"1","client_secret":"s","athlete_name":"R"}"""),
+        )
     }
 }

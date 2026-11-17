@@ -106,7 +106,6 @@ import com.ridecomp.core.usecase.SaveProfileUseCase
 import com.ridecomp.core.usecase.SaveRideSettingsUseCase
 import com.ridecomp.core.usecase.SaveRiderNameUseCase
 import com.ridecomp.core.usecase.SaveShareCardUseCase
-import com.ridecomp.core.usecase.SaveStravaAppUseCase
 import com.ridecomp.core.usecase.ScanSensorsUseCase
 import com.ridecomp.core.usecase.SegmentsStep
 import com.ridecomp.core.usecase.SelectActivityProfileUseCase
@@ -258,9 +257,8 @@ val useCaseModule = module {
     factory { ObserveSegmentsUseCase(get()) }
     factory { ObserveSegmentUseCase(get()) }
     factory { ObserveSegmentEffortsUseCase(get()) }
-    factory { ObserveStravaStatusUseCase(get()) }
-    factory { SaveStravaAppUseCase(get()) }
-    factory { StartStravaAuthUseCase(get(), SecureRandom()) }
+    factory { ObserveStravaStatusUseCase(get(), get()) }
+    factory { StartStravaAuthUseCase(get(), get(), SecureRandom()) }
     factory { CompleteStravaAuthUseCase(get(), get()) }
     factory { DisconnectStravaUseCase(get(), get()) }
     // Single: one token refresh at a time (Strava rotates refresh tokens).

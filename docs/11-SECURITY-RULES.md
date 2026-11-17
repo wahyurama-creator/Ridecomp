@@ -105,7 +105,7 @@ GRADLE_USER_HOME=<folder sementara kosong> ./gradlew --no-configuration-cache --
 | SEC-AUTH-01 | OAuth dibuka di **browser eksternal / Custom Tabs**, bukan WebView. |
 | SEC-AUTH-02 | Gunakan parameter **`state` acak** dan validasi saat redirect (cegah CSRF/injeksi redirect). Gunakan PKCE bila didukung Strava (agent memverifikasi dokumentasi terbaru). |
 | SEC-AUTH-03 | Redirect URI memakai skema/host khusus app; activity penerima hanya memproses redirect yang cocok persis dan menolak selainnya. |
-| SEC-AUTH-04 | Client ID/Secret dimasukkan pengguna (milik app API pribadinya), disimpan terenkripsi (SEC-STO-02), **tidak di-hardcode** di source/APK. Risiko sisa didokumentasikan: secret di perangkat dapat diekstrak dari HP yang di-root; dapat diterima karena app ini dipakai pribadi. |
+| SEC-AUTH-04 | Client Secret Strava **hanya ada di server token** (Cloudflare Worker, sebagai *secret*), tidak di repo, source, APK, atau HP pengguna (D-82). App hanya memuat Client ID (publik) dan alamat server lewat konfigurasi build. Server tidak menyimpan dan tidak me-log token. |
 | SEC-AUTH-05 | Scope minimal: hanya `activity:write` (tambahan scope butuh persetujuan). |
 | SEC-AUTH-06 | Disconnect memanggil endpoint revoke lalu menghapus token lokal; token tidak pernah ditampilkan di UI/log. |
 
@@ -178,7 +178,8 @@ Agent meninjau **diff** task dan menjawab setiap poin (Ya / Tidak / N/A + catata
 |---|---|---|
 | Rekaman lokasi & rute rumah | App lain membaca file; export membocorkan alamat rumah | Internal storage, FileProvider terbatas, zona privasi (opsional), tidak ada external storage |
 | Data HR (kesehatan) | Bocor lewat log/backup/crash log | Log disanitasi, aturan backup, tanpa SDK pihak ketiga |
-| Token & secret Strava (Fase 5) | Dicuri dari storage/log/backup; app lain/halaman web memalsukan redirect | Satu berkas AES-256-GCM dengan kunci Android Keystore di `noBackupFilesDir` (tidak ikut backup/transfer, tidak terbaca di HP lain), `toString` model menyamarkan nilai, tidak pernah di-log (hanya kode status HTTP), revoke + hapus lokal saat putus (D-79). Sisa risiko: HP yang di-root bisa mengekstrak secret — diterima untuk app API pribadi (SEC-AUTH-04) |
+| Token & secret Strava (Fase 5) | Token dicuri dari storage/log/backup; secret bocor | Token di berkas AES-256-GCM dengan kunci Android Keystore di `noBackupFilesDir` (tidak ikut backup/transfer), `toString` menyamarkan, tidak di-log, revoke + hapus lokal saat putus (D-79). Secret hanya di server token (D-82); bila bocor: ganti di strava.com dan perbarui secret Worker |
+| Server token Strava (D-82) | Disalahgunakan pihak lain; token lewat server | Hanya 3 endpoint POST form, nilai dibatasi pola & ukuran sebelum diteruskan, tanpa penyimpanan/log, balasan hanya token + nama; menukar code/token tetap butuh code/refresh token milik pengguna sehingga server tidak memberi akses baru. Sisa risiko: siapa pun bisa memanggil endpoint (tanpa atestasi app) — dampak terbatas pada kuota Strava app |
 | Integritas app | Library berbahaya/terkompromi | SUP-01..11 |
 | Stabilitas | GPX/BLE berbahaya membuat crash atau hang | Validasi input, batas ukuran, XXE dimatikan, fuzz test |
 | Komponen app | App lain memicu service/activity | `exported=false`, PendingIntent immutable, validasi intent |

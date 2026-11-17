@@ -105,3 +105,13 @@ Tidak ada (DEP-02). OAuth memakai `ACTION_VIEW`, HTTP memakai `HttpsURLConnectio
 6. Aktifkan **Upload ride otomatis**, rekam ride singkat, lalu simpan: ride terkirim sendiri.
 7. Mode pesawat → Upload: muncul "Menunggu internet". Matikan mode pesawat dan buka ulang app: ride terkirim.
 8. **Putuskan Strava**: status kembali "Belum terhubung", dan RideComp hilang dari strava.com/settings/apps.
+
+## 11. Pembaruan T5.7 — Strava satu ketukan (D-82)
+- Pemilik menilai formulir Client ID/Secret terlalu ribet. Sekarang pengguna cukup mengetuk **Hubungkan dengan Strava** lalu **Authorize**.
+- Client Secret dipindah ke **server token** (`server/strava-token-server`, Cloudflare Worker tanpa dependency) yang hanya meneruskan tukar code, refresh, dan revoke. Server tidak menyimpan dan tidak me-log token. Test Node: 4/4 lolos (`node --test server/strava-token-server/`).
+- App membaca Client ID dan alamat server dari properti Gradle. Tanpa keduanya, layar Strava menampilkan "belum tersedia" dan baris upload disembunyikan. Keduanya sudah dicek di HP, begitu juga tampilan tombol Hubungkan dengan konfigurasi contoh.
+- **Langkah pemilik:**
+  1. Buat app Strava.
+  2. Deploy Worker dan isi 2 secret.
+  3. Isi 2 properti Gradle (lihat README server).
+  4. Agar pengguna lain bisa terhubung, ajukan kenaikan kapasitas atlet ke Strava. Ini butuh tombol "Connect with Strava" dan logo "Powered by Strava" resmi.
