@@ -56,10 +56,18 @@ fun BikesRoute(
     onOpen: (Long) -> Unit,
     onAdd: () -> Unit,
     modifier: Modifier = Modifier,
+    onBack: (() -> Unit)? = null,
     viewModel: BikesViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    BikesScreen(state = state, onEvent = viewModel::onEvent, onOpen = onOpen, onAdd = onAdd, modifier = modifier)
+    BikesScreen(
+        state = state,
+        onEvent = viewModel::onEvent,
+        onOpen = onOpen,
+        onAdd = onAdd,
+        modifier = modifier,
+        onBack = onBack,
+    )
 }
 
 @Composable
@@ -69,8 +77,14 @@ fun BikesScreen(
     onOpen: (Long) -> Unit,
     onAdd: () -> Unit,
     modifier: Modifier = Modifier,
+    onBack: (() -> Unit)? = null,
 ) {
-    ScreenScaffold(modifier = modifier, title = stringResource(R.string.bikes_title)) {
+    ScreenScaffold(
+        modifier = modifier,
+        title = stringResource(R.string.bikes_title),
+        onBack = onBack,
+        backLabel = stringResource(R.string.bikes_back),
+    ) {
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
@@ -150,6 +164,8 @@ fun BikeEditorRoute(
     ScreenScaffold(
         modifier = modifier,
         title = stringResource(if (state.isNew) R.string.bike_add_title else R.string.bike_edit_title),
+        onBack = onDone,
+        backLabel = stringResource(R.string.bikes_back),
     ) {
         BikeForm(state = state, onEvent = viewModel::onEvent, saveLabel = stringResource(R.string.bike_save))
     }

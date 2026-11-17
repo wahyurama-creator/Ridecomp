@@ -2,7 +2,7 @@
 
 **Tanggal:** 2026-11-17
 **Branch:** `feature/TL.1-app-language` (TL.1, commit cb88a6d) → `feature/TB.1-bikes` (TB.1, dibuat dari TL.1)
-**Status:** Menunggu review pemilik — **uji perangkat belum dilakukan** (HP tidak tersambung ke ADB saat task selesai)
+**Status:** Diuji di perangkat, di-merge ke `main`
 
 ## 1. Ringkasan
 - **TL.1 (D-88):** bahasa dipilih di langkah pertama onboarding dan bisa diganti di Setelan → Bahasa: Bahasa Indonesia, English, atau Ikuti bahasa HP. Berlaku di Android 8–15 tanpa AppCompat.
@@ -41,9 +41,18 @@ Tidak ada resource berat baru. GPS persiapan ride tetap `WhileSubscribed` dan me
 
 ## 6. Hasil testing
 - Unit test baru: `BikeUseCasesTest` (6), `BikeViewModelsTest` (5), `MigrationSqlTest` migrasi 7→8 (1); `RideViewModelsTest` pre-ride diperbarui (sepeda Indoor → profil Indoor, GPS tidak dipakai, ride dimulai dengan profil sepeda); `AppModulesTest` memeriksa VM sepeda.
-- Test migrasi perangkat ditambahkan (`RideCompMigrationTest`: 7→8 dengan data profil & profil terakhir MTB; 7→8 tanpa profil → default + Road) — **dikompilasi, belum dijalankan** (HP tidak tersambung).
+- Test migrasi perangkat (`RideCompMigrationTest`, realme RMX3830 Android 15): **7/7 lulus**, termasuk 7→8 dengan data profil & profil terakhir MTB dan 7→8 tanpa profil → default + Road.
 - `./gradlew ktlintCheck detekt lint test koverVerify assembleDebug`: ✅ BUILD SUCCESSFUL.
-- LeakCanary / StrictMode / uji perangkat: **belum** (lihat §10).
+- Uji perangkat (realme RMX3830, Android 15, build debug dipasang di atas data lama tanpa hapus data):
+  - Migrasi v7→v8 saat app dibuka: tanpa crash; Setelan → Sepeda saya berisi "My bike · Road · 9 kg · 2105 mm" (nilai profil lama).
+  - Tambah "Trainer" jenis Indoor, berat "12,5" (koma) + 700x28c → tersimpan "Indoor · 12.5 kg · 2136 mm" dan langsung terpilih.
+  - Persiapan ride dengan Trainer: GPS "Not used (Indoor)", `dumpsys location` gps provider OFF; ganti ke My bike → GPS mulai (HIGH_ACCURACY); kembali ke Trainer lalu START → ride Indoor dengan tata letak halaman Indoor, GPS tetap OFF; ride uji dibuang, service berhenti.
+  - Tautan "Manage" dari persiapan ride → daftar → ubah Trainer → hapus dengan konfirmasi → My bike terpilih lagi; sepeda terakhir tidak punya tombol hapus.
+  - Profil pengendara tanpa field berat sepeda & roda.
+  - Bahasa: Setelan → Bahasa → Bahasa Indonesia → teks langsung berganti, `cmd locale get-app-locales` = `[id]`; layar sepeda dalam Bahasa Indonesia ("Sepedaku · ✓ Dipakai").
+  - Temuan & perbaikan: layar sepeda belum punya tombol kembali → ditambahkan ("Kembali"), diuji di HP.
+  - Crash buffer kosong; tidak ada notifikasi LeakCanary selama uji.
+  - Belum diuji: langkah onboarding Bahasa & Sepedamu dari awal (butuh hapus data — perlu persetujuan pemilik).
 
 ## 7. Keamanan
 - §D: tidak ada input luar baru selain teks formulir (nama dipangkas ≤ 30 karakter, angka divalidasi rentang di use case); SQL seed memakai bind argument; tidak ada komponen ter-export, izin, jaringan, atau log data baru; data di Room internal storage (ikut backup terenkripsi seperti tabel lain).

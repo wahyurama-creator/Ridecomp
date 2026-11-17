@@ -303,6 +303,7 @@
     <string name="bikes_intro">Simpan tiap sepeda sekali, lalu tinggal pilih sebelum gowes. Jenisnya menentukan halaman data dan GPS; berat dan ukuran rodanya dipakai untuk estimasi power dan sensor kecepatan.</string>
     <string name="bikes_in_use">✓ Dipakai</string>
     <string name="bikes_use">Pakai</string>
+    <string name="bikes_back">Kembali</string>
     <string name="bikes_add">Tambah sepeda</string>
     <string name="bike_default_name">Sepedaku</string>
     <string name="bike_summary">%1$s · %2$s kg · %3$d mm</string>

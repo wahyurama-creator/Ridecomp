@@ -396,6 +396,7 @@ private fun NavGraphBuilder.bikeGraph(navController: NavHostController) {
         BikesRoute(
             onOpen = { navController.navigate(AppRoutes.bike(it)) },
             onAdd = { navController.navigate(AppRoutes.NEW_BIKE) },
+            onBack = { navController.popBackStack() },
         )
     }
     composable(AppRoutes.NEW_BIKE) {

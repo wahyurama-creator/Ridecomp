@@ -307,6 +307,7 @@
     <string name="bikes_intro">Save each bike once, then just pick it before a ride. Its type sets the data pages and GPS; its weight and wheel size are used for estimated power and the speed sensor.</string>
     <string name="bikes_in_use">✓ Next ride</string>
     <string name="bikes_use">Use</string>
+    <string name="bikes_back">Back</string>
     <string name="bikes_add">Add a bike</string>
     <string name="bike_default_name">My bike</string>
     <string name="bike_summary">%1$s · %2$s kg · %3$d mm</string>
