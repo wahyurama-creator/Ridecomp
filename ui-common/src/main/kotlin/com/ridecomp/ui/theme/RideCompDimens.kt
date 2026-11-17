@@ -36,6 +36,9 @@ object RideCompDimens {
 
     /** Off the ride screen only (share page actions): the minimum touch target. */
     val buttonHeightCompact = 48.dp
+
+    /** A button beside a card's text (e.g. Pair): as wide as its label, never narrower than this. */
+    val actionButtonMinWidth = 112.dp
     val buttonHeightIncident = 120.dp
     val lapButtonWidth = 120.dp
     val chipHeight = 48.dp

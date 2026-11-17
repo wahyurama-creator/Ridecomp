@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
@@ -220,7 +221,8 @@ private fun LazyListScope.discoveredSection(state: SensorsUiState, onPair: (Disc
                 // A strong signal is the likely sensor on your bike: filled button (13-UI-SCREENS #4).
                 style = if (isStrong) BigButtonStyle.PRIMARY else BigButtonStyle.OUTLINE,
                 size = BigButtonSize.TERTIARY,
-                modifier = Modifier.fillMaxWidth(PAIR_BUTTON_FRACTION),
+                // As wide as its label ("Pasangkan" must not break mid-word), never tiny.
+                modifier = Modifier.widthIn(min = RideCompDimens.actionButtonMinWidth),
             )
         }
     }
@@ -246,7 +248,6 @@ private fun FoundHeader(isScanning: Boolean) {
 
 /** At or above this the sensor is near the phone ("sinyal kuat"). */
 private const val STRONG_SIGNAL_DBM = -70
-private const val PAIR_BUTTON_FRACTION = 0.35f
 
 /** Sensor card: type icon, name, details, trailing status/actions (13-UI-SCREENS #4). */
 @Composable
