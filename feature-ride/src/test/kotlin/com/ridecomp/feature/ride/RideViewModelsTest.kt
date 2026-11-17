@@ -1,6 +1,7 @@
 package com.ridecomp.feature.ride
 
 import app.cash.turbine.test
+import com.ridecomp.core.engine.map.NetworkStatus
 import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RideAction
 import com.ridecomp.core.engine.safety.IncidentAction
@@ -8,6 +9,7 @@ import com.ridecomp.core.model.ActivityKind
 import com.ridecomp.core.model.ActivityStatus
 import com.ridecomp.core.model.Bike
 import com.ridecomp.core.model.EmergencyContact
+import com.ridecomp.core.model.RideSample
 import com.ridecomp.core.model.RideStatus
 import com.ridecomp.core.model.SafetySettings
 import com.ridecomp.core.model.UnitSystem
@@ -19,6 +21,7 @@ import com.ridecomp.core.testing.FakeBatteryLevelSource
 import com.ridecomp.core.testing.FakeBikeRepository
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeLocationSource
+import com.ridecomp.core.testing.FakeNetworkStatusSource
 import com.ridecomp.core.testing.FakeOfflineMapRepository
 import com.ridecomp.core.testing.FakeRideController
 import com.ridecomp.core.testing.FakeRouteRepository
@@ -31,6 +34,7 @@ import com.ridecomp.core.usecase.GetRecoverableRideUseCase
 import com.ridecomp.core.usecase.GetRoutePointsUseCase
 import com.ridecomp.core.usecase.GpsStatus
 import com.ridecomp.core.usecase.HandleRecoveredRideUseCase
+import com.ridecomp.core.usecase.LoadRideTrailUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
 import com.ridecomp.core.usecase.ObserveBackupReminderUseCase
@@ -39,7 +43,7 @@ import com.ridecomp.core.usecase.ObserveDataPagesUseCase
 import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
-import com.ridecomp.core.usecase.ObserveOfflineMapsUseCase
+import com.ridecomp.core.usecase.ObserveMapTilesUseCase
 import com.ridecomp.core.usecase.ObserveProfileChoiceUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveRouteUseCase
@@ -70,6 +74,7 @@ import com.ridecomp.feature.ride.viewmodel.PreRideUiEvent
 import com.ridecomp.feature.ride.viewmodel.PreRideUseCases
 import com.ridecomp.feature.ride.viewmodel.PreRideViewModel
 import com.ridecomp.feature.ride.viewmodel.RideEffect
+import com.ridecomp.feature.ride.viewmodel.RideMapUseCases
 import com.ridecomp.feature.ride.viewmodel.RideUseCases
 import com.ridecomp.feature.ride.viewmodel.RideViewModel
 import com.ridecomp.feature.ride.viewmodel.SummaryEffect
@@ -85,6 +90,7 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -95,6 +101,7 @@ class RideViewModelsTest {
     private val repository = FakeActivityRepository()
     private val settings = FakeSettingsRepository()
     private val profiles = FakeActivityProfileRepository()
+    private val network = FakeNetworkStatusSource()
     private val bikes = FakeBikeRepository(
         listOf(Bike(id = 1, profileId = 1), Bike(id = TRAINER_BIKE_ID, name = "Trainer", profileId = INDOOR_ID)),
     )
@@ -195,23 +202,50 @@ class RideViewModelsTest {
         assertEquals(INDOOR_ID, controller.startedProfileId)
     }
 
+    private fun rideViewModel(safety: FakeSafetyRepository = FakeSafetyRepository()) = RideViewModel(
+        RideUseCases(
+            ObserveLiveRideUseCase(controller),
+            ObserveRideSettingsUseCase(settings),
+            ObserveDataPagesUseCase(settings, profiles),
+            ObserveActivityProfilesUseCase(profiles),
+            ObserveSafetyUseCase(safety),
+            PerformRideActionUseCase(controller),
+            PerformIncidentActionUseCase(controller),
+            GetRoutePointsUseCase(FakeRouteRepository()),
+        ),
+        TestDispatcherProvider(UnconfinedTestDispatcher()),
+        RideMapUseCases(
+            ObserveMapTilesUseCase(network, settings, FakeOfflineMapRepository()),
+            LoadRideTrailUseCase(repository),
+        ),
+    )
+
+    @Test
+    fun `a ride without a route draws the stored and live trail on the online map`() = runTest {
+        val id = repository.create(NewActivity("u", "Ride", 0))
+        repository.appendSamples(id, listOf(RideSample(timeMs = 0, latDeg = -7.0, lonDeg = 110.0)))
+        controller.activityId.value = id
+        controller.live.value = LiveRide(status = RideStatus.RECORDING, latDeg = -7.0, lonDeg = 110.0)
+        val viewModel = rideViewModel()
+
+        viewModel.map.test {
+            assertEquals(1, expectMostRecentItem().trail.size)
+            controller.live.value = LiveRide(status = RideStatus.RECORDING, latDeg = -7.001, lonDeg = 110.0)
+            val map = expectMostRecentItem()
+            assertEquals(2, map.trail.size)
+            assertTrue(map.isOnline)
+            network.status.value = NetworkStatus.OFFLINE
+            assertEquals(false, expectMostRecentItem().hasMap)
+        }
+        // Leaving the screen stops watching the network (09 §1).
+        advanceTimeBy(STOP_TIMEOUT_MS + 1)
+        assertEquals(0, network.activeCollectors)
+    }
+
     @Test
     fun `ride screen opens the summary when finished and closes when the ride ends`() = runTest {
         val safety = FakeSafetyRepository()
-        val viewModel = RideViewModel(
-            RideUseCases(
-                ObserveLiveRideUseCase(controller),
-                ObserveRideSettingsUseCase(settings),
-                ObserveDataPagesUseCase(settings, profiles),
-                ObserveActivityProfilesUseCase(profiles),
-                ObserveSafetyUseCase(safety),
-                PerformRideActionUseCase(controller),
-                PerformIncidentActionUseCase(controller),
-                GetRoutePointsUseCase(FakeRouteRepository()),
-            ),
-            TestDispatcherProvider(UnconfinedTestDispatcher()),
-            ObserveOfflineMapsUseCase(FakeOfflineMapRepository()),
-        )
+        val viewModel = rideViewModel(safety)
         // SOS only with the feature on and a contact (12-FEATURE-SPECS §5.3).
         viewModel.isSosAvailable.test {
             assertEquals(false, awaitItem())
@@ -281,5 +315,6 @@ class RideViewModelsTest {
         /** Built-in ids follow BuiltInProfiles order in the fake (Road = 1 … Indoor = 4). */
         const val INDOOR_ID = 4L
         const val TRAINER_BIKE_ID = 2L
+        const val STOP_TIMEOUT_MS = 5_000L
     }
 }

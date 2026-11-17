@@ -13,12 +13,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.ridecomp.ui.R
 import com.ridecomp.ui.component.MapAttribution
 import com.ridecomp.ui.theme.RideCompTheme
 import kotlinx.collections.immutable.ImmutableList
@@ -50,15 +52,16 @@ object OfflineMapZoom {
 }
 
 /**
- * Offline vector map (T3.3–T3.5, 13-UI-SCREENS #7, #12): PMTiles regions from internal storage, route
- * in accent, ridden part in track blue, position dot, north-up (no rotation). MapLibre runs with network
- * off (D-64). The MapView follows the screen lifecycle and is destroyed with the composable (09 §1).
+ * Vector map (T3.3–T3.5, D-90; 13-UI-SCREENS #7, #12): OpenFreeMap tiles over the internet when
+ * [isOnline], else PMTiles regions from internal storage; route in accent, ridden part in track blue,
+ * position dot, north-up (no rotation). MapLibre may use the network only while [isOnline]. The MapView
+ * follows the screen lifecycle and is destroyed with the composable (09 §1).
  */
 @Composable
-fun OfflineRouteMap(
+fun RouteMap(
+    isOnline: Boolean,
     regionPaths: ImmutableList<String>,
     route: ImmutableList<MapPoint>,
-    attribution: String,
     description: String,
     modifier: Modifier = Modifier,
     ridden: ImmutableList<MapPoint> = persistentListOf(),
@@ -69,14 +72,12 @@ fun OfflineRouteMap(
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val colors = RideCompTheme.colors
-    val styleJson = remember(regionPaths, colors) { OfflineMapStyle.json(regionPaths, colors) }
+    val styleJson = remember(isOnline, regionPaths, colors) { OfflineMapStyle.json(isOnline, regionPaths, colors) }
     val currentOnUserMoved by rememberUpdatedState(onUserMoved)
     var map by remember { mutableStateOf<MapLibreMap?>(null) }
     var style by remember { mutableStateOf<Style?>(null) }
     val mapView = remember {
         MapLibre.getInstance(context.applicationContext)
-        // Regions are local files: no tile, glyph or telemetry request ever leaves the phone.
-        MapLibre.setConnected(false)
         MapView(context).apply { onCreate(null) }
     }
     DisposableEffect(lifecycle, mapView) {
@@ -95,6 +96,8 @@ fun OfflineRouteMap(
     }
     LaunchedEffect(map, styleJson) {
         val loaded = map ?: return@LaunchedEffect
+        // Offline: regions are local files, so no tile or telemetry request leaves the phone.
+        MapLibre.setConnected(isOnline)
         style = null
         loaded.setStyle(Style.Builder().fromJson(styleJson)) { style = it }
     }
@@ -117,7 +120,10 @@ fun OfflineRouteMap(
     }
     Box(modifier = modifier.semantics { contentDescription = description }) {
         AndroidView(factory = { mapView }, modifier = Modifier.matchParentSize())
-        MapAttribution(text = attribution, modifier = Modifier.align(Alignment.BottomStart))
+        MapAttribution(
+            text = stringResource(if (isOnline) R.string.map_attribution_online else R.string.map_attribution),
+            modifier = Modifier.align(Alignment.BottomStart),
+        )
     }
 }
 

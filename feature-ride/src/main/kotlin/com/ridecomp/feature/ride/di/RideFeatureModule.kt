@@ -13,6 +13,7 @@ import com.ridecomp.feature.ride.viewmodel.PreRideBikeUseCases
 import com.ridecomp.feature.ride.viewmodel.PreRideOptionUseCases
 import com.ridecomp.feature.ride.viewmodel.PreRideUseCases
 import com.ridecomp.feature.ride.viewmodel.PreRideViewModel
+import com.ridecomp.feature.ride.viewmodel.RideMapUseCases
 import com.ridecomp.feature.ride.viewmodel.RideUseCases
 import com.ridecomp.feature.ride.viewmodel.RideViewModel
 import com.ridecomp.feature.ride.viewmodel.SummaryViewModel
@@ -29,6 +30,7 @@ val rideFeatureModule = module {
     factory { PreRideUseCases(get(), get(), get(), get(), get(), get()) }
     viewModel { params -> PreRideViewModel(params.getOrNull(), get()) }
     factory { RideUseCases(get(), get(), get(), get(), get(), get(), get(), get()) }
+    factory { RideMapUseCases(get(), get()) }
     viewModel { RideViewModel(get(), get(), get()) }
     viewModel { SummaryViewModel(get(), get(), get(), get(), get()) }
     viewModel { params -> DataPagesEditorViewModel(params.getOrNull(), get(), get(), get()) }

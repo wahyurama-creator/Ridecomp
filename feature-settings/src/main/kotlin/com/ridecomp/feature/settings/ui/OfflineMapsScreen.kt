@@ -28,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.engine.map.MapImportError
 import com.ridecomp.core.engine.map.OfflineMap
+import com.ridecomp.core.engine.map.OnlineMapMode
 import com.ridecomp.feature.settings.R
 import com.ridecomp.feature.settings.viewmodel.OfflineMapsUiEvent
 import com.ridecomp.feature.settings.viewmodel.OfflineMapsUiState
@@ -38,6 +39,9 @@ import com.ridecomp.ui.component.AlertSeverity
 import com.ridecomp.ui.component.BannerAction
 import com.ridecomp.ui.component.BigButton
 import com.ridecomp.ui.component.BigButtonSize
+import com.ridecomp.ui.component.BigButtonStyle
+import com.ridecomp.ui.component.Choice
+import com.ridecomp.ui.component.ChoiceChips
 import com.ridecomp.ui.component.ConfirmDialog
 import com.ridecomp.ui.component.IconSquareButton
 import com.ridecomp.ui.component.ListCard
@@ -51,6 +55,7 @@ import com.ridecomp.ui.theme.RideCompDimens
 import com.ridecomp.ui.theme.RideCompTheme
 import java.text.DateFormat
 import java.util.Date
+import kotlinx.collections.immutable.toImmutableList
 import org.koin.androidx.compose.koinViewModel
 
 /** PMTiles has no registered MIME type: the picker offers any file and the header is validated. */
@@ -121,6 +126,8 @@ fun OfflineMapsScreen(
                 ),
             verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
         ) {
+            OnlineMapChoice(state.onlineMapMode) { onEvent(OfflineMapsUiEvent.OnlineMode(it)) }
+            SectionHeader(stringResource(R.string.maps_offline_header), horizontalPadding = RideCompDimens.none)
             tipContent?.invoke()
             StorageCard(state)
             if (state.maps.isNotEmpty()) {
@@ -139,6 +146,8 @@ fun OfflineMapsScreen(
                 ),
                 onClick = onImport,
                 isEnabled = !state.isImporting,
+                // Optional since the online map (D-90): not the main action of the screen.
+                style = BigButtonStyle.SECONDARY,
                 size = BigButtonSize.SECONDARY,
                 iconRes = UiR.drawable.ic_download,
             )
@@ -155,6 +164,34 @@ fun OfflineMapsScreen(
             onDismiss = { onEvent(OfflineMapsUiEvent.DismissDelete) },
         )
     }
+}
+
+/** Online map: Wi‑Fi & data, Wi‑Fi only, or off (D-90). */
+@Composable
+private fun OnlineMapChoice(mode: OnlineMapMode, onSelect: (OnlineMapMode) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS)) {
+        ChoiceChips(
+            label = stringResource(R.string.maps_online_label),
+            choices = OnlineMapMode.entries.map { Choice(it, stringResource(it.labelRes())) }.toImmutableList(),
+            selected = mode,
+            onSelect = onSelect,
+            horizontalPadding = RideCompDimens.none,
+            columns = OnlineMapMode.entries.size,
+        )
+        Text(
+            text = stringResource(R.string.maps_online_hint),
+            style = RideCompTheme.typography.caption,
+            color = RideCompTheme.colors.textSecondary,
+        )
+    }
+}
+
+/** Short name of an online map mode, also used in the Settings summary. */
+@StringRes
+internal fun OnlineMapMode.labelRes(): Int = when (this) {
+    OnlineMapMode.ALWAYS -> R.string.maps_online_always
+    OnlineMapMode.WIFI_ONLY -> R.string.maps_online_wifi
+    OnlineMapMode.OFF -> R.string.maps_online_off
 }
 
 /** "Peta RideComp memakai 186 MB" with a usage bar (13-UI-SCREENS #26). */

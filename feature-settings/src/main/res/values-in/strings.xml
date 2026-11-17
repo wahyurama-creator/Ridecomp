@@ -8,7 +8,7 @@
     <string name="settings_activity_profiles_subtitle">Road, Gravel, MTB, Indoor, Commute</string>
     <string name="settings_screen_battery">Layar &amp; baterai</string>
     <string name="settings_safety">Keselamatan &amp; kontak darurat</string>
-    <string name="settings_offline_maps">Peta offline</string>
+    <string name="settings_offline_maps">Peta</string>
     <string name="settings_units">Satuan</string>
     <string name="settings_language">Bahasa</string>
     <string name="settings_backup">Backup &amp; export data</string>
@@ -198,7 +198,7 @@
     <string name="backup_excluded">Kontak darurat · peta offline</string>
     <string name="backup_password_recommended">Disarankan: berisi lokasi &amp; data HR</string>
     <string name="backup_create_hint">Simpan ke Google Drive, WhatsApp, atau folder HP</string>
-    <string name="offline_maps_title">Peta offline</string>
+    <string name="offline_maps_title">Peta</string>
     <string name="offline_maps_fallback_name">peta</string>
     <string name="offline_maps_saved">Area tersimpan</string>
     <string name="offline_maps_import">Impor file peta (.pmtiles)</string>
@@ -240,9 +240,9 @@
     <string name="guide_navigation_title">Mengikuti rute</string>
     <string name="guide_navigation_summary">Peringatan keluar jalur, belokan, dan tanjakan.</string>
     <string name="guide_navigation_body" formatted="false">Saat mengikuti rute, halaman Peta menunjukkan rute (oranye), bagian yang sudah dilalui (biru), dan posisimu.\n• Keluar jalur lebih dari ~50 m selama 10 detik: HP bergetar panjang dan berbunyi, muncul banner merah. Saat kembali ke rute: getar dua kali.\n• Belokan tajam: peringatan sekitar 150 m dan 30 m sebelumnya.\n• Tanjakan: peringatan 500 m sebelumnya, lalu halaman tanjakan menunjukkan sisa jarak, sisa naik, dan grade.\nGeser peta untuk melihat sekitar; tekan tombol posisi untuk kembali mengikuti.</string>
-    <string name="guide_offline_maps_title">Peta offline</string>
-    <string name="guide_offline_maps_summary">Peta tanpa internet dari file .pmtiles.</string>
-    <string name="guide_offline_maps_body" formatted="false">RideComp tidak memakai internet, jadi peta disimpan sebagai file di HP.\n1. Di komputer, buat file wilayah dengan alat \"pmtiles\" dari build peta Protomaps (data OpenStreetMap), misalnya untuk satu provinsi.\n2. Salin file .pmtiles ke HP.\n3. Buka Setelan → Peta offline → Impor file peta.\n4. Peta muncul di detail rute dan di halaman Peta saat ride, bila wilayahnya mencakup rute.\nTanpa file peta, RideComp tetap menampilkan garis rute (mode breadcrumb). Mode hemat baterai juga memakai breadcrumb.</string>
+    <string name="guide_offline_maps_title">Peta</string>
+    <string name="guide_offline_maps_summary">Peta jalan saat ada internet; garis saat tidak ada.</string>
+    <string name="guide_offline_maps_body" formatted="false">Saat ada internet (Wi‑Fi atau data seluler) RideComp menampilkan peta jalan di halaman Peta saat ride, di detail rute, dan di riwayat. Peta dari OpenFreeMap (data OpenStreetMap), memakai beberapa MB per jam ride.\nTanpa internet, rute dan jejakmu tetap tampil sebagai garis (breadcrumb), jadi rute tetap bisa diikuti. Mode hemat baterai juga memakai garis.\nSetelan → Peta → Peta online: Wi‑Fi &amp; data, Hanya Wi‑Fi, atau Mati.\nOpsional, untuk ride tanpa sinyal: di komputer, buat file wilayah dengan alat \"pmtiles\" dari build peta Protomaps, salin file .pmtiles ke HP, lalu impor di Setelan → Peta.</string>
     <string name="guide_sensors_title">Menyambungkan sensor</string>
     <string name="guide_sensors_summary">Detak jantung, cadence, kecepatan, dan power.</string>
     <string name="guide_sensors_body" formatted="false">Sensor Bluetooth menambah data yang tidak bisa diukur HP: detak jantung (sabuk dada/gelang), cadence (putaran pedal), kecepatan roda, dan power meter.\n1. Nyalakan sensor (pakai sabuk HR, putar pedal/roda agar sensor bangun).\n2. Buka tab Sensor; pencarian berjalan otomatis (tekan Scan ulang bila perlu).\n3. Pilih sensor yang muncul untuk memasangkannya. Cukup sekali.\n4. Saat ride berikutnya, sensor tersambung otomatis. Indikator HR/CAD/PWR di bagian atas layar ride berwarna hijau bila tersambung.\nSensor putus di tengah ride? Rekaman tetap jalan dan RideComp mencoba menyambung ulang.</string>
@@ -343,4 +343,13 @@
     </plurals>
     <string name="onboarding_bike_title">Sepedamu</string>
     <string name="onboarding_bike_text">Simpan sepeda yang biasa kamu pakai. Sebelum gowes tinggal pilih; sepeda lain bisa ditambah di Setelan → Sepeda saya.</string>
+
+    <!-- Peta online (D-90) -->
+    <string name="maps_online_label">Peta online</string>
+    <string name="maps_online_always">Wi‑Fi &amp; data</string>
+    <string name="maps_online_wifi">Hanya Wi‑Fi</string>
+    <string name="maps_online_off">Mati</string>
+    <string name="maps_online_hint">Saat ada internet, peta jalan tampil di halaman Peta saat ride, detail rute, dan riwayat. Tanpa internet, rute dan jejak tetap tampil sebagai garis. Peta: OpenFreeMap (data OpenStreetMap), beberapa MB per jam ride; server peta melihat area yang sedang ditampilkan.</string>
+    <string name="maps_offline_header">Peta offline (opsional)</string>
+    <string name="settings_maps_online_value">Online: %1$s</string>
 </resources>

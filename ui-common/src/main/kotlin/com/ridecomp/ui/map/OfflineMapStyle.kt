@@ -5,29 +5,48 @@ import androidx.compose.ui.graphics.toArgb
 import com.ridecomp.ui.theme.RideCompColors
 
 /**
- * MapLibre style for offline PMTiles regions in the Protomaps basemap schema (layers earth, water,
- * landuse, roads, buildings; D-64). No text layers: labels would need glyph files from a server, and the
- * ride screen shows no street names anyway (12-FEATURE-SPECS §7.2). Route, ridden track and position
- * come from GeoJSON sources updated at runtime ([MapSourceIds]).
+ * MapLibre style in RideComp's dark map colors for either the online OpenFreeMap tiles (OpenMapTiles
+ * schema: water, landcover, park, building, transportation; D-90) or offline PMTiles regions (Protomaps
+ * schema: earth, water, landuse, roads, buildings; D-64). No text layers: labels would need glyph files,
+ * and the ride screen shows no street names anyway (12-FEATURE-SPECS §7.2). Route, ridden track and
+ * position come from GeoJSON sources updated at runtime ([MapSourceIds]).
  */
 internal object OfflineMapStyle {
     private const val PMTILES_SCHEME = "pmtiles://file://"
     private const val SOURCE_PREFIX = "region_"
+    private const val ONLINE_SOURCE = "online"
     private const val BUILDINGS_MIN_ZOOM = 14
+    private const val ONLINE_BUILDINGS_MIN_ZOOM = 13
+    private const val KIND = "kind"
+    private const val CLASS = "class"
+    private val ONLINE_MINOR_ROADS = listOf("minor", "service", "track", "path", "busway")
+    private val ONLINE_MAJOR_ROADS = listOf("motorway", "trunk", "primary", "secondary", "tertiary")
+    private val ONLINE_GREEN = listOf("wood", "grass", "forest", "farmland", "wetland")
     private val MINOR_ROADS = listOf("minor_road", "path", "other")
     private val MAJOR_ROADS = listOf("highway", "major_road")
     private val GREEN_LANDUSE =
         listOf("park", "wood", "forest", "nature_reserve", "grass", "garden", "golf_course", "cemetery")
 
-    /** One vector source per imported region file (absolute paths in internal storage). */
-    fun json(regionPaths: List<String>, colors: RideCompColors): String {
+    /**
+     * Online tiles when [isOnline], else one vector source per imported region file (absolute paths in
+     * internal storage); with neither only the ride layers on the background.
+     */
+    fun json(isOnline: Boolean, regionPaths: List<String>, colors: RideCompColors): String {
         val map = colors.map
-        val sources = regionPaths.mapIndexed { index, path ->
-            "\"$SOURCE_PREFIX$index\":{\"type\":\"vector\",\"url\":${quote(PMTILES_SCHEME + path)}}"
-        } + geoJsonSources()
+        val regions = if (isOnline) emptyList() else regionPaths
+        val sources = buildList {
+            if (isOnline) add("\"$ONLINE_SOURCE\":{\"type\":\"vector\",\"url\":${quote(MapConfig.ONLINE_TILES_URL)}}")
+            regions.forEachIndexed { index, path ->
+                add("\"$SOURCE_PREFIX$index\":{\"type\":\"vector\",\"url\":${quote(PMTILES_SCHEME + path)}}")
+            }
+            addAll(geoJsonSources())
+        }
+        // Online tiles draw water on land; offline regions draw land (earth) on water.
+        val background = if (isOnline) map.land else map.water
         val layers = buildList {
-            add("{\"id\":\"background\",\"type\":\"background\",\"paint\":{\"background-color\":${hex(map.water)}}}")
-            regionPaths.indices.forEach { index -> addAll(regionLayers("$SOURCE_PREFIX$index", colors)) }
+            add("{\"id\":\"background\",\"type\":\"background\",\"paint\":{\"background-color\":${hex(background)}}}")
+            if (isOnline) addAll(onlineLayers(colors))
+            regions.indices.forEach { index -> addAll(regionLayers("$SOURCE_PREFIX$index", colors)) }
             addAll(rideLayers(colors))
         }
         return "{\"version\":8,\"sources\":{${sources.joinToString(",")}},\"layers\":[${layers.joinToString(",")}]}"
@@ -37,11 +56,39 @@ internal object OfflineMapStyle {
         val map = colors.map
         return listOf(
             fill("${source}_earth", source, "earth", map.land),
-            fill("${source}_park", source, "landuse", map.park, kindFilter(GREEN_LANDUSE)),
+            fill("${source}_park", source, "landuse", map.park, inFilter(KIND, GREEN_LANDUSE)),
             fill("${source}_water", source, "water", map.water),
             fill("${source}_buildings", source, "buildings", map.building, minZoom = BUILDINGS_MIN_ZOOM),
-            line("${source}_minor", source, "roads", map.roadMinor, MINOR_ROAD_WIDTH, kindFilter(MINOR_ROADS)),
-            line("${source}_major", source, "roads", map.roadMajor, MAJOR_ROAD_WIDTH, kindFilter(MAJOR_ROADS)),
+            line("${source}_minor", source, "roads", map.roadMinor, MINOR_ROAD_WIDTH, inFilter(KIND, MINOR_ROADS)),
+            line("${source}_major", source, "roads", map.roadMajor, MAJOR_ROAD_WIDTH, inFilter(KIND, MAJOR_ROADS)),
+        )
+    }
+
+    /** OpenFreeMap layers (OpenMapTiles schema, maxzoom 14, overzoomed above). */
+    private fun onlineLayers(colors: RideCompColors): List<String> {
+        val map = colors.map
+        val source = ONLINE_SOURCE
+        return listOf(
+            fill("${source}_green", source, "landcover", map.park, inFilter(CLASS, ONLINE_GREEN)),
+            fill("${source}_park", source, "park", map.park),
+            fill("${source}_water", source, "water", map.water),
+            fill("${source}_buildings", source, "building", map.building, minZoom = ONLINE_BUILDINGS_MIN_ZOOM),
+            line(
+                "${source}_minor",
+                source,
+                "transportation",
+                map.roadMinor,
+                MINOR_ROAD_WIDTH,
+                inFilter(CLASS, ONLINE_MINOR_ROADS),
+            ),
+            line(
+                "${source}_major",
+                source,
+                "transportation",
+                map.roadMajor,
+                MAJOR_ROAD_WIDTH,
+                inFilter(CLASS, ONLINE_MAJOR_ROADS),
+            ),
         )
     }
 
@@ -77,8 +124,8 @@ internal object OfflineMapStyle {
             "\"layout\":{\"line-cap\":\"round\",\"line-join\":\"round\"}," +
             "\"paint\":{\"line-color\":${hex(color)},\"line-width\":$width}}"
 
-    private fun kindFilter(kinds: List<String>): String =
-        "[\"in\",[\"get\",\"kind\"],[\"literal\",[${kinds.joinToString(",") { quote(it) }}]]]"
+    private fun inFilter(attribute: String, values: List<String>): String =
+        "[\"in\",[\"get\",\"$attribute\"],[\"literal\",[${values.joinToString(",") { quote(it) }}]]]"
 
     /** `#RRGGBB` of an opaque token. */
     fun hex(color: Color): String = quote("#%06X".format(color.toArgb() and RGB_MASK))
@@ -100,4 +147,10 @@ internal object MapSourceIds {
     const val RIDDEN = "ridden"
     const val POSITION = "position"
     val ALL = listOf(ROUTE, RIDDEN, POSITION)
+}
+
+/** The online map (D-90). */
+object MapConfig {
+    /** OpenFreeMap TileJSON (OpenMapTiles schema, no key; the dated tile path comes from it). */
+    const val ONLINE_TILES_URL = "https://tiles.openfreemap.org/planet"
 }

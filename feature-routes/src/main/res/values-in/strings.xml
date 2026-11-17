@@ -33,8 +33,8 @@
     <string name="route_climb_stats">%1$s %2$s · %3$s%% · ↑ %4$s %5$s</string>
     <string name="route_map_description">Peta rute</string>
     <string name="route_map_offline">Peta area rute tersedia offline</string>
-    <string name="route_map_missing_title">Peta area ini belum ada</string>
-    <string name="route_map_missing">Rute tetap bisa diikuti dengan garis breadcrumb. Impor file peta wilayah ini untuk melihat jalan.</string>
+    <string name="route_map_missing_title">Peta belum tampil</string>
+    <string name="route_map_missing">Peta muncul saat HP terhubung ke internet. Tanpa internet, rute tetap bisa diikuti dengan garis breadcrumb; untuk peta tanpa internet, impor file peta wilayah ini.</string>
     <string name="route_map_import">Buka Peta offline</string>
     <string name="route_climb_make_segment">Jadikan segmen</string>
     <string name="route_climb_segment_made">Segmen dibuat · lihat Riwayat → Segmen</string>

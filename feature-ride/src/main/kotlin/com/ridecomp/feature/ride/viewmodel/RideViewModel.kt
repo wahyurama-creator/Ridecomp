@@ -1,6 +1,7 @@
 package com.ridecomp.feature.ride.viewmodel
 
 import androidx.lifecycle.viewModelScope
+import com.ridecomp.core.engine.map.TrailPoint
 import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RideAction
 import com.ridecomp.core.engine.safety.IncidentAction
@@ -9,16 +10,18 @@ import com.ridecomp.core.model.RideStatus
 import com.ridecomp.core.model.withProfile
 import com.ridecomp.core.source.DispatcherProvider
 import com.ridecomp.core.usecase.GetRoutePointsUseCase
+import com.ridecomp.core.usecase.LoadRideTrailUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveDataPagesUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
-import com.ridecomp.core.usecase.ObserveOfflineMapsUseCase
+import com.ridecomp.core.usecase.ObserveMapTilesUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveSafetyUseCase
 import com.ridecomp.core.usecase.PerformIncidentActionUseCase
 import com.ridecomp.core.usecase.PerformRideActionUseCase
 import com.ridecomp.feature.ride.model.DataPage
 import com.ridecomp.feature.ride.model.DefaultDataPages
+import com.ridecomp.feature.ride.model.RideMapView
 import com.ridecomp.feature.ride.model.RideMetricKeys
 import com.ridecomp.feature.ride.model.RouteView
 import com.ridecomp.feature.ride.model.toDataPages
@@ -27,6 +30,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -63,18 +67,46 @@ data class RideUseCases(
     val getRoutePoints: GetRoutePointsUseCase,
 )
 
+/** The map page: which tiles to draw and the ridden line of a ride without a route (D-90). */
+data class RideMapUseCases(val observeTiles: ObserveMapTilesUseCase, val loadTrail: LoadRideTrailUseCase)
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class RideViewModel(
     private val useCases: RideUseCases,
     private val dispatchers: DispatcherProvider,
-    observeOfflineMaps: ObserveOfflineMapsUseCase,
+    private val maps: RideMapUseCases,
 ) : UdfViewModel<Unit, RideAction, RideEffect>(Unit) {
     val liveRide: StateFlow<LiveRide> = useCases.observeLive()
 
-    /** Imported offline map regions (T3.5); empty = the breadcrumb page. */
-    val mapRegions: StateFlow<ImmutableList<String>> = observeOfflineMaps()
-        .map { maps -> maps.map { it.path }.toImmutableList() }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), persistentListOf())
+    /**
+     * Ridden line of a GPS ride without a route: rebuilt from the stored samples (the screen may open
+     * mid-ride or after a recovery), then extended with each live position. Bounded by [RideTrail].
+     */
+    private val trail: Flow<List<TrailPoint>> = combine(
+        useCases.observeLive.activeActivityId(),
+        liveRide.map { it.routeId == null && it.isGpsEnabled }.distinctUntilChanged(),
+    ) { id, isFreeRide -> id.takeIf { isFreeRide } }
+        .distinctUntilChanged()
+        .flatMapLatest { id ->
+            if (id == null) {
+                flowOf(emptyList())
+            } else {
+                flow {
+                    val trail = maps.loadTrail(id)
+                    emit(trail.snapshot)
+                    liveRide.collect { live ->
+                        val lat = live.latDeg
+                        val lon = live.lonDeg
+                        if (lat != null && lon != null && trail.add(lat, lon)) emit(trail.snapshot)
+                    }
+                }
+            }
+        }
+
+    /** Online tiles, offline regions or none, plus the ridden line (D-90); the network is watched only while shown. */
+    val map: StateFlow<RideMapView> = combine(maps.observeTiles(), trail) { tiles, points -> tiles to points }
+        .map { (tiles, points) -> withContext(dispatchers.default) { RideMapView.of(tiles, points) } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), RideMapView())
 
     /** Manual SOS is offered only when someone can be alerted (12-FEATURE-SPECS §5.3). */
     val isSosAvailable: StateFlow<Boolean> = useCases.observeSafety()

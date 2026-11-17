@@ -17,6 +17,7 @@ import com.ridecomp.core.usecase.DeleteRouteUseCase
 import com.ridecomp.core.usecase.GetRouteGuidanceUseCase
 import com.ridecomp.core.usecase.GetRoutePointsUseCase
 import com.ridecomp.core.usecase.ImportGpxUseCase
+import com.ridecomp.core.usecase.ObserveMapTilesUseCase
 import com.ridecomp.core.usecase.ObserveOfflineMapsUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveRouteUseCase
@@ -34,7 +35,11 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -106,6 +111,7 @@ data class RouteDetailUseCases(
     val reverse: ReverseRouteUseCase,
     val delete: DeleteRouteUseCase,
     val makeSegment: CreateSegmentFromClimbUseCase,
+    val observeMapTiles: ObserveMapTilesUseCase,
 )
 
 @Immutable
@@ -118,7 +124,7 @@ data class RouteDetailUiState(
     val climbs: ImmutableList<RouteClimb> = persistentListOf(),
     /** Simplified route line for the map (13-UI-SCREENS #12). */
     val mapLine: ImmutableList<MapPoint> = persistentListOf(),
-    /** Imported regions; the map shows only when one covers the route start. */
+    /** Imported regions; without internet the map shows only when one covers the route start (D-90). */
     val mapRegions: ImmutableList<String> = persistentListOf(),
     val isAreaOffline: Boolean = false,
     val unitSystem: UnitSystem = UnitSystem.METRIC,
@@ -150,6 +156,11 @@ class RouteDetailViewModel(
     private val useCases: RouteDetailUseCases,
     private val dispatchers: DispatcherProvider,
 ) : UdfViewModel<RouteDetailUiState, RouteDetailUiEvent, RouteDetailEffect>(RouteDetailUiState()) {
+    /** Online map tiles available now (D-90); the network is watched only while the screen is shown. */
+    val isOnlineMap: StateFlow<Boolean> = useCases.observeMapTiles()
+        .map { it.isOnline }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), false)
+
     init {
         viewModelScope.launch {
             combine(useCases.observeRoute(routeId), useCases.observeSettings()) { route, settings -> route to settings }
@@ -199,6 +210,11 @@ class RouteDetailViewModel(
                 }
             }
         }
+    }
+
+    private companion object {
+        /** Keeps the network watch across quick configuration changes only (CO-07). */
+        const val STOP_TIMEOUT_MS = 5_000L
     }
 }
 

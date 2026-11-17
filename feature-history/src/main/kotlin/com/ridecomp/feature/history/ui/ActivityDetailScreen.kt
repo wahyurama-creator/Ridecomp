@@ -74,6 +74,7 @@ import com.ridecomp.ui.component.StatGrid
 import com.ridecomp.ui.component.StatItem
 import com.ridecomp.ui.component.TrackSketch
 import com.ridecomp.ui.component.ValueTone
+import com.ridecomp.ui.map.RouteMap
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
 import com.ridecomp.ui.theme.RideCompDimens
@@ -84,6 +85,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -105,6 +107,7 @@ fun ActivityDetailRoute(
 ) {
     val context = LocalContext.current
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val isOnlineMap by viewModel.isOnlineMap.collectAsStateWithLifecycle()
     ObserveEffects(viewModel.effects) { effect ->
         when (effect) {
             ActivityDetailEffect.Deleted -> onDeleted()
@@ -126,6 +129,7 @@ fun ActivityDetailRoute(
         onShareCard = onShareCard,
         tipContent = tipContent,
         onOpenStravaSettings = onOpenStravaSettings,
+        isOnlineMap = isOnlineMap,
         onOpenStravaActivity = { stravaId ->
             try {
                 context.startActivity(
@@ -156,6 +160,8 @@ fun ActivityDetailScreen(
     /** Strava (T5.3): connect first, or open the uploaded activity. */
     onOpenStravaSettings: () -> Unit = {},
     onOpenStravaActivity: (Long) -> Unit = {},
+    /** Draws the track on the online map instead of the sketch (D-90). */
+    isOnlineMap: Boolean = false,
 ) {
     val activity = state.activity
     ScreenScaffold(
@@ -183,7 +189,7 @@ fun ActivityDetailScreen(
                 verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
             ) {
                 val format = remember(state.unitSystem) { UnitFormatter(state.unitSystem) }
-                RouteSketch(state)
+                RouteSketch(state, isOnlineMap)
                 Totals(activity.totals, format)
                 onShareCard?.let { ShareCardEntry(it) }
                 Charts(state, format)
@@ -203,10 +209,26 @@ private val START_FORMAT: DateTimeFormatter = DateTimeFormatter.ofLocalizedDateT
     FormatStyle.SHORT,
 )
 
-/** The ride's line without map tiles, start in green and finish in accent; hidden without GPS. */
+/**
+ * The ride's line: on the online map while there is internet (D-90), else without tiles with start in
+ * green and finish in accent; hidden without GPS.
+ */
 @Composable
-private fun RouteSketch(state: ActivityDetailUiState) {
+private fun RouteSketch(state: ActivityDetailUiState, isOnlineMap: Boolean) {
     if (state.route.size < 2) return
+    if (isOnlineMap) {
+        RouteMap(
+            isOnline = true,
+            regionPaths = persistentListOf(),
+            route = state.route,
+            description = stringResource(R.string.detail_route),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(RideCompDimens.routeMapHeight)
+                .clip(RoundedCornerShape(RideCompDimens.cornerRadiusCard)),
+        )
+        return
+    }
     TrackSketch(
         points = state.route,
         description = stringResource(R.string.detail_route),

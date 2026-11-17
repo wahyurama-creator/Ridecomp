@@ -1,5 +1,6 @@
 package com.ridecomp.core.source
 
+import com.ridecomp.core.engine.map.NetworkStatus
 import com.ridecomp.core.engine.recording.BatteryStatus
 import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RideAction
@@ -22,6 +23,11 @@ public interface LocationSource {
 }
 
 /** Barometer; [readings] is empty when the phone has none. */
+/** The default network (D-90): listening only while collected (callback registered/unregistered, 09 §1). */
+public interface NetworkStatusSource {
+    public fun observe(): Flow<NetworkStatus>
+}
+
 public interface PressureSource {
     public val hasBarometer: Boolean
 
