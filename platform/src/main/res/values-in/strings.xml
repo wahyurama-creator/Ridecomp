@@ -27,4 +27,33 @@
     <string name="sms_location_unknown">Lokasi tidak diketahui.</string>
     <string name="sms_safe">RideComp: %1$s dalam keadaan aman. Terima kasih.</string>
     <string name="sms_rider_unknown">pesepeda</string>
+
+    <!-- Pengumuman suara (T7.1) -->
+    <plurals name="voice_kilometers">
+        <item quantity="other">%1$d kilometer</item>
+    </plurals>
+    <plurals name="voice_miles">
+        <item quantity="other">%1$d mil</item>
+    </plurals>
+    <plurals name="voice_hours">
+        <item quantity="other">%1$d jam</item>
+    </plurals>
+    <plurals name="voice_minutes">
+        <item quantity="other">%1$d menit</item>
+    </plurals>
+    <plurals name="voice_seconds">
+        <item quantity="other">%1$d detik</item>
+    </plurals>
+    <string name="voice_time">Waktu %1$s</string>
+    <string name="voice_avg_speed">Rata-rata %1$s %2$s</string>
+    <string name="voice_heart_rate">Detak jantung %1$d</string>
+    <plurals name="voice_power">
+        <item quantity="other">Power %1$d watt</item>
+    </plurals>
+    <string name="voice_lap">Lap %1$d</string>
+    <string name="voice_lap_time">Waktu lap %1$s</string>
+    <string name="voice_kmh">kilometer per jam</string>
+    <string name="voice_mph">mil per jam</string>
+    <string name="voice_drink">Waktunya minum</string>
+    <string name="voice_eat">Waktunya makan</string>
 </resources>

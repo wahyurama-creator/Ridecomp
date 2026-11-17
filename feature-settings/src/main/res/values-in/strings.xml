@@ -352,4 +352,10 @@
     <string name="maps_online_hint">Saat ada internet, peta jalan tampil di halaman Peta saat ride, detail rute, dan riwayat. Tanpa internet, rute dan jejak tetap tampil sebagai garis. Peta: OpenFreeMap (data OpenStreetMap), beberapa MB per jam ride; server peta melihat area yang sedang ditampilkan.</string>
     <string name="maps_offline_header">Peta offline (opsional)</string>
     <string name="settings_maps_online_value">Online: %1$s</string>
+
+    <!-- Pengumuman suara (T7.1) -->
+    <string name="ride_settings_mi">%1$d mil</string>
+    <string name="ride_settings_voice">Pengumuman suara</string>
+    <string name="ride_settings_voice_laps">Umumkan lap</string>
+    <string name="ride_settings_voice_description">HP menyebutkan jarak, waktu, kecepatan rata-rata, dan detak jantung, juga pengingat minum/makan. Musik dipelankan saat bicara. Memakai suara bawaan HP, tanpa internet.</string>
 </resources>

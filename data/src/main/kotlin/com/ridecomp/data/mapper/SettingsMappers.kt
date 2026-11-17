@@ -1,6 +1,7 @@
 package com.ridecomp.data.mapper
 
 import com.ridecomp.core.engine.map.OnlineMapMode
+import com.ridecomp.core.engine.voice.VoiceSettings
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RiderProfile
 import com.ridecomp.core.model.RidingPosition
@@ -25,6 +26,8 @@ internal object SettingsKeys {
     const val VOLUME_BUTTONS_ENABLED = "ride.volume_buttons_enabled"
     const val UNIT_SYSTEM = "app.unit_system"
     const val ONLINE_MAP_MODE = "app.online_map_mode"
+    const val VOICE_EVERY = "ride.voice_every"
+    const val VOICE_LAPS = "ride.voice_laps"
     const val ONBOARDING_DONE = "app.onboarding_done"
     const val DATA_PAGES = "ride.data_pages"
     const val LAST_PROFILE_ID = "app.last_profile_id"
@@ -91,6 +94,12 @@ internal fun List<SettingEntity>.toRideSettings(): RideSettings {
             ?: defaults.isVolumeButtonsEnabled,
         unitSystem = values[SettingsKeys.UNIT_SYSTEM]?.toEnumOrNull<UnitSystem>() ?: defaults.unitSystem,
         onlineMapMode = values[SettingsKeys.ONLINE_MAP_MODE]?.toEnumOrNull<OnlineMapMode>() ?: defaults.onlineMapMode,
+        voice = VoiceSettings(
+            everyUnits = values.optional(SettingsKeys.VOICE_EVERY, defaults.voice.everyUnits) { raw ->
+                raw.toIntOrNull()?.takeIf { it > 0 }
+            },
+            isLapEnabled = values[SettingsKeys.VOICE_LAPS]?.toBooleanStrictOrNull() ?: defaults.voice.isLapEnabled,
+        ),
     )
 }
 
@@ -108,6 +117,8 @@ internal fun RideSettings.toEntities(): List<SettingEntity> = listOf(
     SettingEntity(SettingsKeys.VOLUME_BUTTONS_ENABLED, isVolumeButtonsEnabled.toString()),
     SettingEntity(SettingsKeys.UNIT_SYSTEM, unitSystem.toDbValue()),
     SettingEntity(SettingsKeys.ONLINE_MAP_MODE, onlineMapMode.toDbValue()),
+    SettingEntity(SettingsKeys.VOICE_EVERY, voice.everyUnits?.toString() ?: SettingsKeys.OFF),
+    SettingEntity(SettingsKeys.VOICE_LAPS, voice.isLapEnabled.toString()),
 )
 
 /** Optional setting: missing → default, [SettingsKeys.OFF] → null, else parsed (unreadable → default). */

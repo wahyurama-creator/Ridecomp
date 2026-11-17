@@ -29,6 +29,11 @@ sealed interface RideSettingsUiEvent {
     data class VolumeButtons(val isEnabled: Boolean) : RideSettingsUiEvent
 
     data class Units(val system: UnitSystem) : RideSettingsUiEvent
+
+    /** Voice announcements every N km/mi; null = off (T7.1). */
+    data class VoiceEvery(val units: Int?) : RideSettingsUiEvent
+
+    data class VoiceLaps(val isEnabled: Boolean) : RideSettingsUiEvent
 }
 
 class RideSettingsViewModel(
@@ -50,6 +55,11 @@ class RideSettingsViewModel(
             is RideSettingsUiEvent.BatterySaver -> currentState.copy(isBatterySaverEnabled = event.isEnabled)
             is RideSettingsUiEvent.VolumeButtons -> currentState.copy(isVolumeButtonsEnabled = event.isEnabled)
             is RideSettingsUiEvent.Units -> currentState.copy(unitSystem = event.system)
+            is RideSettingsUiEvent.VoiceEvery -> currentState.copy(
+                voice = currentState.voice.copy(everyUnits = event.units),
+            )
+            is RideSettingsUiEvent.VoiceLaps ->
+                currentState.copy(voice = currentState.voice.copy(isLapEnabled = event.isEnabled))
         }
         updateState { updated }
         viewModelScope.launch { saveSettings(updated) }

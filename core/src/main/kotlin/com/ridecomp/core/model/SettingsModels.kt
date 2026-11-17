@@ -4,6 +4,7 @@ import com.ridecomp.core.config.AutoPauseConfig
 import com.ridecomp.core.config.ProfileDefaults
 import com.ridecomp.core.config.ReminderConfig
 import com.ridecomp.core.engine.map.OnlineMapMode
+import com.ridecomp.core.engine.voice.VoiceSettings
 import java.time.Instant
 import java.time.ZoneOffset
 
@@ -60,6 +61,8 @@ public data class RideSettings(
     val unitSystem: UnitSystem = UnitSystem.METRIC,
     /** Online map tiles: Wi‑Fi and data, Wi‑Fi only, or never (D-90). */
     val onlineMapMode: OnlineMapMode = OnlineMapMode.ALWAYS,
+    /** Spoken distance, laps and reminders (T7.1); off by default. */
+    val voice: VoiceSettings = VoiceSettings(),
 )
 
 /** Age in whole years at [nowMs] (UTC year difference), or null without a birth year. */
