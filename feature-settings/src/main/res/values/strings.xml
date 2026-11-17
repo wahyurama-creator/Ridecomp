@@ -369,4 +369,10 @@
     <string name="maps_online_hint">With internet, a street map shows on the ride map page, route detail and ride history. Without internet, routes and tracks still show as a line. Map: OpenFreeMap (OpenStreetMap data), a few MB per hour of riding; the map server sees the area being shown.</string>
     <string name="maps_offline_header">Offline maps (optional)</string>
     <string name="settings_maps_online_value">Online: %1$s</string>
+
+    <!-- Voice announcements (T7.1) -->
+    <string name="ride_settings_mi">%1$d mi</string>
+    <string name="ride_settings_voice">Voice announcements</string>
+    <string name="ride_settings_voice_laps">Announce laps</string>
+    <string name="ride_settings_voice_description">The phone speaks distance, time, average speed and heart rate, plus drink/eat reminders. Music is lowered while it speaks. Uses the phone\'s own voice, no internet.</string>
 </resources>

@@ -125,5 +125,11 @@ Spesifikasi detail fitur tambahan: `../12-FEATURE-SPECS.md`.
 ## Fase 6 — iOS
 Ikuti `03-ARCHITECTURE.md` §9: jadikan `:core` modul KMP, tulis UI (SwiftUI atau Compose Multiplatform, ajukan pilihan) dan lapisan platform iOS (lokasi, BLE, background). Memerlukan Mac + Apple Developer Program untuk instalasi permanen.
 
-## Fase 7+ — Ide lanjutan (belum dijadwalkan)
+## Fase 7 — Fitur lanjutan (dipilih pemilik 2026-11-17)
+- [x] T7.1 Pengumuman suara (TTS bawaan HP): tiap 1/5/10 km, lap, pengingat minum/makan (D-91).
+- [ ] T7.2 Kembali ke titik start.
+- [ ] T7.3 Pelacakan komponen sepeda (km otomatis per sepeda, pengingat servis).
+- [ ] T7.4 Latihan terfokus (mis. Zona 2, interval, persiapan lomba) — desain diajukan ke pemilik sebelum dikerjakan.
+
+## Fase 8+ — Ide lanjutan (belum dijadwalkan)
 Workout/interval terstruktur, target zona dengan alert, pengumuman suara (TTS), kembali ke titik start, pelacakan komponen sepeda, ghost/virtual partner, backup ke file/Google Drive, widget layar, dukungan smart trainer (FTMS), radar belakang BLE, export ke platform lain (intervals.icu dll. via file).

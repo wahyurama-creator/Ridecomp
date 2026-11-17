@@ -21,6 +21,7 @@ import com.ridecomp.core.engine.route.RouteAlert
 import com.ridecomp.core.engine.safety.IncidentAction
 import com.ridecomp.core.engine.segments.SegmentAlert
 import com.ridecomp.core.engine.sensors.SensorReading
+import com.ridecomp.core.engine.voice.AnnouncementTracker
 import com.ridecomp.core.model.ActivityStatus
 import com.ridecomp.core.model.RideEventType
 import com.ridecomp.core.model.RideSettings
@@ -33,6 +34,8 @@ import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.core.util.onSuccess
 import com.ridecomp.platform.device.AlertPattern
 import com.ridecomp.platform.locale.AppLocale
+import com.ridecomp.platform.voice.AnnouncementSpeech
+import com.ridecomp.platform.voice.VoiceAnnouncer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -76,6 +79,10 @@ class RecordingService : LifecycleService() {
     private var formatter = UnitFormatter(UnitSystem.METRIC)
     private var lastBatteryReadMs: Long? = null
     private var isGpsEnabled = true
+    private val voice by lazy { VoiceAnnouncer(this, deps.logger) }
+
+    /** Spoken distance, laps and reminders of the current ride (T7.1); null when off. */
+    private var announcements: Pair<AnnouncementTracker, AnnouncementSpeech>? = null
     private val incidents by lazy {
         IncidentSupervisor(deps) { state ->
             deps.stateHolder.updateIncident(state)
@@ -134,6 +141,7 @@ class RecordingService : LifecycleService() {
         val settings = deps.settingsRepository.getRideSettings()
         val setup = rideSetup(settings, profileId, routeId)
         formatter = UnitFormatter(settings.unitSystem)
+        setUpAnnouncements(settings)
         val newSession = deps.newSession()
         newSession.start(setup, deps.clock.nowMs()).onSuccess { output ->
             session = newSession
@@ -148,6 +156,7 @@ class RecordingService : LifecycleService() {
         val activity = deps.activityRepository.get(activityId) ?: return@withLock
         val settings = deps.settingsRepository.getRideSettings()
         formatter = UnitFormatter(settings.unitSystem)
+        setUpAnnouncements(settings)
         val resumeAs = if (storedStatus == ActivityStatus.RECORDING) RideStatus.RECORDING else RideStatus.PAUSED
         val restored = deps.newSession()
         restored.resume(
@@ -266,6 +275,7 @@ class RecordingService : LifecycleService() {
     }
 
     private suspend fun handleOutput(active: RecordingSession, output: RecorderOutput, now: Long) {
+        announcements?.let { (tracker, speech) -> tracker.onOutput(output).forEach { voice.speak(speech.text(it)) } }
         output.events.forEach { event -> alertFor(event.type)?.let(deps.alertPlayer::play) }
         // Off route: vibration and a beep (N-04), heard with the phone in a pocket or bag.
         if (output.events.any { it.type == RideEventType.OFF_ROUTE }) deps.alertPlayer.beep()
@@ -333,6 +343,8 @@ class RecordingService : LifecycleService() {
     }
 
     private fun stopPipeline() {
+        voice.shutdown()
+        announcements = null
         pipelineJobs.forEach { it.cancel() }
         pipelineJobs.clear()
         pressureJob?.cancel()
@@ -375,6 +387,17 @@ class RecordingService : LifecycleService() {
             // Indoor rides have no position to cross a segment with.
             segments = if (isGpsEnabled) deps.getLiveSegments() else emptyList(),
         )
+    }
+
+    /** Voice announcements in the app language when the rider turned them on (T7.1). */
+    private fun setUpAnnouncements(settings: RideSettings) {
+        if (!settings.voice.isEnabled) {
+            announcements = null
+            return
+        }
+        announcements = AnnouncementTracker(settings.voice, settings.unitSystem) to
+            AnnouncementSpeech(resources, settings.unitSystem)
+        voice.start(resources.configuration.locales[0])
     }
 
     private fun altitudeSource(): AltitudeSource =
