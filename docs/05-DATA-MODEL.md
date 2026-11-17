@@ -49,7 +49,7 @@ Semua nilai disimpan dalam satuan SI. Waktu disimpan sebagai epoch milidetik UTC
 | calories | int? | |
 | route_id | int? FK | |
 | profile_id | int FK | profil aktivitas yang dipakai |
-| training_load | real? | beban latihan (`../12-FEATURE-SPECS.md` §10) |
+| training_load | real? | beban latihan (`12-FEATURE-SPECS.md` §10) |
 | load_method | text? | `power`/`hr` |
 | intensity_factor | real? | hanya metode power |
 | fit_exported_at | int? | untuk status "FIT diekspor" di riwayat |
@@ -153,7 +153,7 @@ Haversine, R = 6.371.000 m. Tambahkan jarak hanya bila titik valid (akurasi ≤ 
 - Moving time = total detik dalam status `recording` (tidak termasuk pause manual & auto-pause).
 
 ### 3.4 Jeda & lanjut otomatis
-Default: pause bila speed < 2 km/h (≈ 0.56 m/s) dan tidak ada perpindahan berarti selama **5 detik** (pilihan 3/5/10/30 dtk); resume bila speed > 3 km/h selama ≥ 2 detik **dan** (tanpa sensor roda) perpindahan > max(akurasi GPS, 10 m) dari titik jeda. Pause manual tidak di-resume otomatis. Detail: `../12-FEATURE-SPECS.md` §1.
+Default: pause bila speed < 2 km/h (≈ 0.56 m/s) dan tidak ada perpindahan berarti selama **5 detik** (pilihan 3/5/10/30 dtk); resume bila speed > 3 km/h selama ≥ 2 detik **dan** (tanpa sensor roda) perpindahan > max(akurasi GPS, 10 m) dari titik jeda. Pause manual tidak di-resume otomatis. Detail: `12-FEATURE-SPECS.md` §1.
 
 ### 3.5 Elevasi, tanjakan, grade
 - Sumber: barometer (bila ada sensor tekanan, dikalibrasi ke altitude GPS di awal) > altitude GPS.
@@ -201,7 +201,7 @@ Z1 < 55%, Z2 56–75%, Z3 76–90%, Z4 91–105%, Z5 106–120%, Z6 121–150%, 
 Avg cadence: rata-rata detik moving dengan cadence > 0 (tidak termasuk coasting), konvensi umum cycling computer. Didokumentasikan di layar bantuan.
 
 ### 3.12 Rumus fitur tambahan
-Deteksi insiden, tanjakan, belokan, best efforts, pencocokan segmen, beban latihan (TSS-style & TRIMP), dan CTL/ATL/TSB: lihat `../12-FEATURE-SPECS.md` §5–§10.
+Deteksi insiden, tanjakan, belokan, best efforts, pencocokan segmen, beban latihan (TSS-style & TRIMP), dan CTL/ATL/TSB: lihat `12-FEATURE-SPECS.md` §5–§10.
 
 ### 3.13 Backup
-Format arsip, isi, dan aturan restore: `../12-FEATURE-SPECS.md` §12. `settings` menyimpan `last_backup_at` dan `backup_reminder_dismissed_at`. `db_schema_version` di manifest = versi database Room.
+Format arsip, isi, dan aturan restore: `12-FEATURE-SPECS.md` §12. `settings` menyimpan `last_backup_at` dan `backup_reminder_dismissed_at`. `db_schema_version` di manifest = versi database Room.

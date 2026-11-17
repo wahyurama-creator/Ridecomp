@@ -36,7 +36,7 @@ Cycling computer (Garmin Edge, Wahoo, dll.) memberi data real-time seperti kecep
 |---|---|---|
 | F-01 | Rekam aktivitas: start, pause, resume, stop & save, discard | P0 |
 | F-02 | Perekaman GPS 1 Hz di foreground service; tetap jalan saat layar mati | P0 |
-| F-03 | **Jeda & lanjut otomatis**: rekaman dijeda saat berhenti/tidak bergerak selama waktu yang dipilih (3/5/10/30 dtk) dan lanjut otomatis saat bergerak lagi; tahan GPS drift; bisa dimatikan (`../12-FEATURE-SPECS.md` §1) | P0 |
+| F-03 | **Jeda & lanjut otomatis**: rekaman dijeda saat berhenti/tidak bergerak selama waktu yang dipilih (3/5/10/30 dtk) dan lanjut otomatis saat bergerak lagi; tahan GPS drift; bisa dimatikan (`12-FEATURE-SPECS.md` §1) | P0 |
 | F-04 | Layar ride: halaman data field yang bisa dikustom (1–8 field per halaman), geser antar halaman | P0 |
 | F-05 | Metrik: speed (now/avg/max), jarak, waktu bergerak, waktu total, elevasi, total tanjakan, grade, jam, kalori | P0 |
 | F-06 | Pairing sensor BLE: Heart Rate, Cycling Speed & Cadence, Cycling Power. Simpan sensor, auto-connect | P0 |
@@ -83,7 +83,7 @@ Cycling computer (Garmin Edge, Wahoo, dll.) memberi data real-time seperti kecep
 | L-03 | Beban latihan per ride + tren Fitness/Kelelahan/Form + ringkasan mingguan (§10) | P2 |
 | L-04 | Kartu share untuk WA/IG Story dengan opsi privasi (§11) | P1 |
 
-Detail semua fitur bertanda § ada di `../12-FEATURE-SPECS.md`.
+Detail semua fitur bertanda § ada di `12-FEATURE-SPECS.md`.
 
 ### 4.3 Integrasi Strava (Fase 5, opsional)
 

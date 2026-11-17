@@ -98,7 +98,7 @@ server/          Strava token server (Cloudflare Worker)
 docs/            specs, rules, decisions, feature reports
 ```
 
-The specifications and working rules live in [`docs/`](docs). Start with [CLAUDE.md](CLAUDE.md), [docs/SPEC-PACKAGE.md](docs/SPEC-PACKAGE.md), [docs/08-CODING-RULES.md](docs/08-CODING-RULES.md) and [docs/reports/DECISIONS.md](docs/reports/DECISIONS.md).
+The specifications and working rules live in [`docs/`](docs). Start with [CLAUDE.md](CLAUDE.md), [docs/08-CODING-RULES.md](docs/08-CODING-RULES.md) and [docs/reports/DECISIONS.md](docs/reports/DECISIONS.md).
 
 ## Contributing
 

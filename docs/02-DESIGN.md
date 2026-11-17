@@ -96,7 +96,7 @@ Import GPX (file picker + intent "Buka dengan"). Detail rute: peta, jarak, total
 ### 3.10 Pengaturan
 Profil; editor halaman data (tambah/hapus halaman, pilih jumlah field & metrik); Layar & baterai (mode layar, kecerahan); Auto-pause (on/off, ambang); Auto-lap (off / tiap X km); Peta offline (unduh/hapus area, ruang terpakai); Satuan; Bahasa; Strava (Fase 5); "HP saya mematikan app" (panduan per merek); Ekspor/backup database.
 
-### 3.11 Layar & elemen tambahan (detail perilaku: `../12-FEATURE-SPECS.md`)
+### 3.11 Layar & elemen tambahan (detail perilaku: `12-FEATURE-SPECS.md`)
 - **Jeda otomatis:** label besar "JEDA OTOMATIS" warna `warn` di atas data, angka tetap terlihat; getar pendek saat masuk/keluar. Diam > 15 mnt → kartu "Selesai ride?".
 - **Banner pengingat minum/makan:** ikon + teks besar + tombol **Sudah** & **Tunda 5 mnt** (≥ 56dp).
 - **Banner mode baterai:** "Mode hemat aktif · 19%" (warn) / "Mode kritis · 9%" (danger).
