@@ -367,4 +367,39 @@
     <string name="component_delete">Delete component</string>
     <string name="component_delete_title">Delete this component?</string>
     <string name="component_delete_message">Only the component is removed; your rides stay.</string>
+
+    <!-- Planned session (T7.4b) -->
+    <string name="session_intensity_recovery">Zone 1 · Recovery</string>
+    <string name="session_intensity_endurance">Zone 2 · Endurance</string>
+    <string name="session_intensity_tempo">Zone 3 · Tempo</string>
+    <string name="session_intensity_threshold">Zone 4 · Threshold</string>
+    <string name="session_intensity_vo2max">Zone 5 · VO2max</string>
+    <string name="session_feel_recovery">Very easy, legs just turning</string>
+    <string name="session_feel_endurance">Easy: you can still talk</string>
+    <string name="session_feel_tempo">Moderate: short sentences only</string>
+    <string name="session_feel_threshold">Hard intervals, easy in between</string>
+    <string name="session_feel_vo2max">Very hard short efforts, easy in between</string>
+    <string name="session_summary">%1$s · %2$d min</string>
+    <string name="session_plan_zone2_base">Zone 2 base</string>
+    <string name="session_plan_race_prep">Race prep</string>
+    <string name="session_plan_gran_fondo">Gran Fondo 100 km</string>
+    <string name="session_plan_custom">My plan</string>
+    <string name="session_zone_badge">Z%1$d</string>
+    <string name="session_current">%1$d %2$s · %3$s</string>
+    <string name="session_in_zone">in zone</string>
+    <string name="session_above">too hard</string>
+    <string name="session_below">below zone</string>
+    <string name="session_no_reading">no reading</string>
+    <string name="session_by_feel">By feel (no sensor)</string>
+    <string name="session_range">Target %1$d–%2$d %3$s</string>
+    <string name="session_range_below">Target under %1$d %2$s</string>
+    <string name="session_range_above">Target over %1$d %2$s</string>
+    <string name="session_time">%1$s / %2$s</string>
+    <string name="session_done">✓ Done</string>
+    <string name="home_plan_label">Plan · %1$s · week %2$d/%3$d</string>
+    <string name="home_plan_today">Today: %1$s</string>
+    <string name="home_plan_rest">Rest day today: recovery is training too.</string>
+    <string name="home_plan_start">START SESSION</string>
+    <string name="pre_ride_session">Today\'s session</string>
+    <string name="pre_ride_session_description">The ride screen shows the target zone; the phone tells you when an easy session gets too hard.</string>
 </resources>

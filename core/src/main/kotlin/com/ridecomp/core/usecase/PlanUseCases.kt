@@ -5,6 +5,7 @@ import com.ridecomp.core.model.BuiltInPlans
 import com.ridecomp.core.model.CustomPlan
 import com.ridecomp.core.model.PlanDay
 import com.ridecomp.core.model.PlanRef
+import com.ridecomp.core.model.PlanSession
 import com.ridecomp.core.model.TrainingPlan
 import com.ridecomp.core.model.TrainingPlanLimits
 import com.ridecomp.core.repository.TrainingPlanRepository
@@ -93,4 +94,21 @@ public class DeleteCustomPlanUseCase(private val repository: TrainingPlanReposit
         if (repository.observeActivePlan().first()?.ref == PlanRef.Custom(id)) repository.setActivePlan(null)
         repository.deleteCustomPlan(id)
     }
+}
+
+/**
+ * Today's planned session for the ride being started (T7.4b): stored with the ride so a recovered ride
+ * is still measured against it; a ride without a session clears it.
+ */
+public class RideSessionUseCase(
+    private val repository: TrainingPlanRepository,
+    private val observeActivePlan: ObserveActivePlanUseCase,
+) {
+    public suspend fun forNewRide(withSession: Boolean): PlanSession? {
+        val session = if (withSession) observeActivePlan().first()?.today?.session else null
+        repository.setRideTarget(session)
+        return session
+    }
+
+    public suspend fun forRecoveredRide(): PlanSession? = repository.getRideTarget()
 }

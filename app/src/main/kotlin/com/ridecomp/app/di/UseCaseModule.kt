@@ -115,6 +115,7 @@ import com.ridecomp.core.usecase.ResetTipsUseCase
 import com.ridecomp.core.usecase.RestartAfterRestoreUseCase
 import com.ridecomp.core.usecase.RestoreBackupUseCase
 import com.ridecomp.core.usecase.ReverseRouteUseCase
+import com.ridecomp.core.usecase.RideSessionUseCase
 import com.ridecomp.core.usecase.SaveActivityFileUseCase
 import com.ridecomp.core.usecase.SaveActivityProfileUseCase
 import com.ridecomp.core.usecase.SaveBikeUseCase
@@ -244,6 +245,7 @@ val useCaseModule = module {
     factory { StopPlanUseCase(get()) }
     factory { SaveCustomPlanUseCase(get()) }
     factory { DeleteCustomPlanUseCase(get()) }
+    factory { RideSessionUseCase(get(), get()) }
     factory { ObserveComponentWearUseCase(get()) }
     factory { ObserveBikeDistanceUseCase(get()) }
     factory { GetComponentUseCase(get()) }

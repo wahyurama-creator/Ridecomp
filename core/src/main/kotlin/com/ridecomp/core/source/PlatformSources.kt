@@ -60,8 +60,8 @@ public interface RideController {
     /** Id of the ride being recorded, null when none. */
     public val activeActivityId: StateFlow<Long?>
 
-    /** Starts the foreground service and a new ride. */
-    public fun start(profileId: Long?, routeId: Long? = null)
+    /** Starts the foreground service and a new ride; [withSession] measures it against today's plan (T7.4b). */
+    public fun start(profileId: Long?, routeId: Long? = null, withSession: Boolean = false)
 
     /** Continues a recovered ride (03-ARCHITECTURE §4.5). */
     public fun resumeRecovered(activityId: Long)

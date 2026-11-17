@@ -25,9 +25,9 @@ import org.koin.dsl.module
 /** ViewModels of the ride feature; use cases come from the app graph. */
 val rideFeatureModule = module {
     factory { HomeDeviceUseCases(get(), get(), get()) }
-    factory { HomeUseCases(get(), get(), get(), get(), get(), get(), get(), get()) }
+    factory { HomeUseCases(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { HomeViewModel(get()) }
-    factory { PreRideOptionUseCases(get(), get(), get()) }
+    factory { PreRideOptionUseCases(get(), get(), get(), get()) }
     factory { PreRideBikeUseCases(get(), get(), get(), get()) }
     factory { PreRideUseCases(get(), get(), get(), get(), get(), get()) }
     viewModel { params -> PreRideViewModel(params.getOrNull(), get()) }

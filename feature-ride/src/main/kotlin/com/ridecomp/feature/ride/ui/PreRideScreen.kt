@@ -37,6 +37,7 @@ import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.ride.R
 import com.ridecomp.feature.ride.model.bikeSummary
 import com.ridecomp.feature.ride.model.displayName
+import com.ridecomp.feature.ride.model.summary
 import com.ridecomp.feature.ride.viewmodel.PreRideEffect
 import com.ridecomp.feature.ride.viewmodel.PreRideUiEvent
 import com.ridecomp.feature.ride.viewmodel.PreRideUiState
@@ -53,6 +54,7 @@ import com.ridecomp.ui.component.ListCardRow
 import com.ridecomp.ui.component.RideCompCard
 import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.component.SectionHeader
+import com.ridecomp.ui.component.SwitchRow
 import com.ridecomp.ui.component.TopBarIcon
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
@@ -154,6 +156,14 @@ private fun Checklist(
             state.battery?.let { CheckRow(batteryCheck(it), hasDivider = false) }
         }
         BikePicker(state, onEvent, onManageBikes)
+        state.session?.let { session ->
+            SwitchRow(
+                label = stringResource(R.string.pre_ride_session) + ": " + session.summary(),
+                description = stringResource(R.string.pre_ride_session_description),
+                isChecked = state.isSessionOn,
+                onCheckedChange = { onEvent(PreRideUiEvent.SessionOn(it)) },
+            )
+        }
         RoutePicker(state, onEvent, onChooseRoute)
         ScreenModePicker(state, onEvent)
     }

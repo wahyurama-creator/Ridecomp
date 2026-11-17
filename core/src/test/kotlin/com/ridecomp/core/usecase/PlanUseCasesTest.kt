@@ -90,6 +90,18 @@ class PlanUseCasesTest {
         assertIs<Outcome.Failure<InvalidPlan>>(save(CustomPlan(name = "", weekCount = 4, week = tooLong)))
     }
 
+    @Test
+    fun `a ride with the session stores today's session for recovery, one without clears it`() = runTest {
+        val rideSession = RideSessionUseCase(repository, ObserveActivePlanUseCase(repository, calendar))
+        StartPlanUseCase(repository, calendar)(PlanRef.BuiltIn(BuiltInPlan.ZONE2_BASE))
+
+        assertEquals(PlanSession(Intensity.ENDURANCE, 45), rideSession.forNewRide(withSession = true))
+        assertEquals(PlanSession(Intensity.ENDURANCE, 45), rideSession.forRecoveredRide())
+
+        assertNull(rideSession.forNewRide(withSession = false))
+        assertNull(rideSession.forRecoveredRide())
+    }
+
     private companion object {
         const val DAY_MS = 86_400_000L
     }
