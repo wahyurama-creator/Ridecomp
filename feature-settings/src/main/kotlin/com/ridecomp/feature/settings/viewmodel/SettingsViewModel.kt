@@ -2,9 +2,11 @@ package com.ridecomp.feature.settings.viewmodel
 
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.viewModelScope
+import com.ridecomp.core.model.AppLanguage
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RiderProfile
 import com.ridecomp.core.model.StravaStatus
+import com.ridecomp.core.usecase.GetAppLanguageUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveOfflineMapsUseCase
 import com.ridecomp.core.usecase.ObserveProfileUseCase
@@ -27,20 +29,31 @@ data class SettingsUiState(
     val offlineMapCount: Int = 0,
     val offlineMapBytes: Long = 0,
     val isStravaConnected: Boolean = false,
+    val language: AppLanguage = AppLanguage.SYSTEM,
+)
+
+/** Sources of the settings summaries, grouped to keep the constructor short (KT-05). */
+data class SettingsUseCases(
+    val observeProfile: ObserveProfileUseCase,
+    val observeActivityProfiles: ObserveActivityProfilesUseCase,
+    val observeRideSettings: ObserveRideSettingsUseCase,
+    val observeSafety: ObserveSafetyUseCase,
+    val observeOfflineMaps: ObserveOfflineMapsUseCase,
+    val observeStrava: ObserveStravaStatusUseCase,
+    val getLanguage: GetAppLanguageUseCase,
 )
 
 /** Settings overview: read-only summaries; every change happens on the section's own screen. */
-class SettingsViewModel(
-    observeProfile: ObserveProfileUseCase,
-    observeActivityProfiles: ObserveActivityProfilesUseCase,
-    observeRideSettings: ObserveRideSettingsUseCase,
-    observeSafety: ObserveSafetyUseCase,
-    observeOfflineMaps: ObserveOfflineMapsUseCase,
-    observeStrava: ObserveStravaStatusUseCase,
-) : UdfViewModel<SettingsUiState, Unit, NoEffect>(SettingsUiState()) {
+class SettingsViewModel(private val useCases: SettingsUseCases) :
+    UdfViewModel<SettingsUiState, Unit, NoEffect>(SettingsUiState()) {
     init {
         viewModelScope.launch {
-            combine(observeProfile(), observeActivityProfiles(), observeRideSettings(), observeSafety()) {
+            combine(
+                useCases.observeProfile(),
+                useCases.observeActivityProfiles(),
+                useCases.observeRideSettings(),
+                useCases.observeSafety(),
+            ) {
                     profile,
                     profiles,
                     settings,
@@ -53,21 +66,25 @@ class SettingsViewModel(
                         offlineMapCount = offlineMapCount,
                         offlineMapBytes = offlineMapBytes,
                         isStravaConnected = isStravaConnected,
+                        language = useCases.getLanguage(),
                     )
                 }
             }
         }
         viewModelScope.launch {
-            observeOfflineMaps().collect { maps ->
+            useCases.observeOfflineMaps().collect { maps ->
                 updateState { copy(offlineMapCount = maps.size, offlineMapBytes = maps.sumOf { it.sizeBytes }) }
             }
         }
         viewModelScope.launch {
-            observeStrava().collect { status ->
+            useCases.observeStrava().collect { status ->
                 updateState { copy(isStravaConnected = status is StravaStatus.Connected) }
             }
         }
     }
 
-    override fun onEvent(event: Unit) = Unit
+    /** The screen is shown again (e.g. back from Language): the language is not a flow, read it again. */
+    override fun onEvent(event: Unit) {
+        updateState { copy(language = useCases.getLanguage()) }
+    }
 }

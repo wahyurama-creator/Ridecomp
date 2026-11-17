@@ -32,6 +32,7 @@ import com.ridecomp.core.usecase.ExportedFileHandler
 import com.ridecomp.core.usecase.ExtendTrainingToTodayUseCase
 import com.ridecomp.core.usecase.ForgetSensorUseCase
 import com.ridecomp.core.usecase.GetActivityKindUseCase
+import com.ridecomp.core.usecase.GetAppLanguageUseCase
 import com.ridecomp.core.usecase.GetFreeStorageUseCase
 import com.ridecomp.core.usecase.GetLapsUseCase
 import com.ridecomp.core.usecase.GetLiveSegmentsUseCase
@@ -110,6 +111,7 @@ import com.ridecomp.core.usecase.ScanSensorsUseCase
 import com.ridecomp.core.usecase.SegmentsStep
 import com.ridecomp.core.usecase.SelectActivityProfileUseCase
 import com.ridecomp.core.usecase.SendTestSmsUseCase
+import com.ridecomp.core.usecase.SetAppLanguageUseCase
 import com.ridecomp.core.usecase.SetRiderLevelUseCase
 import com.ridecomp.core.usecase.SetSafetyEnabledUseCase
 import com.ridecomp.core.usecase.SetStravaAutoUploadUseCase
@@ -258,6 +260,8 @@ val useCaseModule = module {
     factory { ObserveSegmentUseCase(get()) }
     factory { ObserveSegmentEffortsUseCase(get()) }
     factory { ObserveStravaStatusUseCase(get(), get()) }
+    factory { GetAppLanguageUseCase(get()) }
+    factory { SetAppLanguageUseCase(get()) }
     factory { StartStravaAuthUseCase(get(), get(), SecureRandom()) }
     factory { CompleteStravaAuthUseCase(get(), get()) }
     factory { DisconnectStravaUseCase(get(), get()) }

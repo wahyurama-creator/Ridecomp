@@ -17,9 +17,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/** Onboarding steps in order (02-DESIGN §3.1, 13-UI-SCREENS #1, #2, #22). */
-/** Steps in order; LEVEL (Phase 4G) asks how experienced the rider is. */
-enum class OnboardingStep { PERMISSIONS, LEVEL, PROFILE, READY }
+/**
+ * Onboarding steps in order (02-DESIGN §3.1, 13-UI-SCREENS #1, #2, #22): LANGUAGE first so every later
+ * text is in the rider's language (D-88); LEVEL (Phase 4G) asks how experienced the rider is.
+ */
+enum class OnboardingStep { LANGUAGE, PERMISSIONS, LEVEL, PROFILE, READY }
 
 sealed interface OnboardingUiEvent {
     data object Next : OnboardingUiEvent
@@ -46,7 +48,7 @@ class OnboardingViewModel(
     private val completeOnboarding: CompleteOnboardingUseCase,
     observeGps: ObserveGpsStatusUseCase,
     private val setRiderLevel: SetRiderLevelUseCase,
-) : UdfViewModel<OnboardingStep, OnboardingUiEvent, OnboardingEffect>(OnboardingStep.PERMISSIONS) {
+) : UdfViewModel<OnboardingStep, OnboardingUiEvent, OnboardingEffect>(OnboardingStep.LANGUAGE) {
     val gpsStatus: StateFlow<GpsStatus?> = uiState
         .map { it == OnboardingStep.READY }
         .distinctUntilChanged()

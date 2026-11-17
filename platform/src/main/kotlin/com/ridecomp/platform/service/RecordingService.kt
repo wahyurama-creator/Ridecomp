@@ -1,5 +1,6 @@
 package com.ridecomp.platform.service
 
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
@@ -30,6 +31,7 @@ import com.ridecomp.core.model.withProfile
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.core.util.onSuccess
 import com.ridecomp.platform.device.AlertPattern
+import com.ridecomp.platform.locale.AppLocale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -54,6 +56,11 @@ import kotlinx.coroutines.sync.withLock
  * dispatcher under [sessionLock] (CONC-01).
  */
 class RecordingService : LifecycleService() {
+    /** Notification texts in the chosen app language (D-88). */
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppLocale.wrap(newBase))
+    }
+
     private val deps: RecordingDependencies by lazy {
         (application as RecordingDependenciesProvider).recordingDependencies
     }

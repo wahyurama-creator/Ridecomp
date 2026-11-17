@@ -5,6 +5,7 @@ import com.ridecomp.core.engine.backup.BackupManifestCodec
 import com.ridecomp.core.engine.safety.IncidentManager
 import com.ridecomp.core.engine.sensors.BleScanner
 import com.ridecomp.core.engine.sensors.SensorRepository
+import com.ridecomp.core.model.AppLanguage
 import com.ridecomp.core.repository.ActivityAnalysisRepository
 import com.ridecomp.core.repository.ActivityProfileRepository
 import com.ridecomp.core.repository.ActivityRepository
@@ -20,6 +21,7 @@ import com.ridecomp.core.repository.SettingsRepository
 import com.ridecomp.core.repository.StravaUploadRepository
 import com.ridecomp.core.repository.TrainingRepository
 import com.ridecomp.core.source.AccelerometerSource
+import com.ridecomp.core.source.AppLanguageStore
 import com.ridecomp.core.source.AppRestarter
 import com.ridecomp.core.source.BatteryLevelSource
 import com.ridecomp.core.source.Clock
@@ -90,6 +92,7 @@ import com.ridecomp.feature.routes.viewmodel.RoutesViewModel
 import com.ridecomp.feature.sensors.viewmodel.SensorsViewModel
 import com.ridecomp.feature.settings.viewmodel.BackupViewModel
 import com.ridecomp.feature.settings.viewmodel.GuideViewModel
+import com.ridecomp.feature.settings.viewmodel.LanguageViewModel
 import com.ridecomp.feature.settings.viewmodel.LicenseTextReader
 import com.ridecomp.feature.settings.viewmodel.OfflineMapsViewModel
 import com.ridecomp.feature.settings.viewmodel.OnboardingViewModel
@@ -173,6 +176,13 @@ class AppModulesTest {
         single<StravaAccountStore> { FakeStravaAccountStore() }
         single<StravaApi> { FakeStravaApi() }
         single { FakeStravaApi.SETUP }
+        single<AppLanguageStore> {
+            object : AppLanguageStore {
+                override fun current() = AppLanguage.SYSTEM
+
+                override fun set(language: AppLanguage) = Unit
+            }
+        }
         single<StravaUploadRepository> { FakeStravaUploadRepository() }
     }
 
@@ -223,6 +233,7 @@ class AppModulesTest {
         assertNotNull(koin.get<SafetyViewModel>())
         assertNotNull(koin.get<BackupViewModel>())
         assertNotNull(koin.get<StravaViewModel>())
+        assertNotNull(koin.get<LanguageViewModel>())
         assertNotNull(koin.get<RoutesViewModel>())
         assertNotNull(koin.get<RouteDetailViewModel> { parametersOf(1L) })
         assertNotNull(koin.get<IncidentManager>())

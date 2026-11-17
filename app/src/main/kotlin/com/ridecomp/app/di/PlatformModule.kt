@@ -14,6 +14,7 @@ import com.ridecomp.core.repository.ProfileRepository
 import com.ridecomp.core.repository.RouteRepository
 import com.ridecomp.core.repository.SettingsRepository
 import com.ridecomp.core.source.AccelerometerSource
+import com.ridecomp.core.source.AppLanguageStore
 import com.ridecomp.core.source.AppRestarter
 import com.ridecomp.core.source.BatteryLevelSource
 import com.ridecomp.core.source.Clock
@@ -46,6 +47,7 @@ import com.ridecomp.platform.device.AlertPlayer
 import com.ridecomp.platform.device.AndroidBatteryLevelSource
 import com.ridecomp.platform.device.AndroidRideNameProvider
 import com.ridecomp.platform.device.UuidIdGenerator
+import com.ridecomp.platform.locale.AndroidAppLanguageStore
 import com.ridecomp.platform.location.AndroidLocationSource
 import com.ridecomp.platform.location.AndroidPressureSource
 import com.ridecomp.platform.map.AndroidOfflineMapStore
@@ -81,6 +83,7 @@ val platformModule = module {
     single<BatteryLevelSource> { AndroidBatteryLevelSource(androidContext()) }
     single<IdGenerator> { UuidIdGenerator() }
     single<StravaAccountStore> { AndroidStravaAccountStore(androidContext(), get(), get()) }
+    single<AppLanguageStore> { AndroidAppLanguageStore(androidContext()) }
     single { StravaSetup(BuildConfig.STRAVA_CLIENT_ID, BuildConfig.STRAVA_TOKEN_SERVER_URL) }
     single<StravaApi> { HttpStravaApi(get(), get(), get(), get()) }
     single<RideNameProvider> { AndroidRideNameProvider(androidContext()) }

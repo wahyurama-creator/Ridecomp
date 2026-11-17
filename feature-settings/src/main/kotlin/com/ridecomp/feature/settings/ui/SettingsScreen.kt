@@ -18,10 +18,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.ScreenMode
-import com.ridecomp.core.model.UnitSystem
 import com.ridecomp.feature.settings.R
 import com.ridecomp.feature.settings.viewmodel.SettingsUiState
 import com.ridecomp.feature.settings.viewmodel.SettingsViewModel
@@ -60,9 +60,8 @@ enum class SettingsSection(@param:StringRes val titleRes: Int, val taskId: Strin
     DEVELOPER(R.string.settings_developer),
     ;
 
-    /** Per-app language lives in Android settings from Android 13 (locales_config). */
     val isAvailable: Boolean
-        get() = taskId == null && (this != LANGUAGE || Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+        get() = taskId == null
 }
 
 /** The design's two cards (13-UI-SCREENS #13). */
@@ -94,6 +93,10 @@ fun SettingsRoute(
     viewModel: SettingsViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    LifecycleResumeEffect(Unit) {
+        viewModel.onEvent(Unit)
+        onPauseOrDispose {}
+    }
     SettingsScreen(
         state = state,
         onSectionClick = onSectionClick,
@@ -193,7 +196,7 @@ private fun SettingsSection.summary(state: SettingsUiState): Pair<String?, Value
             settings.eatIntervalMin?.toString() ?: stringResource(R.string.settings_none),
         ) to ValueTone.NORMAL
         SettingsSection.SAFETY -> safetySummary(state)
-        SettingsSection.LANGUAGE -> unitsSummary(settings.unitSystem) to ValueTone.NORMAL
+        SettingsSection.LANGUAGE -> stringResource(state.language.nameRes()) to ValueTone.NORMAL
         SettingsSection.BACKUP -> stringResource(R.string.settings_backup_value) to ValueTone.NORMAL
         SettingsSection.OFFLINE_MAPS -> offlineMapsSummary(state) to ValueTone.NORMAL
         SettingsSection.STRAVA -> stravaSummary(state)
@@ -202,11 +205,6 @@ private fun SettingsSection.summary(state: SettingsUiState): Pair<String?, Value
         -> null to ValueTone.NORMAL
     }
 }
-
-@Composable
-private fun unitsSummary(unitSystem: UnitSystem): String = stringResource(
-    if (unitSystem == UnitSystem.METRIC) R.string.settings_units_metric else R.string.settings_units_imperial,
-)
 
 @Composable
 private fun stravaSummary(state: SettingsUiState): Pair<String, ValueTone> = if (state.isStravaConnected) {

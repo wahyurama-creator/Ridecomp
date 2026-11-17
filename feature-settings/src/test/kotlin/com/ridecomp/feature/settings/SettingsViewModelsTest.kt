@@ -1,6 +1,7 @@
 package com.ridecomp.feature.settings
 
 import app.cash.turbine.test
+import com.ridecomp.core.model.AppLanguage
 import com.ridecomp.core.model.GuidePreferences
 import com.ridecomp.core.model.GuideTip
 import com.ridecomp.core.model.RideSettings
@@ -9,6 +10,7 @@ import com.ridecomp.core.model.RiderProfile
 import com.ridecomp.core.model.RidingPosition
 import com.ridecomp.core.model.ScreenMode
 import com.ridecomp.core.model.Surface
+import com.ridecomp.core.source.AppLanguageStore
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeGuideRepository
 import com.ridecomp.core.testing.FakeLocationSource
@@ -17,6 +19,7 @@ import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.usecase.CompleteOnboardingUseCase
 import com.ridecomp.core.usecase.DismissTipUseCase
 import com.ridecomp.core.usecase.EstimateHrMaxUseCase
+import com.ridecomp.core.usecase.GetAppLanguageUseCase
 import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
 import com.ridecomp.core.usecase.ObserveGuideUseCase
 import com.ridecomp.core.usecase.ObserveProfileUseCase
@@ -25,10 +28,13 @@ import com.ridecomp.core.usecase.ProfileField
 import com.ridecomp.core.usecase.ResetTipsUseCase
 import com.ridecomp.core.usecase.SaveProfileUseCase
 import com.ridecomp.core.usecase.SaveRideSettingsUseCase
+import com.ridecomp.core.usecase.SetAppLanguageUseCase
 import com.ridecomp.core.usecase.SetRiderLevelUseCase
 import com.ridecomp.feature.settings.ui.PhoneBrand
 import com.ridecomp.feature.settings.viewmodel.GuideUiEvent
 import com.ridecomp.feature.settings.viewmodel.GuideViewModel
+import com.ridecomp.feature.settings.viewmodel.LanguageEffect
+import com.ridecomp.feature.settings.viewmodel.LanguageViewModel
 import com.ridecomp.feature.settings.viewmodel.OnboardingEffect
 import com.ridecomp.feature.settings.viewmodel.OnboardingStep
 import com.ridecomp.feature.settings.viewmodel.OnboardingUiEvent
@@ -177,7 +183,7 @@ class SettingsViewModelsTest {
             )
 
         viewModel.onEvent(OnboardingUiEvent.Back)
-        assertEquals(OnboardingStep.PERMISSIONS, viewModel.uiState.value)
+        assertEquals(OnboardingStep.LANGUAGE, viewModel.uiState.value)
         repeat(5) { viewModel.onEvent(OnboardingUiEvent.Next) }
         assertEquals(OnboardingStep.READY, viewModel.uiState.value)
 
@@ -196,7 +202,7 @@ class SettingsViewModelsTest {
             ObserveGpsStatusUseCase(FakeLocationSource()),
             SetRiderLevelUseCase(guide),
         )
-        viewModel.onEvent(OnboardingUiEvent.Next)
+        repeat(2) { viewModel.onEvent(OnboardingUiEvent.Next) }
         assertEquals(OnboardingStep.LEVEL, viewModel.uiState.value)
 
         viewModel.onEvent(OnboardingUiEvent.ChooseLevel(RiderLevel.EXPERIENCED))
@@ -230,5 +236,31 @@ class SettingsViewModelsTest {
         assertEquals(PhoneBrand.OPPO, PhoneBrand.of("realme"))
         assertEquals(PhoneBrand.TRANSSION, PhoneBrand.of("INFINIX MOBILITY LIMITED"))
         assertEquals(PhoneBrand.OTHER, PhoneBrand.of("Google"))
+    }
+
+    @Test
+    fun `choosing a language applies it once and asks for a redraw`() = runTest {
+        val store = object : AppLanguageStore {
+            var language = AppLanguage.SYSTEM
+            var sets = 0
+
+            override fun current() = language
+
+            override fun set(language: AppLanguage) {
+                this.language = language
+                sets++
+            }
+        }
+        val viewModel = LanguageViewModel(GetAppLanguageUseCase(store), SetAppLanguageUseCase(store))
+        assertEquals(AppLanguage.SYSTEM, viewModel.uiState.value)
+
+        viewModel.effects.test {
+            viewModel.onEvent(AppLanguage.INDONESIAN)
+            assertEquals(LanguageEffect.Recreate, awaitItem())
+            viewModel.onEvent(AppLanguage.INDONESIAN)
+            expectNoEvents()
+        }
+        assertEquals(AppLanguage.INDONESIAN, store.language)
+        assertEquals(1, store.sets)
     }
 }
