@@ -11,11 +11,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -221,8 +223,11 @@ private fun LazyListScope.discoveredSection(state: SensorsUiState, onPair: (Disc
                 // A strong signal is the likely sensor on your bike: filled button (13-UI-SCREENS #4).
                 style = if (isStrong) BigButtonStyle.PRIMARY else BigButtonStyle.OUTLINE,
                 size = BigButtonSize.TERTIARY,
-                // As wide as its label ("Pasangkan" must not break mid-word), never tiny.
-                modifier = Modifier.widthIn(min = RideCompDimens.actionButtonMinWidth),
+                // As wide as its label ("Pasangkan" must not break mid-word), never tiny. BigButton fills
+                // the width it gets, so the width is fixed to the label's here (device test of TS.1).
+                modifier = Modifier
+                    .widthIn(min = RideCompDimens.actionButtonMinWidth)
+                    .width(IntrinsicSize.Max),
             )
         }
     }
