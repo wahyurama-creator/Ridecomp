@@ -26,7 +26,9 @@
 - **Peta online** (TM.1, D-90): OpenFreeMap saat ada internet, garis/breadcrumb tanpa internet; halaman Peta di semua ride ber-GPS, detail rute, detail aktivitas; Setelan → Peta. Laporan `docs/reports/TM-online-map.md`.
 - **Belum diuji di perangkat:** langkah onboarding Bahasa & Sepedamu dari awal (butuh hapus data app — perlu persetujuan pemilik setiap kali).
 - **Data uji di HP:** rute "Uji peta online" (bisa dihapus), ride "Morning ride" uji.
-- **Berikutnya menurut roadmap:** Fase 6 (iOS) atau ide Fase 7+ — menunggu pilihan pemilik.
+- **Fase 7 selesai** (T7.1–T7.4b, D-91…D-94): pengumuman suara, kembali ke start, komponen sepeda (skema v9), rencana latihan + sesi di ride. Pemeriksaan akhir fase: OSV `security/phase7-osv-scan.txt` (0 temuan di APK; 14 High/Critical hanya tool build), lisensi Apache-2.0/BSD saja (tanpa GPL). Belum: MobSF (tidak terpasang), NVD API key, signing rilis (butuh keputusan pemilik).
+- **Pengujian perangkat** kini didelegasikan ke subagent Sonnet (permintaan pemilik); logika & kode tetap di model utama.
+- **Berikutnya (pemilik):** smart trainer, lalu widget layar utama.
 
 ## Yang perlu ditinjau pemilik
 - D-41: enkripsi backup per segmen di atas AES-GCM.
@@ -34,7 +36,7 @@
 - **Uji lapangan belum dilakukan** (hanya uji perangkat singkat dengan GPS simulasi, lihat atas). GPX uji simulasi: segi-7 r=527 m di pusat loop simulator (−7.7829, 110.3671) dengan tanjakan 6 % di km 1,0–1,9.
 
 ## Konvensi kerja (penting untuk agent berikutnya)
-- Baca `CLAUDE.md` dan `docs/` terlebih dulu. Keputusan tercatat di `docs/reports/DECISIONS.md` (D-01…D-90).
+- Baca `CLAUDE.md` dan `docs/` terlebih dulu. Keputusan tercatat di `docs/reports/DECISIONS.md` (D-01…D-94).
 - Satu branch per task (`feature/<TaskID>-<slug>`), Conventional Commit + ID task, merge `--no-ff` ke `main`.
 - Verifikasi sebelum commit: `./gradlew ktlintCheck detekt lint test koverVerify assembleDebug`.
 - Daemon Gradle memakai JDK 21. Bila dependency berubah: `--write-locks --write-verification-metadata sha256`.
