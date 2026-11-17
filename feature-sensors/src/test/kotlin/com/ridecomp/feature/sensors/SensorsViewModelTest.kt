@@ -64,6 +64,18 @@ class SensorsViewModelTest {
     }
 
     @Test
+    fun `a scan that finds nothing says so, the next scan clears it`() {
+        val viewModel = viewModel()
+
+        viewModel.onEvent(SensorsUiEvent.StartScan)
+        assertTrue(viewModel.uiState.value.hasFoundNothing)
+
+        scanner.results = listOf(hrm)
+        viewModel.onEvent(SensorsUiEvent.StartScan)
+        assertFalse(viewModel.uiState.value.hasFoundNothing)
+    }
+
+    @Test
     fun `missing permission or bluetooth off blocks the scan`() {
         scanner.isPermitted = false
         val viewModel = viewModel()

@@ -3,6 +3,7 @@ package com.ridecomp.feature.ride.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -240,79 +241,103 @@ fun BikeForm(
 ) {
     val error = stringResource(R.string.bike_error_invalid)
     fun errorOf(field: BikeField) = error.takeIf { field in state.invalidFields }
-    Column(
-        modifier = modifier
-            .verticalScroll(rememberScrollState())
-            .padding(
-                start = RideCompDimens.screenPaddingHorizontal,
-                end = RideCompDimens.screenPaddingHorizontal,
-                bottom = RideCompDimens.screenPaddingBottom,
-            ),
-        verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
-    ) {
-        header()
-        RideCompTextField(
-            label = stringResource(R.string.bike_name),
-            value = state.name,
-            onValueChange = { onEvent(BikeEditorUiEvent.NameChanged(it.take(BikeLimits.NAME_MAX_LENGTH))) },
-        )
-        BikeTypeChoice(state, onEvent)
-        Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm)) {
-            RideCompTextField(
-                label = stringResource(R.string.bike_weight),
-                value = state.weightKg,
-                onValueChange = { onEvent(BikeEditorUiEvent.FieldChanged(BikeField.WEIGHT, it)) },
-                suffix = stringResource(R.string.unit_kg),
-                error = errorOf(BikeField.WEIGHT),
-                keyboardType = KeyboardType.Decimal,
-                modifier = Modifier.weight(1f),
-            )
-            RideCompTextField(
-                label = stringResource(R.string.bike_wheel),
-                value = state.wheelCircumferenceMm,
-                onValueChange = { onEvent(BikeEditorUiEvent.FieldChanged(BikeField.WHEEL_CIRCUMFERENCE, it)) },
-                suffix = stringResource(R.string.unit_mm),
-                error = errorOf(BikeField.WHEEL_CIRCUMFERENCE),
-                keyboardType = KeyboardType.Number,
-                modifier = Modifier.weight(1f),
-            )
+    // The save button stays at the bottom: on a small phone it was below the tyre sizes (release test).
+    Column(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(
+                    start = RideCompDimens.screenPaddingHorizontal,
+                    end = RideCompDimens.screenPaddingHorizontal,
+                    bottom = RideCompDimens.blockGap,
+                ),
+            verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
+        ) {
+            BikeFields(state, onEvent, header, onOpenComponent, ::errorOf)
         }
-        ChoiceChips(
-            label = stringResource(R.string.bike_wheel_common),
-            choices = ProfileDefaults.COMMON_WHEELS_MM.map { (label, mm) -> Choice<Int?>(mm, label) }.toImmutableList(),
-            selected = state.wheelCircumferenceMm.trim().toIntOrNull(),
-            onSelect = { mm -> mm?.let { onEvent(BikeEditorUiEvent.WheelPicked(it)) } },
-            horizontalPadding = RideCompDimens.none,
-            columns = WHEEL_COLUMNS,
-        )
         BigButton(
             text = saveLabel,
             onClick = { onEvent(BikeEditorUiEvent.Save) },
             isEnabled = state.isLoaded && !state.isSaving,
             size = BigButtonSize.SECONDARY,
-        )
-        if (onOpenComponent != null && !state.isNew && state.isLoaded) {
-            ComponentsSection(state.components, state.bikeDistanceM, onOpenComponent)
-        }
-        if (state.canDelete) {
-            BigButton(
-                text = stringResource(R.string.bike_delete),
-                onClick = { onEvent(BikeEditorUiEvent.AskDelete) },
-                style = BigButtonStyle.TEXT,
-            )
-        }
-    }
-    if (state.isDeleteAsked) {
-        val name = state.name.ifBlank { stringResource(R.string.bike_default_name) }
-        ConfirmDialog(
-            title = stringResource(R.string.bike_delete_title, name),
-            message = stringResource(R.string.bike_delete_message),
-            confirmLabel = stringResource(R.string.bike_delete),
-            dismissLabel = stringResource(R.string.data_pages_cancel),
-            onConfirm = { onEvent(BikeEditorUiEvent.ConfirmDelete) },
-            onDismiss = { onEvent(BikeEditorUiEvent.DismissDelete) },
+            modifier = Modifier.padding(
+                start = RideCompDimens.screenPaddingHorizontal,
+                end = RideCompDimens.screenPaddingHorizontal,
+                bottom = RideCompDimens.screenPaddingBottom,
+            ),
         )
     }
+    if (state.isDeleteAsked) DeleteBikeDialog(state, onEvent)
+}
+
+/** Name, type, weight, wheel size; then the parts and delete for a saved bike. */
+@Composable
+private fun BikeFields(
+    state: BikeEditorUiState,
+    onEvent: (BikeEditorUiEvent) -> Unit,
+    header: @Composable () -> Unit,
+    onOpenComponent: ((Long?) -> Unit)?,
+    errorOf: (BikeField) -> String?,
+) {
+    header()
+    RideCompTextField(
+        label = stringResource(R.string.bike_name),
+        value = state.name,
+        onValueChange = { onEvent(BikeEditorUiEvent.NameChanged(it.take(BikeLimits.NAME_MAX_LENGTH))) },
+    )
+    BikeTypeChoice(state, onEvent)
+    Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm)) {
+        RideCompTextField(
+            label = stringResource(R.string.bike_weight),
+            value = state.weightKg,
+            onValueChange = { onEvent(BikeEditorUiEvent.FieldChanged(BikeField.WEIGHT, it)) },
+            suffix = stringResource(R.string.unit_kg),
+            error = errorOf(BikeField.WEIGHT),
+            keyboardType = KeyboardType.Decimal,
+            modifier = Modifier.weight(1f),
+        )
+        RideCompTextField(
+            label = stringResource(R.string.bike_wheel),
+            value = state.wheelCircumferenceMm,
+            onValueChange = { onEvent(BikeEditorUiEvent.FieldChanged(BikeField.WHEEL_CIRCUMFERENCE, it)) },
+            suffix = stringResource(R.string.unit_mm),
+            error = errorOf(BikeField.WHEEL_CIRCUMFERENCE),
+            keyboardType = KeyboardType.Number,
+            modifier = Modifier.weight(1f),
+        )
+    }
+    ChoiceChips(
+        label = stringResource(R.string.bike_wheel_common),
+        choices = ProfileDefaults.COMMON_WHEELS_MM.map { (label, mm) -> Choice<Int?>(mm, label) }.toImmutableList(),
+        selected = state.wheelCircumferenceMm.trim().toIntOrNull(),
+        onSelect = { mm -> mm?.let { onEvent(BikeEditorUiEvent.WheelPicked(it)) } },
+        horizontalPadding = RideCompDimens.none,
+        columns = WHEEL_COLUMNS,
+    )
+    if (onOpenComponent != null && !state.isNew && state.isLoaded) {
+        ComponentsSection(state.components, state.bikeDistanceM, onOpenComponent)
+    }
+    if (state.canDelete) {
+        BigButton(
+            text = stringResource(R.string.bike_delete),
+            onClick = { onEvent(BikeEditorUiEvent.AskDelete) },
+            style = BigButtonStyle.TEXT,
+        )
+    }
+}
+
+@Composable
+private fun DeleteBikeDialog(state: BikeEditorUiState, onEvent: (BikeEditorUiEvent) -> Unit) {
+    val name = state.name.ifBlank { stringResource(R.string.bike_default_name) }
+    ConfirmDialog(
+        title = stringResource(R.string.bike_delete_title, name),
+        message = stringResource(R.string.bike_delete_message),
+        confirmLabel = stringResource(R.string.bike_delete),
+        dismissLabel = stringResource(R.string.data_pages_cancel),
+        onConfirm = { onEvent(BikeEditorUiEvent.ConfirmDelete) },
+        onDismiss = { onEvent(BikeEditorUiEvent.DismissDelete) },
+    )
 }
 
 /** The type is an activity profile: it decides data pages, GPS and the FIT sport (D-89). */
