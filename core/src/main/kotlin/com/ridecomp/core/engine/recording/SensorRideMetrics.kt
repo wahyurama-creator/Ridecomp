@@ -14,6 +14,7 @@ import com.ridecomp.core.engine.metrics.Zones
 import com.ridecomp.core.engine.sensors.SensorFusion
 import com.ridecomp.core.engine.sensors.SensorReading
 import com.ridecomp.core.engine.sensors.SensorSnapshot
+import com.ridecomp.core.model.RideSample
 import com.ridecomp.core.model.RideTotals
 import com.ridecomp.core.model.RiderProfile
 import kotlin.math.roundToInt
@@ -67,22 +68,40 @@ public class SensorRideMetrics(private val profile: RiderProfile, private val ag
 
     /** One moving second: aggregates and the per-second estimate. Returns the estimated power (or null). */
     public fun onMovingSecond(snapshot: SensorSnapshot, speedMps: Double?, gradePercent: Double?): Int? {
-        if (snapshot.hasPowerMeter) power.addMovingSecond(snapshot.powerW)
-        heartRate.add(snapshot.heartRateBpm)
-        cadence.add(snapshot.cadenceRpm)
-        snapshot.heartRateBpm?.let { bpm ->
+        val estimate = if (snapshot.hasPowerMeter) null else estimate(snapshot, speedMps, gradePercent)
+        accumulate(snapshot.heartRateBpm, snapshot.cadenceRpm, snapshot.powerW, snapshot.hasPowerMeter, estimate)
+        lastEstimateW = estimate
+        return estimate
+    }
+
+    /**
+     * One stored moving second, replayed after a crash/kill so averages, NP, best efforts and calories
+     * include the part of the ride before it (03-ARCHITECTURE §4.5). A stored power value means a power meter.
+     */
+    public fun restoreSecond(sample: RideSample) {
+        accumulate(
+            sample.heartRateBpm,
+            sample.cadenceRpm,
+            sample.powerW,
+            hasPowerMeter = sample.powerW != null,
+            estimate = sample.estPowerW,
+        )
+    }
+
+    private fun accumulate(heartRateBpm: Int?, cadenceRpm: Int?, powerW: Int?, hasPowerMeter: Boolean, estimate: Int?) {
+        if (hasPowerMeter) power.addMovingSecond(powerW)
+        heartRate.add(heartRateBpm)
+        cadence.add(cadenceRpm)
+        heartRateBpm?.let { bpm ->
             KeytelCalories.kcalPerSecond(bpm, CalorieProfile(profile.weightKg, ageYears, profile.sex))?.let {
                 heartRateKcal += it
                 hasHeartRateCalories = true
             }
         }
-        val estimate = if (snapshot.hasPowerMeter) null else estimate(snapshot, speedMps, gradePercent)
         estimate?.let {
             estimated.add(it)
             estimatedKj += it / CalorieConfig.JOULES_PER_KJ
         }
-        lastEstimateW = estimate
-        return estimate
     }
 
     public fun live(snapshot: SensorSnapshot): LiveSensors = LiveSensors(

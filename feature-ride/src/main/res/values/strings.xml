@@ -301,4 +301,5 @@
     <string name="ride_segment_time">Segment time</string>
     <string name="ride_segment_pr">Segment record</string>
     <string name="ride_segment_remaining">%1$s %2$s to go</string>
+    <string name="ride_lap_done">✓ Lap %1$d · %2$s · %3$s %4$s</string>
 </resources>

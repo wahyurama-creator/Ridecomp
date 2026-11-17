@@ -175,16 +175,25 @@ public class RideRecorder(
         return if (isLongPause) GpsConfig.LOW_POWER_INTERVAL_MS else GpsConfig.INTERVAL_MS
     }
 
-    /** Continues a ride interrupted by a crash/kill from its checkpoint, as [resumeAs] (03-ARCH §4.5). */
+    /**
+     * Continues a ride interrupted by a crash/kill from its checkpoint, as [resumeAs] (03-ARCH §4.5). The
+     * running lap starts where the last saved lap ended ([RecoveredTotals.lapStart]), not at the recovery.
+     */
     public fun restore(startedAtMs: Long, totals: RecoveredTotals, resumeAs: RideStatus, nowMs: Long) {
         this.startedAtMs = startedAtMs
         metrics.restore(totals)
         elevation.restore(totals.ascentM, totals.descentM)
         reminders.restore(totals.movingMs)
-        laps.start(progress(nowMs), startIndex = totals.lapIndex)
+        laps.start(totals.lapStart ?: progress(nowMs), startIndex = totals.lapIndex)
         status = resumeAs
         lastTickMs = nowMs
         pendingEvents += RideEvent(nowMs, RideEventType.GAP)
+    }
+
+    /** After [restore]: one stored second, so sensor totals and the running lap include it. */
+    public fun replay(sample: RideSample, lapStartMs: Long) {
+        sensors.restoreSecond(sample)
+        if (sample.timeMs >= lapStartMs) laps.replaySecond(sample)
     }
 
     /** New GPS fix; returns why it was dropped, if it was (ERR-04). */

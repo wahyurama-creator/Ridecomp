@@ -1,6 +1,8 @@
 package com.ridecomp.core.engine.recording
 
 import com.ridecomp.core.engine.metrics.AltitudeSource
+import com.ridecomp.core.engine.sensors.HeartRateMeasurement
+import com.ridecomp.core.engine.sensors.SensorReading
 import com.ridecomp.core.model.ActivityStatus
 import com.ridecomp.core.model.LocationFix
 import com.ridecomp.core.model.RideEventType
@@ -146,6 +148,29 @@ class RecordingSessionTest {
         assertEquals(checkpoint.totals.distanceM, output.live.distanceM)
         assertEquals(id, restarted.activityId)
         assertTrue(RideEventType.GAP in repository.events[id].orEmpty().map { it.type })
+    }
+
+    @Test
+    fun `a recovered ride keeps the heart rate and the running lap from before the crash`() = runTest {
+        session.start(setup, now)
+        val id = requireNotNull(session.activityId)
+        repeat(12) {
+            second++
+            session.onSensor(SensorReading.HeartRate(HeartRateMeasurement(150, emptyList()), now))
+            session.onLocation(LocationFix(now, -7.0 + second * 8.0 * METER_IN_LAT_DEG, 110.0, 100.0, 5.0, 8.0))
+            session.tick(now)
+        }
+        session.emergencyCheckpoint(now)
+        val checkpoint = requireNotNull(repository.get(id))
+
+        val restarted = RecordingSession(repository, FakeIdGenerator(), FakeRideNameProvider(), logger)
+        restarted.resume(checkpoint, setup, RideStatus.PAUSED, now + 60_000)
+        val live = assertNotNull(restarted.tick(now + 61_000)).live
+
+        // Before the fix both were lost: no average HR, and the lap began at the recovery.
+        assertEquals(150, live.sensors.avgHeartRateBpm)
+        assertEquals(checkpoint.totals.distanceM, assertNotNull(live.lap).distanceM, 0.001)
+        assertEquals(1, live.lap.number)
     }
 
     @Test

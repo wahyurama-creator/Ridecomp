@@ -184,6 +184,7 @@ fun RideScreen(
             return@Column
         }
         RideBanners(live.value, formatter, onAction)
+        LapDoneBanner(live.value, formatter)
         GuidanceBanners(live.value, formatter)
         val screens = remember(pages, route != null) { ridePages(pages, hasRoute = route != null) }
         val pagerState = rememberPagerState { screens.size }
@@ -378,6 +379,34 @@ private fun RouteProfile(route: RouteView, live: State<LiveRide>) {
         modifier = Modifier.padding(horizontal = RideCompDimens.spacingS),
     )
 }
+
+/**
+ * "Lap 1 done · 2:04 · 0.72 km" for the first seconds of the next lap: the LAP button (or an auto lap) gets
+ * a visible answer on every page, not only on the lap page (novice test, D-86).
+ */
+@Composable
+private fun LapDoneBanner(live: LiveRide, formatter: UnitFormatter) {
+    val lap = live.lap?.takeIf { it.elapsedMs <= LAP_BANNER_MS } ?: return
+    val previousMs = lap.previousLapMs
+    val previousM = lap.previousLapDistanceM
+    if (previousMs != null && previousM != null) LapDoneMessage(lap.number - 1, previousMs, previousM, formatter)
+}
+
+@Composable
+private fun LapDoneMessage(number: Int, previousMs: Long, previousM: Double, formatter: UnitFormatter) {
+    AlertBanner(
+        message = stringResource(
+            R.string.ride_lap_done,
+            number,
+            formatter.duration(previousMs),
+            formatter.distance(previousM),
+            formatter.distanceUnit,
+        ),
+        severity = AlertSeverity.OK,
+    )
+}
+
+private const val LAP_BANNER_MS = 4_000L
 
 /** Off route, turn and climb (route) and live segment banners. */
 @Composable

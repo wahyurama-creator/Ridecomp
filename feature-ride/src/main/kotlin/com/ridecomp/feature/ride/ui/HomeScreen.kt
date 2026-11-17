@@ -148,7 +148,8 @@ fun HomeScreen(
                 size = BigButtonSize.HERO,
                 iconRes = UiR.drawable.ic_play,
             )
-        } else {
+        } else if (state.recoverable == null) {
+            // With an unsaved ride waiting, its card decides first: no second ride to start by mistake.
             BigButton(
                 text = stringResource(R.string.ride_start_button),
                 onClick = { onEvent(HomeUiEvent.StartRide) },
@@ -211,13 +212,13 @@ private fun RecoveryCard(ride: Activity, format: UnitFormatter, onEvent: (HomeUi
             style = RideCompTheme.typography.body,
             color = RideCompTheme.colors.textTertiary,
         )
+        // Resume is what most riders want: full width; three buttons in a row cut the labels (novice test).
+        BigButton(
+            text = stringResource(R.string.ride_recovery_resume),
+            onClick = { onEvent(HomeUiEvent.Recover(RecoveryChoice.RESUME)) },
+            style = BigButtonStyle.WARN,
+        )
         Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS)) {
-            BigButton(
-                text = stringResource(R.string.ride_recovery_resume),
-                onClick = { onEvent(HomeUiEvent.Recover(RecoveryChoice.RESUME)) },
-                style = BigButtonStyle.WARN,
-                modifier = Modifier.weight(1f),
-            )
             BigButton(
                 text = stringResource(R.string.ride_recovery_save),
                 onClick = { onEvent(HomeUiEvent.Recover(RecoveryChoice.SAVE)) },

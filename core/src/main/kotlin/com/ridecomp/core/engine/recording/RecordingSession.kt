@@ -1,5 +1,6 @@
 package com.ridecomp.core.engine.recording
 
+import com.ridecomp.core.config.ActivityConfig
 import com.ridecomp.core.config.Units
 import com.ridecomp.core.engine.metrics.AltitudeSource
 import com.ridecomp.core.engine.route.RouteClimb
@@ -94,6 +95,14 @@ public class RecordingSession(
     public suspend fun resume(activity: Activity, setup: RideSetup, resumeAs: RideStatus, nowMs: Long) {
         val restored = setup.newRecorder()
         val totals = activity.totals
+        val laps = repository.getLaps(activity.id)
+        // The running lap began where the saved laps end (their sums), or at the ride start.
+        val lapStart = RideProgress(
+            timeMs = laps.lastOrNull()?.endTimeMs ?: activity.startedAtMs,
+            distanceM = laps.sumOf { it.distanceM },
+            movingMs = laps.sumOf { it.movingS } * Units.MS_PER_SECOND,
+            ascentM = laps.sumOf { it.ascentM },
+        )
         restored.restore(
             startedAtMs = activity.startedAtMs,
             totals = RecoveredTotals(
@@ -102,13 +111,27 @@ public class RecordingSession(
                 maxSpeedMps = totals.maxSpeedMps,
                 ascentM = totals.ascentM,
                 descentM = totals.descentM,
-                lapIndex = repository.getLaps(activity.id).size,
+                lapIndex = laps.size,
+                lapStart = lapStart,
             ),
             resumeAs = resumeAs,
             nowMs = nowMs,
         )
+        replayStoredSeconds(activity.id, restored, lapStart.timeMs)
         recorder = restored
         activityId = activity.id
+    }
+
+    /** Feeds the stored seconds back page by page (bounded memory, MEM-01): sensor totals and the lap. */
+    private suspend fun replayStoredSeconds(activityId: Long, recorder: RideRecorder, lapStartMs: Long) {
+        var afterMs = Long.MIN_VALUE
+        var hasMore = true
+        while (hasMore) {
+            val page = repository.getSamples(activityId, afterMs, ActivityConfig.TRACK_CHUNK_SIZE)
+            page.forEach { recorder.replay(it, lapStartMs) }
+            afterMs = page.lastOrNull()?.timeMs ?: afterMs
+            hasMore = page.size == ActivityConfig.TRACK_CHUNK_SIZE
+        }
     }
 
     public fun onLocation(fix: LocationFix) {

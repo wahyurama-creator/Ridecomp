@@ -21,10 +21,12 @@ import java.util.concurrent.Executors
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import leakcanary.LeakCanary
 import org.koin.android.ext.koin.androidContext
 import org.koin.compose.koinInject
 import org.koin.core.module.Module
 import org.koin.dsl.module
+import shark.AndroidReferenceMatchers
 
 /**
  * Debug-only diagnostics and developer tools. This file exists only in the `debug` source set, so nothing
@@ -50,7 +52,20 @@ object DevTools {
                 .penaltyLog()
                 .build(),
         )
+        // RULE-EXCEPTION: OEM framework leak, not app code. realme/OPPO ColorOS adds a static
+        // android.gesture.UniGestureDetector that keeps the last destroyed window's context (seen on the
+        // realme RMX3830, Android 15). It is reported as a library leak so app leaks stay visible (D-87).
+        LeakCanary.config = LeakCanary.config.copy(
+            referenceMatchers = AndroidReferenceMatchers.appDefaults + AndroidReferenceMatchers.staticFieldLeak(
+                className = OEM_GESTURE_DETECTOR,
+                fieldName = OEM_GESTURE_DETECTOR_FIELD,
+                description = "ColorOS keeps the last window context in a static gesture detector",
+            ),
+        )
     }
+
+    private const val OEM_GESTURE_DETECTOR = "android.gesture.UniGestureDetector"
+    private const val OEM_GESTURE_DETECTOR_FIELD = "mUniGestureDetector"
 
     /** Replaces the location source with the switchable real/simulated one. */
     val koinOverrides: List<Module> = listOf(
