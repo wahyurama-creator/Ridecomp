@@ -2,4 +2,10 @@
 <resources>
     <!-- Token `bg` from 02-DESIGN §4.1. Used only for the window before Compose draws. -->
     <color name="window_background">#FF000000</color>
+    <!-- Home screen widget (T9.2): tokens of 02-DESIGN §4.1 (RemoteViews cannot read the Compose theme). -->
+    <color name="widget_background">#FF121212</color>
+    <color name="widget_text">#FFFFFFFF</color>
+    <color name="widget_text_secondary">#FFB3B3B3</color>
+    <color name="widget_accent">#FFFC6A1E</color>
+    <color name="widget_on_accent">#FF000000</color>
 </resources>

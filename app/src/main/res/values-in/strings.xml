@@ -5,4 +5,17 @@
     <string name="nav_routes">Rute</string>
     <string name="nav_sensors">Sensor</string>
     <string name="nav_settings">Setelan</string>
+
+    <!-- Widget layar utama (T9.2) -->
+    <string name="widget_description">Latihan hari ini, minggu ini, dan tombol mulai</string>
+    <string name="widget_no_plan">Siap gowes?</string>
+    <string name="widget_today">Hari ini: %1$s · %2$d mnt</string>
+    <string name="widget_rest_day">Hari ini istirahat</string>
+    <string name="widget_plan_done">%1$s selesai. Mantap!</string>
+    <string name="widget_riding">● Ride berjalan · %1$s %2$s · %3$s</string>
+    <plurals name="widget_week">
+        <item quantity="other">Minggu ini: %1$d ride · %2$s %3$s</item>
+    </plurals>
+    <string name="widget_start_ride">MULAI RIDE</string>
+    <string name="widget_open_ride">BUKA RIDE</string>
 </resources>

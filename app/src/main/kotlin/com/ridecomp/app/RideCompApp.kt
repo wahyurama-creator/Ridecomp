@@ -17,6 +17,7 @@ import androidx.navigation.compose.rememberNavController
 import com.ridecomp.app.navigation.AppRoutes
 import com.ridecomp.app.navigation.IncomingGpx
 import com.ridecomp.app.navigation.IncomingStravaAuth
+import com.ridecomp.app.navigation.IncomingWidget
 import com.ridecomp.app.navigation.RideCompNavHost
 import com.ridecomp.app.navigation.TopLevelDestination
 import com.ridecomp.app.navigation.navigateToTopLevel
@@ -48,6 +49,18 @@ fun RideCompApp(modifier: Modifier = Modifier, viewModel: AppViewModel = koinVie
     // Back from Strava's authorize page: the Strava screen finishes the connection.
     LaunchedEffect(stravaRedirect, done) {
         if (stravaRedirect != null && done) navController.navigate(AppRoutes.STRAVA) { launchSingleTop = true }
+    }
+    val widgetTarget by IncomingWidget.target.collectAsStateWithLifecycle()
+    // The widget button: the pre-ride check, or the ride already running (T9.2).
+    LaunchedEffect(widgetTarget, done) {
+        val target = widgetTarget ?: return@LaunchedEffect
+        if (!done) return@LaunchedEffect
+        val destination = when (target) {
+            IncomingWidget.Target.PRE_RIDE -> AppRoutes.preRide()
+            IncomingWidget.Target.RIDE -> AppRoutes.RIDE
+        }
+        navController.navigate(destination) { launchSingleTop = true }
+        IncomingWidget.consumed()
     }
     Scaffold(
         modifier = modifier,

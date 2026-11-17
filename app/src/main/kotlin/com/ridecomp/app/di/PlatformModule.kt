@@ -1,6 +1,8 @@
 package com.ridecomp.app.di
 
+import android.content.Context
 import com.ridecomp.app.BuildConfig
+import com.ridecomp.app.widget.RideCompWidget
 import com.ridecomp.core.engine.backup.BackupManifestCodec
 import com.ridecomp.core.engine.recording.RecordingSession
 import com.ridecomp.core.engine.safety.IncidentManager
@@ -63,6 +65,7 @@ import com.ridecomp.platform.safety.AndroidSafetyMessages
 import com.ridecomp.platform.safety.AndroidSmsGateway
 import com.ridecomp.platform.service.RecordingDependencies
 import com.ridecomp.platform.service.RideStateHolder
+import com.ridecomp.platform.service.RideWidget
 import com.ridecomp.platform.service.ServiceRideController
 import com.ridecomp.platform.strava.AndroidStravaAccountStore
 import com.ridecomp.platform.strava.HttpStravaApi
@@ -130,6 +133,7 @@ class KoinRecordingDependencies(private val koin: Koin) : RecordingDependencies 
     override val getSelectedBike get() = koin.get<GetSelectedBikeUseCase>()
     override val rideSession get() = koin.get<RideSessionUseCase>()
     override val trainerControl get() = koin.get<TrainerControl>()
+    override val rideWidget get() = RideWidget { RideCompWidget.refresh(koin.get<Context>()) }
     override val incidentManager get() = koin.get<IncidentManager>()
     override val accelerometerSource get() = koin.get<AccelerometerSource>()
     override val routeRepository get() = koin.get<RouteRepository>()

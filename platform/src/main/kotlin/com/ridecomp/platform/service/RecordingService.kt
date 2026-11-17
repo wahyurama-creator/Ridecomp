@@ -79,6 +79,7 @@ class RecordingService : LifecycleService() {
     private var formatter = UnitFormatter(UnitSystem.METRIC)
     private var lastBatteryReadMs: Long? = null
     private var isGpsEnabled = true
+    private val widget by lazy { ThrottledRideWidget(deps.rideWidget, deps.clock) }
 
     /** Voice announcements (T7.1) and the planned-session coach (T7.4b). */
     private val voiceCoach by lazy { RideVoiceCoach(this, deps.logger, deps.alertPlayer) }
@@ -325,6 +326,7 @@ class RecordingService : LifecycleService() {
         val live = output.live.copy(incident = deps.incidentManager.state.value, target = voiceCoach.target)
         deps.stateHolder.publish(live, session?.activityId)
         notification.update(live, formatter)
+        widget.onRideUpdate()
     }
 
     private fun enterForeground(live: LiveRide) {
@@ -358,6 +360,7 @@ class RecordingService : LifecycleService() {
     private fun stopRide() {
         stopPipeline()
         deps.stateHolder.reset()
+        widget.now()
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
