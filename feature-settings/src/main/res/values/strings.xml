@@ -312,13 +312,10 @@
     <string name="strava_connect_subtitle">Upload rides automatically</string>
     <string name="strava_back">Back</string>
     <string name="strava_ok">OK</string>
-    <string name="strava_setup_title">Connect your Strava account</string>
-    <string name="strava_setup_intro">Link your Strava account once: rides then go to Strava with one tap, or by themselves after each ride.</string>
-    <string name="strava_connect_hint">Strava opens. Keep \"Upload your activities\" ticked and tap Authorize: you come back here automatically. RideComp only uploads rides; it cannot see your other Strava data.</string>
+    <string name="strava_connect_hint">Strava opens. Keep \"Upload your activities\" ticked and tap Authorize.</string>
     <string name="strava_connect">Connect with Strava</string>
     <string name="strava_connected">Connected to Strava</string>
-    <string name="strava_connected_as">Connected as %1$s</string>
-    <string name="strava_connected_hint">Rides can now be uploaded from their detail page.</string>
+    <string name="strava_connected_hint">Rides already on Strava stay there if you disconnect. You can also remove RideComp at strava.com/settings/apps.</string>
     <string name="strava_message_connected">Connected. You can now upload rides to Strava.</string>
     <string name="strava_message_denied">Strava was not connected (cancelled).</string>
     <string name="strava_message_scope">\"Upload your activities\" must stay ticked. Tap Connect again.</string>
@@ -337,4 +334,12 @@
     <string name="strava_message_disconnected_locally">Disconnected on this phone. No internet to tell Strava: remove RideComp at strava.com/settings/apps to be sure.</string>
     <string name="strava_unavailable">Strava upload is not available in this version of RideComp. You can still send the FIT file to Strava from a ride\'s detail page.</string>
     <string name="strava_cancel">Cancel</string>
+    <string name="strava_hero_title">Send your rides to Strava</string>
+    <string name="strava_hero_text">Link your Strava account once. No more exporting files.</string>
+    <string name="strava_benefit_tap_title">One tap per ride</string>
+    <string name="strava_benefit_tap_text">\"Upload to Strava\" on the ride\'s page</string>
+    <string name="strava_benefit_auto_title">Or fully automatic</string>
+    <string name="strava_benefit_auto_text">Turn it on and every saved ride goes by itself</string>
+    <string name="strava_benefit_private_title">Upload permission only</string>
+    <string name="strava_benefit_private_text">RideComp cannot see your other Strava data</string>
 </resources>

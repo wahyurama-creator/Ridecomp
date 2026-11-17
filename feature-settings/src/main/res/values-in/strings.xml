@@ -299,13 +299,10 @@
     <string name="strava_connect_subtitle">Upload ride otomatis</string>
     <string name="strava_back">Kembali</string>
     <string name="strava_ok">OK</string>
-    <string name="strava_setup_title">Hubungkan akun Strava</string>
-    <string name="strava_setup_intro">Tautkan akun Strava sekali saja: setelah itu ride terkirim ke Strava dengan satu ketukan, atau otomatis setiap selesai ride.</string>
-    <string name="strava_connect_hint">Strava akan terbuka. Biarkan \"Upload your activities\" tercentang lalu ketuk Authorize: Anda otomatis kembali ke sini. RideComp hanya meng-upload ride; data Strava Anda yang lain tidak bisa dilihat.</string>
+    <string name="strava_connect_hint">Strava akan terbuka. Biarkan \"Upload your activities\" tercentang lalu ketuk Authorize.</string>
     <string name="strava_connect">Hubungkan dengan Strava</string>
     <string name="strava_connected">Terhubung ke Strava</string>
-    <string name="strava_connected_as">Terhubung sebagai %1$s</string>
-    <string name="strava_connected_hint">Ride kini bisa di-upload dari halaman detailnya.</string>
+    <string name="strava_connected_hint">Ride yang sudah di Strava tetap ada jika Anda memutus koneksi. Akses RideComp juga bisa dicabut di strava.com/settings/apps.</string>
     <string name="strava_message_connected">Terhubung. Ride kini bisa di-upload ke Strava.</string>
     <string name="strava_message_denied">Strava tidak jadi dihubungkan (dibatalkan).</string>
     <string name="strava_message_scope">\"Upload your activities\" harus tetap tercentang. Ketuk Hubungkan lagi.</string>
@@ -324,4 +321,12 @@
     <string name="strava_message_disconnected_locally">Terputus di HP ini. Tidak ada internet untuk memberi tahu Strava: hapus RideComp di strava.com/settings/apps agar pasti.</string>
     <string name="strava_unavailable">Upload ke Strava belum tersedia di versi RideComp ini. Anda tetap bisa mengirim file FIT ke Strava dari halaman detail ride.</string>
     <string name="strava_cancel">Batal</string>
+    <string name="strava_hero_title">Kirim ride ke Strava</string>
+    <string name="strava_hero_text">Tautkan akun Strava sekali saja. Tidak perlu lagi ekspor file.</string>
+    <string name="strava_benefit_tap_title">Satu ketukan per ride</string>
+    <string name="strava_benefit_tap_text">\"Upload ke Strava\" di halaman ride</string>
+    <string name="strava_benefit_auto_title">Atau otomatis</string>
+    <string name="strava_benefit_auto_text">Aktifkan, lalu setiap ride yang disimpan terkirim sendiri</string>
+    <string name="strava_benefit_private_title">Hanya izin upload</string>
+    <string name="strava_benefit_private_text">RideComp tidak bisa melihat data Strava Anda yang lain</string>
 </resources>
