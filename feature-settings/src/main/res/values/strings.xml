@@ -264,9 +264,9 @@
     <string name="guide_sensors_title">Connecting sensors</string>
     <string name="guide_sensors_summary">Heart rate, cadence, speed and power.</string>
     <string name="guide_sensors_body" formatted="false">Bluetooth sensors add data the phone cannot measure: heart rate (chest strap/armband), cadence (pedal turns), wheel speed and power meters.\n1. Wake the sensor (wear the HR strap, turn the pedals or wheel).\n2. Open the Sensors tab; the search starts by itself (tap Scan again if needed).\n3. Tap the sensor that appears to pair it. Only once.\n4. On your next ride the sensor connects by itself. The HR/CAD/PWR marks at the top of the ride screen turn green when connected.\nA sensor drops out mid-ride? Recording continues and RideComp keeps trying to reconnect.</string>
-    <string name="guide_export_strava_title">Export FIT &amp; upload to Strava</string>
-    <string name="guide_export_strava_summary">Send a ride to Strava or another app.</string>
-    <string name="guide_export_strava_body" formatted="false">FIT is the standard ride file read by Strava, Garmin Connect, TrainingPeaks and others.\n1. Open the ride in History.\n2. Tap Share → choose Strava (or Drive/WhatsApp). Or tap Export FIT to keep it in Downloads.\n3. On Strava\'s website: Upload activity → File → pick the .fit file.\nEstimated power is never written to the FIT file, so your power data stays honest.</string>
+    <string name="guide_export_strava_title">Upload to Strava &amp; export</string>
+    <string name="guide_export_strava_summary">Rides to Strava in one tap, or as a file to other apps.</string>
+    <string name="guide_export_strava_body" formatted="false">Fastest: link Strava once in Settings → Strava (tap Connect with Strava, then Authorize). Then:\n1. Open the ride in History.\n2. Tap Upload to Strava. When it says View on Strava, the ride is there.\nTurn on Upload rides automatically and every saved ride goes by itself.\nOther apps (Garmin Connect, TrainingPeaks, Komoot): tap Send FIT file or Send GPX file. Not sure which? Tap What are FIT and GPX? on the ride page.\nEstimated power is never written to the FIT file, so your power data stays honest.</string>
     <string name="guide_backup_title">Backup &amp; changing phones</string>
     <string name="guide_backup_summary">Keep your ride history safe.</string>
     <string name="guide_backup_body" formatted="false">All RideComp data lives on this phone only. Back up regularly so nothing is lost if the phone breaks or you change phones.\n1. Settings → Backup &amp; export data → Create backup.\n2. Choose where to save it, for example Google Drive. Turn on a password so others cannot read the file.\n3. On the new phone: install RideComp → Settings → Backup &amp; export data → Choose backup file → password.\nEmergency contacts are not in the backup for privacy; add them again after restoring.</string>
@@ -304,7 +304,7 @@
     <string name="guide_tip_first_ride">Tap START RIDE. The ride keeps recording with the screen off; pause and save when you finish.</string>
     <string name="guide_tip_routes">A GPX file is a route line made in Strava, Komoot or similar. Import it here and RideComp guides you along it.</string>
     <string name="guide_tip_sensors">Heart-rate, cadence, speed and power sensors connect over Bluetooth. Wake the sensor, then tap it in the list to pair once.</string>
-    <string name="guide_tip_export">To put this ride on Strava, tap Share and choose Strava, or Export FIT and upload it on strava.com.</string>
+    <string name="guide_tip_export">Tap Upload to Strava below; link your account once in Settings → Strava. For other apps, send the FIT file.</string>
     <string name="guide_tip_backup">Your rides live only on this phone. Make a backup to Google Drive now and then so you never lose them.</string>
     <string name="guide_tip_offline_maps">Maps work without internet from region files (.pmtiles) you make on a computer and import here.</string>
     <string name="settings_strava">Strava</string>

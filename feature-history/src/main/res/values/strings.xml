@@ -26,7 +26,7 @@
     <string name="detail_chart_power">POWER</string>
     <string name="detail_laps">Laps</string>
     <string name="detail_lap_row">Lap %1$d</string>
-    <string name="detail_strava_help">How to upload to Strava</string>
+    <string name="detail_strava_help">Upload manually on strava.com</string>
     <string name="detail_delete">Delete activity</string>
     <string name="detail_delete_title">Delete this ride?</string>
     <string name="detail_delete_message">The ride and its exported files will be deleted permanently.</string>
@@ -88,7 +88,7 @@
     <string name="detail_save_fit_subtitle">Keep a copy on this phone</string>
     <string name="detail_send_gpx_title">Send GPX file</string>
     <string name="detail_send_gpx_subtitle">For Komoot or map apps</string>
-    <string name="detail_strava_help_subtitle">Step by step</string>
+    <string name="detail_strava_help_subtitle">Without linking your account</string>
     <string name="detail_create_segment_subtitle">Pick a part of this ride on the chart</string>
     <string name="detail_formats_title">What are FIT and GPX?</string>
     <string name="detail_formats_subtitle">Which file to pick</string>
