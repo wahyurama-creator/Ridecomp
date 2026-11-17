@@ -2,14 +2,25 @@ package com.ridecomp.feature.ride
 
 import app.cash.turbine.test
 import com.ridecomp.core.model.Bike
+import com.ridecomp.core.model.BikeComponent
+import com.ridecomp.core.model.ComponentType
 import com.ridecomp.core.testing.FakeActivityProfileRepository
+import com.ridecomp.core.testing.FakeBikeComponentRepository
 import com.ridecomp.core.testing.FakeBikeRepository
+import com.ridecomp.core.testing.FakeBikeRide
+import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.usecase.BikeField
 import com.ridecomp.core.usecase.DeleteBikeUseCase
+import com.ridecomp.core.usecase.DeleteComponentUseCase
 import com.ridecomp.core.usecase.GetBikeUseCase
+import com.ridecomp.core.usecase.GetComponentUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveBikeChoiceUseCase
+import com.ridecomp.core.usecase.ObserveBikeDistanceUseCase
+import com.ridecomp.core.usecase.ObserveComponentWearUseCase
+import com.ridecomp.core.usecase.ReplaceComponentUseCase
 import com.ridecomp.core.usecase.SaveBikeUseCase
+import com.ridecomp.core.usecase.SaveComponentUseCase
 import com.ridecomp.core.usecase.SelectBikeUseCase
 import com.ridecomp.feature.ride.viewmodel.BikeEditorEffect
 import com.ridecomp.feature.ride.viewmodel.BikeEditorUiEvent
@@ -18,6 +29,11 @@ import com.ridecomp.feature.ride.viewmodel.BikeEditorViewModel
 import com.ridecomp.feature.ride.viewmodel.BikeTarget
 import com.ridecomp.feature.ride.viewmodel.BikesUiEvent
 import com.ridecomp.feature.ride.viewmodel.BikesViewModel
+import com.ridecomp.feature.ride.viewmodel.ComponentEditorEffect
+import com.ridecomp.feature.ride.viewmodel.ComponentEditorUiEvent
+import com.ridecomp.feature.ride.viewmodel.ComponentEditorUseCases
+import com.ridecomp.feature.ride.viewmodel.ComponentEditorViewModel
+import com.ridecomp.feature.ride.viewmodel.ComponentTarget
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -36,6 +52,8 @@ import kotlinx.coroutines.test.setMain
 class BikeViewModelsTest {
     private val bikes = FakeBikeRepository()
     private val profiles = FakeActivityProfileRepository()
+    private val components = FakeBikeComponentRepository()
+    private val clock = FakeClock(CLOCK_START_MS)
 
     @BeforeTest
     fun setUp() {
@@ -55,18 +73,20 @@ class BikeViewModelsTest {
             ObserveActivityProfilesUseCase(profiles),
             SaveBikeUseCase(bikes),
             DeleteBikeUseCase(bikes),
+            ObserveComponentWearUseCase(components),
+            ObserveBikeDistanceUseCase(components),
         ),
     )
 
     @Test
     fun `the list marks the bike for the next ride and can switch it`() = runTest {
         bikes.save(Bike(name = "MTB", profileId = MTB_ID))
-        val viewModel =
-            BikesViewModel(
-                ObserveBikeChoiceUseCase(bikes),
-                ObserveActivityProfilesUseCase(profiles),
-                SelectBikeUseCase(bikes),
-            )
+        val viewModel = BikesViewModel(
+            ObserveBikeChoiceUseCase(bikes),
+            ObserveActivityProfilesUseCase(profiles),
+            SelectBikeUseCase(bikes),
+            ObserveComponentWearUseCase(components),
+        )
 
         assertEquals(2, viewModel.uiState.value.bikes.size)
         assertEquals(1L, viewModel.uiState.value.selectedId)
@@ -137,9 +157,67 @@ class BikeViewModelsTest {
         assertEquals(listOf(1L), bikes.observeAll().first().map { it.id })
     }
 
+    private fun componentEditor(target: ComponentTarget) = ComponentEditorViewModel(
+        target,
+        ComponentEditorUseCases(
+            GetComponentUseCase(components),
+            ObserveComponentWearUseCase(components),
+            SaveComponentUseCase(components),
+            ReplaceComponentUseCase(components, clock),
+            DeleteComponentUseCase(components),
+        ),
+        clock,
+    )
+
+    @Test
+    fun `a new part takes its type's limit, km typed with a comma, and shows as due on the bike`() = runTest {
+        val editor = componentEditor(ComponentTarget(bikeId = 1))
+        assertEquals("3000", editor.uiState.value.limitKm)
+
+        editor.onEvent(ComponentEditorUiEvent.TypePicked(ComponentType.BRAKE_PADS))
+        assertEquals("2000", editor.uiState.value.limitKm)
+        editor.onEvent(ComponentEditorUiEvent.InitialChanged("1999,5"))
+        editor.effects.test {
+            editor.onEvent(ComponentEditorUiEvent.Save)
+            assertEquals(ComponentEditorEffect.Done, awaitItem())
+        }
+        components.rides.value = listOf(FakeBikeRide(bikeId = 1, startedAtMs = clock.nowMs(), distanceM = 1_000.0))
+
+        val bike = editor(BikeTarget.Existing(1))
+        val part = bike.uiState.value.components.single()
+        assertEquals(ComponentType.BRAKE_PADS, part.component.type)
+        assertEquals(2_000_500.0, part.distanceM)
+        assertTrue(part.isDue)
+        assertEquals(1_000.0, bike.uiState.value.bikeDistanceM)
+    }
+
+    @Test
+    fun `a part can be marked replaced and deleted`() = runTest {
+        val id = components.save(
+            BikeComponent(bikeId = 1, type = ComponentType.CHAIN, installedAtMs = 0, initialDistanceM = 3_500_000.0),
+        )
+        val editor = componentEditor(ComponentTarget(bikeId = 1, componentId = id))
+        assertFalse(editor.uiState.value.isNew)
+        assertEquals(3_500_000.0, editor.uiState.value.distanceM)
+
+        editor.effects.test {
+            editor.onEvent(ComponentEditorUiEvent.Replaced)
+            assertEquals(ComponentEditorEffect.Done, awaitItem())
+        }
+        assertEquals(0.0, components.get(id)?.initialDistanceM)
+
+        editor.onEvent(ComponentEditorUiEvent.AskDelete)
+        editor.effects.test {
+            editor.onEvent(ComponentEditorUiEvent.ConfirmDelete)
+            assertEquals(ComponentEditorEffect.Done, awaitItem())
+        }
+        assertEquals(null, components.get(id))
+    }
+
     private companion object {
         const val ROAD_ID = 1L
         const val MTB_ID = 3L
         const val MTB_WHEEL_MM = 2_273
+        const val CLOCK_START_MS = 1_000L
     }
 }

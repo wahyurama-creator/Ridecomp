@@ -18,6 +18,8 @@ public data class NewActivity(
     val profileId: Long? = null,
     /** Route followed during the ride (T3.6). */
     val routeId: Long? = null,
+    /** Bike ridden (T7.3): its parts count this ride's distance. */
+    val bikeId: Long? = null,
 )
 
 /** Rides and their track, events and laps (05-DATA-MODEL §1). Implemented in :data (ARCH-03). */

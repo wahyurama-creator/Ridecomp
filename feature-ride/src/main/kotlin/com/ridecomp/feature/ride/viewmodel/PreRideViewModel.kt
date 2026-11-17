@@ -7,11 +7,13 @@ import com.ridecomp.core.engine.route.Route
 import com.ridecomp.core.engine.sensors.SavedSensor
 import com.ridecomp.core.model.ActivityProfile
 import com.ridecomp.core.model.Bike
+import com.ridecomp.core.model.ComponentWear
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.ScreenMode
 import com.ridecomp.core.usecase.BikeChoice
 import com.ridecomp.core.usecase.GpsStatus
 import com.ridecomp.core.usecase.ObserveBikeChoiceUseCase
+import com.ridecomp.core.usecase.ObserveComponentWearUseCase
 import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
 import com.ridecomp.core.usecase.ObserveProfileChoiceUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
@@ -44,6 +46,8 @@ data class PreRideUiState(
     /** Saved bikes (D-89); the picked one decides the activity profile. */
     val bikes: ImmutableList<Bike> = persistentListOf(),
     val bike: Bike? = null,
+    /** Parts of the picked bike that reached their limit (T7.3). */
+    val dueComponents: ImmutableList<ComponentWear> = persistentListOf(),
     val profiles: ImmutableList<ActivityProfile> = persistentListOf(),
     /** The activity profile of the picked bike. */
     val selected: ActivityProfile? = null,
@@ -91,6 +95,7 @@ data class PreRideBikeUseCases(
     val observeBikes: ObserveBikeChoiceUseCase,
     val selectBike: SelectBikeUseCase,
     val observeProfiles: ObserveProfileChoiceUseCase,
+    val observeWear: ObserveComponentWearUseCase,
 )
 
 /** Sensors and the screen mode setting shown on the pre-ride check. */
@@ -136,6 +141,11 @@ class PreRideViewModel(routeId: Long?, private val useCases: PreRideUseCases) :
                     )
                 }
             }
+        }
+        viewModelScope.launch {
+            combine(choice, useCases.bikes.observeWear.due()) { current, due ->
+                due.filter { it.component.bikeId == current.bikes.selected?.id }
+            }.collect { due -> updateState { copy(dueComponents = due.toImmutableList()) } }
         }
         viewModelScope.launch {
             useCases.options.observeSensors().collect { updateState { copy(sensors = it.toImmutableList()) } }

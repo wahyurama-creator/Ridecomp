@@ -16,6 +16,7 @@ import com.ridecomp.data.db.DbNames
         Index(value = ["uuid"], unique = true),
         Index(value = ["status"]),
         Index(value = ["started_at"]),
+        Index(value = ["bike_id"]),
     ],
 )
 data class ActivityEntity(
@@ -51,4 +52,6 @@ data class ActivityEntity(
     @ColumnInfo(name = "last_checkpoint_at") val lastCheckpointAt: Long,
     /** Post-ride analysis done up to this version (v6, D-67); 0 = never analyzed. */
     @ColumnInfo(name = "analysis_version", defaultValue = "0") val analysisVersion: Int = 0,
+    /** Bike ridden (v9, T7.3); no foreign key: deleting a bike keeps its rides. */
+    @ColumnInfo(name = "bike_id") val bikeId: Long? = null,
 )

@@ -4,7 +4,9 @@ import com.ridecomp.core.model.Activity
 import com.ridecomp.core.model.ActivityProfile
 import com.ridecomp.core.model.ActivityStatus
 import com.ridecomp.core.model.Bike
+import com.ridecomp.core.model.BikeComponent
 import com.ridecomp.core.model.BuiltInProfiles
+import com.ridecomp.core.model.ComponentWear
 import com.ridecomp.core.model.DataPagesLayout
 import com.ridecomp.core.model.Lap
 import com.ridecomp.core.model.PeriodTotals
@@ -16,6 +18,7 @@ import com.ridecomp.core.model.RiderProfile
 import com.ridecomp.core.repository.ActivityAnalysisRepository
 import com.ridecomp.core.repository.ActivityProfileRepository
 import com.ridecomp.core.repository.ActivityRepository
+import com.ridecomp.core.repository.BikeComponentRepository
 import com.ridecomp.core.repository.BikeRepository
 import com.ridecomp.core.repository.NewActivity
 import com.ridecomp.core.repository.PendingAnalysis
@@ -25,6 +28,7 @@ import com.ridecomp.core.source.IdGenerator
 import com.ridecomp.core.source.RideNameProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 
 /** In-memory [ActivityRepository]. Set [isFailing] to simulate a broken database (STB-08). */
@@ -284,4 +288,36 @@ public class FakeBikeRepository(seed: List<Bike> = listOf(Bike(id = 1, profileId
     override suspend fun setLastUsedId(id: Long) {
         lastUsed.value = id
     }
+}
+
+/** A finished ride as the component wear sees it. */
+public data class FakeBikeRide(val bikeId: Long, val startedAtMs: Long, val distanceM: Double)
+
+/** In-memory parts; wear is summed from [rides] like the SQL query (finished rides since fitted). */
+public class FakeBikeComponentRepository : BikeComponentRepository {
+    private val components = MutableStateFlow<List<BikeComponent>>(emptyList())
+    public val rides: MutableStateFlow<List<FakeBikeRide>> = MutableStateFlow(emptyList())
+
+    override fun observeWear(): Flow<List<ComponentWear>> = combine(components, rides) { parts, done ->
+        parts.sortedBy { it.id }.map { part ->
+            val ridden = done.filter { it.bikeId == part.bikeId && it.startedAtMs >= part.installedAtMs }
+                .sumOf { it.distanceM }
+            ComponentWear(part, part.initialDistanceM + ridden)
+        }
+    }
+
+    override suspend fun get(id: Long): BikeComponent? = components.value.firstOrNull { it.id == id }
+
+    override suspend fun save(component: BikeComponent): Long {
+        val id = if (component.id == 0L) (components.value.maxOfOrNull { it.id } ?: 0L) + 1 else component.id
+        components.value = components.value.filterNot { it.id == id } + component.copy(id = id)
+        return id
+    }
+
+    override suspend fun delete(id: Long) {
+        components.value = components.value.filterNot { it.id == id }
+    }
+
+    override fun observeBikeDistanceM(bikeId: Long): Flow<Double> =
+        rides.map { done -> done.filter { it.bikeId == bikeId }.sumOf { it.distanceM } }
 }

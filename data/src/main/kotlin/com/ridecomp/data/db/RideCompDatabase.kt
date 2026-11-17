@@ -9,6 +9,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.ridecomp.data.db.dao.ActivityDao
 import com.ridecomp.data.db.dao.ActivityProfileDao
 import com.ridecomp.data.db.dao.BestEffortDao
+import com.ridecomp.data.db.dao.BikeComponentDao
 import com.ridecomp.data.db.dao.BikeDao
 import com.ridecomp.data.db.dao.EmergencyContactDao
 import com.ridecomp.data.db.dao.EventDao
@@ -25,6 +26,7 @@ import com.ridecomp.data.db.dao.TrainingDao
 import com.ridecomp.data.db.entity.ActivityEntity
 import com.ridecomp.data.db.entity.ActivityProfileEntity
 import com.ridecomp.data.db.entity.BestEffortEntity
+import com.ridecomp.data.db.entity.BikeComponentEntity
 import com.ridecomp.data.db.entity.BikeEntity
 import com.ridecomp.data.db.entity.DailyTrainingEntity
 import com.ridecomp.data.db.entity.EmergencyContactEntity
@@ -71,6 +73,7 @@ import com.ridecomp.data.db.entity.TrackPointEntity
         DailyTrainingEntity::class,
         StravaUploadEntity::class,
         BikeEntity::class,
+        BikeComponentEntity::class,
     ],
     version = RideCompDatabase.VERSION,
     exportSchema = true,
@@ -108,8 +111,10 @@ abstract class RideCompDatabase : RoomDatabase() {
 
     abstract fun bikeDao(): BikeDao
 
+    abstract fun bikeComponentDao(): BikeComponentDao
+
     companion object {
-        const val VERSION = 8
+        const val VERSION = 9
 
         /**
          * Builds the database in internal storage (SEC-STO-01). Destructive migration is never enabled:
@@ -262,6 +267,34 @@ object RideCompMigrations {
         }
     }
 
+    /**
+     * v9: the bike of each ride and the parts of each bike (T7.3, D-93). Rides recorded before are given
+     * the first bike (the only one most riders have).
+     */
+    val MIGRATION_8_9: Migration = object : Migration(8, 9) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE `${DbNames.TABLE_ACTIVITIES}` ADD COLUMN `bike_id` INTEGER")
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_activities_bike_id` ON `${DbNames.TABLE_ACTIVITIES}` (`bike_id`)",
+            )
+            db.execSQL(
+                "UPDATE `${DbNames.TABLE_ACTIVITIES}` SET `bike_id` = (SELECT MIN(`id`) FROM `${DbNames.TABLE_BIKES}`)",
+            )
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `${DbNames.TABLE_BIKE_COMPONENTS}` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `bike_id` INTEGER NOT NULL, " +
+                    "`type` TEXT NOT NULL, `name` TEXT NOT NULL, `installed_at` INTEGER NOT NULL, " +
+                    "`initial_distance_m` REAL NOT NULL, `limit_m` REAL, " +
+                    "FOREIGN KEY(`bike_id`) REFERENCES `${DbNames.TABLE_BIKES}`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE CASCADE )",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_bike_components_bike_id` " +
+                    "ON `${DbNames.TABLE_BIKE_COMPONENTS}` (`bike_id`)",
+            )
+        }
+    }
+
     private const val CASCADE_ACTIVITIES =
         "REFERENCES `${DbNames.TABLE_ACTIVITIES}`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE"
     private const val CASCADE_SEGMENTS =
@@ -328,6 +361,7 @@ object RideCompMigrations {
             MIGRATION_5_6,
             MIGRATION_6_7,
             MIGRATION_7_8,
+            MIGRATION_8_9,
         )
 }
 

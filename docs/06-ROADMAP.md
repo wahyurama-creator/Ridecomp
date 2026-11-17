@@ -128,7 +128,7 @@ Ikuti `03-ARCHITECTURE.md` §9: jadikan `:core` modul KMP, tulis UI (SwiftUI ata
 ## Fase 7 — Fitur lanjutan (dipilih pemilik 2026-11-17)
 - [x] T7.1 Pengumuman suara (TTS bawaan HP): tiap 1/5/10 km, lap, pengingat minum/makan (D-91).
 - [x] T7.2 Kembali ke titik start (D-92).
-- [ ] T7.3 Pelacakan komponen sepeda (km otomatis per sepeda, pengingat servis).
+- [x] T7.3 Pelacakan komponen sepeda (km otomatis per sepeda, pengingat servis) (D-93).
 - [ ] T7.4 Latihan terfokus (mis. Zona 2, interval, persiapan lomba) — desain diajukan ke pemilik sebelum dikerjakan.
 
 ## Fase 8+ — Ide lanjutan (belum dijadwalkan)

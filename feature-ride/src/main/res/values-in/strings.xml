@@ -333,4 +333,31 @@
     <string name="ride_back_arrived">✓ Sudah sampai di start</string>
     <string name="ride_back_waiting">Menunggu posisi GPS…</string>
     <string name="ride_back_direction">Arah ke start</string>
+
+    <!-- Komponen sepeda (T7.3) -->
+    <string name="components_title">Komponen</string>
+    <string name="components_intro">Sepeda ini: total %1$d km. Tiap komponen menghitung ride dengan sepeda ini sejak dipasang.</string>
+    <string name="components_add">Tambah komponen</string>
+    <string name="components_due_list">⚠ Perlu servis: %1$s</string>
+    <string name="component_chain">Rantai</string>
+    <string name="component_tires">Ban</string>
+    <string name="component_brake_pads">Kampas rem</string>
+    <string name="component_cassette">Sprocket</string>
+    <string name="component_service">Servis</string>
+    <string name="component_other">Lainnya</string>
+    <string name="component_km">%1$s km</string>
+    <string name="component_km_of">%1$s / %2$s km</string>
+    <string name="component_due">Saatnya diganti atau diservis</string>
+    <string name="component_add_title">Komponen baru</string>
+    <string name="component_edit_title">Komponen</string>
+    <string name="component_type">Jenis</string>
+    <string name="component_name">Nama (opsional, mis. KMC X11)</string>
+    <string name="component_limit">Ganti/servis setelah</string>
+    <string name="component_initial">Sudah dipakai (bila bukan baru)</string>
+    <string name="component_hint">Batasnya interval umum; ubah sesuai kebiasaanmu. Kosongkan bila tidak perlu pengingat.</string>
+    <string name="component_done">Sudah ditempuh: %1$d km</string>
+    <string name="component_replaced">Baru diganti (mulai lagi dari 0 km)</string>
+    <string name="component_delete">Hapus komponen</string>
+    <string name="component_delete_title">Hapus komponen ini?</string>
+    <string name="component_delete_message">Hanya komponennya yang dihapus; riwayat ride tetap ada.</string>
 </resources>

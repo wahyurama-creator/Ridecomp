@@ -18,6 +18,7 @@ import com.ridecomp.core.config.ProfileDefaults
 import com.ridecomp.core.model.ActivityProfile
 import com.ridecomp.core.model.Bike
 import com.ridecomp.core.model.BuiltInProfiles
+import com.ridecomp.core.model.ComponentWear
 import com.ridecomp.core.usecase.BikeField
 import com.ridecomp.core.usecase.BikeLimits
 import com.ridecomp.feature.ride.R
@@ -46,6 +47,7 @@ import com.ridecomp.ui.preview.ThemePreviews
 import com.ridecomp.ui.theme.RideCompDimens
 import com.ridecomp.ui.theme.RideCompTheme
 import com.ridecomp.ui.udf.ObserveEffects
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -104,6 +106,7 @@ fun BikesScreen(
                 BikeCard(
                     bike = bike,
                     summary = bikeSummary(bike, state.profiles.firstOrNull { it.id == bike.profileId }),
+                    due = state.dueComponents.filter { it.component.bikeId == bike.id }.toImmutableList(),
                     isSelected = bike.id == state.selectedId,
                     onOpen = { onOpen(bike.id) },
                     onSelect = { onEvent(BikesUiEvent.Select(bike.id)) },
@@ -123,7 +126,14 @@ fun BikesScreen(
 
 /** One bike: tap to edit; the bike for the next ride is marked, the others can be picked here too. */
 @Composable
-private fun BikeCard(bike: Bike, summary: String, isSelected: Boolean, onOpen: () -> Unit, onSelect: () -> Unit) {
+private fun BikeCard(
+    bike: Bike,
+    summary: String,
+    due: ImmutableList<ComponentWear>,
+    isSelected: Boolean,
+    onOpen: () -> Unit,
+    onSelect: () -> Unit,
+) {
     val colors = RideCompTheme.colors
     RideCompCard(onClick = onOpen) {
         Row(
@@ -133,6 +143,7 @@ private fun BikeCard(bike: Bike, summary: String, isSelected: Boolean, onOpen: (
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = bike.displayName(), style = RideCompTheme.typography.bodyStrong, color = colors.textPrimary)
                 Text(text = summary, style = RideCompTheme.typography.caption, color = colors.textSecondary)
+                if (due.isNotEmpty()) DueComponentsText(due)
             }
             if (isSelected) {
                 Text(
@@ -147,12 +158,24 @@ private fun BikeCard(bike: Bike, summary: String, isSelected: Boolean, onOpen: (
     }
 }
 
+/** "⚠ Service due: Chain, Tyres" (T7.3). */
+@Composable
+fun DueComponentsText(due: List<ComponentWear>, modifier: Modifier = Modifier) {
+    Text(
+        text = stringResource(R.string.components_due_list, due.map { it.component.displayName() }.joinToString()),
+        style = RideCompTheme.typography.caption,
+        color = RideCompTheme.colors.accent,
+        modifier = modifier,
+    )
+}
+
 /** Adds or edits one bike, then goes back. */
 @Composable
 fun BikeEditorRoute(
     target: BikeTarget,
     onDone: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenComponent: (bikeId: Long, componentId: Long?) -> Unit = { _, _ -> },
     viewModel: BikeEditorViewModel = koinViewModel(key = target.toString()) { parametersOf(target) },
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -167,7 +190,12 @@ fun BikeEditorRoute(
         onBack = onDone,
         backLabel = stringResource(R.string.bikes_back),
     ) {
-        BikeForm(state = state, onEvent = viewModel::onEvent, saveLabel = stringResource(R.string.bike_save))
+        BikeForm(
+            state = state,
+            onEvent = viewModel::onEvent,
+            saveLabel = stringResource(R.string.bike_save),
+            onOpenComponent = { componentId -> onOpenComponent(state.id, componentId) },
+        )
     }
 }
 
@@ -207,6 +235,8 @@ fun BikeForm(
     saveLabel: String,
     modifier: Modifier = Modifier,
     header: @Composable () -> Unit = {},
+    /** Opens a part (null = new); null hides the parts, e.g. during onboarding (T7.3). */
+    onOpenComponent: ((Long?) -> Unit)? = null,
 ) {
     val error = stringResource(R.string.bike_error_invalid)
     fun errorOf(field: BikeField) = error.takeIf { field in state.invalidFields }
@@ -261,6 +291,9 @@ fun BikeForm(
             isEnabled = state.isLoaded && !state.isSaving,
             size = BigButtonSize.SECONDARY,
         )
+        if (onOpenComponent != null && !state.isNew && state.isLoaded) {
+            ComponentsSection(state.components, state.bikeDistanceM, onOpenComponent)
+        }
         if (state.canDelete) {
             BigButton(
                 text = stringResource(R.string.bike_delete),

@@ -365,9 +365,8 @@ class RecordingService : LifecycleService() {
      * weight and wheel size (D-89) applied.
      */
     private suspend fun rideSetup(settings: RideSettings, profileId: Long?, routeId: Long?): RideSetup {
-        val rider = deps.profileRepository.get().let { profile ->
-            deps.getSelectedBike()?.let(profile::withBike) ?: profile
-        }
+        val bike = deps.getSelectedBike()
+        val rider = deps.profileRepository.get().let { profile -> bike?.let(profile::withBike) ?: profile }
         val activityProfile = deps.getRideProfile(profileId)
         isGpsEnabled = activityProfile?.isGpsEnabled != false
         // Indoor rides have no position to follow a route with.
@@ -379,6 +378,7 @@ class RecordingService : LifecycleService() {
             profile = activityProfile?.let(rider::withProfile) ?: rider,
             ageYears = rider.ageYears(deps.clock.nowMs()),
             profileId = activityProfile?.id,
+            bikeId = bike?.id,
             isGpsEnabled = isGpsEnabled,
             routeId = routeId,
             routePoints = followedId?.let { deps.routeRepository.getPoints(it) }.orEmpty(),

@@ -103,6 +103,9 @@ object RideCompDimens {
     val navigationFieldHeight = 92.dp
     val storageBarHeight = 8.dp
 
+    /** Thin progress bar, e.g. a bike part's wear (T7.3). */
+    val progressBarHeight = 6.dp
+
     /** Label column of the zone bars ("Z1"…"Z5", Training tab). */
     val zoneLabelWidth = 28.dp
 
