@@ -128,4 +128,5 @@
     <string name="share_style_page">Gaya %1$s, geser untuk gaya lain</string>
     <string name="share_save_short">Simpan</string>
     <string name="share_send_short">Bagikan</string>
+    <string name="training_trend_later">Garis tren muncul setelah Anda ride di beberapa hari berbeda.</string>
 </resources>

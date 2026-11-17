@@ -134,4 +134,5 @@
     <string name="share_style_page">Style %1$s, swipe for another</string>
     <string name="share_save_short">Save</string>
     <string name="share_send_short">Share</string>
+    <string name="training_trend_later">The trend line appears once you have ridden on a few different days.</string>
 </resources>
