@@ -4,6 +4,7 @@ import com.ridecomp.core.engine.recording.RecordingSession
 import com.ridecomp.core.engine.safety.IncidentManager
 import com.ridecomp.core.engine.sensors.SensorConnector
 import com.ridecomp.core.engine.sensors.SensorRepository
+import com.ridecomp.core.engine.sensors.TrainerControl
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.ProfileRepository
 import com.ridecomp.core.repository.RouteRepository
@@ -54,6 +55,9 @@ interface RecordingDependencies {
 
     /** Today's planned session the ride is measured against (T7.4b). */
     val rideSession: RideSessionUseCase
+
+    /** Smart trainer ERG target (T9.1). */
+    val trainerControl: TrainerControl
 
     /** Incident countdown and emergency SMS (single instance, T2.16). */
     val incidentManager: IncidentManager

@@ -395,4 +395,13 @@
     <string name="home_plan_start">MULAI SESI</string>
     <string name="pre_ride_session">Sesi hari ini</string>
     <string name="pre_ride_session_description">Layar ride menampilkan zona target; HP memberi tahu bila sesi santai jadi terlalu berat.</string>
+
+    <!-- Smart trainer (T9.1) -->
+    <string name="trainer_erg">ERG</string>
+    <string name="trainer_minus">−10</string>
+    <string name="trainer_plus">+10</string>
+    <string name="trainer_watts">%1$d W</string>
+    <string name="trainer_easy">Santai</string>
+    <string name="trainer_zone">Zona %1$d</string>
+    <string name="trainer_no_control">Smart trainer tersambung sebagai sensor; app lain sedang mengatur bebannya.</string>
 </resources>

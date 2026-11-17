@@ -16,6 +16,11 @@ object BleUuids {
     val CSC_MEASUREMENT: UUID = of(0x2A5B)
     val CYCLING_POWER_SERVICE: UUID = of(0x1818)
     val CYCLING_POWER_MEASUREMENT: UUID = of(0x2A63)
+
+    /** Fitness Machine (smart trainer, T9.1): Indoor Bike Data notifications, Control Point for ERG. */
+    val FITNESS_MACHINE_SERVICE: UUID = of(0x1826)
+    val INDOOR_BIKE_DATA: UUID = of(0x2AD2)
+    val FITNESS_MACHINE_CONTROL_POINT: UUID = of(0x2AD9)
     val BATTERY_SERVICE: UUID = of(0x180F)
     val BATTERY_LEVEL: UUID = of(0x2A19)
 

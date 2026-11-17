@@ -18,6 +18,16 @@ class SensorMapperTest {
     }
 
     @Test
+    fun `a smart trainer keeps its flag next to its kinds`() {
+        val trainer = SavedSensor("CC:DD", "KICKR", setOf(SensorKind.POWER, SensorKind.SPEED_CADENCE), isTrainer = true)
+
+        val entity = trainer.toEntity()
+
+        assertEquals("cp,csc,ftms", entity.services)
+        assertEquals(trainer, entity.toDomain())
+    }
+
+    @Test
     fun `unknown service names are skipped`() {
         assertEquals(setOf(SensorKind.HEART_RATE), "hr, future,".toSensorKinds())
     }

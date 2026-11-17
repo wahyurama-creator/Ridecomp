@@ -49,6 +49,8 @@ public data class SavedSensor(
     val lastBatteryPercent: Int? = null,
     val isAutoConnect: Boolean = true,
     val createdAtMs: Long = 0,
+    /** A smart trainer (FTMS): power/cadence/speed and ERG control (T9.1). */
+    val isTrainer: Boolean = false,
 )
 
 /** True when the last known battery level is below the warning threshold (§A.4). */
@@ -56,7 +58,14 @@ public val SavedSensor.isBatteryLow: Boolean
     get() = lastBatteryPercent?.let { it < SensorLimits.LOW_BATTERY_PERCENT } == true
 
 /** A device found by a scan (02-DESIGN §3.8). */
-public data class DiscoveredSensor(val address: String, val name: String?, val kinds: Set<SensorKind>, val rssiDbm: Int)
+public data class DiscoveredSensor(
+    val address: String,
+    val name: String?,
+    val kinds: Set<SensorKind>,
+    val rssiDbm: Int,
+    /** Advertises the Fitness Machine service (T9.1). */
+    val isTrainer: Boolean = false,
+)
 
 /**
  * Adds [result] to a scan list: one entry per address (latest RSSI wins), already-paired devices left

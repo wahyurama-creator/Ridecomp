@@ -5,6 +5,9 @@ import com.ridecomp.core.engine.map.NetworkStatus
 import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RideAction
 import com.ridecomp.core.engine.safety.IncidentAction
+import com.ridecomp.core.engine.sensors.TrainerControl
+import com.ridecomp.core.engine.training.TargetSource
+import com.ridecomp.core.engine.training.TargetStatus
 import com.ridecomp.core.model.ActivePlanState
 import com.ridecomp.core.model.ActivityKind
 import com.ridecomp.core.model.ActivityStatus
@@ -16,6 +19,7 @@ import com.ridecomp.core.model.PlanRef
 import com.ridecomp.core.model.PlanSession
 import com.ridecomp.core.model.RideSample
 import com.ridecomp.core.model.RideStatus
+import com.ridecomp.core.model.RiderProfile
 import com.ridecomp.core.model.SafetySettings
 import com.ridecomp.core.model.UnitSystem
 import com.ridecomp.core.repository.NewActivity
@@ -29,6 +33,7 @@ import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeLocationSource
 import com.ridecomp.core.testing.FakeNetworkStatusSource
 import com.ridecomp.core.testing.FakeOfflineMapRepository
+import com.ridecomp.core.testing.FakeProfileRepository
 import com.ridecomp.core.testing.FakeRideController
 import com.ridecomp.core.testing.FakeRouteRepository
 import com.ridecomp.core.testing.FakeSafetyRepository
@@ -54,10 +59,12 @@ import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
 import com.ridecomp.core.usecase.ObserveMapTilesUseCase
 import com.ridecomp.core.usecase.ObserveProfileChoiceUseCase
+import com.ridecomp.core.usecase.ObserveProfileUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveRouteUseCase
 import com.ridecomp.core.usecase.ObserveSafetyUseCase
 import com.ridecomp.core.usecase.ObserveSavedSensorsUseCase
+import com.ridecomp.core.usecase.ObserveTrainerUseCase
 import com.ridecomp.core.usecase.PerformIncidentActionUseCase
 import com.ridecomp.core.usecase.PerformRideActionUseCase
 import com.ridecomp.core.usecase.ReadBatteryUseCase
@@ -65,6 +72,7 @@ import com.ridecomp.core.usecase.RecoveryChoice
 import com.ridecomp.core.usecase.RenameActivityUseCase
 import com.ridecomp.core.usecase.SaveRideSettingsUseCase
 import com.ridecomp.core.usecase.SelectBikeUseCase
+import com.ridecomp.core.usecase.SetTrainerTargetUseCase
 import com.ridecomp.core.usecase.SnoozeBackupReminderUseCase
 import com.ridecomp.core.usecase.StartRideUseCase
 import com.ridecomp.core.usecase.TrainingCalendar
@@ -72,6 +80,8 @@ import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.ride.model.DefaultDataPages
 import com.ridecomp.feature.ride.model.MetricCategory
 import com.ridecomp.feature.ride.model.RideMetric
+import com.ridecomp.feature.ride.ui.component.ErgPresets
+import com.ridecomp.feature.ride.ui.component.TrainerAction
 import com.ridecomp.feature.ride.viewmodel.HomeDeviceUseCases
 import com.ridecomp.feature.ride.viewmodel.HomeEffect
 import com.ridecomp.feature.ride.viewmodel.HomeUiEvent
@@ -85,6 +95,7 @@ import com.ridecomp.feature.ride.viewmodel.PreRideUseCases
 import com.ridecomp.feature.ride.viewmodel.PreRideViewModel
 import com.ridecomp.feature.ride.viewmodel.RideEffect
 import com.ridecomp.feature.ride.viewmodel.RideMapUseCases
+import com.ridecomp.feature.ride.viewmodel.RideTrainerUseCases
 import com.ridecomp.feature.ride.viewmodel.RideUseCases
 import com.ridecomp.feature.ride.viewmodel.RideViewModel
 import com.ridecomp.feature.ride.viewmodel.SummaryEffect
@@ -115,6 +126,8 @@ class RideViewModelsTest {
     private val profiles = FakeActivityProfileRepository()
     private val network = FakeNetworkStatusSource()
     private val plans = FakeTrainingPlanRepository()
+    private val trainer = TrainerControl()
+    private val trainerProfile = FakeProfileRepository()
     private val bikes = FakeBikeRepository(
         listOf(Bike(id = 1, profileId = 1), Bike(id = TRAINER_BIKE_ID, name = "Trainer", profileId = INDOOR_ID)),
     )
@@ -251,7 +264,29 @@ class RideViewModelsTest {
             ObserveMapTilesUseCase(network, settings, FakeOfflineMapRepository()),
             LoadRideTrailUseCase(repository),
         ),
+        RideTrainerUseCases(
+            ObserveTrainerUseCase(trainer),
+            SetTrainerTargetUseCase(trainer),
+            ObserveProfileUseCase(trainerProfile),
+        ),
     )
+
+    @Test
+    fun `an interval session on a trainer offers easy and zone buttons that set ERG`() = runTest {
+        trainerProfile.save(RiderProfile(ftpW = 200))
+        val viewModel = rideViewModel()
+        controller.live.value = LiveRide(
+            status = RideStatus.RECORDING,
+            target = TargetStatus(Intensity.THRESHOLD, 3_600_000, TargetSource.POWER),
+        )
+
+        viewModel.ergPresets.test {
+            assertEquals(ErgPresets(easyW = 130, zone = 4, zoneW = 196), expectMostRecentItem())
+        }
+        viewModel.onTrainer(TrainerAction.Set(196))
+        viewModel.onTrainer(TrainerAction.Adjust(10))
+        assertEquals(206, trainer.state.value.targetW)
+    }
 
     @Test
     fun `a ride without a route draws the stored and live trail on the online map`() = runTest {

@@ -209,7 +209,7 @@ private fun LazyListScope.discoveredSection(state: SensorsUiState, onPair: (Disc
             title = sensor.name ?: stringResource(R.string.sensors_unnamed),
             subtitle = stringResource(
                 R.string.sensors_subtitle,
-                kindsLabel(sensor.kinds),
+                kindsLabel(sensor.kinds, sensor.isTrainer),
                 stringResource(if (isStrong) R.string.sensors_signal_strong else R.string.sensors_signal_weak),
             ),
             isOutlined = true,
@@ -319,17 +319,20 @@ private fun SensorKind?.tint(): Color = when (this) {
 
 @Composable
 private fun savedSubtitle(sensor: SavedSensor): String {
-    val kinds = kindsLabel(sensor.kinds)
+    val kinds = kindsLabel(sensor.kinds, sensor.isTrainer)
     val battery = sensor.lastBatteryPercent ?: return kinds
     val batteryRes = if (sensor.isBatteryLow) R.string.sensors_battery_low else R.string.sensors_battery
     return stringResource(R.string.sensors_subtitle, kinds, stringResource(batteryRes, battery))
 }
 
+/** "Power · Speed & cadence", or "Smart trainer (ERG)" for an FTMS trainer (T9.1). */
 @Composable
-private fun kindsLabel(kinds: Set<SensorKind>): String =
-    SensorKind.entries.filter { it in kinds }.map { stringResource(it.labelRes()) }
+private fun kindsLabel(kinds: Set<SensorKind>, isTrainer: Boolean = false): String {
+    if (isTrainer) return stringResource(R.string.sensors_kind_trainer)
+    return SensorKind.entries.filter { it in kinds }.map { stringResource(it.labelRes()) }
         .ifEmpty { listOf(stringResource(R.string.sensors_kind_unknown)) }
         .joinToString(separator = stringResource(R.string.sensors_kind_separator))
+}
 
 @StringRes
 private fun SensorKind.labelRes(): Int = when (this) {

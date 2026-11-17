@@ -49,6 +49,7 @@ import com.ridecomp.core.engine.route.RoutePoint
 import com.ridecomp.core.engine.route.riddenUntil
 import com.ridecomp.core.engine.safety.IncidentAction
 import com.ridecomp.core.engine.safety.IncidentState
+import com.ridecomp.core.engine.sensors.TrainerState
 import com.ridecomp.core.model.BatteryMode
 import com.ridecomp.core.model.RideStatus
 import com.ridecomp.core.util.UnitFormatter
@@ -63,6 +64,7 @@ import com.ridecomp.feature.ride.model.rideAction
 import com.ridecomp.feature.ride.model.withFallbacks
 import com.ridecomp.feature.ride.ui.component.BreadcrumbMap
 import com.ridecomp.feature.ride.ui.component.ClimbPage
+import com.ridecomp.feature.ride.ui.component.ErgPresets
 import com.ridecomp.feature.ride.ui.component.IncidentAlertedBanner
 import com.ridecomp.feature.ride.ui.component.IncidentCountdown
 import com.ridecomp.feature.ride.ui.component.NextClimbInfo
@@ -76,6 +78,8 @@ import com.ridecomp.feature.ride.ui.component.SegmentBanners
 import com.ridecomp.feature.ride.ui.component.SegmentPage
 import com.ridecomp.feature.ride.ui.component.SessionTargetBar
 import com.ridecomp.feature.ride.ui.component.SosButton
+import com.ridecomp.feature.ride.ui.component.TrainerAction
+import com.ridecomp.feature.ride.ui.component.TrainerBar
 import com.ridecomp.feature.ride.ui.component.rememberMetricUnitLabels
 import com.ridecomp.feature.ride.viewmodel.RideEffect
 import com.ridecomp.feature.ride.viewmodel.RideViewModel
@@ -118,6 +122,8 @@ fun RideRoute(
     val map by viewModel.map.collectAsStateWithLifecycle()
     val isBackToStart by viewModel.isBackToStart.collectAsStateWithLifecycle()
     val backToStart by viewModel.backToStart.collectAsStateWithLifecycle()
+    val trainer by viewModel.trainer.collectAsStateWithLifecycle()
+    val ergPresets by viewModel.ergPresets.collectAsStateWithLifecycle()
     val route by viewModel.route.collectAsStateWithLifecycle()
     ObserveEffects(viewModel.effects) { effect ->
         when (effect) {
@@ -150,6 +156,9 @@ fun RideRoute(
         contactNames = contactNames,
         map = map.copy(isBackToStart = isBackToStart, backToStart = backToStart),
         onToggleBackToStart = viewModel::toggleBackToStart,
+        trainer = trainer,
+        ergPresets = ergPresets,
+        onTrainer = viewModel::onTrainer,
         route = route,
         modifier = modifier
             .volumeKeys(settings.isVolumeButtonsEnabled) { key ->
@@ -179,6 +188,9 @@ fun RideScreen(
     map: RideMapView = RideMapView(),
     route: RouteView? = null,
     onToggleBackToStart: () -> Unit = {},
+    trainer: TrainerState = TrainerState(),
+    ergPresets: ErgPresets? = null,
+    onTrainer: (TrainerAction) -> Unit = {},
 ) {
     val incident = live.value.incident
     if (incident is IncidentState.Countdown) {
@@ -201,6 +213,7 @@ fun RideScreen(
         LapDoneBanner(live.value, formatter)
         GuidanceBanners(live.value, formatter)
         live.value.target?.let { SessionTargetBar(it, formatter) }
+        if (trainer.isConnected) TrainerBar(trainer, ergPresets, onTrainer)
         // Every GPS ride has a map page (D-90); with a route it follows the route (T3.5).
         val hasMapPage = route != null || live.value.isGpsEnabled
         val screens = remember(pages, hasMapPage) { ridePages(pages, hasMapPage) }

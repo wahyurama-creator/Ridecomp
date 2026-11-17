@@ -55,6 +55,14 @@ class GattClient(private val context: Context, private val device: BluetoothDevi
             pending?.complete(status == BluetoothGatt.GATT_SUCCESS)
         }
 
+        override fun onCharacteristicWrite(
+            gatt: BluetoothGatt,
+            characteristic: BluetoothGattCharacteristic,
+            status: Int,
+        ) {
+            pending?.complete(status == BluetoothGatt.GATT_SUCCESS)
+        }
+
         override fun onCharacteristicRead(
             gatt: BluetoothGatt,
             characteristic: BluetoothGattCharacteristic,
@@ -108,13 +116,26 @@ class GattClient(private val context: Context, private val device: BluetoothDevi
     fun hasService(uuid: UUID): Boolean = gatt?.getService(uuid) != null
 
     /** Enables notifications of [characteristic] in [service]; false when absent or rejected. */
-    suspend fun enableNotifications(service: UUID, characteristic: UUID): Boolean {
+    suspend fun enableNotifications(service: UUID, characteristic: UUID): Boolean =
+        subscribe(service, characteristic, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
+
+    /** Enables indications (acknowledged), as a control point needs for its responses (T9.1). */
+    suspend fun enableIndications(service: UUID, characteristic: UUID): Boolean =
+        subscribe(service, characteristic, BluetoothGattDescriptor.ENABLE_INDICATION_VALUE)
+
+    private suspend fun subscribe(service: UUID, characteristic: UUID, value: ByteArray): Boolean {
         val target = gatt?.getService(service)?.getCharacteristic(characteristic)
         val descriptor = target?.getDescriptor(BleUuids.CCCD)
         if (target == null || descriptor == null) return false
         return operation { gatt ->
-            gatt.setCharacteristicNotification(target, true) && gatt.writeEnable(descriptor)
+            gatt.setCharacteristicNotification(target, true) && gatt.writeEnable(descriptor, value)
         }
+    }
+
+    /** Writes [value] with a response, e.g. an FTMS control point command (T9.1). */
+    suspend fun write(service: UUID, characteristic: UUID, value: ByteArray): Boolean {
+        val target = gatt?.getService(service)?.getCharacteristic(characteristic) ?: return false
+        return operation { gatt -> gatt.writeWithResponse(target, value) }
     }
 
     suspend fun read(service: UUID, characteristic: UUID): Boolean {
@@ -142,15 +163,27 @@ class GattClient(private val context: Context, private val device: BluetoothDevi
         withTimeoutOrNull(BleConfig.GATT_OPERATION_TIMEOUT_MS) { result.await() } ?: false
     }
 
-    private fun BluetoothGatt.writeEnable(descriptor: BluetoothGattDescriptor): Boolean {
-        val enable = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    private fun BluetoothGatt.writeEnable(descriptor: BluetoothGattDescriptor, enable: ByteArray): Boolean =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             writeDescriptor(descriptor, enable) == BluetoothStatusCodes.SUCCESS
         } else {
             @Suppress("DEPRECATION")
             descriptor.value = enable
             @Suppress("DEPRECATION")
             writeDescriptor(descriptor)
+        }
+
+    private fun BluetoothGatt.writeWithResponse(target: BluetoothGattCharacteristic, value: ByteArray): Boolean {
+        val type = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            writeCharacteristic(target, value, type) == BluetoothStatusCodes.SUCCESS
+        } else {
+            @Suppress("DEPRECATION")
+            target.writeType = type
+            @Suppress("DEPRECATION")
+            target.value = value
+            @Suppress("DEPRECATION")
+            writeCharacteristic(target)
         }
     }
 }

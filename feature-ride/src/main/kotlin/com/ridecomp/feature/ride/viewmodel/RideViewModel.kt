@@ -6,6 +6,9 @@ import com.ridecomp.core.engine.map.TrailPoint
 import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RideAction
 import com.ridecomp.core.engine.safety.IncidentAction
+import com.ridecomp.core.engine.sensors.ErgConfig
+import com.ridecomp.core.engine.sensors.TrainerState
+import com.ridecomp.core.model.Intensity
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RideStatus
 import com.ridecomp.core.model.withProfile
@@ -16,16 +19,21 @@ import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveDataPagesUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
 import com.ridecomp.core.usecase.ObserveMapTilesUseCase
+import com.ridecomp.core.usecase.ObserveProfileUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveSafetyUseCase
+import com.ridecomp.core.usecase.ObserveTrainerUseCase
 import com.ridecomp.core.usecase.PerformIncidentActionUseCase
 import com.ridecomp.core.usecase.PerformRideActionUseCase
+import com.ridecomp.core.usecase.SetTrainerTargetUseCase
 import com.ridecomp.feature.ride.model.DataPage
 import com.ridecomp.feature.ride.model.DefaultDataPages
 import com.ridecomp.feature.ride.model.RideMapView
 import com.ridecomp.feature.ride.model.RideMetricKeys
 import com.ridecomp.feature.ride.model.RouteView
 import com.ridecomp.feature.ride.model.toDataPages
+import com.ridecomp.feature.ride.ui.component.ErgPresets
+import com.ridecomp.feature.ride.ui.component.TrainerAction
 import com.ridecomp.ui.udf.UdfViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -73,13 +81,43 @@ data class RideUseCases(
 /** The map page: which tiles to draw and the ridden line of a ride without a route (D-90). */
 data class RideMapUseCases(val observeTiles: ObserveMapTilesUseCase, val loadTrail: LoadRideTrailUseCase)
 
+/** The smart trainer on the ride screen (T9.1). */
+data class RideTrainerUseCases(
+    val observe: ObserveTrainerUseCase,
+    val setTarget: SetTrainerTargetUseCase,
+    val observeProfile: ObserveProfileUseCase,
+)
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class RideViewModel(
     private val useCases: RideUseCases,
     private val dispatchers: DispatcherProvider,
     private val maps: RideMapUseCases,
+    private val trainerUseCases: RideTrainerUseCases,
 ) : UdfViewModel<Unit, RideAction, RideEffect>(Unit) {
     val liveRide: StateFlow<LiveRide> = useCases.observeLive()
+
+    /** Smart trainer link and ERG target (T9.1). */
+    val trainer: StateFlow<TrainerState> = trainerUseCases.observe()
+
+    /** "Santai" / "Zona N" buttons for an interval session (zone 4–5) with FTP known (T9.1). */
+    val ergPresets: StateFlow<ErgPresets?> = combine(
+        liveRide.map { it.target?.intensity }.distinctUntilChanged(),
+        trainerUseCases.observeProfile().map { it.ftpW }.distinctUntilChanged(),
+    ) { intensity, ftp ->
+        if (intensity == null || ftp == null || intensity.zone <= ErgConfig.STEADY_UP_TO_ZONE) {
+            null
+        } else {
+            ErgPresets(ErgConfig.watts(Intensity.ENDURANCE, ftp), intensity.zone, ErgConfig.watts(intensity, ftp))
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), null)
+
+    fun onTrainer(action: TrainerAction) {
+        when (action) {
+            is TrainerAction.Adjust -> trainerUseCases.setTarget.adjust(action.deltaW)
+            is TrainerAction.Set -> trainerUseCases.setTarget.set(action.watts)
+        }
+    }
 
     /**
      * Ridden line of a GPS ride: rebuilt from the stored samples (the screen may open mid-ride or after a

@@ -20,8 +20,10 @@ import com.ridecomp.core.engine.recording.RideSetup
 import com.ridecomp.core.engine.route.RouteAlert
 import com.ridecomp.core.engine.safety.IncidentAction
 import com.ridecomp.core.engine.segments.SegmentAlert
+import com.ridecomp.core.engine.sensors.ErgConfig
 import com.ridecomp.core.engine.sensors.SensorReading
 import com.ridecomp.core.model.ActivityStatus
+import com.ridecomp.core.model.PlanSession
 import com.ridecomp.core.model.RideEventType
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RideStatus
@@ -139,7 +141,7 @@ class RecordingService : LifecycleService() {
         val settings = deps.settingsRepository.getRideSettings()
         val setup = rideSetup(settings, profileId, routeId)
         formatter = UnitFormatter(settings.unitSystem)
-        voiceCoach.setUp(settings, setup, deps.rideSession.forNewRide(withSession))
+        startRideAids(settings, setup, deps.rideSession.forNewRide(withSession))
         val newSession = deps.newSession()
         newSession.start(setup, deps.clock.nowMs()).onSuccess { output ->
             session = newSession
@@ -155,7 +157,7 @@ class RecordingService : LifecycleService() {
         val settings = deps.settingsRepository.getRideSettings()
         formatter = UnitFormatter(settings.unitSystem)
         val setup = rideSetup(settings, activity.profileId, activity.routeId)
-        voiceCoach.setUp(settings, setup, deps.rideSession.forRecoveredRide())
+        startRideAids(settings, setup, deps.rideSession.forRecoveredRide())
         val resumeAs = if (storedStatus == ActivityStatus.RECORDING) RideStatus.RECORDING else RideStatus.PAUSED
         val restored = deps.newSession()
         restored.resume(
@@ -343,6 +345,8 @@ class RecordingService : LifecycleService() {
 
     private fun stopPipeline() {
         voiceCoach.shutdown()
+        // The trainer is free again once the ride is over (T9.1).
+        deps.trainerControl.setTarget(null)
         pipelineJobs.forEach { it.cancel() }
         pipelineJobs.clear()
         pressureJob?.cancel()
@@ -385,6 +389,15 @@ class RecordingService : LifecycleService() {
             // Indoor rides have no position to cross a segment with.
             segments = if (isGpsEnabled) deps.getLiveSegments() else emptyList(),
         )
+    }
+
+    /**
+     * Voice and session coach (T7.1, T7.4b), and the smart trainer's first ERG target: today's session
+     * zone with FTP, else a gentle default the rider adjusts (T9.1).
+     */
+    private fun startRideAids(settings: RideSettings, setup: RideSetup, planned: PlanSession?) {
+        voiceCoach.setUp(settings, setup, planned)
+        deps.trainerControl.setTarget(ErgConfig.startWatts(planned, setup.profile.ftpW) ?: ErgConfig.DEFAULT_W)
     }
 
     private fun altitudeSource(): AltitudeSource =

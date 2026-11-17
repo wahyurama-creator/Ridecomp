@@ -1,6 +1,7 @@
 package com.ridecomp.core.engine.sensors
 
 import com.ridecomp.core.config.RecordingConfig
+import com.ridecomp.core.config.Units
 
 /** The three BLE sensor profiles (04-INTEGRATIONS §A). */
 public enum class SensorKind { HEART_RATE, SPEED_CADENCE, POWER }
@@ -17,6 +18,9 @@ public sealed interface SensorReading {
     public data class SpeedCadence(val measurement: CscMeasurement, override val receivedAtMs: Long) : SensorReading
 
     public data class Power(val measurement: PowerMeasurement, override val receivedAtMs: Long) : SensorReading
+
+    /** A smart trainer (FTMS, T9.1): power, cadence and speed directly. */
+    public data class Trainer(val data: IndoorBikeData, override val receivedAtMs: Long) : SensorReading
 
     public data class Battery(
         val kind: SensorKind,
@@ -58,6 +62,9 @@ public class SensorFusion(
     private val powerCadence = CadenceCalculator()
     private var heartRate: Pair<Int, Long>? = null
     private var power: Pair<Int, Long>? = null
+    private var trainerPower: Pair<Int, Long>? = null
+    private var trainerCadence: Pair<Double, Long>? = null
+    private var trainerSpeedMps: Pair<Double, Long>? = null
     private var lastWheelAtMs: Long? = null
     private var lastCscCrankAtMs: Long? = null
     private var lastPowerCrankAtMs: Long? = null
@@ -75,6 +82,7 @@ public class SensorFusion(
                 power = reading.measurement.powerW to at
                 reading.measurement.crank?.let { powerCadence.add(it, at).also { lastPowerCrankAtMs = at } }
             }
+            is SensorReading.Trainer -> onTrainer(reading.data, at)
             is SensorReading.Battery -> states[reading.kind] =
                 state(reading.kind).copy(batteryPercent = reading.percent)
             is SensorReading.Connection -> onConnection(reading)
@@ -84,17 +92,20 @@ public class SensorFusion(
     public fun snapshot(nowMs: Long): SensorSnapshot {
         val csc = cscCadence.current(nowMs)?.takeIf { lastCscCrankAtMs.isFresh(nowMs) }
         val pm = powerCadence.current(nowMs)?.takeIf { lastPowerCrankAtMs.isFresh(nowMs) }
+        val trainer = trainerCadence.fresh(nowMs)
         val cadence = when (cadencePriority) {
             CadencePriority.POWER_METER -> pm ?: csc
             CadencePriority.SPEED_CADENCE -> csc ?: pm
-        }
+        } ?: trainer
         return SensorSnapshot(
             heartRateBpm = heartRate?.takeIf { it.second.isFresh(nowMs) }?.first,
             cadenceRpm = cadence?.toInt(),
-            powerW = power?.takeIf { it.second.isFresh(nowMs) }?.first,
-            wheelSpeedMps = wheelSpeed.current(nowMs)?.takeIf { lastWheelAtMs.isFresh(nowMs) },
-            hasCadenceSensor = lastCscCrankAtMs != null || lastPowerCrankAtMs != null,
-            hasPowerMeter = power != null,
+            // A power meter on the bike wins over the trainer's own estimate.
+            powerW = power.fresh(nowMs) ?: trainerPower.fresh(nowMs),
+            wheelSpeedMps =
+            wheelSpeed.current(nowMs)?.takeIf { lastWheelAtMs.isFresh(nowMs) } ?: trainerSpeedMps.fresh(nowMs),
+            hasCadenceSensor = lastCscCrankAtMs != null || lastPowerCrankAtMs != null || trainerCadence != null,
+            hasPowerMeter = power != null || trainerPower != null,
             states = states.toMap(),
         )
     }
@@ -113,6 +124,15 @@ public class SensorFusion(
             }
         }
     }
+
+    private fun onTrainer(data: IndoorBikeData, at: Long) {
+        data.powerW?.let { trainerPower = it to at }
+        data.cadenceRpm?.let { trainerCadence = it to at }
+        data.speedKmh?.let { trainerSpeedMps = Units.kmhToMps(it) to at }
+        data.heartRateBpm?.let { if (heartRate?.second?.isFresh(at) != true) heartRate = it to at }
+    }
+
+    private fun <T> Pair<T, Long>?.fresh(nowMs: Long): T? = this?.takeIf { it.second.isFresh(nowMs) }?.first
 
     private fun state(kind: SensorKind): SensorState =
         states[kind] ?: SensorState(isConnected = false, batteryPercent = null)
