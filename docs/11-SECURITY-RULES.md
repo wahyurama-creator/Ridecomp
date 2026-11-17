@@ -168,7 +168,7 @@ Agent meninjau **diff** task dan menjawab setiap poin (Ya / Tidak / N/A + catata
 10. Apakah ada **dependency** baru? → SUP-07, SUP-08, scan CVE.
 11. Apakah error/exception bisa **membocorkan informasi** (stack trace ke UI, data pribadi di pesan)? → pesan generik di UI, detail di log debug saja.
 12. Apakah fitur debug/simulasi bisa **aktif di release**? → SEC-BLD-04.
-13. Apakah kode menyentuh **SMS, kontak darurat, atau kartu share**? → SEC-SMS-*, SC privasi (`../12-FEATURE-SPECS.md` §11).
+13. Apakah kode menyentuh **SMS, kontak darurat, atau kartu share**? → SEC-SMS-*, SC privasi (`12-FEATURE-SPECS.md` §11).
 
 ---
 

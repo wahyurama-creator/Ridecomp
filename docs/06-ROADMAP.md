@@ -13,7 +13,7 @@ Kerjakan **berurutan**. **Setiap task** mengikuti alur di `10-FEATURE-CHECKLIST.
 | 6 | iOS | Port & uji di iPhone |
 | 7+ | Peningkatan | Ide lanjutan |
 
-Spesifikasi detail fitur tambahan: `../12-FEATURE-SPECS.md`.
+Spesifikasi detail fitur tambahan: `12-FEATURE-SPECS.md`.
 
 ---
 
@@ -39,7 +39,7 @@ Spesifikasi detail fitur tambahan: `../12-FEATURE-SPECS.md`.
 - [x] T1.2 Profil (berat, sepeda, keliling roda, HR max, FTP, umur, jenis kelamin opsional).
 - [x] T1.3 Foreground service + RideEngine state machine (start/pause/resume/stop/discard).
 - [x] T1.4 Stream GPS 1 Hz + filter akurasi + jarak + speed.
-- [x] T1.4b Jeda & lanjut otomatis lengkap (`../12-FEATURE-SPECS.md` §1): setting ambang & durasi, tahan GPS drift, indikator "JEDA OTOMATIS", prompt diam lama, event FIT.
+- [x] T1.4b Jeda & lanjut otomatis lengkap (`12-FEATURE-SPECS.md` §1): setting ambang & durasi, tahan GPS drift, indikator "JEDA OTOMATIS", prompt diam lama, event FIT.
 - [x] T1.5 SampleMerger 1 record/detik + DbWriter batch 5 detik + checkpoint.
 - [x] T1.6 Recovery setelah crash/kill (banner di Home).
 - [x] T1.7 Elevasi (GPS/barometer), total tanjakan, grade.
