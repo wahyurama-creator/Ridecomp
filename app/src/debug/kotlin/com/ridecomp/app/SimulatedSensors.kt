@@ -82,12 +82,20 @@ class DebugBleScanner(private val real: BleScanner, private val settings: Develo
     }
 }
 
-/** Virtual sensors stream simulated packets; paired real sensors keep using the real connector. */
-class DebugSensorConnector(private val real: SensorConnector, private val clock: Clock) : SensorConnector {
+/**
+ * Virtual sensors stream simulated packets while the developer switch is on (paired virtual sensors stay
+ * silent when it is off, like a device that is not there); real sensors keep using the real connector.
+ */
+class DebugSensorConnector(
+    private val real: SensorConnector,
+    private val clock: Clock,
+    private val settings: DeveloperSettings,
+) : SensorConnector {
     override fun readings(sensors: List<SavedSensor>): Flow<SensorReading> {
         val (simulated, physical) = sensors.partition { SimulatedSensors.isSimulated(it.address) }
         val realFlow = if (physical.isEmpty()) emptyFlow() else real.readings(physical)
-        return merge(realFlow, simulatedReadings(simulated))
+        val simulatedFlow = if (settings.isSimulatingSensors) simulatedReadings(simulated) else emptyFlow()
+        return merge(realFlow, simulatedFlow)
     }
 
     private fun simulatedReadings(sensors: List<SavedSensor>): Flow<SensorReading> = channelFlow {
