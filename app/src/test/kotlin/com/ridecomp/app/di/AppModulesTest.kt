@@ -172,6 +172,7 @@ class AppModulesTest {
         factory<LicenseTextReader> { LicenseTextReader { "" } }
         single<StravaAccountStore> { FakeStravaAccountStore() }
         single<StravaApi> { FakeStravaApi() }
+        single { FakeStravaApi.SETUP }
         single<StravaUploadRepository> { FakeStravaUploadRepository() }
     }
 

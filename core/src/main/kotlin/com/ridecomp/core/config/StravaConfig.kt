@@ -7,11 +7,14 @@ import java.time.ZoneOffset
 public object StravaConfig {
     /** OAuth stays on www.strava.com; only the REST API moves in 2027. */
     public const val AUTHORIZE_URL: String = "https://www.strava.com/oauth/mobile/authorize"
-    public const val TOKEN_URL: String = "https://www.strava.com/oauth/token"
-    public const val REVOKE_URL: String = "https://www.strava.com/oauth/revoke"
 
-    /** Where the rider creates the personal API app (T5.1 guide). */
-    public const val API_SETTINGS_URL: String = "https://www.strava.com/settings/api"
+    /**
+     * Paths of RideComp's token server (D-82): it holds the client secret and trades codes and refresh
+     * tokens with Strava (`server/strava-token-server`). Uploads go straight to Strava.
+     */
+    public const val TOKEN_SERVER_TOKEN_PATH: String = "/token"
+    public const val TOKEN_SERVER_REFRESH_PATH: String = "/refresh"
+    public const val TOKEN_SERVER_REVOKE_PATH: String = "/revoke"
     public const val ACTIVITY_URL_PREFIX: String = "https://www.strava.com/activities/"
 
     public const val LEGACY_API_BASE_URL: String = "https://www.strava.com/api/v3"
@@ -37,9 +40,9 @@ public object StravaConfig {
     /** Refresh the access token when less than this is left (it lasts 6 h). */
     public const val REFRESH_MARGIN_S: Long = 300
 
-    /** Client ID: digits; Client Secret: 40 hex characters (as shown on the API settings page). */
+    /** RideComp's Client ID (public, in every authorize URL): digits. */
     public val CLIENT_ID_PATTERN: Regex = Regex("^[0-9]{1,12}$")
-    public val CLIENT_SECRET_PATTERN: Regex = Regex("^[0-9a-fA-F]{40}$")
+    public const val HTTPS_PREFIX: String = "https://"
 
     public const val CONNECT_TIMEOUT_MS: Int = 15_000
     public const val READ_TIMEOUT_MS: Int = 30_000

@@ -1,7 +1,6 @@
 package com.ridecomp.platform.strava
 
 import com.ridecomp.core.model.StravaAccount
-import com.ridecomp.core.model.StravaApp
 import com.ridecomp.core.model.StravaTokens
 import com.ridecomp.core.source.StravaGrant
 import com.ridecomp.core.source.StravaUploadReply
@@ -32,10 +31,6 @@ internal object StravaJson {
     }
 
     fun encodeAccount(account: StravaAccount): String = JSONObject().apply {
-        account.app?.let {
-            put(CLIENT_ID, it.clientId)
-            put(CLIENT_SECRET, it.clientSecret)
-        }
         account.tokens?.let {
             put(ACCESS_TOKEN, it.accessToken)
             put(REFRESH_TOKEN, it.refreshToken)
@@ -47,12 +42,9 @@ internal object StravaJson {
     }.toString()
 
     fun decodeAccount(text: String): StravaAccount? = parse(text) { json ->
-        val clientId = json.optString(CLIENT_ID).takeIf { it.isNotEmpty() }
-        val clientSecret = json.optString(CLIENT_SECRET).takeIf { it.isNotEmpty() }
         val access = json.token(ACCESS_TOKEN)
         val refresh = json.token(REFRESH_TOKEN)
         StravaAccount(
-            app = if (clientId != null && clientSecret != null) StravaApp(clientId, clientSecret) else null,
             tokens = if (access != null &&
                 refresh != null
             ) {
@@ -87,8 +79,6 @@ internal object StravaJson {
     private const val ATHLETE = "athlete"
     private const val FIRST_NAME = "firstname"
     private const val LAST_NAME = "lastname"
-    private const val CLIENT_ID = "client_id"
-    private const val CLIENT_SECRET = "client_secret"
     private const val ATHLETE_NAME = "athlete_name"
     private const val PENDING_STATE = "pending_state"
     private const val MAX_TOKEN_LENGTH = 512

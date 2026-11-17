@@ -32,7 +32,7 @@ class StravaUploadUseCasesTest {
     private val activities = FakeActivityRepository()
     private val uploads = FakeStravaUploadRepository()
     private val store = FakeStravaAccountStore(
-        StravaAccount(app = FakeStravaApi.APP, tokens = StravaTokens("access", "refresh", Long.MAX_VALUE / 2_000)),
+        StravaAccount(tokens = StravaTokens("access", "refresh", Long.MAX_VALUE / 2_000)),
     )
     private val api = FakeStravaApi()
     private val requests = StravaUploadRequests()

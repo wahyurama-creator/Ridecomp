@@ -1,7 +1,6 @@
 package com.ridecomp.core.source
 
 import com.ridecomp.core.model.StravaAccount
-import com.ridecomp.core.model.StravaApp
 import com.ridecomp.core.model.StravaError
 import com.ridecomp.core.model.StravaTokens
 import com.ridecomp.core.util.Outcome
@@ -20,14 +19,17 @@ public interface StravaAccountStore {
 /** Tokens and the athlete's display name from a token reply. */
 public data class StravaGrant(val tokens: StravaTokens, val athleteName: String?)
 
-/** Strava's HTTP API (HTTPS only, timeouts, validated replies — SEC-NET-*). */
+/**
+ * Strava over HTTPS (timeouts, validated replies — SEC-NET-*): token calls through RideComp's token server,
+ * which adds the client secret (D-82); uploads straight to Strava with the rider's access token.
+ */
 public interface StravaApi {
-    public suspend fun exchangeCode(app: StravaApp, code: String): Outcome<StravaGrant, StravaError>
+    public suspend fun exchangeCode(code: String): Outcome<StravaGrant, StravaError>
 
-    public suspend fun refresh(app: StravaApp, refreshToken: String): Outcome<StravaGrant, StravaError>
+    public suspend fun refresh(refreshToken: String): Outcome<StravaGrant, StravaError>
 
     /** Revokes [token] (and so the whole grant). */
-    public suspend fun revoke(app: StravaApp, token: String): Outcome<Unit, StravaError>
+    public suspend fun revoke(token: String): Outcome<Unit, StravaError>
 
     /** `POST /uploads` (multipart): sends the FIT file at [StravaUploadRequest.filePath]. */
     public suspend fun upload(

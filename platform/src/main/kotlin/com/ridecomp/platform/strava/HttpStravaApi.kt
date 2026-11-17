@@ -1,8 +1,8 @@
 package com.ridecomp.platform.strava
 
 import com.ridecomp.core.config.StravaConfig
-import com.ridecomp.core.model.StravaApp
 import com.ridecomp.core.model.StravaError
+import com.ridecomp.core.model.StravaSetup
 import com.ridecomp.core.source.Clock
 import com.ridecomp.core.source.DispatcherProvider
 import com.ridecomp.core.source.Logger
@@ -22,41 +22,30 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import java.util.Base64
 import java.util.UUID
 import javax.net.ssl.HttpsURLConnection
 import kotlinx.coroutines.withContext
 
 /**
- * Strava over HTTPS with the platform's `HttpsURLConnection` (no HTTP library, D-79): system trust only
+ * Strava over HTTPS with the platform's `HttpsURLConnection` (no HTTP library, D-79); token calls go to
+ * RideComp's token server, which holds the client secret (D-82). System trust only
  * (network_security_config), timeouts, no redirects followed, replies size-limited and validated
  * (SEC-NET-01..04). Tokens and replies are never logged, only the status code.
  */
 class HttpStravaApi(
+    private val setup: StravaSetup,
     private val clock: Clock,
     private val dispatchers: DispatcherProvider,
     private val logger: Logger,
 ) : StravaApi {
-    override suspend fun exchangeCode(app: StravaApp, code: String): Outcome<StravaGrant, StravaError> = grant(
-        app,
-        listOf(GRANT_TYPE to "authorization_code", CODE to code),
-    )
+    override suspend fun exchangeCode(code: String): Outcome<StravaGrant, StravaError> =
+        grant(StravaConfig.TOKEN_SERVER_TOKEN_PATH, listOf(CODE to code))
 
-    override suspend fun refresh(app: StravaApp, refreshToken: String): Outcome<StravaGrant, StravaError> = grant(
-        app,
-        listOf(GRANT_TYPE to "refresh_token", REFRESH_TOKEN to refreshToken),
-    )
+    override suspend fun refresh(refreshToken: String): Outcome<StravaGrant, StravaError> =
+        grant(StravaConfig.TOKEN_SERVER_REFRESH_PATH, listOf(REFRESH_TOKEN to refreshToken))
 
-    override suspend fun revoke(app: StravaApp, token: String): Outcome<Unit, StravaError> {
-        val basic = Base64.getEncoder().encodeToString("${app.clientId}:${app.clientSecret}".toByteArray())
-        val reply = send(
-            HttpRequest(
-                url = StravaConfig.REVOKE_URL,
-                headers = mapOf(AUTHORIZATION to "$BASIC $basic"),
-                contentType = FORM_CONTENT_TYPE,
-                writeBody = { out -> out.write(form(listOf(TOKEN to token, TOKEN_TYPE_HINT to REFRESH_TOKEN))) },
-            ),
-        )
+    override suspend fun revoke(token: String): Outcome<Unit, StravaError> {
+        val reply = send(tokenServerRequest(StravaConfig.TOKEN_SERVER_REVOKE_PATH, listOf(TOKEN to token)))
         return when (reply) {
             is Outcome.Success -> Unit.asSuccess()
             is Outcome.Failure -> reply
@@ -128,13 +117,18 @@ class HttpStravaApi(
     /** Header-safe file name (no quotes or line breaks). */
     private fun String.safeFileName(): String = filter { it.isLetterOrDigit() || it in SAFE_NAME_CHARS }
 
-    private suspend fun grant(app: StravaApp, params: List<Pair<String, String>>): Outcome<StravaGrant, StravaError> {
-        val body = form(listOf(CLIENT_ID to app.clientId, CLIENT_SECRET to app.clientSecret) + params)
-        val request = HttpRequest(StravaConfig.TOKEN_URL, emptyMap(), FORM_CONTENT_TYPE, writeBody = { it.write(body) })
-        return when (val reply = send(request)) {
+    private suspend fun grant(path: String, params: List<Pair<String, String>>): Outcome<StravaGrant, StravaError> =
+        when (val reply = send(tokenServerRequest(path, params))) {
             is Outcome.Success -> StravaJson.grant(reply.value)?.asSuccess() ?: StravaError.BAD_RESPONSE.asFailure()
             is Outcome.Failure -> reply
         }
+
+    /** A form POST to RideComp's token server, which adds the client secret (D-82). */
+    private fun tokenServerRequest(path: String, params: List<Pair<String, String>>): HttpRequest {
+        val body = form(params)
+        return HttpRequest(setup.tokenServerUrl.trimEnd('/') + path, emptyMap(), FORM_CONTENT_TYPE, writeBody = {
+            it.write(body)
+        })
     }
 
     /** Sends [request] and returns the reply text of a 2xx answer. */
@@ -228,16 +222,11 @@ class HttpStravaApi(
         const val CONTENT_TYPE = "Content-Type"
         const val ACCEPT = "Accept"
         const val AUTHORIZATION = "Authorization"
-        const val BASIC = "Basic"
         const val FORM_CONTENT_TYPE = "application/x-www-form-urlencoded"
         const val JSON_CONTENT_TYPE = "application/json"
-        const val CLIENT_ID = "client_id"
-        const val CLIENT_SECRET = "client_secret"
-        const val GRANT_TYPE = "grant_type"
         const val CODE = "code"
         const val REFRESH_TOKEN = "refresh_token"
         const val TOKEN = "token"
-        const val TOKEN_TYPE_HINT = "token_type_hint"
         const val HTTP_TOO_MANY_REQUESTS = 429
         const val BUFFER_BYTES = 8 * 1024
         val HTTP_OK_RANGE = 200..299

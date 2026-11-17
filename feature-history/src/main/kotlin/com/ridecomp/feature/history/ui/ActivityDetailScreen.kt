@@ -527,10 +527,38 @@ private fun StravaRow(
     onOpenSettings: () -> Unit,
     onOpenActivity: (Long) -> Unit,
 ) {
-    val upload = state.stravaUpload
+    val row = state.stravaRowLook(onEvent, onOpenSettings, onOpenActivity) ?: return
+    val colors = RideCompTheme.colors
+    ListCardRow(
+        title = stringResource(row.titleRes),
+        subtitle = stringResource(row.subtitleRes),
+        value = if (row.isDone) stringResource(R.string.detail_strava_sent) else null,
+        valueTone = ValueTone.OK,
+        onClick = row.onClick,
+        leading = {
+            IconTile(
+                if (row.isDone) UiR.drawable.ic_check else UiR.drawable.ic_upload,
+                tint = when {
+                    row.isDone -> colors.ok
+                    row.isFailed -> colors.danger
+                    else -> colors.accent
+                },
+            )
+        },
+    )
+}
+
+/** What the Strava row says and does; null hides it (a build without Strava, D-82, or still loading). */
+private fun ActivityDetailUiState.stravaRowLook(
+    onEvent: (ActivityDetailUiEvent) -> Unit,
+    onOpenSettings: () -> Unit,
+    onOpenActivity: (Long) -> Unit,
+): StravaRowLook? {
+    if (stravaStatus == null || stravaStatus == StravaStatus.Unavailable) return null
+    val upload = stravaUpload
     val stravaId = upload?.stravaActivityId
-    val isConnected = state.stravaStatus is StravaStatus.Connected
-    val row = when {
+    val isConnected = stravaStatus is StravaStatus.Connected
+    return when {
         upload?.state?.isOnStrava == true && stravaId != null -> StravaRowLook(
             R.string.detail_strava_view,
             R.string.detail_strava_on_strava,
@@ -561,24 +589,6 @@ private fun StravaRow(
             onClick = { onEvent(ActivityDetailUiEvent.UploadToStrava) },
         )
     }
-    val colors = RideCompTheme.colors
-    ListCardRow(
-        title = stringResource(row.titleRes),
-        subtitle = stringResource(row.subtitleRes),
-        value = if (row.isDone) stringResource(R.string.detail_strava_sent) else null,
-        valueTone = ValueTone.OK,
-        onClick = row.onClick,
-        leading = {
-            IconTile(
-                if (row.isDone) UiR.drawable.ic_check else UiR.drawable.ic_upload,
-                tint = when {
-                    row.isDone -> colors.ok
-                    row.isFailed -> colors.danger
-                    else -> colors.accent
-                },
-            )
-        },
-    )
 }
 
 private class StravaRowLook(

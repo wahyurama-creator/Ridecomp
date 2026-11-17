@@ -7,6 +7,7 @@ import com.ridecomp.core.engine.safety.IncidentManager
 import com.ridecomp.core.engine.sensors.BleScanner
 import com.ridecomp.core.engine.sensors.SensorConnector
 import com.ridecomp.core.engine.sensors.SensorRepository
+import com.ridecomp.core.model.StravaSetup
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.OfflineMapRepository
 import com.ridecomp.core.repository.ProfileRepository
@@ -80,7 +81,8 @@ val platformModule = module {
     single<BatteryLevelSource> { AndroidBatteryLevelSource(androidContext()) }
     single<IdGenerator> { UuidIdGenerator() }
     single<StravaAccountStore> { AndroidStravaAccountStore(androidContext(), get(), get()) }
-    single<StravaApi> { HttpStravaApi(get(), get(), get()) }
+    single { StravaSetup(BuildConfig.STRAVA_CLIENT_ID, BuildConfig.STRAVA_TOKEN_SERVER_URL) }
+    single<StravaApi> { HttpStravaApi(get(), get(), get(), get()) }
     single<RideNameProvider> { AndroidRideNameProvider(androidContext()) }
     single { AlertPlayer(androidContext()) }
     single { RideStateHolder() }
