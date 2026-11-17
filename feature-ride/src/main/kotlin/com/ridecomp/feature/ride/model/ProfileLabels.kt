@@ -5,6 +5,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.ridecomp.core.model.ActivityKind
 import com.ridecomp.core.model.ActivityProfile
+import com.ridecomp.core.model.Bike
+import com.ridecomp.core.util.toPlainString
 import com.ridecomp.feature.ride.R
 
 @StringRes
@@ -20,3 +22,16 @@ fun ActivityKind.labelRes(): Int = when (this) {
 /** Rider-chosen name, or the localized kind name for built-ins. */
 @Composable
 fun ActivityProfile.displayName(): String = name.ifBlank { stringResource(kind.labelRes()) }
+
+/** Rider-chosen name, or "My bike" for the bike created with the app (D-89). */
+@Composable
+fun Bike.displayName(): String = name.ifBlank { stringResource(R.string.bike_default_name) }
+
+/** "Road · 9 kg · 2105 mm": type, weight and wheel size of a bike. */
+@Composable
+fun bikeSummary(bike: Bike, profile: ActivityProfile?): String = stringResource(
+    R.string.bike_summary,
+    profile?.displayName() ?: stringResource(ActivityKind.ROAD.labelRes()),
+    bike.weightKg.toPlainString(),
+    bike.wheelCircumferenceMm,
+)

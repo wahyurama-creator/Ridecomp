@@ -26,6 +26,7 @@ internal object SettingsKeys {
     const val ONBOARDING_DONE = "app.onboarding_done"
     const val DATA_PAGES = "ride.data_pages"
     const val LAST_PROFILE_ID = "app.last_profile_id"
+    const val LAST_BIKE_ID = "app.last_bike_id"
     const val BACKUP_LAST_AT = "backup.last_at"
     const val BACKUP_ACTIVITY_COUNT = "backup.activity_count"
     const val BACKUP_SNOOZED_UNTIL = "backup.reminder_snoozed_until"

@@ -16,6 +16,7 @@ import com.ridecomp.core.usecase.CreateSegmentFromActivityUseCase
 import com.ridecomp.core.usecase.CreateSegmentFromClimbUseCase
 import com.ridecomp.core.usecase.DeleteActivityProfileUseCase
 import com.ridecomp.core.usecase.DeleteActivityUseCase
+import com.ridecomp.core.usecase.DeleteBikeUseCase
 import com.ridecomp.core.usecase.DeleteOfflineMapUseCase
 import com.ridecomp.core.usecase.DeleteRouteUseCase
 import com.ridecomp.core.usecase.DeleteSegmentUseCase
@@ -33,6 +34,7 @@ import com.ridecomp.core.usecase.ExtendTrainingToTodayUseCase
 import com.ridecomp.core.usecase.ForgetSensorUseCase
 import com.ridecomp.core.usecase.GetActivityKindUseCase
 import com.ridecomp.core.usecase.GetAppLanguageUseCase
+import com.ridecomp.core.usecase.GetBikeUseCase
 import com.ridecomp.core.usecase.GetFreeStorageUseCase
 import com.ridecomp.core.usecase.GetLapsUseCase
 import com.ridecomp.core.usecase.GetLiveSegmentsUseCase
@@ -41,6 +43,7 @@ import com.ridecomp.core.usecase.GetRecoverableRideUseCase
 import com.ridecomp.core.usecase.GetRideProfileUseCase
 import com.ridecomp.core.usecase.GetRouteGuidanceUseCase
 import com.ridecomp.core.usecase.GetRoutePointsUseCase
+import com.ridecomp.core.usecase.GetSelectedBikeUseCase
 import com.ridecomp.core.usecase.GetStravaAccessTokenUseCase
 import com.ridecomp.core.usecase.HandleRecoveredRideUseCase
 import com.ridecomp.core.usecase.HasProfileUseCase
@@ -54,6 +57,7 @@ import com.ridecomp.core.usecase.ObserveActivityProfileUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
 import com.ridecomp.core.usecase.ObserveBackupReminderUseCase
+import com.ridecomp.core.usecase.ObserveBikeChoiceUseCase
 import com.ridecomp.core.usecase.ObserveDataPagesUseCase
 import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
 import com.ridecomp.core.usecase.ObserveGuideUseCase
@@ -102,6 +106,7 @@ import com.ridecomp.core.usecase.RestoreBackupUseCase
 import com.ridecomp.core.usecase.ReverseRouteUseCase
 import com.ridecomp.core.usecase.SaveActivityFileUseCase
 import com.ridecomp.core.usecase.SaveActivityProfileUseCase
+import com.ridecomp.core.usecase.SaveBikeUseCase
 import com.ridecomp.core.usecase.SaveDataPagesUseCase
 import com.ridecomp.core.usecase.SaveProfileUseCase
 import com.ridecomp.core.usecase.SaveRideSettingsUseCase
@@ -110,6 +115,7 @@ import com.ridecomp.core.usecase.SaveShareCardUseCase
 import com.ridecomp.core.usecase.ScanSensorsUseCase
 import com.ridecomp.core.usecase.SegmentsStep
 import com.ridecomp.core.usecase.SelectActivityProfileUseCase
+import com.ridecomp.core.usecase.SelectBikeUseCase
 import com.ridecomp.core.usecase.SendTestSmsUseCase
 import com.ridecomp.core.usecase.SetAppLanguageUseCase
 import com.ridecomp.core.usecase.SetRiderLevelUseCase
@@ -208,6 +214,12 @@ val useCaseModule = module {
     factory { SaveActivityProfileUseCase(get()) }
     factory { DuplicateActivityProfileUseCase(get()) }
     factory { DeleteActivityProfileUseCase(get()) }
+    factory { DeleteBikeUseCase(get()) }
+    factory { GetBikeUseCase(get()) }
+    factory { GetSelectedBikeUseCase(get()) }
+    factory { ObserveBikeChoiceUseCase(get()) }
+    factory { SaveBikeUseCase(get()) }
+    factory { SelectBikeUseCase(get()) }
     factory { ObserveSafetyUseCase(get()) }
     factory { SaveRiderNameUseCase(get()) }
     factory { SetSafetyEnabledUseCase(get(), get()) }

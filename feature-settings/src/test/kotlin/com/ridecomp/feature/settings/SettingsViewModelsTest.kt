@@ -149,15 +149,6 @@ class SettingsViewModelsTest {
     }
 
     @Test
-    fun `picking a common wheel fills the circumference`() {
-        val viewModel = profileViewModel()
-
-        viewModel.onEvent(ProfileUiEvent.WheelPicked(2_136))
-
-        assertEquals("2136", viewModel.uiState.value.wheelCircumferenceMm)
-    }
-
-    @Test
     fun `ride settings changes are saved immediately`() = runTest {
         val repository = FakeSettingsRepository()
         val viewModel =

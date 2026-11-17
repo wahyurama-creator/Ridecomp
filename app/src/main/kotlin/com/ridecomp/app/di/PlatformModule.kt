@@ -36,6 +36,7 @@ import com.ridecomp.core.usecase.ExportFitUseCase
 import com.ridecomp.core.usecase.GetLiveSegmentsUseCase
 import com.ridecomp.core.usecase.GetRideProfileUseCase
 import com.ridecomp.core.usecase.GetRouteGuidanceUseCase
+import com.ridecomp.core.usecase.GetSelectedBikeUseCase
 import com.ridecomp.platform.backup.AndroidAppRestarter
 import com.ridecomp.platform.backup.AndroidBackupFiles
 import com.ridecomp.platform.backup.JsonBackupManifestCodec
@@ -120,6 +121,7 @@ class KoinRecordingDependencies(private val koin: Koin) : RecordingDependencies 
     override val alertPlayer get() = koin.get<AlertPlayer>()
     override val exportFit get() = koin.get<ExportFitUseCase>()
     override val getRideProfile get() = koin.get<GetRideProfileUseCase>()
+    override val getSelectedBike get() = koin.get<GetSelectedBikeUseCase>()
     override val incidentManager get() = koin.get<IncidentManager>()
     override val accelerometerSource get() = koin.get<AccelerometerSource>()
     override val routeRepository get() = koin.get<RouteRepository>()

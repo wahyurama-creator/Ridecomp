@@ -2,8 +2,10 @@ package com.ridecomp.data.db
 
 import androidx.room.Room
 import androidx.room.testing.MigrationTestHelper
+import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.ridecomp.core.config.ProfileDefaults
 import kotlin.test.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -113,6 +115,58 @@ class RideCompMigrationTest {
     }
 
     @Test
+    fun migrate_7_to_8_makes_the_first_bike_from_the_profile_and_last_used_type() {
+        helper.createDatabase(TEST_DB_8, 7).apply {
+            insertProfiles()
+            execSQL(
+                "INSERT INTO profile (id, weight_kg, bike_weight_kg, wheel_circumference_mm, riding_position, " +
+                    "surface) VALUES (1, 68.0, 11.5, 2136, 'hoods', 'road')",
+            )
+            execSQL("INSERT INTO settings (`key`, value) VALUES ('app.last_profile_id', '3')")
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(TEST_DB_8, 8, true, RideCompMigrations.MIGRATION_7_8)
+
+        db.query("SELECT name, profile_id, weight_kg, wheel_circumference_mm FROM bikes").use { cursor ->
+            assertEquals(1, cursor.count)
+            cursor.moveToFirst()
+            assertEquals("", cursor.getString(0))
+            assertEquals(3L, cursor.getLong(1))
+            assertEquals(11.5, cursor.getDouble(2), 0.0)
+            assertEquals(2_136, cursor.getInt(3))
+        }
+    }
+
+    @Test
+    fun migrate_7_to_8_without_a_profile_uses_the_defaults_and_road() {
+        helper.createDatabase(TEST_DB_8_EMPTY, 7).apply {
+            insertProfiles()
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(TEST_DB_8_EMPTY, 8, true, RideCompMigrations.MIGRATION_7_8)
+
+        db.query("SELECT profile_id, weight_kg, wheel_circumference_mm FROM bikes").use { cursor ->
+            assertEquals(1, cursor.count)
+            cursor.moveToFirst()
+            assertEquals(1L, cursor.getLong(0))
+            assertEquals(ProfileDefaults.BIKE_WEIGHT_KG, cursor.getDouble(1), 0.0)
+            assertEquals(ProfileDefaults.WHEEL_CIRCUMFERENCE_MM, cursor.getInt(2))
+        }
+    }
+
+    /** Road (id 1) and MTB (id 3), as seeded on a real install. */
+    private fun SupportSQLiteDatabase.insertProfiles() {
+        listOf(1 to "road", 3 to "mtb").forEachIndexed { order, (id, kind) ->
+            execSQL(
+                "INSERT INTO activity_profiles (id, name, kind, gps_enabled, surface, riding_position, fit_sport, " +
+                    "fit_sub_sport, sort_order) VALUES ($id, '', '$kind', 1, 'road', 'hoods', 2, 0, $order)",
+            )
+        }
+    }
+
+    @Test
     fun all_migrations_open_on_latest_schema() {
         helper.createDatabase(TEST_DB_ALL, 1).close()
 
@@ -132,5 +186,7 @@ class RideCompMigrationTest {
         const val TEST_DB_3 = "migration-3-test.db"
         const val TEST_DB_7 = "migration-7-test.db"
         const val TEST_DB_6 = "migration-6-test.db"
+        const val TEST_DB_8 = "migration-8-test.db"
+        const val TEST_DB_8_EMPTY = "migration-8-empty-test.db"
     }
 }

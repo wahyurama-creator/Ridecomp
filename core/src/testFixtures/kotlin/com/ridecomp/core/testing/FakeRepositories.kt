@@ -3,6 +3,7 @@ package com.ridecomp.core.testing
 import com.ridecomp.core.model.Activity
 import com.ridecomp.core.model.ActivityProfile
 import com.ridecomp.core.model.ActivityStatus
+import com.ridecomp.core.model.Bike
 import com.ridecomp.core.model.BuiltInProfiles
 import com.ridecomp.core.model.DataPagesLayout
 import com.ridecomp.core.model.Lap
@@ -15,6 +16,7 @@ import com.ridecomp.core.model.RiderProfile
 import com.ridecomp.core.repository.ActivityAnalysisRepository
 import com.ridecomp.core.repository.ActivityProfileRepository
 import com.ridecomp.core.repository.ActivityRepository
+import com.ridecomp.core.repository.BikeRepository
 import com.ridecomp.core.repository.NewActivity
 import com.ridecomp.core.repository.PendingAnalysis
 import com.ridecomp.core.repository.ProfileRepository
@@ -249,6 +251,32 @@ public class FakeActivityProfileRepository(
 
     override suspend fun delete(id: Long) {
         profiles.value = profiles.value.filterNot { it.id == id }
+    }
+
+    override fun observeLastUsedId(): Flow<Long?> = lastUsed
+
+    override suspend fun setLastUsedId(id: Long) {
+        lastUsed.value = id
+    }
+}
+
+/** In-memory bikes; seeded like a fresh install with one bike of type Road (id 1). */
+public class FakeBikeRepository(seed: List<Bike> = listOf(Bike(id = 1, profileId = 1))) : BikeRepository {
+    private val bikes = MutableStateFlow(seed)
+    private val lastUsed = MutableStateFlow<Long?>(null)
+
+    override fun observeAll(): Flow<List<Bike>> = bikes.map { list -> list.sortedBy { it.id } }
+
+    override suspend fun get(id: Long): Bike? = bikes.value.firstOrNull { it.id == id }
+
+    override suspend fun save(bike: Bike): Long {
+        val id = if (bike.id == 0L) (bikes.value.maxOfOrNull { it.id } ?: 0L) + 1 else bike.id
+        bikes.value = bikes.value.filterNot { it.id == id } + bike.copy(id = id)
+        return id
+    }
+
+    override suspend fun delete(id: Long) {
+        bikes.value = bikes.value.filterNot { it.id == id }
     }
 
     override fun observeLastUsedId(): Flow<Long?> = lastUsed

@@ -6,17 +6,21 @@ import com.ridecomp.core.engine.recording.BatteryStatus
 import com.ridecomp.core.engine.route.Route
 import com.ridecomp.core.engine.sensors.SavedSensor
 import com.ridecomp.core.model.ActivityProfile
+import com.ridecomp.core.model.Bike
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.ScreenMode
+import com.ridecomp.core.usecase.BikeChoice
 import com.ridecomp.core.usecase.GpsStatus
+import com.ridecomp.core.usecase.ObserveBikeChoiceUseCase
 import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
 import com.ridecomp.core.usecase.ObserveProfileChoiceUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveRouteUseCase
 import com.ridecomp.core.usecase.ObserveSavedSensorsUseCase
+import com.ridecomp.core.usecase.ProfileChoice
 import com.ridecomp.core.usecase.ReadBatteryUseCase
 import com.ridecomp.core.usecase.SaveRideSettingsUseCase
-import com.ridecomp.core.usecase.SelectActivityProfileUseCase
+import com.ridecomp.core.usecase.SelectBikeUseCase
 import com.ridecomp.core.usecase.StartRideUseCase
 import com.ridecomp.ui.udf.UdfViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -25,6 +29,7 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -32,11 +37,15 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/** Battery and the profile picker of the pre-ride check; GPS status is a separate lifecycle-bound flow. */
+/** Battery and the bike picker of the pre-ride check; GPS status is a separate lifecycle-bound flow. */
 @Immutable
 data class PreRideUiState(
     val battery: BatteryStatus?,
+    /** Saved bikes (D-89); the picked one decides the activity profile. */
+    val bikes: ImmutableList<Bike> = persistentListOf(),
+    val bike: Bike? = null,
     val profiles: ImmutableList<ActivityProfile> = persistentListOf(),
+    /** The activity profile of the picked bike. */
     val selected: ActivityProfile? = null,
     /** Route to follow (T3.6), chosen from the route detail; null for a free ride. */
     val route: Route? = null,
@@ -52,7 +61,7 @@ data class PreRideUiState(
 }
 
 sealed interface PreRideUiEvent {
-    data class SelectProfile(val id: Long) : PreRideUiEvent
+    data class SelectBike(val id: Long) : PreRideUiEvent
 
     /** Ride without the route. */
     data object ClearRoute : PreRideUiEvent
@@ -67,20 +76,21 @@ sealed interface PreRideEffect {
     data object OpenRide : PreRideEffect
 }
 
-/**
- * Pre-ride check (02-DESIGN §3.3) with the activity profile picker (12-FEATURE-SPECS §4). GPS warms up only
- * while the screen is visible and only for profiles that use GPS: [gpsStatus] is shared with
- * `WhileSubscribed`, so leaving the screen or choosing Indoor stops location updates (BAT-01, CO-07).
- */
 /** Use cases of the pre-ride check, grouped to keep the constructor short. */
 data class PreRideUseCases(
     val observeGps: ObserveGpsStatusUseCase,
     val readBattery: ReadBatteryUseCase,
-    val observeProfiles: ObserveProfileChoiceUseCase,
-    val selectProfile: SelectActivityProfileUseCase,
+    val bikes: PreRideBikeUseCases,
     val observeRoute: ObserveRouteUseCase,
     val startRide: StartRideUseCase,
     val options: PreRideOptionUseCases,
+)
+
+/** The bike picker: saved bikes and their activity profiles (D-89). */
+data class PreRideBikeUseCases(
+    val observeBikes: ObserveBikeChoiceUseCase,
+    val selectBike: SelectBikeUseCase,
+    val observeProfiles: ObserveProfileChoiceUseCase,
 )
 
 /** Sensors and the screen mode setting shown on the pre-ride check. */
@@ -90,20 +100,42 @@ data class PreRideOptionUseCases(
     val saveSettings: SaveRideSettingsUseCase,
 )
 
+/** The picked bike with its activity profile. */
+private data class RideChoice(val bikes: BikeChoice, val profiles: ProfileChoice) {
+    /** A bike whose custom profile was deleted rides with the default profile. */
+    val profile: ActivityProfile?
+        get() = profiles.profiles.firstOrNull { it.id == bikes.selected?.profileId } ?: profiles.selected
+}
+
+/**
+ * Pre-ride check (02-DESIGN §3.3) with the bike picker (D-89); the bike's type is its activity profile
+ * (12-FEATURE-SPECS §4). GPS warms up only while the screen is visible and only for profiles that use GPS:
+ * [gpsStatus] is shared with `WhileSubscribed`, so leaving the screen or picking an indoor bike stops
+ * location updates (BAT-01, CO-07).
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
 class PreRideViewModel(routeId: Long?, private val useCases: PreRideUseCases) :
     UdfViewModel<PreRideUiState, PreRideUiEvent, PreRideEffect>(PreRideUiState(useCases.readBattery())) {
-    private val choice = useCases.observeProfiles()
+    private val choice = combine(useCases.bikes.observeBikes(), useCases.bikes.observeProfiles(), ::RideChoice)
 
     val gpsStatus: StateFlow<GpsStatus> = choice
-        .map { it.selected?.isGpsEnabled != false }
+        .map { it.profile?.isGpsEnabled != false }
         .distinctUntilChanged()
         .flatMapLatest { isGpsUsed -> if (isGpsUsed) useCases.observeGps() else flowOf(GpsStatus.NotUsed) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), GpsStatus.Searching())
 
     init {
         viewModelScope.launch {
-            choice.collect { updateState { copy(profiles = it.profiles.toImmutableList(), selected = it.selected) } }
+            choice.collect { choice ->
+                updateState {
+                    copy(
+                        bikes = choice.bikes.bikes.toImmutableList(),
+                        bike = choice.bikes.selected,
+                        profiles = choice.profiles.profiles.toImmutableList(),
+                        selected = choice.profile,
+                    )
+                }
+            }
         }
         viewModelScope.launch {
             useCases.options.observeSensors().collect { updateState { copy(sensors = it.toImmutableList()) } }
@@ -118,7 +150,7 @@ class PreRideViewModel(routeId: Long?, private val useCases: PreRideUseCases) :
 
     override fun onEvent(event: PreRideUiEvent) {
         when (event) {
-            is PreRideUiEvent.SelectProfile -> viewModelScope.launch { useCases.selectProfile(event.id) }
+            is PreRideUiEvent.SelectBike -> viewModelScope.launch { useCases.bikes.selectBike(event.id) }
             PreRideUiEvent.ClearRoute -> updateState { copy(route = null) }
             is PreRideUiEvent.SelectScreenMode -> viewModelScope.launch {
                 useCases.options.saveSettings(currentState.settings.copy(screenMode = event.mode))

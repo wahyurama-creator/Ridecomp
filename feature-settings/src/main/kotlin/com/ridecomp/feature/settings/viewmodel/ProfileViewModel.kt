@@ -11,6 +11,8 @@ import com.ridecomp.core.usecase.ObserveProfileUseCase
 import com.ridecomp.core.usecase.ProfileField
 import com.ridecomp.core.usecase.SaveProfileUseCase
 import com.ridecomp.core.util.fold
+import com.ridecomp.core.util.toDecimalOrNull
+import com.ridecomp.core.util.toPlainString
 import com.ridecomp.ui.udf.UdfViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -19,6 +21,7 @@ import kotlinx.coroutines.launch
 @Immutable
 data class ProfileUiState(
     val weightKg: String = "",
+    /** Not edited here any more (each saved bike has its own, D-89), but kept so saving never resets it. */
     val bikeWeightKg: String = "",
     val wheelCircumferenceMm: String = "",
     val hrMaxBpm: String = "",
@@ -42,9 +45,6 @@ sealed interface ProfileUiEvent {
     data class SexChanged(val sex: Sex?) : ProfileUiEvent
 
     data class PositionChanged(val position: RidingPosition) : ProfileUiEvent
-
-    /** Wheel size picked from the common sizes list. */
-    data class WheelPicked(val circumferenceMm: Int) : ProfileUiEvent
 
     data object EstimateHrMax : ProfileUiEvent
 
@@ -72,9 +72,6 @@ class ProfileViewModel(
             is ProfileUiEvent.FieldChanged -> updateState { withField(event.field, event.text) }
             is ProfileUiEvent.SexChanged -> updateState { copy(sex = event.sex) }
             is ProfileUiEvent.PositionChanged -> updateState { copy(ridingPosition = event.position) }
-            is ProfileUiEvent.WheelPicked -> updateState {
-                withField(ProfileField.WHEEL_CIRCUMFERENCE, event.circumferenceMm.toString())
-            }
             ProfileUiEvent.EstimateHrMax -> estimate()
             ProfileUiEvent.Save -> save()
         }
@@ -140,9 +137,6 @@ private fun ProfileUiState.withField(field: ProfileField, text: String): Profile
     }
 }
 
-/** Accepts both "70.5" and the Indonesian "70,5". */
-internal fun String.toDecimalOrNull(): Double? = trim().replace(DECIMAL_COMMA, DECIMAL_POINT).toDoubleOrNull()
-
 private fun String.toOptionalInt(): Int? = trim().takeIf { it.isNotEmpty() }?.toIntOrNull()
 
 private fun String.isUnparsableOptionalInt(): Boolean = trim().isNotEmpty() && trim().toIntOrNull() == null
@@ -174,9 +168,3 @@ private fun ProfileUiState.unparsableFields(): Set<ProfileField> = buildSet {
     if (ftpW.isUnparsableOptionalInt()) add(ProfileField.FTP)
     if (birthYear.isUnparsableOptionalInt()) add(ProfileField.BIRTH_YEAR)
 }
-
-/** 70.0 → "70", 70.5 → "70.5". */
-private fun Double.toPlainString(): String = if (this % 1.0 == 0.0) toLong().toString() else toString()
-
-private const val DECIMAL_COMMA = ','
-private const val DECIMAL_POINT = '.'

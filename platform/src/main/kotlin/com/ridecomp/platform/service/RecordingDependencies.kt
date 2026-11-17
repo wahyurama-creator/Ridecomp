@@ -19,6 +19,7 @@ import com.ridecomp.core.usecase.ExportFitUseCase
 import com.ridecomp.core.usecase.GetLiveSegmentsUseCase
 import com.ridecomp.core.usecase.GetRideProfileUseCase
 import com.ridecomp.core.usecase.GetRouteGuidanceUseCase
+import com.ridecomp.core.usecase.GetSelectedBikeUseCase
 import com.ridecomp.platform.device.AlertPlayer
 
 /**
@@ -46,6 +47,9 @@ interface RecordingDependencies {
 
     /** Activity profile of a ride (default when the id is unknown or null). */
     val getRideProfile: GetRideProfileUseCase
+
+    /** Bike picked before the ride: its weight and wheel size (D-89). */
+    val getSelectedBike: GetSelectedBikeUseCase
 
     /** Incident countdown and emergency SMS (single instance, T2.16). */
     val incidentManager: IncidentManager

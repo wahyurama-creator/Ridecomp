@@ -25,7 +25,7 @@ import org.koin.dsl.module
 /** ViewModels of the settings feature; use cases come from the app graph. */
 val settingsFeatureModule = module {
     viewModel { ProfileViewModel(get(), get(), get()) }
-    factory { SettingsUseCases(get(), get(), get(), get(), get(), get(), get()) }
+    factory { SettingsUseCases(get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { SettingsViewModel(get()) }
     viewModel { LanguageViewModel(get(), get()) }
     factory { OfflineMapsUseCases(get(), get(), get(), get()) }

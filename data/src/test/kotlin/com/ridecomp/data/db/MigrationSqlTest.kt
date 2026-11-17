@@ -105,6 +105,16 @@ class MigrationSqlTest {
     }
 
     @Test
+    fun `migration 7 to 8 creates the exported bikes table and seeds the first bike`() {
+        val executed = executedSql { RideCompMigrations.MIGRATION_7_8.migrate(it) }
+        val (creates, inserts) = executed.partition { it.startsWith(CREATE) }
+
+        assertEquals(exportedCreateSql(8, DbNames.TABLE_BIKES), creates)
+        assertEquals(1, inserts.size)
+        assertTrue(inserts.single().startsWith("INSERT INTO `${DbNames.TABLE_BIKES}`"))
+    }
+
+    @Test
     fun `every schema version has a migration path`() {
         val versions = File(SCHEMA_DIR).listFiles().orEmpty().mapNotNull { it.nameWithoutExtension.toIntOrNull() }
 

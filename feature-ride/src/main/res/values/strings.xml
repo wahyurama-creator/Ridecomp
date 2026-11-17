@@ -111,7 +111,6 @@
     <string name="data_pages_reset">Restore defaults</string>
     <string name="data_pages_choose_metric">Choose metric</string>
     <string name="data_pages_cancel">Cancel</string>
-    <string name="pre_ride_profile">Activity profile</string>
     <string name="pre_ride_gps_not_used">Not used (Indoor)</string>
     <string name="pre_ride_route">Route: %1$s</string>
     <string name="pre_ride_route_hint">Off-route alerts, distance to go and the route page are on.</string>
@@ -302,4 +301,31 @@
     <string name="ride_segment_pr">Segment record</string>
     <string name="ride_segment_remaining">%1$s %2$s to go</string>
     <string name="ride_lap_done">✓ Lap %1$d · %2$s · %3$s %4$s</string>
+
+    <!-- Saved bikes (D-89) -->
+    <string name="bikes_title">My bikes</string>
+    <string name="bikes_intro">Save each bike once, then just pick it before a ride. Its type sets the data pages and GPS; its weight and wheel size are used for estimated power and the speed sensor.</string>
+    <string name="bikes_in_use">✓ Next ride</string>
+    <string name="bikes_use">Use</string>
+    <string name="bikes_add">Add a bike</string>
+    <string name="bike_default_name">My bike</string>
+    <string name="bike_summary">%1$s · %2$s kg · %3$d mm</string>
+    <string name="bike_add_title">New bike</string>
+    <string name="bike_edit_title">Edit bike</string>
+    <string name="bike_name">Name (e.g. Polygon Strattos)</string>
+    <string name="bike_type">Bike type</string>
+    <string name="bike_type_hint">Sets the data pages, GPS and the activity type in the FIT file.</string>
+    <string name="bike_weight">Bike weight</string>
+    <string name="bike_wheel">Wheel circumference</string>
+    <string name="bike_wheel_common">Common tyre sizes</string>
+    <string name="bike_error_invalid">Check this value</string>
+    <string name="bike_save">Save</string>
+    <string name="bike_save_next">Save &amp; continue</string>
+    <string name="bike_delete">Delete bike</string>
+    <string name="bike_delete_title">Delete %1$s?</string>
+    <string name="bike_delete_message">Only the saved bike is removed; your rides stay.</string>
+    <string name="unit_kg" translatable="false">kg</string>
+    <string name="unit_mm" translatable="false">mm</string>
+    <string name="pre_ride_bike">Bike</string>
+    <string name="pre_ride_manage_bikes">Manage</string>
 </resources>

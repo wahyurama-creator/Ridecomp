@@ -6,6 +6,7 @@ import com.ridecomp.core.engine.route.RouteClimb
 import com.ridecomp.core.engine.route.RoutePoint
 import com.ridecomp.core.engine.route.RouteTurn
 import com.ridecomp.core.model.ActivityProfile
+import com.ridecomp.core.model.Bike
 import com.ridecomp.core.model.DataPagesLayout
 import com.ridecomp.core.model.EmergencyContact
 import com.ridecomp.core.model.IncidentRecord
@@ -55,6 +56,23 @@ public interface ActivityProfileRepository {
 
     /** Inserts when `id == 0`, otherwise updates; returns the id. */
     public suspend fun save(profile: ActivityProfile): Long
+
+    public suspend fun delete(id: Long)
+
+    public fun observeLastUsedId(): Flow<Long?>
+
+    public suspend fun setLastUsedId(id: Long)
+}
+
+/** Saved bikes (`bikes`, schema v8, D-89); the last used one is preselected before a ride. */
+public interface BikeRepository {
+    /** All bikes in the order they were added. */
+    public fun observeAll(): Flow<List<Bike>>
+
+    public suspend fun get(id: Long): Bike?
+
+    /** Inserts when `id == 0`, otherwise updates; returns the id. */
+    public suspend fun save(bike: Bike): Long
 
     public suspend fun delete(id: Long)
 

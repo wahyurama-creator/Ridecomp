@@ -21,7 +21,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ridecomp.core.config.ProfileDefaults
 import com.ridecomp.core.model.RidingPosition
 import com.ridecomp.core.model.Sex
 import com.ridecomp.core.usecase.ProfileField
@@ -97,28 +96,17 @@ fun ProfileForm(
         verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
     ) {
         header()
-        Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm)) {
-            RideCompTextField(
-                label = stringResource(R.string.profile_weight),
-                value = state.weightKg,
-                onValueChange = change(ProfileField.WEIGHT),
-                suffix = stringResource(R.string.unit_kg),
-                error = errorOf(ProfileField.WEIGHT),
-                keyboardType = KeyboardType.Decimal,
-                modifier = Modifier.weight(1f),
-            )
-            RideCompTextField(
-                label = stringResource(R.string.profile_bike_weight),
-                value = state.bikeWeightKg,
-                onValueChange = change(ProfileField.BIKE_WEIGHT),
-                suffix = stringResource(R.string.unit_kg),
-                error = errorOf(ProfileField.BIKE_WEIGHT),
-                keyboardType = KeyboardType.Decimal,
-                modifier = Modifier.weight(1f),
-            )
-        }
+        // Bike weight and wheel size belong to each saved bike (D-89).
+        RideCompTextField(
+            label = stringResource(R.string.profile_weight),
+            value = state.weightKg,
+            onValueChange = change(ProfileField.WEIGHT),
+            suffix = stringResource(R.string.unit_kg),
+            error = errorOf(ProfileField.WEIGHT),
+            keyboardType = KeyboardType.Decimal,
+        )
         if (isOnboarding) {
-            // A beginner only needs the weights; the rest has sensible defaults (novice test, D-86).
+            // A beginner only needs the weight; the rest has sensible defaults (novice test, D-86).
             var isAdvancedShown by rememberSaveable { mutableStateOf(false) }
             AdvancedToggle(isShown = isAdvancedShown, onToggle = { isAdvancedShown = !isAdvancedShown })
             if (isAdvancedShown) AdvancedFields(state, onEvent, ::errorOf)
@@ -140,29 +128,13 @@ fun ProfileForm(
     }
 }
 
-/** Wheel size, HR max, FTP and hand position: shown in settings, folded away during onboarding. */
+/** HR max, FTP and hand position: shown in settings, folded away during onboarding. */
 @Composable
 private fun AdvancedFields(
     state: ProfileUiState,
     onEvent: (ProfileUiEvent) -> Unit,
     errorOf: (ProfileField) -> String?,
 ) {
-    RideCompTextField(
-        label = stringResource(R.string.profile_wheel),
-        value = state.wheelCircumferenceMm,
-        onValueChange = { onEvent(ProfileUiEvent.FieldChanged(ProfileField.WHEEL_CIRCUMFERENCE, it)) },
-        suffix = stringResource(R.string.unit_mm),
-        error = errorOf(ProfileField.WHEEL_CIRCUMFERENCE),
-        keyboardType = KeyboardType.Number,
-    )
-    ChoiceChips(
-        label = stringResource(R.string.profile_wheel_common),
-        choices = ProfileDefaults.COMMON_WHEELS_MM.map { (label, mm) -> Choice<Int?>(mm, label) }.toImmutableList(),
-        selected = state.wheelCircumferenceMm.toIntOrNull(),
-        onSelect = { mm -> mm?.let { onEvent(ProfileUiEvent.WheelPicked(it)) } },
-        horizontalPadding = RideCompDimens.none,
-        columns = WHEEL_COLUMNS,
-    )
     Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm)) {
         RideCompTextField(
             label = stringResource(R.string.profile_hr_max),
@@ -238,9 +210,6 @@ private fun AdvancedToggle(isShown: Boolean, onToggle: () -> Unit) {
 }
 
 private const val HALF_TURN_DEG = 180f
-
-/** Common wheel sizes in rows of three (13-UI-SCREENS #2 "Ukuran ban"). */
-private const val WHEEL_COLUMNS = 3
 
 /** Birth year (with the 220 − age estimate), resting HR and sex: optional, settings only. */
 @Composable
