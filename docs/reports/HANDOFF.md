@@ -1,6 +1,6 @@
 # Serah-terima pekerjaan (untuk melanjutkan di device / sesi lain)
 
-**Terakhir diperbarui:** 2026-11-13
+**Terakhir diperbarui:** 2026-11-17
 
 ## Status
 - **Fase 0, 1, 2:** selesai dan di-merge ke `main`. Laporan ada di `docs/reports/T0-…`, `T1-…`, `T2-phase2-sensors-safety-backup.md`.
@@ -20,13 +20,21 @@
 - **Fase 4 selesai** (T4.0–T4.6, D-65…D-73): lisensi open source, rekor, segmen + live segmen, beban latihan, kartu share. Laporan `docs/reports/T4-phase4-training-analysis.md` (menunggu review pemilik); OSV `security/phase4-osv-scan.txt` (0 temuan di APK). Skema DB v6.
 - **Fase 4G selesai** (TG.1–TG.3, D-74): level pesepeda di onboarding, tips kontekstual per level, Bantuan & panduan 12 topik. Diuji di realme RMX3830: Bantuan & 12 topik, ganti level, tips Pemula di Home/Rute/Sensor, "Pelajari" membuka topik, tutup tips, "Tampilkan lagi semua tips"; HP dikembalikan ke level Menengah. Langkah onboarding baru belum dicoba (butuh data app kosong). Perbaikan hasil review kode Fase 4 di D-75. Fase 5 (Strava API) opsional dan hanya dengan persetujuan eksplisit.
 
+- **Fase 5 selesai** (Strava, D-79…D-85): satu ketukan lewat server token Cloudflare Worker (`server/strava-token-server`), tombol & logo resmi Strava. Laporan `docs/reports/T5-phase5-strava.md`. Strava sempat membalas HTTP 500 saat menghubungkan ulang (masalah di sisi Strava); akun di HP saat ini terputus — coba hubungkan lagi.
+- **Uji pengguna awam & sensor simulasi** (TU.1–TU.4, D-86, D-87): perbaikan alur pemula, sensor simulasi debug (Developer → Simulated sensors), pemulihan ride lengkap. Laporan `docs/reports/TU-novice-and-sensor-test.md`.
+- **Bahasa aplikasi** (TL.1, D-88) dan **sepeda tersimpan** (TB.1, D-89, skema DB v8): laporan `docs/reports/TB-bikes-and-language.md`. HP uji saat ini berbahasa Indonesia.
+- **Peta online** (TM.1, D-90): OpenFreeMap saat ada internet, garis/breadcrumb tanpa internet; halaman Peta di semua ride ber-GPS, detail rute, detail aktivitas; Setelan → Peta. Laporan `docs/reports/TM-online-map.md`.
+- **Belum diuji di perangkat:** langkah onboarding Bahasa & Sepedamu dari awal (butuh hapus data app — perlu persetujuan pemilik setiap kali).
+- **Data uji di HP:** rute "Uji peta online" (bisa dihapus), ride "Morning ride" uji.
+- **Berikutnya menurut roadmap:** Fase 6 (iOS) atau ide Fase 7+ — menunggu pilihan pemilik.
+
 ## Yang perlu ditinjau pemilik
 - D-41: enkripsi backup per segmen di atas AES-GCM.
 - D-32: nilai FIT `sub_sport`, cek dengan FitCSVTool.
 - **Uji lapangan belum dilakukan** (hanya uji perangkat singkat dengan GPS simulasi, lihat atas). GPX uji simulasi: segi-7 r=527 m di pusat loop simulator (−7.7829, 110.3671) dengan tanjakan 6 % di km 1,0–1,9.
 
 ## Konvensi kerja (penting untuk agent berikutnya)
-- Baca `CLAUDE.md` dan `docs/` terlebih dulu. Keputusan tercatat di `docs/reports/DECISIONS.md` (D-01…D-75).
+- Baca `CLAUDE.md` dan `docs/` terlebih dulu. Keputusan tercatat di `docs/reports/DECISIONS.md` (D-01…D-90).
 - Satu branch per task (`feature/<TaskID>-<slug>`), Conventional Commit + ID task, merge `--no-ff` ke `main`.
 - Verifikasi sebelum commit: `./gradlew ktlintCheck detekt lint test koverVerify assembleDebug`.
 - Daemon Gradle memakai JDK 21. Bila dependency berubah: `--write-locks --write-verification-metadata sha256`.

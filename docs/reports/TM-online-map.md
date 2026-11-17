@@ -52,7 +52,7 @@ Tidak ada (MapLibre sudah dipakai sejak D-64). Layanan luar baru: `tiles.openfre
   - Wi‑Fi & data dimatikan sementara → halaman Peta berganti breadcrumb (garis oranye + titik posisi); dinyalakan lagi → peta online kembali otomatis. Wi‑Fi & data dikembalikan ke kondisi awal (keduanya aktif). Ride uji dibuang, service berhenti.
   - Setelan → Peta: pilihan Peta online + penjelasan; ringkasan "Online: Wi‑Fi & data".
   - Crash buffer kosong.
-  - Belum diuji di perangkat: detail rute (belum ada rute di HP) — dicakup unit test & kompilasi.
+  - Detail rute: GPX uji "Uji peta online" (lingkaran 3,33 km, diimpor dari Downloads) tampil di atas peta online dengan atribusi; tombol "Ride rute ini" dan profil elevasi tetap ada.
 
 ## 7. Keamanan
 - §D: request jaringan baru hanya HTTPS ke `tiles.openfreemap.org` (Network Security Config: HTTPS saja, trust anchor sistem); tanpa data pengguna selain koordinat tile yang diminta; tanpa telemetri; tidak ada komponen ter-export baru; izin baru `ACCESS_NETWORK_STATE` (normal); cache tile internal, tidak ikut backup cloud (aturan lama) maupun transfer perangkat (aturan baru).
