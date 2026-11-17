@@ -5,10 +5,15 @@ import com.ridecomp.core.engine.map.NetworkStatus
 import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RideAction
 import com.ridecomp.core.engine.safety.IncidentAction
+import com.ridecomp.core.model.ActivePlanState
 import com.ridecomp.core.model.ActivityKind
 import com.ridecomp.core.model.ActivityStatus
 import com.ridecomp.core.model.Bike
+import com.ridecomp.core.model.BuiltInPlan
 import com.ridecomp.core.model.EmergencyContact
+import com.ridecomp.core.model.Intensity
+import com.ridecomp.core.model.PlanRef
+import com.ridecomp.core.model.PlanSession
 import com.ridecomp.core.model.RideSample
 import com.ridecomp.core.model.RideStatus
 import com.ridecomp.core.model.SafetySettings
@@ -29,6 +34,7 @@ import com.ridecomp.core.testing.FakeRouteRepository
 import com.ridecomp.core.testing.FakeSafetyRepository
 import com.ridecomp.core.testing.FakeSensorRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
+import com.ridecomp.core.testing.FakeTrainingPlanRepository
 import com.ridecomp.core.testing.TestDispatcherProvider
 import com.ridecomp.core.usecase.CheckGpsAvailabilityUseCase
 import com.ridecomp.core.usecase.GetRecoverableRideUseCase
@@ -36,6 +42,7 @@ import com.ridecomp.core.usecase.GetRoutePointsUseCase
 import com.ridecomp.core.usecase.GpsStatus
 import com.ridecomp.core.usecase.HandleRecoveredRideUseCase
 import com.ridecomp.core.usecase.LoadRideTrailUseCase
+import com.ridecomp.core.usecase.ObserveActivePlanUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
 import com.ridecomp.core.usecase.ObserveBackupReminderUseCase
@@ -60,6 +67,7 @@ import com.ridecomp.core.usecase.SaveRideSettingsUseCase
 import com.ridecomp.core.usecase.SelectBikeUseCase
 import com.ridecomp.core.usecase.SnoozeBackupReminderUseCase
 import com.ridecomp.core.usecase.StartRideUseCase
+import com.ridecomp.core.usecase.TrainingCalendar
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.ride.model.DefaultDataPages
 import com.ridecomp.feature.ride.model.MetricCategory
@@ -87,6 +95,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -105,6 +114,7 @@ class RideViewModelsTest {
     private val settings = FakeSettingsRepository()
     private val profiles = FakeActivityProfileRepository()
     private val network = FakeNetworkStatusSource()
+    private val plans = FakeTrainingPlanRepository()
     private val bikes = FakeBikeRepository(
         listOf(Bike(id = 1, profileId = 1), Bike(id = TRAINER_BIKE_ID, name = "Trainer", profileId = INDOOR_ID)),
     )
@@ -135,6 +145,7 @@ class RideViewModelsTest {
                 ObserveSavedSensorsUseCase(FakeSensorRepository()),
                 CheckGpsAvailabilityUseCase(FakeLocationSource()),
             ),
+            ObserveActivePlanUseCase(plans, TrainingCalendar(FakeClock())),
         ),
     )
 
@@ -163,29 +174,46 @@ class RideViewModelsTest {
         assertTrue(viewModel.uiState.value.isRideInProgress)
     }
 
+    private fun preRideViewModel(location: FakeLocationSource = FakeLocationSource()) = PreRideViewModel(
+        routeId = null,
+        PreRideUseCases(
+            ObserveGpsStatusUseCase(location),
+            ReadBatteryUseCase(FakeBatteryLevelSource()),
+            PreRideBikeUseCases(
+                ObserveBikeChoiceUseCase(bikes),
+                SelectBikeUseCase(bikes),
+                ObserveProfileChoiceUseCase(profiles),
+                ObserveComponentWearUseCase(FakeBikeComponentRepository()),
+            ),
+            ObserveRouteUseCase(FakeRouteRepository()),
+            StartRideUseCase(controller),
+            PreRideOptionUseCases(
+                ObserveSavedSensorsUseCase(FakeSensorRepository()),
+                ObserveRideSettingsUseCase(settings),
+                SaveRideSettingsUseCase(settings),
+                ObserveActivePlanUseCase(plans, TrainingCalendar(FakeClock())),
+            ),
+        ),
+    )
+
+    @Test
+    fun `today's planned session is used by default and can be turned off`() = runTest {
+        plans.active.value = ActivePlanState(PlanRef.BuiltIn(BuiltInPlan.ZONE2_BASE), FakeClock().nowMs() / DAY_MS)
+        val viewModel = preRideViewModel()
+        assertEquals(PlanSession(Intensity.ENDURANCE, 45), viewModel.uiState.value.session)
+
+        viewModel.onEvent(PreRideUiEvent.Start)
+        assertTrue(controller.startedWithSession)
+
+        viewModel.onEvent(PreRideUiEvent.SessionOn(false))
+        viewModel.onEvent(PreRideUiEvent.Start)
+        assertFalse(controller.startedWithSession)
+    }
+
     @Test
     fun `pre ride start launches the ride with the picked bike's profile`() = runTest {
         val location = FakeLocationSource()
-        val viewModel = PreRideViewModel(
-            routeId = null,
-            PreRideUseCases(
-                ObserveGpsStatusUseCase(location),
-                ReadBatteryUseCase(FakeBatteryLevelSource()),
-                PreRideBikeUseCases(
-                    ObserveBikeChoiceUseCase(bikes),
-                    SelectBikeUseCase(bikes),
-                    ObserveProfileChoiceUseCase(profiles),
-                    ObserveComponentWearUseCase(FakeBikeComponentRepository()),
-                ),
-                ObserveRouteUseCase(FakeRouteRepository()),
-                StartRideUseCase(controller),
-                PreRideOptionUseCases(
-                    ObserveSavedSensorsUseCase(FakeSensorRepository()),
-                    ObserveRideSettingsUseCase(settings),
-                    SaveRideSettingsUseCase(settings),
-                ),
-            ),
-        )
+        val viewModel = preRideViewModel(location)
         assertEquals(ActivityKind.ROAD, viewModel.uiState.value.selected?.kind)
         // The trainer bike is an indoor bike: its type decides the profile (D-89).
         viewModel.onEvent(PreRideUiEvent.SelectBike(TRAINER_BIKE_ID))
@@ -204,6 +232,7 @@ class RideViewModelsTest {
         }
         assertEquals(listOf(FakeRideController.START), controller.commands)
         assertEquals(INDOOR_ID, controller.startedProfileId)
+        assertEquals(false, controller.startedWithSession)
     }
 
     private fun rideViewModel(safety: FakeSafetyRepository = FakeSafetyRepository()) = RideViewModel(
@@ -339,5 +368,6 @@ class RideViewModelsTest {
         const val INDOOR_ID = 4L
         const val TRAINER_BIKE_ID = 2L
         const val STOP_TIMEOUT_MS = 5_000L
+        const val DAY_MS = 86_400_000L
     }
 }

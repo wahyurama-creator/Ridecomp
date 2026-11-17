@@ -8,10 +8,12 @@ import com.ridecomp.core.engine.sensors.SavedSensor
 import com.ridecomp.core.model.ActivityProfile
 import com.ridecomp.core.model.Bike
 import com.ridecomp.core.model.ComponentWear
+import com.ridecomp.core.model.PlanSession
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.ScreenMode
 import com.ridecomp.core.usecase.BikeChoice
 import com.ridecomp.core.usecase.GpsStatus
+import com.ridecomp.core.usecase.ObserveActivePlanUseCase
 import com.ridecomp.core.usecase.ObserveBikeChoiceUseCase
 import com.ridecomp.core.usecase.ObserveComponentWearUseCase
 import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
@@ -56,6 +58,10 @@ data class PreRideUiState(
     /** Saved sensors for the check list (13-UI-SCREENS #5); they connect when the ride starts. */
     val sensors: ImmutableList<SavedSensor> = persistentListOf(),
     val settings: RideSettings = RideSettings(),
+    /** Today's session of the followed plan (T7.4b); null = none or a rest day. */
+    val session: PlanSession? = null,
+    /** Measure this ride against [session]; on by default. */
+    val isSessionOn: Boolean = true,
 ) {
     /** Screen mode used by the ride: the profile's own choice wins over the general setting (D-32). */
     val screenMode: ScreenMode get() = selected?.screenMode ?: settings.screenMode
@@ -72,6 +78,8 @@ sealed interface PreRideUiEvent {
 
     /** General screen mode setting (13-UI-SCREENS #5). */
     data class SelectScreenMode(val mode: ScreenMode) : PreRideUiEvent
+
+    data class SessionOn(val isOn: Boolean) : PreRideUiEvent
 
     data object Start : PreRideUiEvent
 }
@@ -103,6 +111,7 @@ data class PreRideOptionUseCases(
     val observeSensors: ObserveSavedSensorsUseCase,
     val observeSettings: ObserveRideSettingsUseCase,
     val saveSettings: SaveRideSettingsUseCase,
+    val observeActivePlan: ObserveActivePlanUseCase,
 )
 
 /** The picked bike with its activity profile. */
@@ -148,6 +157,11 @@ class PreRideViewModel(routeId: Long?, private val useCases: PreRideUseCases) :
             }.collect { due -> updateState { copy(dueComponents = due.toImmutableList()) } }
         }
         viewModelScope.launch {
+            useCases.options.observeActivePlan().collect { plan ->
+                updateState { copy(session = plan?.today?.session) }
+            }
+        }
+        viewModelScope.launch {
             useCases.options.observeSensors().collect { updateState { copy(sensors = it.toImmutableList()) } }
         }
         viewModelScope.launch {
@@ -165,8 +179,15 @@ class PreRideViewModel(routeId: Long?, private val useCases: PreRideUseCases) :
             is PreRideUiEvent.SelectScreenMode -> viewModelScope.launch {
                 useCases.options.saveSettings(currentState.settings.copy(screenMode = event.mode))
             }
+            is PreRideUiEvent.SessionOn -> updateState { copy(isSessionOn = event.isOn) }
             PreRideUiEvent.Start -> {
-                useCases.startRide(currentState.selected?.id, currentState.route?.id)
+                val state = currentState
+                useCases.startRide(
+                    state.selected?.id,
+                    state.route?.id,
+                    withSession =
+                    state.session != null && state.isSessionOn,
+                )
                 sendEffect(PreRideEffect.OpenRide)
             }
         }

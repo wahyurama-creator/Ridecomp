@@ -6,11 +6,13 @@ import com.ridecomp.core.engine.recording.BatteryStatus
 import com.ridecomp.core.engine.sensors.SavedSensor
 import com.ridecomp.core.model.Activity
 import com.ridecomp.core.model.UnitSystem
+import com.ridecomp.core.usecase.ActivePlan
 import com.ridecomp.core.usecase.BackupReminder
 import com.ridecomp.core.usecase.CheckGpsAvailabilityUseCase
 import com.ridecomp.core.usecase.GetRecoverableRideUseCase
 import com.ridecomp.core.usecase.GpsAvailability
 import com.ridecomp.core.usecase.HandleRecoveredRideUseCase
+import com.ridecomp.core.usecase.ObserveActivePlanUseCase
 import com.ridecomp.core.usecase.ObserveBackupReminderUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
@@ -42,6 +44,8 @@ data class HomeUiState(
     val sensors: ImmutableList<SavedSensor> = persistentListOf(),
     /** GPS permission and switch only; GPS itself stays off until a ride starts (BAT-01). */
     val gps: GpsAvailability = GpsAvailability.READY,
+    /** The training plan followed and today in it (T7.4b); null = none. */
+    val plan: ActivePlan? = null,
 )
 
 sealed interface HomeUiEvent {
@@ -78,6 +82,7 @@ data class HomeUseCases(
     val observeBackupReminder: ObserveBackupReminderUseCase,
     val snoozeBackupReminder: SnoozeBackupReminderUseCase,
     val device: HomeDeviceUseCases,
+    val observeActivePlan: ObserveActivePlanUseCase,
 )
 
 /** Phone and sensor status shown on the home tiles (13-UI-SCREENS #3). */
@@ -91,6 +96,7 @@ class HomeViewModel(private val useCases: HomeUseCases) :
     UdfViewModel<HomeUiState, HomeUiEvent, HomeEffect>(HomeUiState()) {
     init {
         refreshDevice()
+        viewModelScope.launch { useCases.observeActivePlan().collect { plan -> updateState { copy(plan = plan) } } }
         viewModelScope.launch {
             useCases.observeBackupReminder().collect { updateState { copy(backupReminder = it) } }
         }

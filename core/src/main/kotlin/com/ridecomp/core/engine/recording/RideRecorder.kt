@@ -19,6 +19,7 @@ import com.ridecomp.core.engine.segments.LiveSegmentFollower
 import com.ridecomp.core.engine.segments.LiveSegmentState
 import com.ridecomp.core.engine.sensors.SensorReading
 import com.ridecomp.core.engine.sensors.SensorSnapshot
+import com.ridecomp.core.engine.training.TargetStatus
 import com.ridecomp.core.model.BatteryMode
 import com.ridecomp.core.model.Lap
 import com.ridecomp.core.model.LocationFix
@@ -85,6 +86,8 @@ public data class LiveRide(
     val latDeg: Double? = null,
     val lonDeg: Double? = null,
     val routeId: Long? = null,
+    /** Today's planned session against the ride (T7.4b); set by the recording service, null without one. */
+    val target: TargetStatus? = null,
 )
 
 /** Ride facts that do not change during the ride. */

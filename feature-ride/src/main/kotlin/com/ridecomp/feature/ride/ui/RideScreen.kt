@@ -74,6 +74,7 @@ import com.ridecomp.feature.ride.ui.component.RideStatusBar
 import com.ridecomp.feature.ride.ui.component.RouteGuidanceBanners
 import com.ridecomp.feature.ride.ui.component.SegmentBanners
 import com.ridecomp.feature.ride.ui.component.SegmentPage
+import com.ridecomp.feature.ride.ui.component.SessionTargetBar
 import com.ridecomp.feature.ride.ui.component.SosButton
 import com.ridecomp.feature.ride.ui.component.rememberMetricUnitLabels
 import com.ridecomp.feature.ride.viewmodel.RideEffect
@@ -199,6 +200,7 @@ fun RideScreen(
         RideBanners(live.value, formatter, onAction)
         LapDoneBanner(live.value, formatter)
         GuidanceBanners(live.value, formatter)
+        live.value.target?.let { SessionTargetBar(it, formatter) }
         // Every GPS ride has a map page (D-90); with a route it follows the route (T3.5).
         val hasMapPage = route != null || live.value.isGpsEnabled
         val screens = remember(pages, hasMapPage) { ridePages(pages, hasMapPage) }

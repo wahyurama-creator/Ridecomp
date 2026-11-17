@@ -14,6 +14,7 @@ import com.ridecomp.core.model.CustomPlan
 import com.ridecomp.core.model.DataPagesLayout
 import com.ridecomp.core.model.EmergencyContact
 import com.ridecomp.core.model.IncidentRecord
+import com.ridecomp.core.model.PlanSession
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RiderProfile
 import com.ridecomp.core.model.SafetySettings
@@ -114,6 +115,11 @@ public interface TrainingPlanRepository {
 
     /** Null stops following a plan. */
     public suspend fun setActivePlan(state: ActivePlanState?)
+
+    /** The session the current ride is measured against; kept so a recovered ride keeps it (T7.4b). */
+    public suspend fun getRideTarget(): PlanSession?
+
+    public suspend fun setRideTarget(session: PlanSession?)
 }
 
 /** Safety settings and emergency contacts (05-DATA-MODEL `emergency_contacts`). */

@@ -3,7 +3,9 @@ package com.ridecomp.data.repository
 import com.ridecomp.core.model.ActivePlanState
 import com.ridecomp.core.model.BuiltInPlan
 import com.ridecomp.core.model.CustomPlan
+import com.ridecomp.core.model.Intensity
 import com.ridecomp.core.model.PlanRef
+import com.ridecomp.core.model.PlanSession
 import com.ridecomp.core.repository.TrainingPlanRepository
 import com.ridecomp.data.db.dao.SettingsDao
 import com.ridecomp.data.db.entity.SettingEntity
@@ -68,6 +70,26 @@ class TrainingPlanRepositoryImpl(private val settings: SettingsDao) : TrainingPl
         )
     }
 
+    override suspend fun getRideTarget(): PlanSession? {
+        val value = settings.get(SettingsKeys.TRAINING_RIDE_TARGET) ?: return null
+        val intensity = Intensity.entries.firstOrNull { it.name == value.substringBefore(TARGET_SEPARATOR) }
+        val minutes = value.substringAfter(TARGET_SEPARATOR).toIntOrNull()
+        return if (intensity != null && minutes != null) PlanSession(intensity, minutes) else null
+    }
+
+    override suspend fun setRideTarget(session: PlanSession?) {
+        if (session == null) {
+            settings.delete(SettingsKeys.TRAINING_RIDE_TARGET)
+        } else {
+            settings.upsert(
+                SettingEntity(
+                    SettingsKeys.TRAINING_RIDE_TARGET,
+                    session.intensity.name + TARGET_SEPARATOR + session.durationMin,
+                ),
+            )
+        }
+    }
+
     private suspend fun write(plans: List<CustomPlan>) {
         settings.upsert(SettingEntity(SettingsKeys.TRAINING_CUSTOM_PLANS, PlansJson.encode(plans.sortedBy { it.id })))
     }
@@ -87,5 +109,6 @@ class TrainingPlanRepositoryImpl(private val settings: SettingsDao) : TrainingPl
     private companion object {
         const val BUILT_IN_PREFIX = "builtin:"
         const val CUSTOM_PREFIX = "custom:"
+        const val TARGET_SEPARATOR = ":"
     }
 }

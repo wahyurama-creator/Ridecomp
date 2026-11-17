@@ -20,8 +20,8 @@ import kotlinx.coroutines.flow.onStart
 /** Starts a new ride (foreground service). */
 public class StartRideUseCase(private val controller: RideController) {
     /** Starts a ride with the chosen activity profile (12-FEATURE-SPECS §4). */
-    public operator fun invoke(profileId: Long?, routeId: Long? = null) {
-        controller.start(profileId, routeId)
+    public operator fun invoke(profileId: Long?, routeId: Long? = null, withSession: Boolean = false) {
+        controller.start(profileId, routeId, withSession)
     }
 }
 

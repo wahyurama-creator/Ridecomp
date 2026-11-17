@@ -41,11 +41,15 @@ import com.ridecomp.core.engine.sensors.SavedSensor
 import com.ridecomp.core.engine.sensors.SensorKind
 import com.ridecomp.core.engine.sensors.isBatteryLow
 import com.ridecomp.core.model.Activity
+import com.ridecomp.core.usecase.ActivePlan
 import com.ridecomp.core.usecase.BackupReminder
 import com.ridecomp.core.usecase.GpsAvailability
 import com.ridecomp.core.usecase.RecoveryChoice
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.ride.R
+import com.ridecomp.feature.ride.model.displayName
+import com.ridecomp.feature.ride.model.feelRes
+import com.ridecomp.feature.ride.model.summary
 import com.ridecomp.feature.ride.viewmodel.HomeEffect
 import com.ridecomp.feature.ride.viewmodel.HomeUiEvent
 import com.ridecomp.feature.ride.viewmodel.HomeUiState
@@ -150,6 +154,7 @@ fun HomeScreen(
             )
         } else if (state.recoverable == null) {
             // With an unsaved ride waiting, its card decides first: no second ride to start by mistake.
+            state.plan?.let { PlanSessionCard(it, onEvent) }
             BigButton(
                 text = stringResource(R.string.ride_start_button),
                 onClick = { onEvent(HomeUiEvent.StartRide) },
@@ -170,6 +175,51 @@ fun HomeScreen(
                 onEvent(HomeUiEvent.Recover(RecoveryChoice.DISCARD))
             },
             onDismiss = { isDiscardDialogShown = false },
+        )
+    }
+}
+
+/** Today in the followed training plan (T7.4b): the session with "Mulai sesi", or a rest day. */
+@Composable
+private fun PlanSessionCard(plan: ActivePlan, onEvent: (HomeUiEvent) -> Unit) {
+    val today = plan.today ?: return
+    val colors = RideCompTheme.colors
+    RideCompCard(tone = CardTone.OK) {
+        Text(
+            text = stringResource(
+                R.string.home_plan_label,
+                plan.plan.displayName(),
+                today.weekNumber,
+                plan.plan.weeks.size,
+            ).uppercase(),
+            style = RideCompTheme.typography.dataLabel,
+            color = colors.ok,
+        )
+        val session = today.session
+        if (session == null) {
+            Text(
+                text = stringResource(R.string.home_plan_rest),
+                style = RideCompTheme.typography.body,
+                color = colors.textPrimary,
+            )
+            return@RideCompCard
+        }
+        Text(
+            text = stringResource(R.string.home_plan_today, session.summary()),
+            style = RideCompTheme.typography.cardTitle,
+            color = colors.textPrimary,
+        )
+        Text(
+            text = stringResource(session.intensity.feelRes()),
+            style = RideCompTheme.typography.caption,
+            color = colors.textSecondary,
+            modifier = Modifier.padding(bottom = RideCompDimens.spacingSm),
+        )
+        BigButton(
+            text = stringResource(R.string.home_plan_start),
+            onClick = { onEvent(HomeUiEvent.StartRide) },
+            size = BigButtonSize.SECONDARY,
+            style = BigButtonStyle.SECONDARY,
         )
     }
 }

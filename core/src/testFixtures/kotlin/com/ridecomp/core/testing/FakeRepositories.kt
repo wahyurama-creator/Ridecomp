@@ -12,6 +12,7 @@ import com.ridecomp.core.model.CustomPlan
 import com.ridecomp.core.model.DataPagesLayout
 import com.ridecomp.core.model.Lap
 import com.ridecomp.core.model.PeriodTotals
+import com.ridecomp.core.model.PlanSession
 import com.ridecomp.core.model.RideEvent
 import com.ridecomp.core.model.RideSample
 import com.ridecomp.core.model.RideSettings
@@ -346,5 +347,13 @@ public class FakeTrainingPlanRepository : TrainingPlanRepository {
 
     override suspend fun setActivePlan(state: ActivePlanState?) {
         active.value = state
+    }
+
+    public var rideTarget: PlanSession? = null
+
+    override suspend fun getRideTarget(): PlanSession? = rideTarget
+
+    override suspend fun setRideTarget(session: PlanSession?) {
+        rideTarget = session
     }
 }

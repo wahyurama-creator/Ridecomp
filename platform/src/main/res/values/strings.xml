@@ -62,4 +62,6 @@
     <string name="voice_mph">miles per hour</string>
     <string name="voice_drink">Time to drink</string>
     <string name="voice_eat">Time to eat</string>
+    <string name="voice_too_hard">Too hard for zone %1$d. Ease off a little.</string>
+    <string name="voice_session_done">Session done. Well ridden!</string>
 </resources>

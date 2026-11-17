@@ -2,7 +2,9 @@ package com.ridecomp.platform.voice
 
 import android.content.res.Resources
 import com.ridecomp.core.config.Units
+import com.ridecomp.core.engine.training.CoachAlert
 import com.ridecomp.core.engine.voice.Announcement
+import com.ridecomp.core.model.Intensity
 import com.ridecomp.core.model.UnitSystem
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.platform.R
@@ -29,6 +31,12 @@ class AnnouncementSpeech(private val resources: Resources, private val units: Un
         ).joinToString(SENTENCE_GAP)
         Announcement.DrinkReminder -> resources.getString(R.string.voice_drink)
         Announcement.EatReminder -> resources.getString(R.string.voice_eat)
+    }
+
+    /** Session coach (T7.4b): too hard for an easy session, or the planned time is done. */
+    fun coach(alert: CoachAlert, intensity: Intensity): String = when (alert) {
+        CoachAlert.TOO_HARD -> resources.getString(R.string.voice_too_hard, intensity.zone)
+        CoachAlert.SESSION_DONE -> resources.getString(R.string.voice_session_done)
     }
 
     private fun distance(distanceM: Double): String {

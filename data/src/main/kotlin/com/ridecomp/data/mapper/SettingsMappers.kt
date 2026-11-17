@@ -43,6 +43,7 @@ internal object SettingsKeys {
     const val TRAINING_CUSTOM_PLANS = "training.custom_plans"
     const val TRAINING_ACTIVE_PLAN = "training.active_plan"
     const val TRAINING_PLAN_START = "training.plan_start"
+    const val TRAINING_RIDE_TARGET = "training.ride_target"
 
     /** Stored for an optional value that the user switched off (distinguishes "off" from "default"). */
     const val OFF = "off"

@@ -130,7 +130,7 @@ Ikuti `03-ARCHITECTURE.md` §9: jadikan `:core` modul KMP, tulis UI (SwiftUI ata
 - [x] T7.2 Kembali ke titik start (D-92).
 - [x] T7.3 Pelacakan komponen sepeda (km otomatis per sepeda, pengingat servis) (D-93).
 - [x] T7.4a Rencana latihan: siap pakai (Base Zona 2, Persiapan lomba, Gran Fondo 100 km) + pembuat rencana sendiri, rencana aktif & latihan hari ini di tab Latihan (D-94).
-- [ ] T7.4b Sesi hari ini di Beranda & persiapan ride, zona target di layar ride dengan alert getar + suara.
+- [x] T7.4b Sesi hari ini di Beranda & persiapan ride, zona target di layar ride dengan alert getar + suara (D-94).
 
 ## Fase 8+ — Ide lanjutan (belum dijadwalkan)
 Workout/interval terstruktur, target zona dengan alert, pengumuman suara (TTS), kembali ke titik start, pelacakan komponen sepeda, ghost/virtual partner, backup ke file/Google Drive, widget layar, dukungan smart trainer (FTMS), radar belakang BLE, export ke platform lain (intervals.icu dll. via file).

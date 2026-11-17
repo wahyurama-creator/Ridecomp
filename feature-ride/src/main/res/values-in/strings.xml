@@ -360,4 +360,39 @@
     <string name="component_delete">Hapus komponen</string>
     <string name="component_delete_title">Hapus komponen ini?</string>
     <string name="component_delete_message">Hanya komponennya yang dihapus; riwayat ride tetap ada.</string>
+
+    <!-- Sesi rencana (T7.4b) -->
+    <string name="session_intensity_recovery">Zona 1 · Pemulihan</string>
+    <string name="session_intensity_endurance">Zona 2 · Daya tahan</string>
+    <string name="session_intensity_tempo">Zona 3 · Tempo</string>
+    <string name="session_intensity_threshold">Zona 4 · Ambang</string>
+    <string name="session_intensity_vo2max">Zona 5 · VO2max</string>
+    <string name="session_feel_recovery">Sangat ringan, kaki sekadar berputar</string>
+    <string name="session_feel_endurance">Ringan: masih bisa ngobrol</string>
+    <string name="session_feel_tempo">Sedang: hanya bisa bicara pendek</string>
+    <string name="session_feel_threshold">Interval berat, santai di antaranya</string>
+    <string name="session_feel_vo2max">Usaha singkat sangat berat, santai di antaranya</string>
+    <string name="session_summary">%1$s · %2$d mnt</string>
+    <string name="session_plan_zone2_base">Base Zona 2</string>
+    <string name="session_plan_race_prep">Persiapan lomba</string>
+    <string name="session_plan_gran_fondo">Gran Fondo 100 km</string>
+    <string name="session_plan_custom">Rencanaku</string>
+    <string name="session_zone_badge">Z%1$d</string>
+    <string name="session_current">%1$d %2$s · %3$s</string>
+    <string name="session_in_zone">di zona</string>
+    <string name="session_above">terlalu berat</string>
+    <string name="session_below">di bawah zona</string>
+    <string name="session_no_reading">belum ada data</string>
+    <string name="session_by_feel">Dengan rasa (tanpa sensor)</string>
+    <string name="session_range">Target %1$d–%2$d %3$s</string>
+    <string name="session_range_below">Target di bawah %1$d %2$s</string>
+    <string name="session_range_above">Target di atas %1$d %2$s</string>
+    <string name="session_time">%1$s / %2$s</string>
+    <string name="session_done">✓ Selesai</string>
+    <string name="home_plan_label">Rencana · %1$s · minggu %2$d/%3$d</string>
+    <string name="home_plan_today">Hari ini: %1$s</string>
+    <string name="home_plan_rest">Hari ini istirahat: pemulihan juga bagian dari latihan.</string>
+    <string name="home_plan_start">MULAI SESI</string>
+    <string name="pre_ride_session">Sesi hari ini</string>
+    <string name="pre_ride_session_description">Layar ride menampilkan zona target; HP memberi tahu bila sesi santai jadi terlalu berat.</string>
 </resources>

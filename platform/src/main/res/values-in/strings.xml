@@ -56,4 +56,6 @@
     <string name="voice_mph">mil per jam</string>
     <string name="voice_drink">Waktunya minum</string>
     <string name="voice_eat">Waktunya makan</string>
+    <string name="voice_too_hard">Terlalu berat untuk zona %1$d. Pelankan sedikit.</string>
+    <string name="voice_session_done">Sesi selesai. Mantap!</string>
 </resources>
