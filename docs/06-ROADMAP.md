@@ -134,7 +134,7 @@ Ikuti `03-ARCHITECTURE.md` §9: jadikan `:core` modul KMP, tulis UI (SwiftUI ata
 
 ## Fase 9 — Trainer & widget (dipilih pemilik 2026-11-17)
 - [x] T9.1 Smart trainer (BLE FTMS): data power/cadence/kecepatan + ERG terhubung rencana latihan (D-95).
-- [ ] T9.2 Widget layar utama: sesi hari ini, minggu ini, tombol mulai; jarak & waktu saat ride.
+- [x] T9.2 Widget layar utama: sesi hari ini, minggu ini, tombol mulai; jarak & waktu saat ride (D-96).
 
 ## Fase 8+ — Ide lanjutan (belum dijadwalkan)
-Workout/interval terstruktur, target zona dengan alert, pengumuman suara (TTS), kembali ke titik start, pelacakan komponen sepeda, ghost/virtual partner, backup ke file/Google Drive, widget layar, radar belakang BLE, export ke platform lain (intervals.icu dll. via file).
+Workout/interval terstruktur, target zona dengan alert, pengumuman suara (TTS), kembali ke titik start, pelacakan komponen sepeda, ghost/virtual partner, backup ke file/Google Drive, radar belakang BLE, export ke platform lain (intervals.icu dll. via file).
