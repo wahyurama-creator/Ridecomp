@@ -252,3 +252,9 @@ object ShareCardColors {
     val CheckerDark = Color(0xFF1E1E1E)
     val CheckerLight = Color(0xFF2E2E2E)
 }
+
+/** Partner brand colors, used only next to the partner's name (Strava brand guidelines, D-82). */
+object BrandColors {
+    val StravaOrange = Color(0xFFFC5200)
+    val OnStravaOrange = Color(0xFFFFFFFF)
+}
