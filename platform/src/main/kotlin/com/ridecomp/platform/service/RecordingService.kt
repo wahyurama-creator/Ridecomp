@@ -27,6 +27,7 @@ import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RideStatus
 import com.ridecomp.core.model.UnitSystem
 import com.ridecomp.core.model.ageYears
+import com.ridecomp.core.model.withBike
 import com.ridecomp.core.model.withProfile
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.core.util.onSuccess
@@ -347,9 +348,14 @@ class RecordingService : LifecycleService() {
         stopSelf()
     }
 
-    /** General settings and rider with the activity profile applied (12-FEATURE-SPECS §4). */
+    /**
+     * General settings and rider with the activity profile (12-FEATURE-SPECS §4) and the picked bike's
+     * weight and wheel size (D-89) applied.
+     */
     private suspend fun rideSetup(settings: RideSettings, profileId: Long?, routeId: Long?): RideSetup {
-        val rider = deps.profileRepository.get()
+        val rider = deps.profileRepository.get().let { profile ->
+            deps.getSelectedBike()?.let(profile::withBike) ?: profile
+        }
         val activityProfile = deps.getRideProfile(profileId)
         isGpsEnabled = activityProfile?.isGpsEnabled != false
         // Indoor rides have no position to follow a route with.

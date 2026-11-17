@@ -19,9 +19,10 @@ import kotlinx.coroutines.launch
 
 /**
  * Onboarding steps in order (02-DESIGN §3.1, 13-UI-SCREENS #1, #2, #22): LANGUAGE first so every later
- * text is in the rider's language (D-88); LEVEL (Phase 4G) asks how experienced the rider is.
+ * text is in the rider's language (D-88); LEVEL (Phase 4G) asks how experienced the rider is; BIKE saves
+ * the first bike, picked later before each ride (D-89).
  */
-enum class OnboardingStep { LANGUAGE, PERMISSIONS, LEVEL, PROFILE, READY }
+enum class OnboardingStep { LANGUAGE, PERMISSIONS, LEVEL, PROFILE, BIKE, READY }
 
 sealed interface OnboardingUiEvent {
     data object Next : OnboardingUiEvent

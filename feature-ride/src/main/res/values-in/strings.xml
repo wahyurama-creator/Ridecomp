@@ -110,7 +110,6 @@
     <string name="data_pages_reset">Kembalikan default</string>
     <string name="data_pages_choose_metric">Pilih metrik</string>
     <string name="data_pages_cancel">Batal</string>
-    <string name="pre_ride_profile">Profil aktivitas</string>
     <string name="pre_ride_gps_not_used">Tidak dipakai (Indoor)</string>
     <string name="pre_ride_route">Rute: %1$s</string>
     <string name="pre_ride_route_hint">Peringatan keluar jalur, sisa jarak, dan halaman rute aktif.</string>
@@ -298,4 +297,30 @@
     <string name="ride_segment_pr">PR segmen</string>
     <string name="ride_segment_remaining">%1$s %2$s lagi</string>
     <string name="ride_lap_done">✓ Lap %1$d · %2$s · %3$s %4$s</string>
+
+    <!-- Sepeda tersimpan (D-89) -->
+    <string name="bikes_title">Sepeda saya</string>
+    <string name="bikes_intro">Simpan tiap sepeda sekali, lalu tinggal pilih sebelum gowes. Jenisnya menentukan halaman data dan GPS; berat dan ukuran rodanya dipakai untuk estimasi power dan sensor kecepatan.</string>
+    <string name="bikes_in_use">✓ Dipakai</string>
+    <string name="bikes_use">Pakai</string>
+    <string name="bikes_back">Kembali</string>
+    <string name="bikes_add">Tambah sepeda</string>
+    <string name="bike_default_name">Sepedaku</string>
+    <string name="bike_summary">%1$s · %2$s kg · %3$d mm</string>
+    <string name="bike_add_title">Sepeda baru</string>
+    <string name="bike_edit_title">Ubah sepeda</string>
+    <string name="bike_name">Nama (mis. Polygon Strattos)</string>
+    <string name="bike_type">Jenis sepeda</string>
+    <string name="bike_type_hint">Menentukan halaman data, GPS, dan jenis aktivitas di file FIT.</string>
+    <string name="bike_weight">Berat sepeda</string>
+    <string name="bike_wheel">Keliling roda</string>
+    <string name="bike_wheel_common">Ukuran ban umum</string>
+    <string name="bike_error_invalid">Periksa nilai ini</string>
+    <string name="bike_save">Simpan</string>
+    <string name="bike_save_next">Simpan &amp; lanjut</string>
+    <string name="bike_delete">Hapus sepeda</string>
+    <string name="bike_delete_title">Hapus %1$s?</string>
+    <string name="bike_delete_message">Hanya data sepeda ini yang dihapus; riwayat ride tetap ada.</string>
+    <string name="pre_ride_bike">Sepeda</string>
+    <string name="pre_ride_manage_bikes">Kelola</string>
 </resources>

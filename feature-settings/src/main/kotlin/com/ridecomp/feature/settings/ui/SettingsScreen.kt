@@ -42,6 +42,7 @@ import org.koin.androidx.compose.koinViewModel
  */
 enum class SettingsSection(@param:StringRes val titleRes: Int, val taskId: String? = null) {
     PROFILE(R.string.settings_profile),
+    BIKES(R.string.settings_bikes),
     ACTIVITY_PROFILES(R.string.settings_activity_profiles),
     RIDE_SCREEN_BATTERY(R.string.settings_screen_battery),
     AUTO_PAUSE(R.string.settings_auto_pause),
@@ -67,6 +68,7 @@ enum class SettingsSection(@param:StringRes val titleRes: Int, val taskId: Strin
 /** The design's two cards (13-UI-SCREENS #13). */
 private val RIDE_SECTIONS = listOf(
     SettingsSection.PROFILE,
+    SettingsSection.BIKES,
     SettingsSection.ACTIVITY_PROFILES,
     SettingsSection.RIDE_SCREEN_BATTERY,
     SettingsSection.AUTO_PAUSE,
@@ -183,11 +185,7 @@ private fun SettingsSection.summary(state: SettingsUiState): Pair<String?, Value
     val settings = state.rideSettings
     return when (this) {
         SettingsSection.PROFILE -> profileSummary(state) to ValueTone.NORMAL
-        SettingsSection.ACTIVITY_PROFILES -> pluralStringResource(
-            R.plurals.settings_activity_profiles_value,
-            state.activityProfileCount,
-            state.activityProfileCount,
-        ) to ValueTone.NORMAL
+        SettingsSection.BIKES, SettingsSection.ACTIVITY_PROFILES -> countSummary(state) to ValueTone.NORMAL
         SettingsSection.RIDE_SCREEN_BATTERY -> stringResource(settings.screenMode.labelRes()) to ValueTone.NORMAL
         SettingsSection.AUTO_PAUSE -> autoPauseSummary(settings)
         SettingsSection.REMINDERS -> stringResource(
@@ -204,6 +202,18 @@ private fun SettingsSection.summary(state: SettingsUiState): Pair<String?, Value
         SettingsSection.OPEN_SOURCE_LICENSES, SettingsSection.HELP, SettingsSection.DEVELOPER,
         -> null to ValueTone.NORMAL
     }
+}
+
+/** "2 bikes", "5 profiles · data pages". */
+@Composable
+private fun SettingsSection.countSummary(state: SettingsUiState): String = if (this == SettingsSection.BIKES) {
+    pluralStringResource(R.plurals.settings_bikes_value, state.bikeCount, state.bikeCount)
+} else {
+    pluralStringResource(
+        R.plurals.settings_activity_profiles_value,
+        state.activityProfileCount,
+        state.activityProfileCount,
+    )
 }
 
 @Composable

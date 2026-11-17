@@ -19,11 +19,15 @@ import com.ridecomp.feature.history.ui.HistoryRoute
 import com.ridecomp.feature.history.ui.StravaHelpRoute
 import com.ridecomp.feature.ride.ui.ActivityProfileEditorRoute
 import com.ridecomp.feature.ride.ui.ActivityProfilesRoute
+import com.ridecomp.feature.ride.ui.BikeEditorRoute
+import com.ridecomp.feature.ride.ui.BikesRoute
 import com.ridecomp.feature.ride.ui.DataPagesEditorRoute
 import com.ridecomp.feature.ride.ui.HomeRoute
+import com.ridecomp.feature.ride.ui.OnboardingBikeForm
 import com.ridecomp.feature.ride.ui.PreRideRoute
 import com.ridecomp.feature.ride.ui.RideRoute
 import com.ridecomp.feature.ride.ui.SummaryRoute
+import com.ridecomp.feature.ride.viewmodel.BikeTarget
 import com.ridecomp.feature.routes.ui.RouteDetailRoute
 import com.ridecomp.feature.routes.ui.RoutesRoute
 import com.ridecomp.feature.sensors.ui.SensorsRoute
@@ -66,6 +70,12 @@ object AppRoutes {
     const val ARG_PROFILE_ID = "profileId"
     const val DATA_PAGES = "data_pages?$ARG_PROFILE_ID={$ARG_PROFILE_ID}"
     const val ACTIVITY_PROFILES = "activity_profiles"
+    const val BIKES = "bikes"
+    const val NEW_BIKE = "bike_new"
+    const val ARG_BIKE_ID = "bikeId"
+    const val BIKE = "bike/{$ARG_BIKE_ID}"
+
+    fun bike(bikeId: Long): String = "bike/$bikeId"
     const val SAFETY = "safety"
     const val BACKUP = "backup"
     const val OFFLINE_MAPS = "offline_maps"
@@ -125,9 +135,13 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
             OnboardingRoute(
                 onDone = { navController.navigateClearingBackStack(TopLevelDestination.HOME.route) },
                 onOpenSensors = { navController.navigate(TopLevelDestination.SENSORS.route) },
+                bikeStep = { header, onSaved, stepModifier ->
+                    OnboardingBikeForm(header = header, onSaved = onSaved, modifier = stepModifier)
+                },
             )
         }
         rideGraph(navController)
+        bikeGraph(navController)
         historyGraph(navController)
         segmentGraph(navController)
         composable(TopLevelDestination.ROUTES.route) {
@@ -321,19 +335,25 @@ private fun openSection(section: SettingsSection, navController: NavHostControll
 /** The screen of a settings entry. */
 private fun SettingsSection.route(): String = when (this) {
     SettingsSection.PROFILE -> AppRoutes.PROFILE
+    SettingsSection.BIKES, SettingsSection.ACTIVITY_PROFILES, SettingsSection.DATA_PAGES -> rideSetupRoute()
     SettingsSection.RIDE_SCREEN_BATTERY, SettingsSection.AUTO_PAUSE, SettingsSection.REMINDERS ->
         AppRoutes.RIDE_SETTINGS
     SettingsSection.BATTERY_HELP -> AppRoutes.BATTERY_HELP
     SettingsSection.DEVELOPER -> AppRoutes.DEVELOPER
     SettingsSection.LANGUAGE -> AppRoutes.LANGUAGE
-    SettingsSection.DATA_PAGES -> AppRoutes.dataPages()
-    SettingsSection.ACTIVITY_PROFILES -> AppRoutes.ACTIVITY_PROFILES
     SettingsSection.SAFETY -> AppRoutes.SAFETY
     SettingsSection.BACKUP -> AppRoutes.BACKUP
     SettingsSection.STRAVA -> AppRoutes.STRAVA
     SettingsSection.OFFLINE_MAPS -> AppRoutes.OFFLINE_MAPS
     SettingsSection.OPEN_SOURCE_LICENSES -> AppRoutes.LICENSES
     SettingsSection.HELP -> AppRoutes.HELP
+}
+
+/** Bikes, activity profiles and data pages: setup screens of the ride feature. */
+private fun SettingsSection.rideSetupRoute(): String = when {
+    this == SettingsSection.BIKES -> AppRoutes.BIKES
+    this == SettingsSection.DATA_PAGES -> AppRoutes.dataPages()
+    else -> AppRoutes.ACTIVITY_PROFILES
 }
 
 /** Switches tab without stacking duplicates and keeps each tab's state. */
@@ -360,12 +380,34 @@ private fun NavGraphBuilder.preRideDestination(navController: NavHostController)
             routeId = entry.optionalId(AppRoutes.ARG_ROUTE_ID),
             onCancel = { navController.popBackStack() },
             onChooseRoute = { navController.navigateToTopLevel(TopLevelDestination.ROUTES) },
+            onManageBikes = { navController.navigate(AppRoutes.BIKES) },
             onStarted = {
                 navController.navigate(AppRoutes.RIDE) {
                     popUpTo(AppRoutes.PRE_RIDE) { inclusive = true }
                 }
             },
         )
+    }
+}
+
+/** Saved bikes (D-89): list, new bike, edit bike. */
+private fun NavGraphBuilder.bikeGraph(navController: NavHostController) {
+    composable(AppRoutes.BIKES) {
+        BikesRoute(
+            onOpen = { navController.navigate(AppRoutes.bike(it)) },
+            onAdd = { navController.navigate(AppRoutes.NEW_BIKE) },
+            onBack = { navController.popBackStack() },
+        )
+    }
+    composable(AppRoutes.NEW_BIKE) {
+        BikeEditorRoute(target = BikeTarget.New, onDone = { navController.popBackStack() })
+    }
+    composable(
+        AppRoutes.BIKE,
+        arguments = listOf(navArgument(AppRoutes.ARG_BIKE_ID) { type = NavType.LongType }),
+    ) { entry ->
+        val bikeId = entry.arguments?.getLong(AppRoutes.ARG_BIKE_ID) ?: AppRoutes.NO_ID
+        BikeEditorRoute(target = BikeTarget.Existing(bikeId), onDone = { navController.popBackStack() })
     }
 }
 

@@ -9,8 +9,8 @@ Semua nilai disimpan dalam satuan SI. Waktu disimpan sebagai epoch milidetik UTC
 |---|---|---|
 | id | int PK | selalu 1 |
 | weight_kg | real | berat badan |
-| bike_weight_kg | real | default 9.0 |
-| wheel_circumference_mm | int | default 2105 |
+| bike_weight_kg | real | default 9.0; sejak v8 hanya nilai cadangan — saat ride diganti nilai sepeda terpilih (`bikes`, D-89) |
+| wheel_circumference_mm | int | default 2105; idem |
 | hr_max | int? | |
 | hr_rest | int? | |
 | ftp_w | int? | |
@@ -93,6 +93,9 @@ Satuan, bahasa, sumber cadence prioritas, ambang mode baterai (§BM), setting ke
 
 ### `activity_profiles`
 `id, name, kind (road|gravel|mtb|indoor|commute|custom), gps_enabled, data_pages_json, auto_pause_enabled, auto_pause_speed_mps, auto_pause_delay_s, idle_prompt_min, drink_interval_min?, eat_interval_min?, reminder_by_distance_m?, auto_lap_m?, screen_mode, surface, riding_position, fit_sport, fit_sub_sport, sort_order`.
+
+### `bikes` (skema v8, D-89)
+`id, name, profile_id, weight_kg, wheel_circumference_mm`. Sepeda tersimpan yang dipilih sebelum ride. `profile_id` = jenis sepeda (id `activity_profiles`, tanpa foreign key: profil kustom yang terhapus jatuh ke profil default saat ride mulai). `name` kosong = "Sepedaku"/"My bike" (sepeda pertama yang dibuat app). Migrasi 7→8 / `onCreate` membuat sepeda pertama dari `profile.bike_weight_kg`/`wheel_circumference_mm` dan profil terakhir dipakai (atau Road). Minimal satu sepeda selalu ada. Sepeda terakhir di `settings` `app.last_bike_id`; ride yang dipulihkan memakai sepeda terpilih itu.
 
 ### `emergency_contacts`
 `id, display_name, phone_e164, sort_order` (maks 3). **Data pribadi pihak ketiga**: tidak pernah di-log atau ikut export/share (`11-SECURITY-RULES.md` SEC-SMS-*).

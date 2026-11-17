@@ -72,10 +72,21 @@ import org.koin.androidx.compose.koinViewModel
 /** URI scheme for the battery-optimisation exemption request. */
 private const val PACKAGE_SCHEME = "package:"
 
-/** First launch (02-DESIGN §3.1, 13-UI-SCREENS #1, #2, #22): permissions, profile, sensors & GPS test. */
+/**
+ * The first-bike form of the BIKE step (D-89), supplied by the app from :feature-ride so the features stay
+ * independent: it shows [header] above the form and calls `onSaved` once the bike is stored.
+ */
+typealias OnboardingBikeStep = @Composable (
+    header: @Composable () -> Unit,
+    onSaved: () -> Unit,
+    modifier: Modifier,
+) -> Unit
+
+/** First launch (02-DESIGN §3.1, 13-UI-SCREENS #1, #2, #22): permissions, profile, bike, sensors & GPS test. */
 @Composable
 fun OnboardingRoute(
     onDone: () -> Unit,
+    bikeStep: OnboardingBikeStep,
     modifier: Modifier = Modifier,
     onOpenSensors: () -> Unit = {},
     viewModel: OnboardingViewModel = koinViewModel(),
@@ -112,6 +123,11 @@ fun OnboardingRoute(
                 isOnboarding = true,
                 header = header,
                 modifier = Modifier.padding(top = RideCompDimens.screenPaddingTop),
+            )
+            OnboardingStep.BIKE -> bikeStep(
+                header,
+                { viewModel.onEvent(OnboardingUiEvent.Next) },
+                Modifier.padding(top = RideCompDimens.screenPaddingTop),
             )
             OnboardingStep.READY -> ReadyStep(
                 gps = gps,
@@ -483,6 +499,7 @@ private fun OnboardingStep.titleRes(): Int = when (this) {
     OnboardingStep.PERMISSIONS -> R.string.onboarding_permissions_title
     OnboardingStep.LEVEL -> R.string.guide_level_title
     OnboardingStep.PROFILE -> R.string.onboarding_profile_title
+    OnboardingStep.BIKE -> R.string.onboarding_bike_title
     OnboardingStep.READY -> R.string.onboarding_ready_title
 }
 
@@ -492,6 +509,7 @@ private fun OnboardingStep.textRes(): Int = when (this) {
     OnboardingStep.PERMISSIONS -> R.string.onboarding_permissions_text
     OnboardingStep.LEVEL -> R.string.guide_level_text
     OnboardingStep.PROFILE -> R.string.onboarding_profile_text
+    OnboardingStep.BIKE -> R.string.onboarding_bike_text
     OnboardingStep.READY -> R.string.onboarding_ready_text
 }
 

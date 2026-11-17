@@ -6,6 +6,7 @@ import com.ridecomp.core.engine.recording.RideAction
 import com.ridecomp.core.engine.safety.IncidentAction
 import com.ridecomp.core.model.ActivityKind
 import com.ridecomp.core.model.ActivityStatus
+import com.ridecomp.core.model.Bike
 import com.ridecomp.core.model.EmergencyContact
 import com.ridecomp.core.model.RideStatus
 import com.ridecomp.core.model.SafetySettings
@@ -15,6 +16,7 @@ import com.ridecomp.core.testing.FakeActivityProfileRepository
 import com.ridecomp.core.testing.FakeActivityRepository
 import com.ridecomp.core.testing.FakeBackupStateRepository
 import com.ridecomp.core.testing.FakeBatteryLevelSource
+import com.ridecomp.core.testing.FakeBikeRepository
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeLocationSource
 import com.ridecomp.core.testing.FakeOfflineMapRepository
@@ -32,6 +34,7 @@ import com.ridecomp.core.usecase.HandleRecoveredRideUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
 import com.ridecomp.core.usecase.ObserveBackupReminderUseCase
+import com.ridecomp.core.usecase.ObserveBikeChoiceUseCase
 import com.ridecomp.core.usecase.ObserveDataPagesUseCase
 import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
@@ -48,7 +51,7 @@ import com.ridecomp.core.usecase.ReadBatteryUseCase
 import com.ridecomp.core.usecase.RecoveryChoice
 import com.ridecomp.core.usecase.RenameActivityUseCase
 import com.ridecomp.core.usecase.SaveRideSettingsUseCase
-import com.ridecomp.core.usecase.SelectActivityProfileUseCase
+import com.ridecomp.core.usecase.SelectBikeUseCase
 import com.ridecomp.core.usecase.SnoozeBackupReminderUseCase
 import com.ridecomp.core.usecase.StartRideUseCase
 import com.ridecomp.core.util.UnitFormatter
@@ -60,6 +63,7 @@ import com.ridecomp.feature.ride.viewmodel.HomeEffect
 import com.ridecomp.feature.ride.viewmodel.HomeUiEvent
 import com.ridecomp.feature.ride.viewmodel.HomeUseCases
 import com.ridecomp.feature.ride.viewmodel.HomeViewModel
+import com.ridecomp.feature.ride.viewmodel.PreRideBikeUseCases
 import com.ridecomp.feature.ride.viewmodel.PreRideEffect
 import com.ridecomp.feature.ride.viewmodel.PreRideOptionUseCases
 import com.ridecomp.feature.ride.viewmodel.PreRideUiEvent
@@ -91,6 +95,9 @@ class RideViewModelsTest {
     private val repository = FakeActivityRepository()
     private val settings = FakeSettingsRepository()
     private val profiles = FakeActivityProfileRepository()
+    private val bikes = FakeBikeRepository(
+        listOf(Bike(id = 1, profileId = 1), Bike(id = TRAINER_BIKE_ID, name = "Trainer", profileId = INDOOR_ID)),
+    )
 
     @BeforeTest
     fun setUp() {
@@ -147,15 +154,18 @@ class RideViewModelsTest {
     }
 
     @Test
-    fun `pre ride start launches the ride with the chosen profile`() = runTest {
+    fun `pre ride start launches the ride with the picked bike's profile`() = runTest {
         val location = FakeLocationSource()
         val viewModel = PreRideViewModel(
             routeId = null,
             PreRideUseCases(
                 ObserveGpsStatusUseCase(location),
                 ReadBatteryUseCase(FakeBatteryLevelSource()),
-                ObserveProfileChoiceUseCase(profiles),
-                SelectActivityProfileUseCase(profiles),
+                PreRideBikeUseCases(
+                    ObserveBikeChoiceUseCase(bikes),
+                    SelectBikeUseCase(bikes),
+                    ObserveProfileChoiceUseCase(profiles),
+                ),
                 ObserveRouteUseCase(FakeRouteRepository()),
                 StartRideUseCase(controller),
                 PreRideOptionUseCases(
@@ -166,7 +176,9 @@ class RideViewModelsTest {
             ),
         )
         assertEquals(ActivityKind.ROAD, viewModel.uiState.value.selected?.kind)
-        viewModel.onEvent(PreRideUiEvent.SelectProfile(INDOOR_ID))
+        // The trainer bike is an indoor bike: its type decides the profile (D-89).
+        viewModel.onEvent(PreRideUiEvent.SelectBike(TRAINER_BIKE_ID))
+        assertEquals(TRAINER_BIKE_ID, viewModel.uiState.value.bike?.id)
         assertEquals(ActivityKind.INDOOR, viewModel.uiState.value.selected?.kind)
         viewModel.gpsStatus.test {
             // Indoor: no GPS is started at all (BAT-01).
@@ -268,5 +280,6 @@ class RideViewModelsTest {
     private companion object {
         /** Built-in ids follow BuiltInProfiles order in the fake (Road = 1 … Indoor = 4). */
         const val INDOOR_ID = 4L
+        const val TRAINER_BIKE_ID = 2L
     }
 }

@@ -2,7 +2,7 @@
 <resources>
     <string name="settings_title">Setelan</string>
     <string name="settings_profile">Profil pengendara</string>
-    <string name="settings_profile_subtitle">Berat badan, sepeda, ukuran roda, HR max, FTP</string>
+    <string name="settings_profile_subtitle">Berat badan, HR max, FTP</string>
     <string name="settings_data_pages">Halaman data</string>
     <string name="settings_activity_profiles">Profil aktivitas</string>
     <string name="settings_activity_profiles_subtitle">Road, Gravel, MTB, Indoor, Commute</string>
@@ -17,9 +17,6 @@
 
     <string name="profile_title">Profil</string>
     <string name="profile_weight">Berat badan</string>
-    <string name="profile_bike_weight">Berat sepeda</string>
-    <string name="profile_wheel">Keliling roda</string>
-    <string name="profile_wheel_common">Ukuran umum</string>
     <string name="profile_hr_max">HR max (opsional)</string>
     <string name="profile_hr_rest">HR istirahat (opsional)</string>
     <string name="profile_ftp">FTP (opsional)</string>
@@ -33,7 +30,6 @@
     <string name="profile_save">SIMPAN</string>
     <string name="profile_error_invalid">Periksa nilai ini</string>
     <string name="unit_kg">kg</string>
-    <string name="unit_mm">mm</string>
     <string name="unit_bpm">bpm</string>
     <string name="unit_watt">W</string>
 
@@ -148,7 +144,7 @@
     <string name="onboarding_battery_detected">Terdeteksi: %1$s. %2$s</string>
     <string name="onboarding_battery_open">Buka pengaturan baterai</string>
     <string name="onboarding_battery_done">Sudah diizinkan · buka lagi</string>
-    <string name="onboarding_profile_text">Dipakai untuk kalori, estimasi power, dan sensor kecepatan roda.</string>
+    <string name="onboarding_profile_text">Dipakai untuk kalori, estimasi power, dan zona detak jantung.</string>
     <string name="onboarding_ready_title">Hampir siap gowes</string>
     <string name="onboarding_ready_text">Sensor bisa dihubungkan sekarang atau nanti. Tanpa sensor, RideComp tetap merekam GPS, jarak, kecepatan, dan elevasi.</string>
     <string name="onboarding_sensors_title">Hubungkan sensor</string>
@@ -332,11 +328,19 @@
     <string name="onboarding_required">Wajib</string>
     <string name="onboarding_optional">Opsional</string>
     <string name="profile_advanced_title">Pengaturan lanjutan (opsional)</string>
-    <string name="profile_advanced_subtitle">Ukuran roda, HR max, FTP, posisi tangan: nilai bawaan sudah cukup</string>
+    <string name="profile_advanced_subtitle">HR max, FTP, posisi tangan: nilai bawaan sudah cukup</string>
     <string name="language_title">Bahasa</string>
     <string name="language_back">Kembali</string>
     <string name="language_system">Ikuti bahasa HP</string>
     <string name="language_system_hint">Memakai bahasa yang diatur di HP ini</string>
     <string name="onboarding_language_title">Pilih bahasa</string>
     <string name="onboarding_language_text">Pilih bahasa · Choose a language. Bisa diganti nanti di Setelan.</string>
+
+    <!-- Sepeda tersimpan (D-89) -->
+    <string name="settings_bikes">Sepeda saya</string>
+    <plurals name="settings_bikes_value">
+        <item quantity="other">%1$d sepeda</item>
+    </plurals>
+    <string name="onboarding_bike_title">Sepedamu</string>
+    <string name="onboarding_bike_text">Simpan sepeda yang biasa kamu pakai. Sebelum gowes tinggal pilih; sepeda lain bisa ditambah di Setelan → Sepeda saya.</string>
 </resources>

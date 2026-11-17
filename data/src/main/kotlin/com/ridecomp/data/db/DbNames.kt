@@ -24,6 +24,7 @@ object DbNames {
     const val TABLE_SEGMENT_EFFORTS = "segment_efforts"
     const val TABLE_DAILY_TRAINING = "daily_training"
     const val TABLE_STRAVA_UPLOADS = "strava_uploads"
+    const val TABLE_BIKES = "bikes"
 
     /** The profile table always holds exactly one row with this id. */
     const val SINGLE_PROFILE_ID = 1

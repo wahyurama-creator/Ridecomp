@@ -29,11 +29,13 @@ import com.ridecomp.core.config.GpsConfig
 import com.ridecomp.core.engine.recording.BatteryStatus
 import com.ridecomp.core.engine.sensors.SavedSensor
 import com.ridecomp.core.engine.sensors.SensorKind
+import com.ridecomp.core.model.Bike
 import com.ridecomp.core.model.BuiltInProfiles
 import com.ridecomp.core.model.ScreenMode
 import com.ridecomp.core.usecase.GpsStatus
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.ride.R
+import com.ridecomp.feature.ride.model.bikeSummary
 import com.ridecomp.feature.ride.model.displayName
 import com.ridecomp.feature.ride.viewmodel.PreRideEffect
 import com.ridecomp.feature.ride.viewmodel.PreRideUiEvent
@@ -62,7 +64,7 @@ import kotlinx.collections.immutable.toImmutableList
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
-/** Pre-ride check (02-DESIGN §3.3, 13-UI-SCREENS #5, #29): checks, profile, route, screen mode, MULAI. */
+/** Pre-ride check (02-DESIGN §3.3, 13-UI-SCREENS #5, #29): checks, bike, route, screen mode, MULAI. */
 @Composable
 fun PreRideRoute(
     onStarted: () -> Unit,
@@ -71,6 +73,7 @@ fun PreRideRoute(
     routeId: Long? = null,
     onCancel: () -> Unit = {},
     onChooseRoute: () -> Unit = {},
+    onManageBikes: () -> Unit = {},
     viewModel: PreRideViewModel = koinViewModel(key = routeId?.toString()) { parametersOf(routeId) },
 ) {
     val gps by viewModel.gpsStatus.collectAsStateWithLifecycle()
@@ -86,6 +89,7 @@ fun PreRideRoute(
         onEvent = viewModel::onEvent,
         onCancel = onCancel,
         onChooseRoute = onChooseRoute,
+        onManageBikes = onManageBikes,
         modifier = modifier,
     )
 }
@@ -98,6 +102,7 @@ fun PreRideScreen(
     modifier: Modifier = Modifier,
     onCancel: () -> Unit = {},
     onChooseRoute: () -> Unit = {},
+    onManageBikes: () -> Unit = {},
 ) {
     // While GPS searches, the waiting state is shown first (#29); "Pilihan ride" opens the check list.
     var isChecklistShown by rememberSaveable { mutableStateOf(false) }
@@ -119,7 +124,7 @@ fun PreRideScreen(
             if (gps is GpsStatus.Searching && !isChecklistShown) {
                 GpsWaiting(gps, onShowOptions = { isChecklistShown = true })
             } else {
-                Checklist(gps, state, onEvent, onChooseRoute)
+                Checklist(gps, state, onEvent, onChooseRoute, onManageBikes)
             }
         }
         Box(
@@ -140,6 +145,7 @@ private fun Checklist(
     state: PreRideUiState,
     onEvent: (PreRideUiEvent) -> Unit,
     onChooseRoute: () -> Unit,
+    onManageBikes: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap)) {
         ListCard {
@@ -147,7 +153,7 @@ private fun Checklist(
             SensorKind.entries.forEach { kind -> CheckRow(sensorCheck(state.sensors, kind)) }
             state.battery?.let { CheckRow(batteryCheck(it), hasDivider = false) }
         }
-        ProfilePicker(state, onEvent)
+        BikePicker(state, onEvent, onManageBikes)
         RoutePicker(state, onEvent, onChooseRoute)
         ScreenModePicker(state, onEvent)
     }
@@ -237,25 +243,37 @@ private fun batteryCheck(battery: BatteryStatus): Check = Check(
     if (battery.percent > LOW_BATTERY_PERCENT) CheckLevel.OK else CheckLevel.WARN,
 )
 
-/** The five built-in profiles fit one row (13-UI-SCREENS #5); custom ones wrap to the next. */
-private const val PROFILE_COLUMNS = 5
+/** Bikes in rows of two, so names fit (D-89). */
+private const val BIKE_COLUMNS = 2
 
 private val MAX_ACCURACY_M = GpsConfig.MAX_ACCURACY_M.roundToInt()
 
 /** Below this the ride will soon switch to the battery saver (12-FEATURE-SPECS §3). */
 private const val LOW_BATTERY_PERCENT = 20
 
+/** The saved bikes (D-89): pick one; its type, weight and wheel size are shown and used for the ride. */
 @Composable
-private fun ProfilePicker(state: PreRideUiState, onEvent: (PreRideUiEvent) -> Unit) {
-    val selected = state.selected ?: return
-    ChoiceChips(
-        label = stringResource(R.string.pre_ride_profile),
-        choices = state.profiles.map { Choice(it.id, it.displayName()) }.toImmutableList(),
-        selected = selected.id,
-        onSelect = { onEvent(PreRideUiEvent.SelectProfile(it)) },
-        horizontalPadding = RideCompDimens.none,
-        columns = PROFILE_COLUMNS,
-    )
+private fun BikePicker(state: PreRideUiState, onEvent: (PreRideUiEvent) -> Unit, onManageBikes: () -> Unit) {
+    val bike = state.bike ?: return
+    Column(verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS)) {
+        ChoiceChips(
+            label = stringResource(R.string.pre_ride_bike),
+            choices = state.bikes.map { Choice(it.id, it.displayName()) }.toImmutableList(),
+            selected = bike.id,
+            onSelect = { onEvent(PreRideUiEvent.SelectBike(it)) },
+            horizontalPadding = RideCompDimens.none,
+            columns = BIKE_COLUMNS.coerceAtMost(state.bikes.size),
+        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = bikeSummary(bike, state.selected),
+                style = RideCompTheme.typography.caption,
+                color = RideCompTheme.colors.textSecondary,
+                modifier = Modifier.weight(1f),
+            )
+            LinkText(stringResource(R.string.pre_ride_manage_bikes), onClick = onManageBikes)
+        }
+    }
 }
 
 @Composable
@@ -401,8 +419,11 @@ private fun StartButtons(gps: GpsStatus, onStart: () -> Unit) {
 }
 
 private val previewProfiles = BuiltInProfiles.ALL.mapIndexed { index, profile -> profile.copy(id = index + 1L) }
+private val previewBike = Bike(id = 1, profileId = previewProfiles.first().id)
 private val previewState = PreRideUiState(
     battery = BatteryStatus(76, false),
+    bikes = listOf(previewBike, Bike(id = 2, name = "Polygon Xtrada", profileId = 3)).toImmutableList(),
+    bike = previewBike,
     profiles = previewProfiles.toImmutableList(),
     selected = previewProfiles.first(),
 )

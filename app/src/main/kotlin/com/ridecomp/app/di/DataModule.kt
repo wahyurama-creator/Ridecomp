@@ -5,6 +5,7 @@ import com.ridecomp.core.repository.ActivityAnalysisRepository
 import com.ridecomp.core.repository.ActivityProfileRepository
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.BestEffortRepository
+import com.ridecomp.core.repository.BikeRepository
 import com.ridecomp.core.repository.GuideRepository
 import com.ridecomp.core.repository.IncidentRepository
 import com.ridecomp.core.repository.ProfileRepository
@@ -23,6 +24,7 @@ import com.ridecomp.data.repository.ActivityAnalysisRepositoryImpl
 import com.ridecomp.data.repository.ActivityProfileRepositoryImpl
 import com.ridecomp.data.repository.ActivityRepositoryImpl
 import com.ridecomp.data.repository.BestEffortRepositoryImpl
+import com.ridecomp.data.repository.BikeRepositoryImpl
 import com.ridecomp.data.repository.GuideRepositoryImpl
 import com.ridecomp.data.repository.IncidentRepositoryImpl
 import com.ridecomp.data.repository.ProfileRepositoryImpl
@@ -54,11 +56,13 @@ val dataModule = module {
     single { get<RideCompDatabase>().segmentDao() }
     single { get<RideCompDatabase>().trainingDao() }
     single { get<RideCompDatabase>().stravaUploadDao() }
+    single { get<RideCompDatabase>().bikeDao() }
     single<ActivityRepository> { ActivityRepositoryImpl(get(), get(), get(), get(), get()) }
     single<ProfileRepository> { ProfileRepositoryImpl(get()) }
     single<SettingsRepository> { SettingsRepositoryImpl(get()) }
     single<SensorRepository> { SensorRepositoryImpl(get()) }
     single<ActivityProfileRepository> { ActivityProfileRepositoryImpl(get(), get()) }
+    single<BikeRepository> { BikeRepositoryImpl(get(), get()) }
     single<SafetyRepository> { SafetyRepositoryImpl(get(), get()) }
     single<IncidentRepository> { IncidentRepositoryImpl(get()) }
     single<RouteRepository> { RouteRepositoryImpl(get()) }

@@ -10,6 +10,7 @@ import com.ridecomp.core.repository.ActivityAnalysisRepository
 import com.ridecomp.core.repository.ActivityProfileRepository
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.BestEffortRepository
+import com.ridecomp.core.repository.BikeRepository
 import com.ridecomp.core.repository.GuideRepository
 import com.ridecomp.core.repository.IncidentRepository
 import com.ridecomp.core.repository.OfflineMapRepository
@@ -46,6 +47,7 @@ import com.ridecomp.core.testing.FakeBackupManifestCodec
 import com.ridecomp.core.testing.FakeBackupStateRepository
 import com.ridecomp.core.testing.FakeBatteryLevelSource
 import com.ridecomp.core.testing.FakeBestEffortRepository
+import com.ridecomp.core.testing.FakeBikeRepository
 import com.ridecomp.core.testing.FakeBleScanner
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeExportFileStore
@@ -82,6 +84,9 @@ import com.ridecomp.feature.history.viewmodel.ActivityDetailViewModel
 import com.ridecomp.feature.history.viewmodel.HistoryViewModel
 import com.ridecomp.feature.ride.viewmodel.ActivityProfileEditorViewModel
 import com.ridecomp.feature.ride.viewmodel.ActivityProfilesViewModel
+import com.ridecomp.feature.ride.viewmodel.BikeEditorViewModel
+import com.ridecomp.feature.ride.viewmodel.BikeTarget
+import com.ridecomp.feature.ride.viewmodel.BikesViewModel
 import com.ridecomp.feature.ride.viewmodel.DataPagesEditorViewModel
 import com.ridecomp.feature.ride.viewmodel.HomeViewModel
 import com.ridecomp.feature.ride.viewmodel.PreRideViewModel
@@ -151,6 +156,7 @@ class AppModulesTest {
         single<SensorRepository> { FakeSensorRepository() }
         single<BleScanner> { FakeBleScanner() }
         single<ActivityProfileRepository> { FakeActivityProfileRepository() }
+        single<BikeRepository> { FakeBikeRepository() }
         single<SafetyRepository> { FakeSafetyRepository() }
         single<SmsGateway> { FakeSmsGateway() }
         single<SafetyMessages> { FakeSafetyMessages() }
@@ -238,5 +244,7 @@ class AppModulesTest {
         assertNotNull(koin.get<RouteDetailViewModel> { parametersOf(1L) })
         assertNotNull(koin.get<IncidentManager>())
         assertNotNull(koin.get<ActivityProfileEditorViewModel> { parametersOf(1L) })
+        assertNotNull(koin.get<BikesViewModel>())
+        assertNotNull(koin.get<BikeEditorViewModel> { parametersOf(BikeTarget.Existing(1L)) })
     }
 }

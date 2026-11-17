@@ -9,6 +9,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.ridecomp.data.db.dao.ActivityDao
 import com.ridecomp.data.db.dao.ActivityProfileDao
 import com.ridecomp.data.db.dao.BestEffortDao
+import com.ridecomp.data.db.dao.BikeDao
 import com.ridecomp.data.db.dao.EmergencyContactDao
 import com.ridecomp.data.db.dao.EventDao
 import com.ridecomp.data.db.dao.IncidentDao
@@ -24,6 +25,7 @@ import com.ridecomp.data.db.dao.TrainingDao
 import com.ridecomp.data.db.entity.ActivityEntity
 import com.ridecomp.data.db.entity.ActivityProfileEntity
 import com.ridecomp.data.db.entity.BestEffortEntity
+import com.ridecomp.data.db.entity.BikeEntity
 import com.ridecomp.data.db.entity.DailyTrainingEntity
 import com.ridecomp.data.db.entity.EmergencyContactEntity
 import com.ridecomp.data.db.entity.EventEntity
@@ -68,6 +70,7 @@ import com.ridecomp.data.db.entity.TrackPointEntity
         SegmentEffortEntity::class,
         DailyTrainingEntity::class,
         StravaUploadEntity::class,
+        BikeEntity::class,
     ],
     version = RideCompDatabase.VERSION,
     exportSchema = true,
@@ -103,8 +106,10 @@ abstract class RideCompDatabase : RoomDatabase() {
 
     abstract fun stravaUploadDao(): StravaUploadDao
 
+    abstract fun bikeDao(): BikeDao
+
     companion object {
-        const val VERSION = 7
+        const val VERSION = 8
 
         /**
          * Builds the database in internal storage (SEC-STO-01). Destructive migration is never enabled:
@@ -244,6 +249,19 @@ object RideCompMigrations {
         }
     }
 
+    /** v8: saved bikes (D-89); the first one is made from the profile's bike weight and wheel size. */
+    val MIGRATION_7_8: Migration = object : Migration(7, 8) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `${DbNames.TABLE_BIKES}` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, " +
+                    "`profile_id` INTEGER NOT NULL, `weight_kg` REAL NOT NULL, " +
+                    "`wheel_circumference_mm` INTEGER NOT NULL)",
+            )
+            BikeSeed.insertFirstBike(db)
+        }
+    }
+
     private const val CASCADE_ACTIVITIES =
         "REFERENCES `${DbNames.TABLE_ACTIVITIES}`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE"
     private const val CASCADE_SEGMENTS =
@@ -302,12 +320,21 @@ object RideCompMigrations {
     }
 
     val ALL: List<Migration> =
-        listOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
+        listOf(
+            MIGRATION_1_2,
+            MIGRATION_2_3,
+            MIGRATION_3_4,
+            MIGRATION_4_5,
+            MIGRATION_5_6,
+            MIGRATION_6_7,
+            MIGRATION_7_8,
+        )
 }
 
-/** New installs get the built-in profiles too (existing ones get them from MIGRATION_2_3). */
+/** New installs get the built-in profiles and the first bike too (existing ones get them from migrations). */
 private object SeedCallback : RoomDatabase.Callback() {
     override fun onCreate(db: SupportSQLiteDatabase) {
         ProfileSeed.insertBuiltIns(db)
+        BikeSeed.insertFirstBike(db)
     }
 }

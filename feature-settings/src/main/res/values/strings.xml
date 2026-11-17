@@ -2,7 +2,7 @@
 <resources>
     <string name="settings_title">Settings</string>
     <string name="settings_profile">Rider profile</string>
-    <string name="settings_profile_subtitle">Weight, bike, wheel size, HR max, FTP</string>
+    <string name="settings_profile_subtitle">Weight, HR max, FTP</string>
     <string name="settings_data_pages">Data pages</string>
     <string name="settings_activity_profiles">Activity profiles</string>
     <string name="settings_activity_profiles_subtitle">Road, Gravel, MTB, Indoor, Commute</string>
@@ -18,9 +18,6 @@
 
     <string name="profile_title">Profile</string>
     <string name="profile_weight">Body weight</string>
-    <string name="profile_bike_weight">Bike weight</string>
-    <string name="profile_wheel">Wheel circumference</string>
-    <string name="profile_wheel_common">Common sizes</string>
     <string name="profile_hr_max">HR max (optional)</string>
     <string name="profile_hr_rest">Resting HR (optional)</string>
     <string name="profile_ftp">FTP (optional)</string>
@@ -34,7 +31,6 @@
     <string name="profile_save">SAVE</string>
     <string name="profile_error_invalid">Check this value</string>
     <string name="unit_kg">kg</string>
-    <string name="unit_mm">mm</string>
     <string name="unit_bpm">bpm</string>
     <string name="unit_watt">W</string>
 
@@ -153,7 +149,7 @@
     <string name="onboarding_battery_detected">Detected: %1$s. %2$s</string>
     <string name="onboarding_battery_open">Open battery settings</string>
     <string name="onboarding_battery_done">Already allowed · open again</string>
-    <string name="onboarding_profile_text">Used for calories, estimated power and the wheel speed sensor.</string>
+    <string name="onboarding_profile_text">Used for calories, estimated power and heart rate zones.</string>
     <string name="onboarding_ready_title">Almost ready to ride</string>
     <string name="onboarding_ready_text">Connect sensors now or later. Without sensors RideComp still records GPS, distance, speed and elevation.</string>
     <string name="onboarding_sensors_title">Connect sensors</string>
@@ -346,7 +342,7 @@
     <string name="onboarding_required">Required</string>
     <string name="onboarding_optional">Optional</string>
     <string name="profile_advanced_title">Advanced settings (optional)</string>
-    <string name="profile_advanced_subtitle">Wheel size, HR max, FTP, hand position: defaults work fine</string>
+    <string name="profile_advanced_subtitle">HR max, FTP, hand position: defaults work fine</string>
     <string name="language_title">Language</string>
     <string name="language_back">Back</string>
     <string name="language_system">Follow phone language</string>
@@ -355,4 +351,13 @@
     <string name="onboarding_language_text">Pilih bahasa · Choose a language. You can change it later in Settings.</string>
     <string name="language_indonesian" translatable="false">Bahasa Indonesia</string>
     <string name="language_english" translatable="false">English</string>
+
+    <!-- Saved bikes (D-89) -->
+    <string name="settings_bikes">My bikes</string>
+    <plurals name="settings_bikes_value">
+        <item quantity="one">%1$d bike</item>
+        <item quantity="other">%1$d bikes</item>
+    </plurals>
+    <string name="onboarding_bike_title">Your bike</string>
+    <string name="onboarding_bike_text">Save the bike you usually ride. Before each ride you just pick it; more bikes can be added in Settings → My bikes.</string>
 </resources>
