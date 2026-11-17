@@ -77,6 +77,10 @@ object RideCompDimens {
     val linkBadgeSize = 64.dp
     val linkDotSize = 6.dp
     val avatarSizeLarge = 56.dp
+    val poweredByHeight = 18.dp
+
+    /** Strava's "Connect with Strava" button height (brand guidelines 1.1). */
+    val stravaButtonHeight = 48.dp
     val routeSketchHeight = 180.dp
     val onboardingProgressHeight = 4.dp
     val gpsWaitOuter = 200.dp
