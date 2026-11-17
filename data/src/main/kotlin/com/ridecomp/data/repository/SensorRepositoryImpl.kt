@@ -13,6 +13,9 @@ internal object SensorServiceNames {
     const val HEART_RATE = "hr"
     const val SPEED_CADENCE = "csc"
     const val POWER = "cp"
+
+    /** Smart trainer (FTMS, T9.1): stored with its kinds, not a kind of its own. */
+    const val TRAINER = "ftms"
     const val SEPARATOR = ","
 }
 
@@ -34,14 +37,23 @@ internal fun String.toSensorKinds(): Set<SensorKind> = split(SensorServiceNames.
     }
 }.toSet()
 
-internal fun SensorEntity.toDomain() =
-    SavedSensor(remoteId, name, services.toSensorKinds(), lastBattery, isAutoConnect, createdAt)
+internal fun SensorEntity.toDomain() = SavedSensor(
+    address = remoteId,
+    name = name,
+    kinds = services.toSensorKinds(),
+    lastBatteryPercent = lastBattery,
+    isAutoConnect = isAutoConnect,
+    createdAtMs = createdAt,
+    isTrainer = services.split(SensorServiceNames.SEPARATOR).any { it.trim() == SensorServiceNames.TRAINER },
+)
 
 internal fun SavedSensor.toEntity(existingId: Long = 0) = SensorEntity(
     id = existingId,
     remoteId = address,
     name = name,
-    services = kinds.toServices(),
+    services = kinds.toServices().let {
+        if (isTrainer) it + SensorServiceNames.SEPARATOR + SensorServiceNames.TRAINER else it
+    },
     lastBattery = lastBatteryPercent,
     isAutoConnect = isAutoConnect,
     createdAt = createdAtMs,

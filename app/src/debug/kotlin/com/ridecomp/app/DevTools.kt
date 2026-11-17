@@ -80,7 +80,7 @@ object DevTools {
             single { DeveloperSettings(androidContext()) }
             single<BleScanner> { DebugBleScanner(AndroidBleScanner(androidContext()), get()) }
             single<SensorConnector> {
-                DebugSensorConnector(AndroidSensorConnector(androidContext(), get(), get()), get(), get())
+                DebugSensorConnector(AndroidSensorConnector(androidContext(), get(), get(), get()), get(), get(), get())
             }
         },
     )

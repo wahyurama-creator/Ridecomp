@@ -93,6 +93,7 @@ import com.ridecomp.core.usecase.ObserveSegmentUseCase
 import com.ridecomp.core.usecase.ObserveSegmentsUseCase
 import com.ridecomp.core.usecase.ObserveStravaStatusUseCase
 import com.ridecomp.core.usecase.ObserveStravaUploadUseCase
+import com.ridecomp.core.usecase.ObserveTrainerUseCase
 import com.ridecomp.core.usecase.ObserveTrainingUseCase
 import com.ridecomp.core.usecase.PairSensorUseCase
 import com.ridecomp.core.usecase.PerformIncidentActionUseCase
@@ -135,6 +136,7 @@ import com.ridecomp.core.usecase.SetAppLanguageUseCase
 import com.ridecomp.core.usecase.SetRiderLevelUseCase
 import com.ridecomp.core.usecase.SetSafetyEnabledUseCase
 import com.ridecomp.core.usecase.SetStravaAutoUploadUseCase
+import com.ridecomp.core.usecase.SetTrainerTargetUseCase
 import com.ridecomp.core.usecase.ShareActivityFileUseCase
 import com.ridecomp.core.usecase.ShareCardFiles
 import com.ridecomp.core.usecase.ShareCardImageUseCase
@@ -238,6 +240,8 @@ val useCaseModule = module {
     factory { ObserveBikeChoiceUseCase(get()) }
     factory { SaveBikeUseCase(get()) }
     factory { SelectBikeUseCase(get()) }
+    factory { ObserveTrainerUseCase(get()) }
+    factory { SetTrainerTargetUseCase(get()) }
     factory { ObservePlansUseCase(get()) }
     factory { GetCustomPlanUseCase(get()) }
     factory { ObserveActivePlanUseCase(get(), get()) }

@@ -402,4 +402,13 @@
     <string name="home_plan_start">START SESSION</string>
     <string name="pre_ride_session">Today\'s session</string>
     <string name="pre_ride_session_description">The ride screen shows the target zone; the phone tells you when an easy session gets too hard.</string>
+
+    <!-- Smart trainer (T9.1) -->
+    <string name="trainer_erg">ERG</string>
+    <string name="trainer_minus">−10</string>
+    <string name="trainer_plus">+10</string>
+    <string name="trainer_watts">%1$d W</string>
+    <string name="trainer_easy">Easy</string>
+    <string name="trainer_zone">Zone %1$d</string>
+    <string name="trainer_no_control">Smart trainer connected as a sensor; another app is controlling its resistance.</string>
 </resources>

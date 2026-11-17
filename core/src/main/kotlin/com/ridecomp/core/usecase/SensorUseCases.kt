@@ -4,8 +4,11 @@ import com.ridecomp.core.engine.sensors.BleScanner
 import com.ridecomp.core.engine.sensors.DiscoveredSensor
 import com.ridecomp.core.engine.sensors.SavedSensor
 import com.ridecomp.core.engine.sensors.SensorRepository
+import com.ridecomp.core.engine.sensors.TrainerControl
+import com.ridecomp.core.engine.sensors.TrainerState
 import com.ridecomp.core.source.Clock
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 /** Paired sensors for the Sensors screen. */
 public class ObserveSavedSensorsUseCase(private val repository: SensorRepository) {
@@ -37,6 +40,7 @@ public class PairSensorUseCase(private val repository: SensorRepository, private
                 name = sensor.name?.takeIf { it.isNotBlank() } ?: fallbackName,
                 kinds = sensor.kinds,
                 createdAtMs = clock.nowMs(),
+                isTrainer = sensor.isTrainer,
             ),
         )
     }
@@ -45,5 +49,21 @@ public class PairSensorUseCase(private val repository: SensorRepository, private
 public class ForgetSensorUseCase(private val repository: SensorRepository) {
     public suspend operator fun invoke(address: String) {
         repository.forget(address)
+    }
+}
+
+/** The smart trainer's link and ERG target (T9.1). */
+public class ObserveTrainerUseCase(private val control: TrainerControl) {
+    public operator fun invoke(): StateFlow<TrainerState> = control.state
+}
+
+/** ERG − / + on the ride screen, or a zone button (watts). */
+public class SetTrainerTargetUseCase(private val control: TrainerControl) {
+    public fun adjust(deltaW: Int) {
+        control.adjust(deltaW)
+    }
+
+    public fun set(watts: Int) {
+        control.setTarget(watts)
     }
 }

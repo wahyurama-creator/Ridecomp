@@ -6,12 +6,15 @@ import com.ridecomp.core.engine.sensors.BatteryLevelParser
 import com.ridecomp.core.engine.sensors.BleConfig
 import com.ridecomp.core.engine.sensors.CscParser
 import com.ridecomp.core.engine.sensors.CyclingPowerParser
+import com.ridecomp.core.engine.sensors.FtmsCommands
 import com.ridecomp.core.engine.sensors.HeartRateParser
+import com.ridecomp.core.engine.sensors.IndoorBikeDataParser
 import com.ridecomp.core.engine.sensors.ReconnectBackoff
 import com.ridecomp.core.engine.sensors.SavedSensor
 import com.ridecomp.core.engine.sensors.SensorConnector
 import com.ridecomp.core.engine.sensors.SensorKind
 import com.ridecomp.core.engine.sensors.SensorReading
+import com.ridecomp.core.engine.sensors.TrainerControl
 import com.ridecomp.core.source.Clock
 import com.ridecomp.core.source.Logger
 import kotlinx.coroutines.channels.ProducerScope
@@ -19,7 +22,10 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.isActive
@@ -30,8 +36,12 @@ import kotlinx.coroutines.launch
  * then forward parsed notifications. On loss it emits a disconnection, closes the GATT and reconnects with
  * [ReconnectBackoff]; it never stops the ride. Cancelling the flow closes every GATT (09 §1, BAT-01).
  */
-class AndroidSensorConnector(private val context: Context, private val clock: Clock, private val logger: Logger) :
-    SensorConnector {
+class AndroidSensorConnector(
+    private val context: Context,
+    private val clock: Clock,
+    private val logger: Logger,
+    private val trainer: TrainerControl,
+) : SensorConnector {
     private val adapter = context.getSystemService(BluetoothManager::class.java)?.adapter
 
     override fun readings(sensors: List<SavedSensor>): Flow<SensorReading> = channelFlow {
@@ -75,13 +85,17 @@ class AndroidSensorConnector(private val context: Context, private val clock: Cl
         val subscribed = BleUuids.MEASUREMENT_BY_SERVICE.count { (service, measurement) ->
             client.hasService(service) && client.enableNotifications(service, measurement)
         }
+        val hasTrainerData = sensor.isTrainer &&
+            client.hasService(BleUuids.FITNESS_MACHINE_SERVICE) &&
+            client.enableNotifications(BleUuids.FITNESS_MACHINE_SERVICE, BleUuids.INDOOR_BIKE_DATA)
         if (client.hasService(BleUuids.BATTERY_SERVICE)) client.read(BleUuids.BATTERY_SERVICE, BleUuids.BATTERY_LEVEL)
-        return subscribed > 0 || sensor.kinds.isEmpty()
+        return subscribed > 0 || hasTrainerData || sensor.kinds.isEmpty()
     }
 
     /** Forwards notifications until the link drops; reads battery every 10 minutes (§A.4). */
     private suspend fun ProducerScope<SensorReading>.stream(client: GattClient, sensor: SavedSensor) {
         val batteryJob = launch { readBatteryPeriodically(client) }
+        val ergJob = if (sensor.isTrainer) launch { controlTrainer(client) } else null
         try {
             client.events.receiveAsFlow()
                 .takeWhile { it != GattEvent.Disconnected }
@@ -89,6 +103,28 @@ class AndroidSensorConnector(private val context: Context, private val clock: Cl
                 .collect { event -> event.toReading(sensor)?.let { send(it) } }
         } finally {
             batteryJob.cancel()
+            ergJob?.cancel()
+            if (sensor.isTrainer) trainer.onLink(isConnected = false, isControlled = false)
+        }
+    }
+
+    /**
+     * ERG (T9.1, D-95): takes control of the trainer (FTMS: indications on the control point, Request
+     * Control, Start), then writes the target power whenever it changes. Without control the trainer
+     * still works as a sensor.
+     */
+    private suspend fun controlTrainer(client: GattClient) {
+        val service = BleUuids.FITNESS_MACHINE_SERVICE
+        val point = BleUuids.FITNESS_MACHINE_CONTROL_POINT
+        val isControlled = client.enableIndications(service, point) &&
+            client.write(service, point, FtmsCommands.REQUEST_CONTROL) &&
+            client.write(service, point, FtmsCommands.START)
+        trainer.onLink(isConnected = true, isControlled = isControlled)
+        if (!isControlled) return
+        trainer.state.map { it.targetW }.distinctUntilChanged().filterNotNull().collect { watts ->
+            if (!client.write(service, point, FtmsCommands.setTargetPower(watts))) {
+                logger.warn(TAG) { "Trainer did not accept the ERG target" }
+            }
         }
     }
 
@@ -106,6 +142,7 @@ class AndroidSensorConnector(private val context: Context, private val clock: Cl
             BleUuids.HEART_RATE_MEASUREMENT -> HeartRateParser.parse(bytes)?.let { SensorReading.HeartRate(it, now) }
             BleUuids.CSC_MEASUREMENT -> CscParser.parse(bytes)?.let { SensorReading.SpeedCadence(it, now) }
             BleUuids.CYCLING_POWER_MEASUREMENT -> CyclingPowerParser.parse(bytes)?.let { SensorReading.Power(it, now) }
+            BleUuids.INDOOR_BIKE_DATA -> IndoorBikeDataParser.parse(bytes)?.let { SensorReading.Trainer(it, now) }
             BleUuids.BATTERY_LEVEL -> BatteryLevelParser.parse(bytes)?.let { percent ->
                 SensorReading.Battery(sensor.primaryKind(), percent, now, sensor.address)
             }

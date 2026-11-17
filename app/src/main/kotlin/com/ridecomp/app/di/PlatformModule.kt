@@ -7,6 +7,7 @@ import com.ridecomp.core.engine.safety.IncidentManager
 import com.ridecomp.core.engine.sensors.BleScanner
 import com.ridecomp.core.engine.sensors.SensorConnector
 import com.ridecomp.core.engine.sensors.SensorRepository
+import com.ridecomp.core.engine.sensors.TrainerControl
 import com.ridecomp.core.model.StravaSetup
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.OfflineMapRepository
@@ -94,9 +95,10 @@ val platformModule = module {
     single { AlertPlayer(androidContext()) }
     single { RideStateHolder() }
     single<BleScanner> { AndroidBleScanner(androidContext()) }
+    single { TrainerControl() }
     single<OfflineMapRepository> { AndroidOfflineMapStore(androidContext(), get(), get()) }
     single<NetworkStatusSource> { AndroidNetworkStatusSource(androidContext()) }
-    single<SensorConnector> { AndroidSensorConnector(androidContext(), get(), get()) }
+    single<SensorConnector> { AndroidSensorConnector(androidContext(), get(), get(), get()) }
     single<SmsGateway> { AndroidSmsGateway(androidContext(), get(), get()) }
     single<SafetyMessages> { AndroidSafetyMessages(androidContext()) }
     single<PickedContactReader> { AndroidPickedContactReader(androidContext(), get()) }
@@ -127,6 +129,7 @@ class KoinRecordingDependencies(private val koin: Koin) : RecordingDependencies 
     override val getRideProfile get() = koin.get<GetRideProfileUseCase>()
     override val getSelectedBike get() = koin.get<GetSelectedBikeUseCase>()
     override val rideSession get() = koin.get<RideSessionUseCase>()
+    override val trainerControl get() = koin.get<TrainerControl>()
     override val incidentManager get() = koin.get<IncidentManager>()
     override val accelerometerSource get() = koin.get<AccelerometerSource>()
     override val routeRepository get() = koin.get<RouteRepository>()

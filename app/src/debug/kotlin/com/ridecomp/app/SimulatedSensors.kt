@@ -7,12 +7,15 @@ import com.ridecomp.core.engine.sensors.BleScanner
 import com.ridecomp.core.engine.sensors.CscParser
 import com.ridecomp.core.engine.sensors.CyclingPowerParser
 import com.ridecomp.core.engine.sensors.DiscoveredSensor
+import com.ridecomp.core.engine.sensors.ErgConfig
 import com.ridecomp.core.engine.sensors.HeartRateParser
+import com.ridecomp.core.engine.sensors.IndoorBikeDataParser
 import com.ridecomp.core.engine.sensors.SavedSensor
 import com.ridecomp.core.engine.sensors.SensorConnector
 import com.ridecomp.core.engine.sensors.SensorKind
 import com.ridecomp.core.engine.sensors.SensorLimits
 import com.ridecomp.core.engine.sensors.SensorReading
+import com.ridecomp.core.engine.sensors.TrainerControl
 import com.ridecomp.core.source.Clock
 import kotlin.math.PI
 import kotlin.math.floor
@@ -40,7 +43,14 @@ object SimulatedSensors {
     val SPEED_CADENCE =
         DiscoveredSensor("${ADDRESS_PREFIX}02", "SIM Speed/Cadence", setOf(SensorKind.SPEED_CADENCE), -55)
     val POWER = DiscoveredSensor("${ADDRESS_PREFIX}03", "SIM Power Meter", setOf(SensorKind.POWER), -61)
-    val ALL = listOf(HEART_RATE, SPEED_CADENCE, POWER)
+    val TRAINER = DiscoveredSensor(
+        "${ADDRESS_PREFIX}04",
+        "SIM Smart Trainer",
+        setOf(SensorKind.POWER, SensorKind.SPEED_CADENCE),
+        -52,
+        isTrainer = true,
+    )
+    val ALL = listOf(HEART_RATE, SPEED_CADENCE, POWER, TRAINER)
 
     /** One device shows up after another, like a real scan. */
     const val FOUND_EVERY_MS = 700L
@@ -60,6 +70,11 @@ object SimulatedSensors {
     const val POWER_PER_MPS = 26.0
     const val POWER_SWING_W = 35.0
     const val SWING_PERIOD_S = 23.0
+
+    /** Virtual trainer: follows the ERG target with a few watts of noise, speed from power. */
+    const val TRAINER_SWING_W = 6.0
+    const val TRAINER_BASE_KMH = 15.0
+    const val TRAINER_KMH_PER_W = 0.08
 
     fun isSimulated(address: String): Boolean = address.startsWith(ADDRESS_PREFIX)
 }
@@ -90,6 +105,7 @@ class DebugSensorConnector(
     private val real: SensorConnector,
     private val clock: Clock,
     private val settings: DeveloperSettings,
+    private val trainer: TrainerControl,
 ) : SensorConnector {
     override fun readings(sensors: List<SavedSensor>): Flow<SensorReading> {
         val (simulated, physical) = sensors.partition { SimulatedSensors.isSimulated(it.address) }
@@ -103,6 +119,7 @@ class DebugSensorConnector(
     }
 
     private suspend fun SendChannel<SensorReading>.stream(sensor: SavedSensor) {
+        if (sensor.isTrainer) return streamTrainer(sensor)
         val packets = PacketBuilder()
         connect(sensor, isConnected = true)
         BatteryLevelParser.parse(byteArrayOf(SimulatedSensors.BATTERY_PERCENT.toByte()))?.let { percent ->
@@ -121,6 +138,28 @@ class DebugSensorConnector(
                 connect(sensor, isConnected)
             }
             if (isConnected) packets.next(second, sensor.kinds, clock.nowMs()).forEach { send(it) }
+        }
+    }
+
+    /** A controllable trainer: Indoor Bike Data at the ERG target, through the real FTMS parser (T9.1). */
+    private suspend fun SendChannel<SensorReading>.streamTrainer(sensor: SavedSensor) {
+        connect(sensor, isConnected = true)
+        trainer.onLink(isConnected = true, isControlled = true)
+        try {
+            var second = 0L
+            while (true) {
+                delay(SimulatedSensors.TICK_MS)
+                second++
+                val swing = sin(2 * PI * second / SimulatedSensors.SWING_PERIOD_S)
+                val watts =
+                    (trainer.state.value.targetW ?: ErgConfig.DEFAULT_W) + SimulatedSensors.TRAINER_SWING_W * swing
+                val kmh = SimulatedSensors.TRAINER_BASE_KMH + SimulatedSensors.TRAINER_KMH_PER_W * watts
+                val cadence = SimulatedSensors.BASE_CADENCE_RPM + SimulatedSensors.CADENCE_SWING_RPM * swing
+                IndoorBikeDataParser.parse(indoorBikePacket(kmh, cadence, watts.roundToInt()))
+                    ?.let { send(SensorReading.Trainer(it, clock.nowMs())) }
+            }
+        } finally {
+            trainer.onLink(isConnected = false, isControlled = false)
         }
     }
 
@@ -205,3 +244,25 @@ private class PacketBuilder {
         const val SECONDS_PER_MINUTE = 60.0
     }
 }
+
+/** FTMS Indoor Bike Data: flags (cadence + power, speed present), speed 0.01 km/h, cadence 0.5 rpm, power W. */
+private fun indoorBikePacket(kmh: Double, cadenceRpm: Double, watts: Int): ByteArray {
+    val flags = (1 shl INDOOR_FLAG_CADENCE) or (1 shl INDOOR_FLAG_POWER)
+    return le16(flags) + le16((kmh * INDOOR_SPEED_SCALE).roundToInt()) +
+        le16((cadenceRpm * INDOOR_CADENCE_SCALE).roundToInt()) + le16(watts)
+}
+
+private fun le16(value: Int): ByteArray = byteArrayOf(
+    (value and BYTE_MASK).toByte(),
+    (
+        (value shr BYTE_BITS) and
+            BYTE_MASK
+        ).toByte(),
+)
+
+private const val INDOOR_FLAG_CADENCE = 2
+private const val INDOOR_FLAG_POWER = 6
+private const val INDOOR_SPEED_SCALE = 100.0
+private const val INDOOR_CADENCE_SCALE = 2.0
+private const val BYTE_MASK = 0xFF
+private const val BYTE_BITS = 8

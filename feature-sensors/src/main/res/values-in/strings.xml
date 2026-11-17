@@ -30,4 +30,5 @@
     <string name="sensors_signal_strong">sinyal kuat</string>
     <string name="sensors_signal_weak">sinyal lemah</string>
     <string name="sensors_ble_info">Hanya sensor Bluetooth (BLE). Sensor ANT+ saja tidak didukung oleh kebanyakan HP. Kalibrasi power meter dilakukan lewat app pabrikannya.</string>
+    <string name="sensors_kind_trainer">Smart trainer (ERG)</string>
 </resources>

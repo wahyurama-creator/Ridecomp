@@ -14,6 +14,7 @@ import android.os.ParcelUuid
 import androidx.core.content.ContextCompat
 import com.ridecomp.core.engine.sensors.BleScanner
 import com.ridecomp.core.engine.sensors.DiscoveredSensor
+import com.ridecomp.core.engine.sensors.SensorKind
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -56,7 +57,7 @@ class AndroidBleScanner(private val context: Context) : BleScanner {
                 close(IllegalStateException("BLE scan failed: $errorCode"))
             }
         }
-        val filters = BleUuids.SERVICE_BY_KIND.values.map {
+        val filters = (BleUuids.SERVICE_BY_KIND.values + BleUuids.FITNESS_MACHINE_SERVICE).map {
             ScanFilter.Builder().setServiceUuid(ParcelUuid(it)).build()
         }
         val settings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
@@ -71,11 +72,15 @@ class AndroidBleScanner(private val context: Context) : BleScanner {
     @SuppressLint("MissingPermission")
     private fun ScanResult.toDiscovered(): DiscoveredSensor {
         val uuids = scanRecord?.serviceUuids.orEmpty().map { it.uuid }
+        // A smart trainer gives power, cadence and speed through the Fitness Machine service (T9.1).
+        val isTrainer = BleUuids.FITNESS_MACHINE_SERVICE in uuids
+        val trainerKinds = if (isTrainer) setOf(SensorKind.POWER, SensorKind.SPEED_CADENCE) else emptySet()
         return DiscoveredSensor(
             address = device.address,
             name = scanRecord?.deviceName ?: device.name,
-            kinds = uuids.mapNotNull(BleUuids::kindOf).toSet(),
+            kinds = uuids.mapNotNull(BleUuids::kindOf).toSet() + trainerKinds,
             rssiDbm = rssi,
+            isTrainer = isTrainer,
         )
     }
 }
