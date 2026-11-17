@@ -60,8 +60,8 @@ Tidak ada (DEP-02). OAuth memakai `ACTION_VIEW`, HTTP memakai `HttpsURLConnectio
   - `StravaJsonTest`, `StravaViewModelTest`, migrasi 6→7, baris Strava di detail.
 - **`./gradlew ktlintCheck detekt lint test koverVerify assembleDebug`:** ✅. `assembleRelease` ✅.
 - **APK release per-ABI:** 13,4 MB arm64 / 10,5 MB armeabi-v7a (target < 20 MB).
+- **Uji perangkat (realme, T5.6):** layar Setelan → Strava, validasi Client ID/Secret, Secret tersamar, tidak ada tawaran simpan ke password manager (D-81), redirect palsu tanpa efek, host lain tidak membuka app, baris "Upload ke Strava" di detail membuka layar Strava saat belum terhubung.
 - **Belum:**
-  - Uji di perangkat: HP terputus dari ADB sejak T5.2.
   - Uji alur nyata dengan akun Strava: membutuhkan Client ID/Secret milik pemilik, yang dimasukkan sendiri di HP.
   - Instrumented test migrasi 6→7 belum dijalankan.
 
