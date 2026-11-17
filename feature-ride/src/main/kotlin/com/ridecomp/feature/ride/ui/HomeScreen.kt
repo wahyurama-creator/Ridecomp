@@ -3,6 +3,7 @@ package com.ridecomp.feature.ride.ui
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
@@ -61,6 +63,7 @@ import com.ridecomp.ui.preview.ThemePreviews
 import com.ridecomp.ui.theme.RideCompDimens
 import com.ridecomp.ui.theme.RideCompTheme
 import com.ridecomp.ui.udf.ObserveEffects
+import com.ridecomp.ui.util.thenIf
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -75,6 +78,8 @@ fun HomeRoute(
     modifier: Modifier = Modifier,
     onOpenBackup: () -> Unit = {},
     tipContent: (@Composable () -> Unit)? = null,
+    /** The sensor tiles open the Sensors tab (novice test, D-86). */
+    onOpenSensors: () -> Unit = {},
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -89,7 +94,13 @@ fun HomeRoute(
             HomeEffect.OpenBackup -> onOpenBackup()
         }
     }
-    HomeScreen(state = state, onEvent = viewModel::onEvent, modifier = modifier, tipContent = tipContent)
+    HomeScreen(
+        state = state,
+        onEvent = viewModel::onEvent,
+        modifier = modifier,
+        tipContent = tipContent,
+        onOpenSensors = onOpenSensors,
+    )
 }
 
 /** [tipContent]: the first-ride tip of the guide (Phase 4G), from the app. */
@@ -99,6 +110,7 @@ fun HomeScreen(
     onEvent: (HomeUiEvent) -> Unit,
     modifier: Modifier = Modifier,
     tipContent: (@Composable () -> Unit)? = null,
+    onOpenSensors: () -> Unit = {},
 ) {
     var isDiscardDialogShown by remember { mutableStateOf(false) }
     val format = remember(state.unitSystem) { UnitFormatter(state.unitSystem) }
@@ -123,7 +135,7 @@ fun HomeScreen(
         } else {
             state.backupReminder?.let { BackupReminderCard(it, onEvent) }
         }
-        StatusTiles(state)
+        StatusTiles(state, onOpenSensors)
         if (state.isRideInProgress) {
             Text(
                 text = stringResource(R.string.ride_home_in_progress),
@@ -222,9 +234,12 @@ private fun RecoveryCard(ride: Activity, format: UnitFormatter, onEvent: (HomeUi
     }
 }
 
-/** Four status tiles (13-UI-SCREENS #3): GPS permission, then saved sensors with their last battery. */
+/**
+ * Four status tiles (13-UI-SCREENS #3): GPS permission, then saved sensors with their last battery. A
+ * sensor tile opens the Sensors tab, so "Tambah" leads straight to pairing.
+ */
 @Composable
-private fun StatusTiles(state: HomeUiState) {
+private fun StatusTiles(state: HomeUiState, onOpenSensors: () -> Unit) {
     val gpsTile = when (state.gps) {
         GpsAvailability.READY -> TileValue(stringResource(R.string.home_tile_gps_ready), StatusTone.OK)
         GpsAvailability.NO_PERMISSION -> TileValue(
@@ -241,6 +256,7 @@ private fun StatusTiles(state: HomeUiState) {
                 label = stringResource(kind.tileLabel()),
                 value = sensorTileValue(state.sensors, kind),
                 modifier = Modifier.weight(1f),
+                onClick = onOpenSensors,
             )
         }
     }
@@ -264,7 +280,13 @@ private fun sensorTileValue(sensors: List<SavedSensor>, kind: SensorKind): TileV
 }
 
 @Composable
-private fun StatusTile(@DrawableRes iconRes: Int, label: String, value: TileValue, modifier: Modifier) {
+private fun StatusTile(
+    @DrawableRes iconRes: Int,
+    label: String,
+    value: TileValue,
+    modifier: Modifier,
+    onClick: (() -> Unit)? = null,
+) {
     val colors = RideCompTheme.colors
     val tint = when (value.tone) {
         StatusTone.OK -> colors.ok
@@ -276,6 +298,7 @@ private fun StatusTile(@DrawableRes iconRes: Int, label: String, value: TileValu
         modifier = modifier
             .clip(RoundedCornerShape(RideCompDimens.cornerRadiusSmall))
             .background(colors.surface)
+            .thenIf(onClick != null) { clickable(role = Role.Button) { onClick?.invoke() } }
             .padding(vertical = RideCompDimens.spacingSm, horizontal = RideCompDimens.spacingXs)
             .semantics(mergeDescendants = true) {},
         horizontalAlignment = Alignment.CenterHorizontally,

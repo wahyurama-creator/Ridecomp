@@ -51,6 +51,7 @@ import com.ridecomp.feature.ride.model.MetricUnitLabels
 import com.ridecomp.feature.ride.model.RideMetric
 import com.ridecomp.feature.ride.model.RouteView
 import com.ridecomp.feature.ride.model.rideAction
+import com.ridecomp.feature.ride.model.withFallbacks
 import com.ridecomp.feature.ride.ui.component.BreadcrumbMap
 import com.ridecomp.feature.ride.ui.component.ClimbPage
 import com.ridecomp.feature.ride.ui.component.IncidentAlertedBanner
@@ -250,17 +251,19 @@ private fun DataPageContent(
         ClimbPage(climb, live.value.elevation.gradePercent, formatter)
         return
     }
+    val sensorsInUse = live.value.sensors.snapshot.states.keys
+    val metrics = remember(page.metrics, sensorsInUse) { page.metrics.withFallbacks(sensorsInUse) }
     Column(modifier = Modifier.fillMaxSize()) {
         if (isLapPage) LapHeader(live, formatter)
         DataGrid(
-            count = page.metrics.size,
+            count = metrics.size,
             isFirstFullWidth = page.isFirstFullWidth,
             firstRowWeight = HERO_ROW_WEIGHT,
             modifier = Modifier.weight(1f),
         ) { index, cellModifier ->
             RideField(
                 live = live,
-                metric = page.metrics[index],
+                metric = metrics[index],
                 formatter = formatter,
                 labels = labels,
                 isHero = index == 0 && page.isFirstFullWidth,
@@ -552,7 +555,7 @@ private fun PauseSummary(live: LiveRide, formatter: UnitFormatter, labels: Metri
                 color = colors.textSecondary,
             )
         }
-        PAUSE_STATS.chunked(PAUSE_STATS_COLUMNS).forEach { row ->
+        PAUSE_STATS.withFallbacks(live.sensors.snapshot.states.keys).chunked(PAUSE_STATS_COLUMNS).forEach { row ->
             Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.cardGap)) {
                 row.forEach { metric ->
                     StatCard(

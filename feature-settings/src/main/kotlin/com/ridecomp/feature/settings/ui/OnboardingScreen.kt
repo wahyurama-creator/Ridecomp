@@ -58,7 +58,6 @@ import com.ridecomp.ui.R as UiR
 import com.ridecomp.ui.component.BigButton
 import com.ridecomp.ui.component.BigButtonSize
 import com.ridecomp.ui.component.BigButtonStyle
-import com.ridecomp.ui.component.LinkText
 import com.ridecomp.ui.component.OnboardingProgress
 import com.ridecomp.ui.component.RideCompCard
 import com.ridecomp.ui.component.WarningCard
@@ -194,8 +193,12 @@ private fun LevelStep(onChoose: (RiderLevel) -> Unit, onBack: () -> Unit, header
 private fun PermissionsStep(onNext: () -> Unit, header: @Composable () -> Unit) {
     val context = LocalContext.current
     var refresh by remember { mutableIntStateOf(0) }
+    // "Allow & continue" asks everything at once and moves on as soon as location is granted.
+    var isContinueAfterGrant by remember { mutableStateOf(false) }
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         refresh++
+        if (isContinueAfterGrant && context.isGranted(Manifest.permission.ACCESS_FINE_LOCATION)) onNext()
+        isContinueAfterGrant = false
     }
     val settingsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         refresh++
@@ -218,9 +221,19 @@ private fun PermissionsStep(onNext: () -> Unit, header: @Composable () -> Unit) 
         },
         buttons = {
             BigButton(
-                text = stringResource(R.string.onboarding_next),
-                onClick = onNext,
-                isEnabled = isLocationGranted,
+                text = stringResource(
+                    if (isLocationGranted) R.string.onboarding_next else R.string.onboarding_allow_all,
+                ),
+                onClick = {
+                    if (isLocationGranted) {
+                        onNext()
+                    } else {
+                        isContinueAfterGrant = true
+                        val missing = PERMISSION_CARDS.flatMap { it.permissions().toList() }
+                            .filterNot(context::isGranted)
+                        permissionLauncher.launch(missing.toTypedArray())
+                    }
+                },
                 size = BigButtonSize.SECONDARY,
             )
             if (!isLocationGranted) {
@@ -276,7 +289,16 @@ private fun PermissionCard(card: PermissionCardSpec, isGranted: Boolean, onReque
         PermissionCardSpec.NEARBY -> colors.track
         PermissionCardSpec.NOTIFICATIONS -> colors.warn
     }
-    StepCard(card.iconRes, tint, stringResource(card.titleRes), stringResource(card.reasonRes)) {
+    val need = stringResource(
+        if (card ==
+            PermissionCardSpec.LOCATION
+        ) {
+            R.string.onboarding_required
+        } else {
+            R.string.onboarding_optional
+        },
+    )
+    StepCard(card.iconRes, tint, stringResource(card.titleRes), "$need · ${stringResource(card.reasonRes)}") {
         if (isGranted) {
             Text(
                 text = stringResource(R.string.onboarding_granted),
@@ -397,7 +419,6 @@ private fun ReadyStep(
                 onClick = onFinish,
                 size = BigButtonSize.SECONDARY,
             )
-            LinkText(stringResource(R.string.onboarding_skip), onClick = onFinish)
         },
     )
 }

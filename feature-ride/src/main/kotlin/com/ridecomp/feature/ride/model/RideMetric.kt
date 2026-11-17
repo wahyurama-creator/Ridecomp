@@ -227,3 +227,35 @@ fun DataPagesLayout.toDataPages(): List<DataPage> = pages.map { page ->
 /** Renderable pages → stored layout. */
 fun List<DataPage>.toLayout(): DataPagesLayout =
     DataPagesLayout(map { page -> DataPageLayout(page.metrics.map { it.key }, page.isFirstFullWidth) })
+
+/**
+ * Fields for sensors the rider does not use show phone metrics instead of "--" (novice test, D-86): with no
+ * power meter a power field shows the estimate, other sensor fields the first phone metric not already on
+ * the page. A sensor that is paired keeps its field, so a lost signal still shows as lost.
+ */
+fun List<RideMetric>.withFallbacks(sensorsInUse: Set<SensorKind>): List<RideMetric> {
+    val used = toMutableSet()
+    return map { metric ->
+        if (metric.isAvailable(sensorsInUse)) return@map metric
+        val candidates = if (metric.sensor == SensorKind.POWER) POWER_FALLBACKS else PHONE_FALLBACKS
+        val substitute = candidates.firstOrNull { it !in used } ?: metric
+        used += substitute
+        substitute
+    }
+}
+
+private fun RideMetric.isAvailable(sensorsInUse: Set<SensorKind>): Boolean = when (this) {
+    // Cadence comes from a speed/cadence sensor or a power meter.
+    RideMetric.CADENCE, RideMetric.AVG_CADENCE ->
+        SensorKind.SPEED_CADENCE in sensorsInUse || SensorKind.POWER in sensorsInUse
+    else -> sensor == null || sensor in sensorsInUse
+}
+
+private val PHONE_FALLBACKS = listOf(
+    RideMetric.ASCENT,
+    RideMetric.MAX_SPEED,
+    RideMetric.ELAPSED_TIME,
+    RideMetric.CALORIES,
+    RideMetric.CLOCK,
+)
+private val POWER_FALLBACKS = listOf(RideMetric.ESTIMATED_POWER) + PHONE_FALLBACKS

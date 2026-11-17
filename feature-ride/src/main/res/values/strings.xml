@@ -26,7 +26,7 @@
     <string name="ride_pause">PAUSE</string>
     <string name="ride_resume">RESUME</string>
     <string name="ride_lap">LAP</string>
-    <string name="ride_finish_save">FINISH &amp; SAVE</string>
+    <string name="ride_finish_save">FINISH</string>
     <string name="ride_discard">Discard ride</string>
     <string name="ride_discard_title">Discard this ride?</string>
     <string name="ride_discard_message">Everything recorded in this ride will be deleted.</string>
@@ -53,7 +53,7 @@
 
     <string name="summary_title">Ride summary</string>
     <string name="summary_name">Activity name</string>
-    <string name="summary_save">Save</string>
+    <string name="summary_save">Save ride</string>
 
     <string name="metric_speed">Speed</string>
     <string name="metric_avg_speed">Avg speed</string>
@@ -211,14 +211,14 @@
     <string name="home_battery">Phone battery %1$d%%</string>
     <string name="home_battery_percent">%1$d%%</string>
     <string name="home_tile_gps">GPS</string>
-    <string name="home_tile_gps_ready">Ready</string>
+    <string name="home_tile_gps_ready">Allowed</string>
     <string name="home_tile_gps_no_permission">Needs permission</string>
     <string name="home_tile_gps_off">Off</string>
     <string name="home_tile_hr">HR</string>
     <string name="home_tile_cadence">Cadence</string>
     <string name="home_tile_power">Power</string>
     <string name="home_tile_power_estimate">Estimated</string>
-    <string name="home_tile_none">None</string>
+    <string name="home_tile_none">Add</string>
     <string name="home_tile_saved">Saved</string>
     <string name="home_last_ride_title">Last ride · %1$s</string>
     <string name="home_last_ride_moving">moving</string>
@@ -230,8 +230,8 @@
     <string name="pre_ride_check_battery">Phone battery</string>
     <string name="pre_ride_sensor_saved_battery">Saved · %1$d%%</string>
     <string name="pre_ride_sensor_saved">Saved</string>
-    <string name="pre_ride_sensor_none">None</string>
-    <string name="pre_ride_power_estimate">None · estimated</string>
+    <string name="pre_ride_sensor_none">Not used</string>
+    <string name="pre_ride_power_estimate">Estimated</string>
     <string name="pre_ride_battery_value">%1$d%%</string>
     <string name="pre_ride_route_label">Route</string>
     <string name="pre_ride_route_value">%1$s · %2$s %3$s</string>
@@ -260,12 +260,11 @@
     <string name="summary_cadence_caption">rpm average</string>
     <string name="summary_power">Power</string>
     <string name="summary_power_estimate">Power EST</string>
-    <string name="summary_power_estimate_caption">W · not in FIT</string>
+    <string name="summary_power_estimate_caption">W · estimated from speed</string>
     <string name="summary_calories">Calories</string>
     <string name="summary_laps">Laps</string>
     <string name="summary_laps_caption">laps</string>
-    <string name="summary_export_hint">Export FIT and share are on the activity detail after saving</string>
-    <string name="summary_strava_help">How to upload a FIT file to Strava</string>
+    <string name="summary_export_hint">After saving: upload to Strava, share an image or export the file from the ride\'s page.</string>
     <string name="data_pages_change_field">Change field %1$d</string>
     <string name="data_pages_current">Selected</string>
     <string name="metric_category_speed">Speed</string>

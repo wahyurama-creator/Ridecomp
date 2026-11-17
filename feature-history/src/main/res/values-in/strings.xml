@@ -45,7 +45,6 @@
     <string name="history_month">Bulan ini</string>
     <string name="history_month_rides">Ride</string>
     <string name="history_month_ascent">Tanjakan</string>
-    <string name="history_fit_not_exported">Belum diekspor</string>
     <string name="history_moving">bergerak</string>
     <string name="history_ascent_unit">%1$s ↑</string>
     <string name="history_today">Hari ini</string>

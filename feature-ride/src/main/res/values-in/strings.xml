@@ -26,7 +26,7 @@
     <string name="ride_pause">PAUSE</string>
     <string name="ride_resume">LANJUTKAN</string>
     <string name="ride_lap">LAP</string>
-    <string name="ride_finish_save">SELESAI &amp; SIMPAN</string>
+    <string name="ride_finish_save">SELESAI</string>
     <string name="ride_discard">Buang ride</string>
     <string name="ride_discard_title">Buang ride ini?</string>
     <string name="ride_discard_message">Semua yang terekam di ride ini akan dihapus.</string>
@@ -53,7 +53,7 @@
 
     <string name="summary_title">Ringkasan ride</string>
     <string name="summary_name">Nama aktivitas</string>
-    <string name="summary_save">Simpan</string>
+    <string name="summary_save">Simpan ride</string>
 
     <string name="metric_speed">Kecepatan</string>
     <string name="metric_avg_speed">Kec. rata-rata</string>
@@ -207,14 +207,14 @@
     <string name="home_battery">Baterai HP %1$d%%</string>
     <string name="home_battery_percent">%1$d%%</string>
     <string name="home_tile_gps">GPS</string>
-    <string name="home_tile_gps_ready">Siap</string>
+    <string name="home_tile_gps_ready">Diizinkan</string>
     <string name="home_tile_gps_no_permission">Perlu izin</string>
     <string name="home_tile_gps_off">Mati</string>
     <string name="home_tile_hr">HR</string>
     <string name="home_tile_cadence">Cadence</string>
     <string name="home_tile_power">Power</string>
     <string name="home_tile_power_estimate">Estimasi</string>
-    <string name="home_tile_none">Tidak ada</string>
+    <string name="home_tile_none">Tambah</string>
     <string name="home_tile_saved">Tersimpan</string>
     <string name="home_last_ride_title">Ride terakhir · %1$s</string>
     <string name="home_last_ride_moving">bergerak</string>
@@ -226,8 +226,8 @@
     <string name="pre_ride_check_battery">Baterai HP</string>
     <string name="pre_ride_sensor_saved_battery">Tersimpan · %1$d%%</string>
     <string name="pre_ride_sensor_saved">Tersimpan</string>
-    <string name="pre_ride_sensor_none">Tidak ada</string>
-    <string name="pre_ride_power_estimate">Tidak ada · pakai estimasi</string>
+    <string name="pre_ride_sensor_none">Tidak dipakai</string>
+    <string name="pre_ride_power_estimate">Diestimasi</string>
     <string name="pre_ride_battery_value">%1$d%%</string>
     <string name="pre_ride_route_label">Rute</string>
     <string name="pre_ride_route_value">%1$s · %2$s %3$s</string>
@@ -256,12 +256,11 @@
     <string name="summary_cadence_caption">rpm rata-rata</string>
     <string name="summary_power">Power</string>
     <string name="summary_power_estimate">Power EST</string>
-    <string name="summary_power_estimate_caption">W · tidak masuk FIT</string>
+    <string name="summary_power_estimate_caption">W · estimasi dari kecepatan</string>
     <string name="summary_calories">Kalori</string>
     <string name="summary_laps">Lap</string>
     <string name="summary_laps_caption">lap</string>
-    <string name="summary_export_hint">Export FIT dan bagikan ada di detail aktivitas setelah disimpan</string>
-    <string name="summary_strava_help">Cara upload file FIT ke Strava</string>
+    <string name="summary_export_hint">Setelah disimpan: upload ke Strava, bagikan gambar, atau ekspor file dari halaman ride.</string>
     <string name="data_pages_change_field">Ganti metrik kotak %1$d</string>
     <string name="data_pages_current">Dipilih</string>
     <string name="metric_category_speed">Kecepatan</string>

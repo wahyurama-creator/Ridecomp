@@ -27,7 +27,6 @@ import com.ridecomp.ui.component.BigButton
 import com.ridecomp.ui.component.BigButtonSize
 import com.ridecomp.ui.component.BigButtonStyle
 import com.ridecomp.ui.component.ConfirmDialog
-import com.ridecomp.ui.component.LinkText
 import com.ridecomp.ui.component.RideCompTextField
 import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.component.StatGrid
@@ -47,7 +46,6 @@ fun SummaryRoute(
     onSaved: (activityId: Long) -> Unit,
     onDiscarded: () -> Unit,
     modifier: Modifier = Modifier,
-    onStravaHelp: () -> Unit = {},
     newRecordsContent: (@Composable (activityId: Long) -> Unit)? = null,
     viewModel: SummaryViewModel = koinViewModel(),
 ) {
@@ -61,7 +59,6 @@ fun SummaryRoute(
     SummaryScreen(
         state = state,
         onEvent = viewModel::onEvent,
-        onStravaHelp = onStravaHelp,
         newRecordsContent = newRecordsContent,
         modifier = modifier,
     )
@@ -73,7 +70,6 @@ fun SummaryScreen(
     state: SummaryUiState,
     onEvent: (SummaryUiEvent) -> Unit,
     modifier: Modifier = Modifier,
-    onStravaHelp: () -> Unit = {},
     newRecordsContent: (@Composable (activityId: Long) -> Unit)? = null,
 ) {
     var isDiscardDialogShown by remember { mutableStateOf(false) }
@@ -110,7 +106,6 @@ fun SummaryScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
             )
-            LinkText(stringResource(R.string.summary_strava_help), onClick = onStravaHelp)
             BigButton(
                 text = stringResource(R.string.ride_discard),
                 onClick = { isDiscardDialogShown = true },
@@ -142,7 +137,7 @@ fun SummaryScreen(
 private fun summaryStats(live: LiveRide, f: UnitFormatter): ImmutableList<StatItem> {
     val sensors = live.sensors
     val hasPowerMeter = sensors.snapshot.hasPowerMeter
-    return listOf(
+    return listOfNotNull(
         StatItem(stringResource(R.string.summary_distance), f.distance(live.distanceM), f.distanceUnit),
         StatItem(
             stringResource(R.string.summary_moving),
@@ -155,16 +150,25 @@ private fun summaryStats(live: LiveRide, f: UnitFormatter): ImmutableList<StatIt
             f.speed(live.avgSpeedMps.takeIf { live.movingMs > 0 }),
             stringResource(R.string.summary_max, f.speed(live.maxSpeedMps), f.speedUnit),
         ),
-        StatItem(
-            stringResource(R.string.summary_hr),
-            f.integer(sensors.avgHeartRateBpm),
-            stringResource(R.string.summary_max, f.integer(sensors.maxHeartRateBpm), stringResource(R.string.unit_bpm)),
-        ),
-        StatItem(
-            stringResource(R.string.summary_cadence),
-            f.integer(sensors.avgCadenceRpm),
-            stringResource(R.string.summary_cadence_caption),
-        ),
+        // Sensor values only when the ride has them: no "--" cells for riders without sensors (D-86).
+        sensors.avgHeartRateBpm?.let { bpm ->
+            StatItem(
+                stringResource(R.string.summary_hr),
+                f.integer(bpm),
+                stringResource(
+                    R.string.summary_max,
+                    f.integer(sensors.maxHeartRateBpm),
+                    stringResource(R.string.unit_bpm),
+                ),
+            )
+        },
+        sensors.avgCadenceRpm?.let { rpm ->
+            StatItem(
+                stringResource(R.string.summary_cadence),
+                f.integer(rpm),
+                stringResource(R.string.summary_cadence_caption),
+            )
+        },
         if (hasPowerMeter) {
             StatItem(
                 stringResource(R.string.summary_power),
@@ -184,11 +188,13 @@ private fun summaryStats(live: LiveRide, f: UnitFormatter): ImmutableList<StatIt
             f.integer(sensors.calories),
             stringResource(R.string.unit_kcal),
         ),
-        StatItem(
-            stringResource(R.string.summary_laps),
-            f.integer(live.lap?.number),
-            stringResource(R.string.summary_laps_caption),
-        ),
+        live.lap?.number?.let { laps ->
+            StatItem(
+                stringResource(R.string.summary_laps),
+                f.integer(laps),
+                stringResource(R.string.summary_laps_caption),
+            )
+        },
     ).toImmutableList()
 }
 

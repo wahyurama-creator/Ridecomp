@@ -2,7 +2,7 @@
 <resources>
     <string name="sensors_title">Sensors</string>
     <string name="sensors_empty">No saved sensors. Scan for heart rate, speed/cadence or power sensors.</string>
-    <string name="sensors_scan_action">Scan again</string>
+    <string name="sensors_scan_action">Search for sensors</string>
     <string name="sensors_stop_scan">Stop scan</string>
     <string name="sensors_saved">Saved</string>
     <string name="sensors_found">Found nearby</string>

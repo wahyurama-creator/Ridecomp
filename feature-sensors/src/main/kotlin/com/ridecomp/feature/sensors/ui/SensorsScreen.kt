@@ -133,7 +133,15 @@ fun SensorsScreen(
         }
         BigButton(
             text = stringResource(if (state.isScanning) R.string.sensors_stop_scan else R.string.sensors_scan_action),
-            onClick = { onEvent(if (state.isScanning) SensorsUiEvent.StopScan else SensorsUiEvent.StartScan) },
+            onClick = {
+                val blocker = state.blocker
+                when {
+                    state.isScanning -> onEvent(SensorsUiEvent.StopScan)
+                    // Straight to the system question instead of a banner first (novice test, D-86).
+                    blocker != null -> onFixBlocker(blocker)
+                    else -> onEvent(SensorsUiEvent.StartScan)
+                }
+            },
             style = BigButtonStyle.SECONDARY,
             size = BigButtonSize.TERTIARY,
             modifier = Modifier.padding(RideCompDimens.screenPaddingHorizontal),
