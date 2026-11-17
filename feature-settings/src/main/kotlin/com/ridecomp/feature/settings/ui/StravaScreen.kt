@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -26,7 +27,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.config.StravaConfig
@@ -59,6 +59,7 @@ import com.ridecomp.ui.preview.ThemePreviews
 import com.ridecomp.ui.theme.RideCompDimens
 import com.ridecomp.ui.theme.RideCompTheme
 import com.ridecomp.ui.udf.ObserveEffects
+import com.ridecomp.ui.util.ExcludeFromAutofill
 import org.koin.androidx.compose.koinViewModel
 
 /** Strava connection (Phase 5). [redirect] is the OAuth reply the app received, handled once. */
@@ -72,6 +73,8 @@ fun StravaRoute(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // The Client Secret must not reach a password manager's cloud.
+    ExcludeFromAutofill()
     ObserveEffects(viewModel.effects) { effect ->
         when (effect) {
             is StravaEffect.OpenUrl -> try {
@@ -107,8 +110,8 @@ fun StravaScreen(
 ) {
     ScreenScaffold(
         modifier = modifier,
-        title = stringResource(R.string.strava_title),
-        subtitle = stringResource(R.string.strava_subtitle),
+        title = stringResource(R.string.strava_connect_title),
+        subtitle = stringResource(R.string.strava_connect_subtitle),
         onBack = onBack,
         backLabel = stringResource(R.string.strava_back),
         banner = state.message?.let { message ->
@@ -220,17 +223,15 @@ private const val STEP_COPY = 3
 private fun Step(number: Int, text: String, content: @Composable () -> Unit) {
     val colors = RideCompTheme.colors
     Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm)) {
-        Text(
-            text = number.toString(),
-            style = RideCompTheme.typography.navLabel,
-            color = colors.onAccent,
-            textAlign = TextAlign.Center,
+        Box(
             modifier = Modifier
                 .size(RideCompDimens.stepBadgeSize)
                 .clip(CircleShape)
-                .background(colors.accent)
-                .padding(top = RideCompDimens.spacingXs),
-        )
+                .background(colors.accent),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(text = number.toString(), style = RideCompTheme.typography.navLabel, color = colors.onAccent)
+        }
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS)) {
             Text(text = text, style = RideCompTheme.typography.body, color = colors.textPrimary)
             content()

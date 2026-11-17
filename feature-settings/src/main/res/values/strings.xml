@@ -308,8 +308,8 @@
     <string name="guide_tip_backup">Your rides live only on this phone. Make a backup to Google Drive now and then so you never lose them.</string>
     <string name="guide_tip_offline_maps">Maps work without internet from region files (.pmtiles) you make on a computer and import here.</string>
     <string name="settings_strava">Strava</string>
-    <string name="strava_title">Strava</string>
-    <string name="strava_subtitle">Upload rides automatically</string>
+    <string name="strava_connect_title">Strava</string>
+    <string name="strava_connect_subtitle">Upload rides automatically</string>
     <string name="strava_back">Back</string>
     <string name="strava_ok">OK</string>
     <string name="strava_cancel">Cancel</string>

@@ -295,8 +295,8 @@
     <string name="guide_tip_backup">Ride-mu hanya tersimpan di HP ini. Sesekali buat backup ke Google Drive agar tidak pernah hilang.</string>
     <string name="guide_tip_offline_maps">Peta bisa dipakai tanpa internet dari file wilayah (.pmtiles) yang dibuat di komputer lalu diimpor di sini.</string>
     <string name="settings_strava">Strava</string>
-    <string name="strava_title">Strava</string>
-    <string name="strava_subtitle">Upload ride otomatis</string>
+    <string name="strava_connect_title">Strava</string>
+    <string name="strava_connect_subtitle">Upload ride otomatis</string>
     <string name="strava_back">Kembali</string>
     <string name="strava_ok">OK</string>
     <string name="strava_cancel">Batal</string>

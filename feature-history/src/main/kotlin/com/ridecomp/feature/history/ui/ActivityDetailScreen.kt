@@ -489,7 +489,7 @@ private fun ExportSection(
                 title = stringResource(R.string.detail_send_fit_title),
                 subtitle = stringResource(R.string.detail_send_fit_subtitle),
                 onClick = guarded { onEvent(ActivityDetailUiEvent.Share(ExportFormat.FIT)) },
-                leading = { IconTile(UiR.drawable.ic_upload) },
+                leading = { IconTile(UiR.drawable.ic_share) },
             )
             ListCardRow(
                 title = stringResource(R.string.detail_save_fit_title),
