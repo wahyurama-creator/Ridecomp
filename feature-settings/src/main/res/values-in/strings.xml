@@ -251,9 +251,9 @@
     <string name="guide_sensors_title">Menyambungkan sensor</string>
     <string name="guide_sensors_summary">Detak jantung, cadence, kecepatan, dan power.</string>
     <string name="guide_sensors_body" formatted="false">Sensor Bluetooth menambah data yang tidak bisa diukur HP: detak jantung (sabuk dada/gelang), cadence (putaran pedal), kecepatan roda, dan power meter.\n1. Nyalakan sensor (pakai sabuk HR, putar pedal/roda agar sensor bangun).\n2. Buka tab Sensor; pencarian berjalan otomatis (tekan Scan ulang bila perlu).\n3. Pilih sensor yang muncul untuk memasangkannya. Cukup sekali.\n4. Saat ride berikutnya, sensor tersambung otomatis. Indikator HR/CAD/PWR di bagian atas layar ride berwarna hijau bila tersambung.\nSensor putus di tengah ride? Rekaman tetap jalan dan RideComp mencoba menyambung ulang.</string>
-    <string name="guide_export_strava_title">Export FIT &amp; upload ke Strava</string>
-    <string name="guide_export_strava_summary">Kirim ride ke Strava atau aplikasi lain.</string>
-    <string name="guide_export_strava_body" formatted="false">FIT adalah format file ride standar yang dibaca Strava, Garmin Connect, TrainingPeaks, dan lainnya.\n1. Buka ride di Riwayat.\n2. Tekan Bagikan → pilih aplikasi Strava (atau Drive/WhatsApp). Atau tekan Export FIT untuk menyimpannya ke folder Download.\n3. Di Strava web: Upload aktivitas → File → pilih file .fit.\nPower hasil estimasi tidak dimasukkan ke file FIT agar data power-mu tetap jujur.</string>
+    <string name="guide_export_strava_title">Upload ke Strava &amp; ekspor</string>
+    <string name="guide_export_strava_summary">Ride ke Strava dengan satu ketukan, atau sebagai file ke aplikasi lain.</string>
+    <string name="guide_export_strava_body" formatted="false">Paling cepat: tautkan Strava sekali di Setelan → Strava (ketuk Hubungkan dengan Strava, lalu Authorize). Setelah itu:\n1. Buka ride di Riwayat.\n2. Ketuk Upload ke Strava. Saat muncul Lihat di Strava, ride sudah ada di sana.\nAktifkan Upload ride otomatis agar setiap ride yang disimpan terkirim sendiri.\nAplikasi lain (Garmin Connect, TrainingPeaks, Komoot): ketuk Kirim file FIT atau Kirim file GPX. Bingung pilih yang mana? Ketuk Apa itu FIT dan GPX? di halaman ride.\nPower hasil estimasi tidak dimasukkan ke file FIT agar data power-mu tetap jujur.</string>
     <string name="guide_backup_title">Backup &amp; pindah HP</string>
     <string name="guide_backup_summary">Jaga riwayat ride agar tidak hilang.</string>
     <string name="guide_backup_body" formatted="false">Semua data RideComp ada di HP ini saja. Backup berkala agar tidak hilang saat HP rusak atau ganti HP.\n1. Setelan → Backup &amp; export data → Buat backup.\n2. Pilih tempat simpan, misalnya Google Drive. Aktifkan kata sandi agar file aman bila dibaca orang lain.\n3. Di HP baru: pasang RideComp → Setelan → Backup &amp; export data → Restore dari file → masukkan kata sandi.\nKontak darurat tidak ikut backup demi privasi; isi lagi setelah restore.</string>
@@ -291,7 +291,7 @@
     <string name="guide_tip_first_ride">Tekan MULAI RIDE. Rekaman tetap berjalan walau layar mati; jeda dan simpan saat selesai.</string>
     <string name="guide_tip_routes">File GPX adalah garis rute yang dibuat di Strava, Komoot, atau sejenisnya. Import di sini dan RideComp akan memandumu.</string>
     <string name="guide_tip_sensors">Sensor detak jantung, cadence, kecepatan, dan power tersambung lewat Bluetooth. Nyalakan sensor, lalu ketuk di daftar untuk dipasangkan sekali.</string>
-    <string name="guide_tip_export">Untuk memasukkan ride ini ke Strava, tekan Bagikan lalu pilih Strava, atau Export FIT lalu upload di strava.com.</string>
+    <string name="guide_tip_export">Ketuk Upload ke Strava di bawah; tautkan akun sekali di Setelan → Strava. Untuk aplikasi lain, kirim file FIT.</string>
     <string name="guide_tip_backup">Ride-mu hanya tersimpan di HP ini. Sesekali buat backup ke Google Drive agar tidak pernah hilang.</string>
     <string name="guide_tip_offline_maps">Peta bisa dipakai tanpa internet dari file wilayah (.pmtiles) yang dibuat di komputer lalu diimpor di sini.</string>
     <string name="settings_strava">Strava</string>

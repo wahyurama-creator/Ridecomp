@@ -26,7 +26,7 @@
     <string name="detail_chart_power">POWER</string>
     <string name="detail_laps">Lap</string>
     <string name="detail_lap_row">Lap %1$d</string>
-    <string name="detail_strava_help">Cara upload ke Strava</string>
+    <string name="detail_strava_help">Upload manual di strava.com</string>
     <string name="detail_delete">Hapus aktivitas</string>
     <string name="detail_delete_title">Hapus ride ini?</string>
     <string name="detail_delete_message">Ride dan file ekspornya akan dihapus permanen.</string>
@@ -88,7 +88,7 @@
     <string name="detail_save_fit_subtitle">Simpan salinan di HP ini</string>
     <string name="detail_send_gpx_title">Kirim file GPX</string>
     <string name="detail_send_gpx_subtitle">Untuk Komoot atau aplikasi peta</string>
-    <string name="detail_strava_help_subtitle">Langkah demi langkah</string>
+    <string name="detail_strava_help_subtitle">Tanpa menautkan akun</string>
     <string name="detail_create_segment_subtitle">Pilih bagian ride ini di grafik</string>
     <string name="detail_formats_title">Apa itu FIT dan GPX?</string>
     <string name="detail_formats_subtitle">File mana yang dipilih</string>
