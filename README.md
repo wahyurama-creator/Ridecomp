@@ -25,7 +25,7 @@ Status: **beta 0.9.0**, distributed as an APK on [GitHub Releases](../../release
 
 Requirements: **Android 8.0 or newer**. GPS is required; Bluetooth sensors are optional.
 
-1. Open the [latest release](../../releases/latest) on your phone and download one APK:
+1. Open the [latest release](../../releases) on your phone and download one APK:
    - `RideComp-<version>-arm64-v8a.apk` fits almost every phone made since about 2017.
    - `RideComp-<version>-armeabi-v7a.apk` is for older 32-bit phones.
 
@@ -110,7 +110,7 @@ Issues and pull requests are welcome. Please:
 ## Panduan singkat (ID)
 
 **Instal:**
-1. Buka [rilis terbaru](../../releases/latest) di HP dan unduh **arm64-v8a** (untuk HP lama 32-bit, pilih **armeabi-v7a**).
+1. Buka [rilis terbaru](../../releases) di HP dan unduh **arm64-v8a** (untuk HP lama 32-bit, pilih **armeabi-v7a**).
 2. Buka file APK, izinkan "Instal app tidak dikenal", lalu ketuk **Instal**. Pembaruan dipasang di atasnya dan data tetap aman.
 
 **Pakai:**
