@@ -1,10 +1,12 @@
 package com.ridecomp.app
 
 import android.app.Application
+import android.content.Context
 import com.ridecomp.app.di.KoinRecordingDependencies
 import com.ridecomp.app.di.appModules
 import com.ridecomp.platform.crash.CrashLogHandler
 import com.ridecomp.platform.crash.CrashLogStore
+import com.ridecomp.platform.locale.AppLocale
 import com.ridecomp.platform.service.RecordingDependencies
 import com.ridecomp.platform.service.RecordingDependenciesProvider
 import org.koin.android.ext.android.get
@@ -19,6 +21,11 @@ class RideCompApplication :
     Application(),
     RecordingDependenciesProvider {
     override val recordingDependencies: RecordingDependencies by lazy { KoinRecordingDependencies(getKoin()) }
+
+    /** Default ride names and other app-context texts in the chosen language (D-88). */
+    override fun attachBaseContext(base: Context) {
+        super.attachBaseContext(AppLocale.wrap(base))
+    }
 
     override fun onCreate() {
         super.onCreate()

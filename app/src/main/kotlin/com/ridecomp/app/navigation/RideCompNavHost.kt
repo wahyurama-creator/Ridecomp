@@ -1,14 +1,8 @@
 package com.ridecomp.app.navigation
 
-import android.content.Context
-import android.content.Intent
-import android.os.Build
-import android.provider.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
@@ -38,6 +32,7 @@ import com.ridecomp.feature.settings.ui.BatteryHelpRoute
 import com.ridecomp.feature.settings.ui.GuideTip
 import com.ridecomp.feature.settings.ui.HelpRoute
 import com.ridecomp.feature.settings.ui.HelpTopicScreen
+import com.ridecomp.feature.settings.ui.LanguageRoute
 import com.ridecomp.feature.settings.ui.OfflineMapsRoute
 import com.ridecomp.feature.settings.ui.OnboardingRoute
 import com.ridecomp.feature.settings.ui.OssLicensesRoute
@@ -76,6 +71,7 @@ object AppRoutes {
     const val OFFLINE_MAPS = "offline_maps"
     const val LICENSES = "licenses"
     const val STRAVA = "strava"
+    const val LANGUAGE = "language"
     const val HELP = "help"
     const val ARG_TOPIC = "topic"
     const val HELP_TOPIC = "help/{$ARG_TOPIC}"
@@ -118,15 +114,12 @@ object AppRoutes {
     val FULL_SCREEN: Set<String> = setOf(ONBOARDING, PRE_RIDE, RIDE, SUMMARY)
 }
 
-private const val PACKAGE_SCHEME = "package:"
-
 /**
  * App navigation graph. Feature screens only expose callbacks; navigation decisions live here
  * (ARCH-07: ViewModels and screens never hold a NavController).
  */
 @Composable
 fun RideCompNavHost(navController: NavHostController, startDestination: String, modifier: Modifier = Modifier) {
-    val context = LocalContext.current
     NavHost(navController = navController, startDestination = startDestination, modifier = modifier) {
         composable(AppRoutes.ONBOARDING) {
             OnboardingRoute(
@@ -175,7 +168,7 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
         }
         composable(TopLevelDestination.SETTINGS.route) {
             SettingsRoute(
-                onSectionClick = { section -> openSection(section, navController, context) },
+                onSectionClick = { section -> openSection(section, navController) },
                 isDeveloperMenuVisible = DevTools.IS_DEVELOPER_MENU_AVAILABLE,
             )
         }
@@ -201,6 +194,7 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
             )
         }
         composable(AppRoutes.LICENSES) { OssLicensesRoute(onBack = { navController.popBackStack() }) }
+        composable(AppRoutes.LANGUAGE) { LanguageRoute(onBack = { navController.popBackStack() }) }
         composable(AppRoutes.STRAVA) {
             val redirect by IncomingStravaAuth.redirect.collectAsStateWithLifecycle()
             StravaRoute(
@@ -320,26 +314,18 @@ private fun NavGraphBuilder.historyGraph(navController: NavHostController) {
     }
 }
 
-private fun openSection(section: SettingsSection, navController: NavHostController, context: Context) {
-    val route = section.route()
-    if (route != null) {
-        navController.navigate(route)
-    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        // Language: per-app language lives in Android settings from Android 13.
-        context.startActivity(
-            Intent(Settings.ACTION_APP_LOCALE_SETTINGS, (PACKAGE_SCHEME + context.packageName).toUri()),
-        )
-    }
+private fun openSection(section: SettingsSection, navController: NavHostController) {
+    navController.navigate(section.route())
 }
 
-/** The screen of a settings entry; null for the language, which opens Android settings. */
-private fun SettingsSection.route(): String? = when (this) {
+/** The screen of a settings entry. */
+private fun SettingsSection.route(): String = when (this) {
     SettingsSection.PROFILE -> AppRoutes.PROFILE
     SettingsSection.RIDE_SCREEN_BATTERY, SettingsSection.AUTO_PAUSE, SettingsSection.REMINDERS ->
         AppRoutes.RIDE_SETTINGS
     SettingsSection.BATTERY_HELP -> AppRoutes.BATTERY_HELP
     SettingsSection.DEVELOPER -> AppRoutes.DEVELOPER
-    SettingsSection.LANGUAGE -> null
+    SettingsSection.LANGUAGE -> AppRoutes.LANGUAGE
     SettingsSection.DATA_PAGES -> AppRoutes.dataPages()
     SettingsSection.ACTIVITY_PROFILES -> AppRoutes.ACTIVITY_PROFILES
     SettingsSection.SAFETY -> AppRoutes.SAFETY

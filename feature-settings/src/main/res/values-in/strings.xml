@@ -10,7 +10,7 @@
     <string name="settings_safety">Keselamatan &amp; kontak darurat</string>
     <string name="settings_offline_maps">Peta offline</string>
     <string name="settings_units">Satuan</string>
-    <string name="settings_language">Satuan &amp; bahasa</string>
+    <string name="settings_language">Bahasa</string>
     <string name="settings_backup">Backup &amp; export data</string>
     <string name="settings_battery_help">HP saya mematikan app</string>
     <string name="settings_coming_soon">Tersedia di versi berikutnya</string>
@@ -333,4 +333,10 @@
     <string name="onboarding_optional">Opsional</string>
     <string name="profile_advanced_title">Pengaturan lanjutan (opsional)</string>
     <string name="profile_advanced_subtitle">Ukuran roda, HR max, FTP, posisi tangan: nilai bawaan sudah cukup</string>
+    <string name="language_title">Bahasa</string>
+    <string name="language_back">Kembali</string>
+    <string name="language_system">Ikuti bahasa HP</string>
+    <string name="language_system_hint">Memakai bahasa yang diatur di HP ini</string>
+    <string name="onboarding_language_title">Pilih bahasa</string>
+    <string name="onboarding_language_text">Pilih bahasa · Choose a language. Bisa diganti nanti di Setelan.</string>
 </resources>

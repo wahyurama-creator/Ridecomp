@@ -69,6 +69,14 @@ android {
         compose = true
         buildConfig = true
     }
+
+    // The language is chosen inside the app (D-88): every install must carry all languages, so a Play
+    // bundle is not split by language.
+    bundle {
+        language {
+            enableSplit = false
+        }
+    }
 }
 
 dependencies {

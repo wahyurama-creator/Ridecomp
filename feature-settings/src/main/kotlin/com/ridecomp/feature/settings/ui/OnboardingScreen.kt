@@ -97,6 +97,7 @@ fun OnboardingRoute(
     val header: @Composable () -> Unit = { StepHeader(step) }
     Column(modifier = modifier.fillMaxSize().background(RideCompTheme.colors.bg)) {
         when (step) {
+            OnboardingStep.LANGUAGE -> LanguageStep(onNext = { viewModel.onEvent(OnboardingUiEvent.Next) }, header)
             OnboardingStep.PERMISSIONS -> PermissionsStep(onNext = {
                 viewModel.onEvent(OnboardingUiEvent.Next)
             }, header)
@@ -166,6 +167,18 @@ private fun StepLayout(content: @Composable () -> Unit, buttons: @Composable () 
             ) { buttons() }
         }
     }
+}
+
+/** Language (D-88): applied on tap, so the rest of onboarding is already in it. */
+@Composable
+private fun LanguageStep(onNext: () -> Unit, header: @Composable () -> Unit) {
+    StepLayout(
+        content = {
+            header()
+            LanguagePicker()
+        },
+        buttons = { BigButton(text = stringResource(R.string.onboarding_next), onClick = onNext) },
+    )
 }
 
 /** Experience (Phase 4G, owner request): beginner is preselected; it decides how many tips show. */
@@ -466,6 +479,7 @@ private fun Context.batteryExemptionIntent(): Intent =
 
 @StringRes
 private fun OnboardingStep.titleRes(): Int = when (this) {
+    OnboardingStep.LANGUAGE -> R.string.onboarding_language_title
     OnboardingStep.PERMISSIONS -> R.string.onboarding_permissions_title
     OnboardingStep.LEVEL -> R.string.guide_level_title
     OnboardingStep.PROFILE -> R.string.onboarding_profile_title
@@ -474,6 +488,7 @@ private fun OnboardingStep.titleRes(): Int = when (this) {
 
 @StringRes
 private fun OnboardingStep.textRes(): Int = when (this) {
+    OnboardingStep.LANGUAGE -> R.string.onboarding_language_text
     OnboardingStep.PERMISSIONS -> R.string.onboarding_permissions_text
     OnboardingStep.LEVEL -> R.string.guide_level_text
     OnboardingStep.PROFILE -> R.string.onboarding_profile_text

@@ -10,7 +10,7 @@
     <string name="settings_safety">Safety &amp; emergency contacts</string>
     <string name="settings_offline_maps">Offline maps</string>
     <string name="settings_units">Units</string>
-    <string name="settings_language">Units &amp; language</string>
+    <string name="settings_language">Language</string>
     <string name="settings_backup">Backup &amp; export data</string>
     <string name="settings_battery_help">My phone kills the app</string>
     <string name="settings_developer" translatable="false">Developer</string>
@@ -347,4 +347,12 @@
     <string name="onboarding_optional">Optional</string>
     <string name="profile_advanced_title">Advanced settings (optional)</string>
     <string name="profile_advanced_subtitle">Wheel size, HR max, FTP, hand position: defaults work fine</string>
+    <string name="language_title">Language</string>
+    <string name="language_back">Back</string>
+    <string name="language_system">Follow phone language</string>
+    <string name="language_system_hint">Uses the language set on this phone</string>
+    <string name="onboarding_language_title">Choose your language</string>
+    <string name="onboarding_language_text">Pilih bahasa · Choose a language. You can change it later in Settings.</string>
+    <string name="language_indonesian" translatable="false">Bahasa Indonesia</string>
+    <string name="language_english" translatable="false">English</string>
 </resources>
