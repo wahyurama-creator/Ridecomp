@@ -38,6 +38,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.engine.recording.BatteryModePolicy
 import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RideAction
+import com.ridecomp.core.engine.route.RoutePoint
 import com.ridecomp.core.engine.route.riddenUntil
 import com.ridecomp.core.engine.safety.IncidentAction
 import com.ridecomp.core.engine.safety.IncidentState
@@ -48,6 +49,7 @@ import com.ridecomp.feature.ride.R
 import com.ridecomp.feature.ride.model.DataPage
 import com.ridecomp.feature.ride.model.DefaultDataPages
 import com.ridecomp.feature.ride.model.MetricUnitLabels
+import com.ridecomp.feature.ride.model.RideMapView
 import com.ridecomp.feature.ride.model.RideMetric
 import com.ridecomp.feature.ride.model.RouteView
 import com.ridecomp.feature.ride.model.rideAction
@@ -82,7 +84,7 @@ import com.ridecomp.ui.component.LineChart
 import com.ridecomp.ui.component.PageIndicator
 import com.ridecomp.ui.component.StatCard
 import com.ridecomp.ui.map.MapPoint
-import com.ridecomp.ui.map.OfflineRouteMap
+import com.ridecomp.ui.map.RouteMap
 import com.ridecomp.ui.theme.RideCompDimens
 import com.ridecomp.ui.theme.RideCompTheme
 import com.ridecomp.ui.udf.ObserveEffects
@@ -105,7 +107,7 @@ fun RideRoute(
     val pages by viewModel.pages.collectAsStateWithLifecycle()
     val isSosAvailable by viewModel.isSosAvailable.collectAsStateWithLifecycle()
     val contactNames by viewModel.contactNames.collectAsStateWithLifecycle()
-    val mapRegions by viewModel.mapRegions.collectAsStateWithLifecycle()
+    val map by viewModel.map.collectAsStateWithLifecycle()
     val route by viewModel.route.collectAsStateWithLifecycle()
     ObserveEffects(viewModel.effects) { effect ->
         when (effect) {
@@ -136,7 +138,7 @@ fun RideRoute(
         onIncident = viewModel::onIncident,
         isSosAvailable = isSosAvailable,
         contactNames = contactNames,
-        mapRegions = mapRegions,
+        map = map,
         route = route,
         modifier = modifier
             .volumeKeys(settings.isVolumeButtonsEnabled) { key ->
@@ -163,7 +165,7 @@ fun RideScreen(
     onIncident: (IncidentAction) -> Unit = {},
     isSosAvailable: Boolean = false,
     contactNames: ImmutableList<String> = persistentListOf(),
-    mapRegions: ImmutableList<String> = persistentListOf(),
+    map: RideMapView = RideMapView(),
     route: RouteView? = null,
 ) {
     val incident = live.value.incident
@@ -186,7 +188,9 @@ fun RideScreen(
         RideBanners(live.value, formatter, onAction)
         LapDoneBanner(live.value, formatter)
         GuidanceBanners(live.value, formatter)
-        val screens = remember(pages, route != null) { ridePages(pages, hasRoute = route != null) }
+        // Every GPS ride has a map page (D-90); with a route it follows the route (T3.5).
+        val hasMapPage = route != null || live.value.isGpsEnabled
+        val screens = remember(pages, hasMapPage) { ridePages(pages, hasMapPage) }
         val pagerState = rememberPagerState { screens.size }
         HorizontalPager(
             state = pagerState,
@@ -195,7 +199,7 @@ fun RideScreen(
             },
         ) { index ->
             when (val screen = screens[index]) {
-                RidePage.Navigation -> route?.let { NavigationPage(it, mapRegions, live, formatter, labels) }
+                RidePage.Navigation -> NavigationPage(route, map, live, formatter, labels)
                 is RidePage.Data ->
                     DataPageContent(screen.page, live, formatter, labels, route, isMain = screen.page == pages.first())
             }
@@ -219,12 +223,12 @@ private sealed interface RidePage {
 }
 
 /**
- * Page order Utama · Peta · Tanjakan · Lap (13-UI-SCREENS §2 PageIndicator, 02-DESIGN §3.4): the route
+ * Page order Utama · Peta · Tanjakan · Lap (13-UI-SCREENS §2 PageIndicator, 02-DESIGN §3.4): the map
  * page comes second, after the first data page.
  */
-private fun ridePages(pages: List<DataPage>, hasRoute: Boolean): List<RidePage> {
+private fun ridePages(pages: List<DataPage>, hasMapPage: Boolean): List<RidePage> {
     val data = pages.map { RidePage.Data(it) }
-    if (!hasRoute) return data
+    if (!hasMapPage) return data
     return data.take(1) + RidePage.Navigation + data.drop(1)
 }
 
@@ -284,25 +288,29 @@ private fun ClimbSection(route: RouteView, live: State<LiveRide>, formatter: Uni
     RouteProfile(route, live)
 }
 
-/** Navigation page (T3.5/T3.8): breadcrumb map plus distance to go and speed (02-DESIGN §3.4). */
+/**
+ * Map page (T3.5/T3.8, D-90): the map while there is one (online or offline file), else the breadcrumb;
+ * with a route: the route, distance to go and speed; without: the line ridden so far, distance and speed.
+ */
 @Composable
 private fun NavigationPage(
-    route: RouteView,
-    mapRegions: ImmutableList<String>,
+    route: RouteView?,
+    map: RideMapView,
     live: State<LiveRide>,
     formatter: UnitFormatter,
     labels: MetricUnitLabels,
 ) {
     val current = live.value
     // Battery saver turns the tile map into the breadcrumb (13-UI-SCREENS #14, 12-FEATURE-SPECS §3).
-    val isTileMap = mapRegions.isNotEmpty() && current.batteryMode == BatteryMode.NORMAL
+    val isTileMap = map.hasMap && current.batteryMode == BatteryMode.NORMAL
     Column(modifier = Modifier.fillMaxSize()) {
         if (isTileMap) {
-            RideMap(route, mapRegions, live, Modifier.fillMaxWidth().weight(1f))
+            RideMap(route, map, live, Modifier.fillMaxWidth().weight(1f))
         } else {
             BreadcrumbMap(
-                line = route.line,
-                distanceAlongM = current.route?.distanceAlongM,
+                line = route?.line ?: map.trail,
+                // Without a route the whole line is drawn as "ahead" (accent) so it stands out.
+                distanceAlongM = if (route != null) current.route?.distanceAlongM else 0.0,
                 latDeg = current.latDeg,
                 lonDeg = current.lonDeg,
                 modifier = Modifier.fillMaxWidth().weight(1f),
@@ -317,7 +325,7 @@ private fun NavigationPage(
                 .background(RideCompTheme.colors.divider),
             horizontalArrangement = Arrangement.spacedBy(RideCompDimens.dividerThickness),
         ) {
-            NAVIGATION_FIELDS.forEach { metric ->
+            (if (route != null) NAVIGATION_FIELDS else FREE_RIDE_MAP_FIELDS).forEach { metric ->
                 RideField(
                     live = live,
                     metric = metric,
@@ -331,29 +339,29 @@ private fun NavigationPage(
 }
 
 /**
- * Offline tile map of the ride (T3.5, 13-UI-SCREENS #7): route, ridden part, position, north-up. Panning
- * stops following; the "follow" button brings it back.
+ * Tile map of the ride (T3.5, D-90; 13-UI-SCREENS #7): route and ridden part, or on a ride without a
+ * route the line ridden so far; position, north-up. Panning stops following; "follow" brings it back.
  */
 @Composable
-private fun RideMap(route: RouteView, mapRegions: ImmutableList<String>, live: State<LiveRide>, modifier: Modifier) {
+private fun RideMap(route: RouteView?, map: RideMapView, live: State<LiveRide>, modifier: Modifier) {
     var isFollowing by rememberSaveable { mutableStateOf(true) }
-    val line = remember(route) { route.line.map { MapPoint(it.latDeg, it.lonDeg) }.toImmutableList() }
+    val line = remember(route) { route?.line.orEmpty().toMapPoints() }
     val along by remember { derivedStateOf { live.value.route?.distanceAlongM } }
-    val ridden = remember(route, along) {
-        route.line.riddenUntil(along ?: 0.0).map { MapPoint(it.latDeg, it.lonDeg) }.toImmutableList()
+    val ridden = remember(route, along, map.trail) {
+        if (route != null) route.line.riddenUntil(along ?: 0.0).toMapPoints() else map.trail.toMapPoints()
     }
     val lat = live.value.latDeg
     val lon = live.value.lonDeg
     val position = if (lat != null && lon != null) MapPoint(lat, lon) else null
     Box(modifier = modifier) {
-        OfflineRouteMap(
-            regionPaths = mapRegions,
+        RouteMap(
+            isOnline = map.isOnline,
+            regionPaths = map.regionPaths,
             route = line,
             ridden = ridden,
             position = position,
             isFollowing = isFollowing,
             onUserMoved = { isFollowing = false },
-            attribution = stringResource(UiR.string.map_attribution),
             description = stringResource(R.string.breadcrumb_description),
             modifier = Modifier.fillMaxSize(),
         )
@@ -368,6 +376,9 @@ private fun RideMap(route: RouteView, mapRegions: ImmutableList<String>, live: S
         }
     }
 }
+
+private fun List<RoutePoint>.toMapPoints(): ImmutableList<MapPoint> =
+    map { MapPoint(it.latDeg, it.lonDeg) }.toImmutableList()
 
 @Composable
 private fun RouteProfile(route: RouteView, live: State<LiveRide>) {
@@ -426,6 +437,7 @@ private fun OffRouteBanner(distanceM: Double, formatter: UnitFormatter) {
 
 /** Fields under the breadcrumb (02-DESIGN §3.4: "peta + 2 field"). */
 private val NAVIGATION_FIELDS = listOf(RideMetric.DISTANCE_REMAINING, RideMetric.SPEED)
+private val FREE_RIDE_MAP_FIELDS = listOf(RideMetric.DISTANCE, RideMetric.SPEED)
 
 /** Height of a page's hero row relative to the other rows (13-UI-SCREENS #6). */
 private const val HERO_ROW_WEIGHT = 1.5f

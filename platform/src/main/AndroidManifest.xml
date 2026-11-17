@@ -20,6 +20,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- Whether there is internet / Wi‑Fi for the online map (D-90, AndroidNetworkStatusSource). -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!--
         Required by the spec (01-PRD risk "OEM kills the app", 03-ARCHITECTURE §7): without the exemption
         aggressive OEMs stop rides. Distribution is APK sideload; to be reviewed before any Play Store release.

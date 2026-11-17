@@ -14,6 +14,8 @@ import com.ridecomp.core.testing.FakeActivityRepository
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeExportFileStore
 import com.ridecomp.core.testing.FakeExportedFileHandler
+import com.ridecomp.core.testing.FakeNetworkStatusSource
+import com.ridecomp.core.testing.FakeOfflineMapRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.testing.FakeStravaAccountStore
 import com.ridecomp.core.testing.FakeStravaApi
@@ -30,6 +32,7 @@ import com.ridecomp.core.usecase.LoadRideChartUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
 import com.ridecomp.core.usecase.ObserveHistoryCountUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
+import com.ridecomp.core.usecase.ObserveMapTilesUseCase
 import com.ridecomp.core.usecase.ObserveMonthTotalsUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveRidesOnStravaUseCase
@@ -140,6 +143,7 @@ class HistoryViewModelsTest {
                     TestDispatcherProvider(dispatcher),
                 ),
             ),
+            observeMapTiles = ObserveMapTilesUseCase(FakeNetworkStatusSource(), settings, FakeOfflineMapRepository()),
         )
         val strava = ActivityStravaUseCases(
             ObserveStravaStatusUseCase(stravaStore, FakeStravaApi.SETUP),

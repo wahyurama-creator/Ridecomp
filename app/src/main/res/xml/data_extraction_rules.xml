@@ -19,5 +19,7 @@
         <include domain="database" path="." />
         <include domain="file" path="." />
         <include domain="sharedpref" path="." />
+        <!-- MapLibre's cache of online map tiles (D-90): it hints at places ridden; rebuilt on the new phone. -->
+        <exclude domain="file" path="mbgl-offline.db" />
     </device-transfer>
 </data-extraction-rules>

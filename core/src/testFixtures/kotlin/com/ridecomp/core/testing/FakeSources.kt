@@ -1,5 +1,6 @@
 package com.ridecomp.core.testing
 
+import com.ridecomp.core.engine.map.NetworkStatus
 import com.ridecomp.core.engine.recording.BatteryStatus
 import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RideAction
@@ -7,6 +8,7 @@ import com.ridecomp.core.engine.safety.IncidentAction
 import com.ridecomp.core.model.LocationFix
 import com.ridecomp.core.source.BatteryLevelSource
 import com.ridecomp.core.source.LocationSource
+import com.ridecomp.core.source.NetworkStatusSource
 import com.ridecomp.core.source.RideController
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -71,6 +73,18 @@ public class FakeLocationSource(
     override fun isPermissionGranted(): Boolean = isPermissionGrantedValue
 
     override fun isGpsEnabled(): Boolean = isGpsEnabledValue
+}
+
+/** Network for the online map; counts collectors to check the callback is released (09 §1). */
+public class FakeNetworkStatusSource(initial: NetworkStatus = NetworkStatus(isConnected = true, isUnmetered = true)) :
+    NetworkStatusSource {
+    public val status: MutableStateFlow<NetworkStatus> = MutableStateFlow(initial)
+    public var activeCollectors: Int = 0
+        private set
+
+    override fun observe(): Flow<NetworkStatus> = status
+        .onStart { activeCollectors++ }
+        .onCompletion { activeCollectors-- }
 }
 
 public class FakeBatteryLevelSource(public var status: BatteryStatus? = BatteryStatus(80, isCharging = false)) :

@@ -50,6 +50,7 @@ import com.ridecomp.core.usecase.HasProfileUseCase
 import com.ridecomp.core.usecase.ImportGpxUseCase
 import com.ridecomp.core.usecase.ImportOfflineMapUseCase
 import com.ridecomp.core.usecase.LoadRideChartUseCase
+import com.ridecomp.core.usecase.LoadRideTrailUseCase
 import com.ridecomp.core.usecase.LoadShareCardUseCase
 import com.ridecomp.core.usecase.LoadTrackOutlineUseCase
 import com.ridecomp.core.usecase.LoadWeekZonesUseCase
@@ -65,6 +66,7 @@ import com.ridecomp.core.usecase.ObserveHistoryCountUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveLastBackupUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
+import com.ridecomp.core.usecase.ObserveMapTilesUseCase
 import com.ridecomp.core.usecase.ObserveMonthTotalsUseCase
 import com.ridecomp.core.usecase.ObserveOfflineMapsUseCase
 import com.ridecomp.core.usecase.ObserveOnboardingDoneUseCase
@@ -189,6 +191,8 @@ val useCaseModule = module {
     factory { GetRoutePointsUseCase(get()) }
     factory { GetRouteGuidanceUseCase(get(), get()) }
     factory { ObserveOfflineMapsUseCase(get()) }
+    factory { ObserveMapTilesUseCase(get(), get(), get()) }
+    factory { LoadRideTrailUseCase(get()) }
     factory { ImportOfflineMapUseCase(get()) }
     factory { DeleteOfflineMapUseCase(get()) }
     factory { GetFreeStorageUseCase(get()) }

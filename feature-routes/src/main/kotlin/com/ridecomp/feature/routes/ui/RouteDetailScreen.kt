@@ -28,7 +28,6 @@ import com.ridecomp.feature.routes.viewmodel.RouteDetailEffect
 import com.ridecomp.feature.routes.viewmodel.RouteDetailUiEvent
 import com.ridecomp.feature.routes.viewmodel.RouteDetailUiState
 import com.ridecomp.feature.routes.viewmodel.RouteDetailViewModel
-import com.ridecomp.ui.R as UiR
 import com.ridecomp.ui.component.BigButton
 import com.ridecomp.ui.component.BigButtonStyle
 import com.ridecomp.ui.component.CardTone
@@ -40,7 +39,7 @@ import com.ridecomp.ui.component.RideCompCard
 import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.component.StatRow
 import com.ridecomp.ui.component.WarningCard
-import com.ridecomp.ui.map.OfflineRouteMap
+import com.ridecomp.ui.map.RouteMap
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
 import com.ridecomp.ui.theme.RideCompDimens
@@ -62,6 +61,7 @@ fun RouteDetailRoute(
     viewModel: RouteDetailViewModel = koinViewModel(key = routeId.toString()) { parametersOf(routeId) },
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val isOnlineMap by viewModel.isOnlineMap.collectAsStateWithLifecycle()
     ObserveEffects(viewModel.effects) { effect ->
         when (effect) {
             is RouteDetailEffect.Open -> onOpenRoute(effect.routeId)
@@ -75,6 +75,7 @@ fun RouteDetailRoute(
         onOpenOfflineMaps = onOpenOfflineMaps,
         onBack = onBack,
         modifier = modifier,
+        isOnlineMap = isOnlineMap,
     )
 }
 
@@ -86,6 +87,7 @@ fun RouteDetailScreen(
     modifier: Modifier = Modifier,
     onOpenOfflineMaps: () -> Unit = {},
     onBack: () -> Unit = {},
+    isOnlineMap: Boolean = false,
 ) {
     val route = state.route
     ScreenScaffold(
@@ -97,31 +99,36 @@ fun RouteDetailScreen(
     ) {
         when {
             state.isMissing -> EmptyState(message = stringResource(R.string.route_missing))
-            route != null -> RouteContent(route, state, onEvent, onRide, onOpenOfflineMaps)
+            route != null -> RouteContent(route, state, onEvent, onRide, onOpenOfflineMaps, isOnlineMap)
         }
     }
 }
 
-/** Route map and whether the area is available offline (13-UI-SCREENS #12). */
+/**
+ * Route map (13-UI-SCREENS #12, D-90): online while there is internet, else from an offline file that
+ * covers the area, else a note that the map shows with internet.
+ */
 @Composable
-private fun RouteMapSection(state: RouteDetailUiState, onOpenOfflineMaps: () -> Unit) {
-    if (state.isAreaOffline) {
-        OfflineRouteMap(
+private fun RouteMapSection(state: RouteDetailUiState, isOnlineMap: Boolean, onOpenOfflineMaps: () -> Unit) {
+    if (isOnlineMap || state.isAreaOffline) {
+        RouteMap(
+            isOnline = isOnlineMap,
             regionPaths = state.mapRegions,
             route = state.mapLine,
-            attribution = stringResource(UiR.string.map_attribution),
             description = stringResource(R.string.route_map_description),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(RideCompDimens.routeMapHeight)
                 .clip(RoundedCornerShape(RideCompDimens.cornerRadiusCard)),
         )
-        RideCompCard(tone = CardTone.OK) {
-            Text(
-                text = stringResource(R.string.route_map_offline),
-                style = RideCompTheme.typography.bodyStrong,
-                color = RideCompTheme.colors.ok,
-            )
+        if (!isOnlineMap) {
+            RideCompCard(tone = CardTone.OK) {
+                Text(
+                    text = stringResource(R.string.route_map_offline),
+                    style = RideCompTheme.typography.bodyStrong,
+                    color = RideCompTheme.colors.ok,
+                )
+            }
         }
     } else {
         WarningCard(
@@ -140,6 +147,7 @@ private fun RouteContent(
     onEvent: (RouteDetailUiEvent) -> Unit,
     onRide: () -> Unit,
     onOpenOfflineMaps: () -> Unit,
+    isOnlineMap: Boolean,
 ) {
     val format = remember(state.unitSystem) { UnitFormatter(state.unitSystem) }
     var name by rememberSaveable(route.id) { mutableStateOf(route.name) }
@@ -152,7 +160,7 @@ private fun RouteContent(
         Column(
             modifier = Modifier.padding(horizontal = RideCompDimens.screenPaddingHorizontal),
             verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
-        ) { RouteMapSection(state, onOpenOfflineMaps) }
+        ) { RouteMapSection(state, isOnlineMap, onOpenOfflineMaps) }
         BigButton(
             text = stringResource(R.string.route_ride),
             onClick = onRide,

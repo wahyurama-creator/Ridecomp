@@ -1,5 +1,6 @@
 package com.ridecomp.data.mapper
 
+import com.ridecomp.core.engine.map.OnlineMapMode
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RiderProfile
 import com.ridecomp.core.model.RidingPosition
@@ -23,6 +24,7 @@ internal object SettingsKeys {
     const val BATTERY_SAVER_ENABLED = "ride.battery_saver_enabled"
     const val VOLUME_BUTTONS_ENABLED = "ride.volume_buttons_enabled"
     const val UNIT_SYSTEM = "app.unit_system"
+    const val ONLINE_MAP_MODE = "app.online_map_mode"
     const val ONBOARDING_DONE = "app.onboarding_done"
     const val DATA_PAGES = "ride.data_pages"
     const val LAST_PROFILE_ID = "app.last_profile_id"
@@ -88,6 +90,7 @@ internal fun List<SettingEntity>.toRideSettings(): RideSettings {
         isVolumeButtonsEnabled = values[SettingsKeys.VOLUME_BUTTONS_ENABLED]?.toBooleanStrictOrNull()
             ?: defaults.isVolumeButtonsEnabled,
         unitSystem = values[SettingsKeys.UNIT_SYSTEM]?.toEnumOrNull<UnitSystem>() ?: defaults.unitSystem,
+        onlineMapMode = values[SettingsKeys.ONLINE_MAP_MODE]?.toEnumOrNull<OnlineMapMode>() ?: defaults.onlineMapMode,
     )
 }
 
@@ -104,6 +107,7 @@ internal fun RideSettings.toEntities(): List<SettingEntity> = listOf(
     SettingEntity(SettingsKeys.BATTERY_SAVER_ENABLED, isBatterySaverEnabled.toString()),
     SettingEntity(SettingsKeys.VOLUME_BUTTONS_ENABLED, isVolumeButtonsEnabled.toString()),
     SettingEntity(SettingsKeys.UNIT_SYSTEM, unitSystem.toDbValue()),
+    SettingEntity(SettingsKeys.ONLINE_MAP_MODE, onlineMapMode.toDbValue()),
 )
 
 /** Optional setting: missing → default, [SettingsKeys.OFF] → null, else parsed (unreadable → default). */

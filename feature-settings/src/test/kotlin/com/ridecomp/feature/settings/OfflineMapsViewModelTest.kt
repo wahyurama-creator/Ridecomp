@@ -1,11 +1,15 @@
 package com.ridecomp.feature.settings
 
 import com.ridecomp.core.engine.map.MapImportError
+import com.ridecomp.core.engine.map.OnlineMapMode
 import com.ridecomp.core.testing.FakeOfflineMapRepository
+import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.usecase.DeleteOfflineMapUseCase
 import com.ridecomp.core.usecase.GetFreeStorageUseCase
 import com.ridecomp.core.usecase.ImportOfflineMapUseCase
 import com.ridecomp.core.usecase.ObserveOfflineMapsUseCase
+import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
+import com.ridecomp.core.usecase.SaveRideSettingsUseCase
 import com.ridecomp.feature.settings.viewmodel.OfflineMapsUiEvent
 import com.ridecomp.feature.settings.viewmodel.OfflineMapsUseCases
 import com.ridecomp.feature.settings.viewmodel.OfflineMapsViewModel
@@ -19,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -35,14 +40,29 @@ class OfflineMapsViewModelTest {
         Dispatchers.resetMain()
     }
 
+    private val settings = FakeSettingsRepository()
+
     private fun viewModel() = OfflineMapsViewModel(
         OfflineMapsUseCases(
             ObserveOfflineMapsUseCase(repository),
             ImportOfflineMapUseCase(repository),
             DeleteOfflineMapUseCase(repository),
             GetFreeStorageUseCase(repository),
+            ObserveRideSettingsUseCase(settings),
+            SaveRideSettingsUseCase(settings),
         ),
     )
+
+    @Test
+    fun `the online map mode is saved`() = runTest {
+        val viewModel = viewModel()
+        assertEquals(OnlineMapMode.ALWAYS, viewModel.uiState.value.onlineMapMode)
+
+        viewModel.onEvent(OfflineMapsUiEvent.OnlineMode(OnlineMapMode.WIFI_ONLY))
+
+        assertEquals(OnlineMapMode.WIFI_ONLY, settings.getRideSettings().onlineMapMode)
+        assertEquals(OnlineMapMode.WIFI_ONLY, viewModel.uiState.value.onlineMapMode)
+    }
 
     @Test
     fun `import adds a region, delete needs confirmation`() {

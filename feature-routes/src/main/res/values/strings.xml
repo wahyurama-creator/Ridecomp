@@ -33,8 +33,8 @@
     <string name="route_climb_stats">%1$s %2$s · %3$s%% · ↑ %4$s %5$s</string>
     <string name="route_map_description">Route map</string>
     <string name="route_map_offline">The map of this route is available offline</string>
-    <string name="route_map_missing_title">No map for this area yet</string>
-    <string name="route_map_missing">You can still follow the route with the breadcrumb line. Import a map file of this region to see the roads.</string>
+    <string name="route_map_missing_title">No map right now</string>
+    <string name="route_map_missing">The map shows when the phone has internet. Without it you can still follow the route with the breadcrumb line; for a map without internet, import a map file of this region.</string>
     <string name="route_map_import">Open Offline maps</string>
     <string name="route_climb_make_segment">Make segment</string>
     <string name="route_climb_segment_made">Segment made · see History → Segments</string>

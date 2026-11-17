@@ -223,17 +223,21 @@ private fun stravaSummary(state: SettingsUiState): Pair<String, ValueTone> = if 
     stringResource(R.string.settings_strava_not_connected) to ValueTone.NORMAL
 }
 
+/** "Online · Wi‑Fi & data", plus the offline areas when there are some (D-90). */
 @Composable
-private fun offlineMapsSummary(state: SettingsUiState): String = if (state.offlineMapCount == 0) {
-    stringResource(R.string.settings_offline_maps_none)
-} else {
-    pluralStringResource(
+private fun offlineMapsSummary(state: SettingsUiState): String {
+    val online =
+        stringResource(R.string.settings_maps_online_value, stringResource(state.rideSettings.onlineMapMode.labelRes()))
+    if (state.offlineMapCount == 0) return online
+    return online + SUMMARY_SEPARATOR + pluralStringResource(
         R.plurals.settings_offline_maps_value,
         state.offlineMapCount,
         state.offlineMapCount,
         Formatter.formatShortFileSize(LocalContext.current, state.offlineMapBytes),
     )
 }
+
+private const val SUMMARY_SEPARATOR = " · "
 
 @Composable
 private fun profileSummary(state: SettingsUiState): String? = state.profile?.let { profile ->

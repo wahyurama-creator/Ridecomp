@@ -95,7 +95,7 @@ GRADLE_USER_HOME=<folder sementara kosong> ./gradlew --no-configuration-cache --
 |---|---|
 | SEC-NET-01 | **Network Security Config:** `cleartextTrafficPermitted="false"` untuk semua domain. Hanya HTTPS. |
 | SEC-NET-02 | Tidak ada custom `TrustManager`/`HostnameVerifier` yang menerima semua sertifikat, tidak ada bypass SSL di build mana pun. |
-| SEC-NET-03 | Domain yang dihubungi didokumentasikan (tile peta bila online, Strava API/OAuth). Tidak ada request lain. |
+| SEC-NET-03 | Domain yang dihubungi didokumentasikan: `tiles.openfreemap.org` (peta online, D-90), `www.strava.com` & `api-v3.strava.com` (Strava), server token Strava (D-82). Tidak ada request lain. |
 | SEC-NET-04 | Timeout koneksi/baca diset; respons di-parse dengan validasi (tidak mempercayai bentuk JSON begitu saja). |
 
 ### B.5 Autentikasi Strava (MASVS-AUTH, Fase 5)
@@ -185,6 +185,7 @@ Agent meninjau **diff** task dan menjawab setiap poin (Ya / Tidak / N/A + catata
 | Komponen app | App lain memicu service/activity | `exported=false`, PendingIntent immutable, validasi intent |
 | Alur OAuth (Fase 5) | Redirect palsu/CSRF; app lain mendaftarkan skema `ridecomp://` dan mencegat code | `state` acak 256-bit sekali pakai (dibandingkan constant-time), redirect `ridecomp://localhost/strava-auth` dicocokkan persis (skema, host, path, tanpa port/userinfo/fragment), nilai query dibatasi panjang; dibuka di app Strava/browser (bukan WebView). PKCE tidak didukung Strava: code curian tidak berguna tanpa Client Secret yang hanya ada di HP pengguna |
 | Upload Strava & jaringan (Fase 5) | Data ride terkirim tanpa sengaja; balasan server berbahaya; MITM | Upload hanya atas ketukan pengguna atau saat upload otomatis diaktifkan (default mati); HTTPS saja, trust anchor sistem, tanpa redirect, timeout, balasan dibatasi 64 KB dan divalidasi; domain hanya `www.strava.com` & `api-v3.strava.com`; tidak ada data lain yang dikirim |
+| Peta online (D-90) | Server peta melihat area yang ditampilkan (perkiraan lokasi); MITM; kuota data pengguna | Hanya `tiles.openfreemap.org` (tanpa akun/kunci/cookie), HTTPS dengan trust anchor sistem; hanya permintaan tile/TileJSON (tanpa lokasi eksplisit, tanpa telemetri MapLibre); hanya saat layar berpeta tampil dan ada internet; pengguna bisa memilih Hanya Wi‑Fi atau Mati di Setelan → Peta, dijelaskan di layar itu; cache tile di penyimpanan internal, tidak ikut backup cloud maupun transfer perangkat. Sisa risiko: penyedia gratis bisa berhenti tanpa pemberitahuan → app kembali ke garis/breadcrumb |
 | SMS darurat | Bug/penyalahgunaan mengirim SMS massal (biaya), nomor kontak bocor | SEC-SMS-01..07 |
 | Sensor BLE (Fase 2) | Perangkat asing di sekitar diiklankan sebagai HR/CSC/CP; paket rusak/berlebihan | Hanya sensor yang dipasangkan pengguna yang disambung (alamat tersimpan); parser memvalidasi panjang & rentang (STB-09); operasi GATT bertimeout; data hanya dipakai untuk metrik (tidak ada perintah tulis ke sensor) |
 | Deteksi insiden (Fase 2) | Alarm palsu mengirim SMS; insiden nyata terlewat | Hitung mundur 30 dtk + tombol batal (juga di notifikasi), ambang di `IncidentConfig` dikalibrasi lewat L17, penjelasan keterbatasan di layar Keselamatan |

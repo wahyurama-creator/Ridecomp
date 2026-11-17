@@ -8,7 +8,7 @@
     <string name="settings_activity_profiles_subtitle">Road, Gravel, MTB, Indoor, Commute</string>
     <string name="settings_screen_battery">Screen &amp; battery</string>
     <string name="settings_safety">Safety &amp; emergency contacts</string>
-    <string name="settings_offline_maps">Offline maps</string>
+    <string name="settings_offline_maps">Maps</string>
     <string name="settings_units">Units</string>
     <string name="settings_language">Language</string>
     <string name="settings_backup">Backup &amp; export data</string>
@@ -205,7 +205,7 @@
     <string name="backup_excluded">Emergency contacts · offline maps</string>
     <string name="backup_password_recommended">Recommended: it holds locations &amp; HR data</string>
     <string name="backup_create_hint">Save to Google Drive, WhatsApp or a phone folder</string>
-    <string name="offline_maps_title">Offline maps</string>
+    <string name="offline_maps_title">Maps</string>
     <string name="offline_maps_fallback_name">map</string>
     <string name="offline_maps_saved">Saved areas</string>
     <string name="offline_maps_import">Import map file (.pmtiles)</string>
@@ -253,9 +253,9 @@
     <string name="guide_navigation_title">Following a route</string>
     <string name="guide_navigation_summary">Off-route, turn and climb alerts.</string>
     <string name="guide_navigation_body" formatted="false">While following a route, the Map page shows the route (orange), the part already ridden (blue) and your position.\n• More than ~50 m off the route for 10 seconds: a long buzz, a beep and a red banner. Back on the route: two short buzzes.\n• Sharp turns: alerts about 150 m and 30 m before.\n• Climbs: an alert 500 m before, then the climb page shows distance and climbing left and the grade.\nDrag the map to look around; tap the position button to follow again.</string>
-    <string name="guide_offline_maps_title">Offline maps</string>
-    <string name="guide_offline_maps_summary">Maps without internet from .pmtiles files.</string>
-    <string name="guide_offline_maps_body" formatted="false">RideComp does not use the internet, so maps are kept as files on the phone.\n1. On a computer, make a region file with the \"pmtiles\" tool from the Protomaps map build (OpenStreetMap data), for example for one province.\n2. Copy the .pmtiles file to the phone.\n3. Open Settings → Offline maps → Import map file.\n4. The map shows on the route detail and on the Map page while riding when the region covers the route.\nWithout a map file RideComp still shows the route line (breadcrumb mode). Battery saver also uses the breadcrumb.</string>
+    <string name="guide_offline_maps_title">Maps</string>
+    <string name="guide_offline_maps_summary">A street map with internet; a line without it.</string>
+    <string name="guide_offline_maps_body" formatted="false">With internet (Wi‑Fi or mobile data) RideComp shows a street map on the Map page while riding, on the route detail and in ride history. The map comes from OpenFreeMap (OpenStreetMap data) and uses a few MB per hour of riding.\nWithout internet the route and your track still show as a line (breadcrumb), so you can keep following a route. Battery saver also uses the line.\nSettings → Maps → Online map: Wi‑Fi &amp; data, Wi‑Fi only, or Off.\nOptional, for riding without signal: on a computer, make a region file with the \"pmtiles\" tool from the Protomaps map build, copy the .pmtiles file to the phone and import it in Settings → Maps.</string>
     <string name="guide_sensors_title">Connecting sensors</string>
     <string name="guide_sensors_summary">Heart rate, cadence, speed and power.</string>
     <string name="guide_sensors_body" formatted="false">Bluetooth sensors add data the phone cannot measure: heart rate (chest strap/armband), cadence (pedal turns), wheel speed and power meters.\n1. Wake the sensor (wear the HR strap, turn the pedals or wheel).\n2. Open the Sensors tab; the search starts by itself (tap Scan again if needed).\n3. Tap the sensor that appears to pair it. Only once.\n4. On your next ride the sensor connects by itself. The HR/CAD/PWR marks at the top of the ride screen turn green when connected.\nA sensor drops out mid-ride? Recording continues and RideComp keeps trying to reconnect.</string>
@@ -360,4 +360,13 @@
     </plurals>
     <string name="onboarding_bike_title">Your bike</string>
     <string name="onboarding_bike_text">Save the bike you usually ride. Before each ride you just pick it; more bikes can be added in Settings → My bikes.</string>
+
+    <!-- Online map (D-90) -->
+    <string name="maps_online_label">Online map</string>
+    <string name="maps_online_always">Wi‑Fi &amp; data</string>
+    <string name="maps_online_wifi">Wi‑Fi only</string>
+    <string name="maps_online_off">Off</string>
+    <string name="maps_online_hint">With internet, a street map shows on the ride map page, route detail and ride history. Without internet, routes and tracks still show as a line. Map: OpenFreeMap (OpenStreetMap data), a few MB per hour of riding; the map server sees the area being shown.</string>
+    <string name="maps_offline_header">Offline maps (optional)</string>
+    <string name="settings_maps_online_value">Online: %1$s</string>
 </resources>

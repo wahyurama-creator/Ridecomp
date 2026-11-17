@@ -3,9 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!--
-      INTERNET only for the optional Strava upload (Phase 5, D-79): HTTPS to www.strava.com and
-      api-v3.strava.com (SEC-NET-03). Maps stay local PMTiles files. ACCESS_WIFI_STATE (MapLibre, online
-      tiles) is still removed; ACCESS_NETWORK_STATE is kept because MapLibre checks connectivity.
+      INTERNET: the optional Strava upload (Phase 5, D-79) and the online map (D-90), HTTPS only
+      (SEC-NET-01): www.strava.com, api-v3.strava.com, the token server and tiles.openfreemap.org.
+      ACCESS_NETWORK_STATE comes from :platform (online map, D-90).
+      ACCESS_WIFI_STATE from MapLibre stays removed: not needed.
     -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" tools:node="remove" />

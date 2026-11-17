@@ -16,6 +16,7 @@ import com.ridecomp.core.usecase.ExportFormat
 import com.ridecomp.core.usecase.GetLapsUseCase
 import com.ridecomp.core.usecase.LoadRideChartUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
+import com.ridecomp.core.usecase.ObserveMapTilesUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveStravaStatusUseCase
 import com.ridecomp.core.usecase.ObserveStravaUploadUseCase
@@ -30,7 +31,11 @@ import com.ridecomp.ui.udf.UdfViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -82,6 +87,7 @@ data class ActivityDetailUseCases(
     val save: SaveActivityFileUseCase,
     val suggestName: SuggestExportFileNameUseCase,
     val delete: DeleteActivityUseCase,
+    val observeMapTiles: ObserveMapTilesUseCase,
 )
 
 /** Activity detail (T1.13): totals, charts, laps; export/share FIT & GPX (T1.14); delete. */
@@ -98,6 +104,11 @@ class ActivityDetailViewModel(
     private val strava: ActivityStravaUseCases,
     private val dispatchers: DispatcherProvider,
 ) : UdfViewModel<ActivityDetailUiState, ActivityDetailUiEvent, ActivityDetailEffect>(ActivityDetailUiState()) {
+    /** The track on the online map while there is internet, else the sketch (D-90); watched only while shown. */
+    val isOnlineMap: StateFlow<Boolean> = useCases.observeMapTiles()
+        .map { it.isOnline }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(MAP_STOP_TIMEOUT_MS), false)
+
     private val observeActivity = useCases.observeActivity
     private val getLaps = useCases.getLaps
     private val loadChart = useCases.loadChart
@@ -251,3 +262,6 @@ internal fun List<ChartPoint>.toRoute(): ImmutableList<MapPoint> = mapNotNull { 
 
 /** A line needs two points. */
 private const val MIN_CHART_VALUES = 2
+
+/** Keeps the network watch across quick configuration changes only (CO-07). */
+private const val MAP_STOP_TIMEOUT_MS = 5_000L

@@ -28,7 +28,7 @@ val settingsFeatureModule = module {
     factory { SettingsUseCases(get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { SettingsViewModel(get()) }
     viewModel { LanguageViewModel(get(), get()) }
-    factory { OfflineMapsUseCases(get(), get(), get(), get()) }
+    factory { OfflineMapsUseCases(get(), get(), get(), get(), get(), get()) }
     viewModel { OfflineMapsViewModel(get()) }
     viewModel { RideSettingsViewModel(get(), get()) }
     viewModel { OnboardingViewModel(get(), get(), get()) }

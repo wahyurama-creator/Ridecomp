@@ -3,6 +3,7 @@ package com.ridecomp.core.model
 import com.ridecomp.core.config.AutoPauseConfig
 import com.ridecomp.core.config.ProfileDefaults
 import com.ridecomp.core.config.ReminderConfig
+import com.ridecomp.core.engine.map.OnlineMapMode
 import java.time.Instant
 import java.time.ZoneOffset
 
@@ -57,6 +58,8 @@ public data class RideSettings(
     /** Volume Up = lap, Volume Down = pause/resume on the ride screen (02-DESIGN §3.4, T2.12). */
     val isVolumeButtonsEnabled: Boolean = false,
     val unitSystem: UnitSystem = UnitSystem.METRIC,
+    /** Online map tiles: Wi‑Fi and data, Wi‑Fi only, or never (D-90). */
+    val onlineMapMode: OnlineMapMode = OnlineMapMode.ALWAYS,
 )
 
 /** Age in whole years at [nowMs] (UTC year difference), or null without a birth year. */
