@@ -3,11 +3,9 @@ package com.ridecomp.feature.ride.ui
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -111,26 +109,27 @@ fun PreRideScreen(
         backLabel = stringResource(R.string.ride_cancel),
         backIcon = TopBarIcon.CLOSE,
     ) {
-        BoxWithConstraints(modifier = Modifier.weight(1f)) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .heightIn(min = maxHeight)
-                    .padding(
-                        start = RideCompDimens.screenPaddingHorizontal,
-                        end = RideCompDimens.screenPaddingHorizontal,
-                        bottom = RideCompDimens.screenPaddingBottom,
-                    ),
-                verticalArrangement = Arrangement.SpaceBetween,
-            ) {
-                if (gps is GpsStatus.Searching && !isChecklistShown) {
-                    GpsWaiting(gps, onShowOptions = { isChecklistShown = true })
-                } else {
-                    Checklist(gps, state, onEvent, onChooseRoute)
-                }
-                StartButtons(gps, onStart)
+        // The start button stays on screen; only the options above it scroll (novice test, D-86).
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = RideCompDimens.screenPaddingHorizontal),
+        ) {
+            if (gps is GpsStatus.Searching && !isChecklistShown) {
+                GpsWaiting(gps, onShowOptions = { isChecklistShown = true })
+            } else {
+                Checklist(gps, state, onEvent, onChooseRoute)
             }
+        }
+        Box(
+            modifier = Modifier.padding(
+                start = RideCompDimens.screenPaddingHorizontal,
+                end = RideCompDimens.screenPaddingHorizontal,
+                bottom = RideCompDimens.screenPaddingBottom,
+            ),
+        ) {
+            StartButtons(gps, onStart)
         }
     }
 }
@@ -157,7 +156,8 @@ private fun Checklist(
 /** One check list line: state icon, name, status in the state color. */
 private data class Check(val title: String, val status: String, val level: CheckLevel)
 
-private enum class CheckLevel { OK, WARN, ERROR }
+/** NEUTRAL: optional and not used (no sensor): nothing is wrong, so no warning sign. */
+private enum class CheckLevel { OK, NEUTRAL, WARN, ERROR }
 
 @Composable
 private fun CheckRow(check: Check, hasDivider: Boolean = true) {
@@ -169,12 +169,10 @@ private fun CheckRow(check: Check, hasDivider: Boolean = true) {
         leading = {
             Icon(
                 painterResource(
-                    if (check.level ==
-                        CheckLevel.OK
-                    ) {
-                        UiR.drawable.ic_check
-                    } else {
-                        UiR.drawable.ic_alert_circle
+                    when (check.level) {
+                        CheckLevel.OK -> UiR.drawable.ic_check
+                        CheckLevel.NEUTRAL -> UiR.drawable.ic_info
+                        CheckLevel.WARN, CheckLevel.ERROR -> UiR.drawable.ic_alert_circle
                     },
                 ),
                 contentDescription = null,
@@ -187,6 +185,7 @@ private fun CheckRow(check: Check, hasDivider: Boolean = true) {
 @Composable
 private fun CheckLevel.color(): Color = when (this) {
     CheckLevel.OK -> RideCompTheme.colors.ok
+    CheckLevel.NEUTRAL -> RideCompTheme.colors.textSecondary
     CheckLevel.WARN -> RideCompTheme.colors.warnText
     CheckLevel.ERROR -> RideCompTheme.colors.danger
 }
@@ -226,8 +225,8 @@ private fun sensorCheck(sensors: List<SavedSensor>, kind: SensorKind): Check {
                 ?: stringResource(R.string.pre_ride_sensor_saved),
             CheckLevel.OK,
         )
-        kind == SensorKind.POWER -> Check(title, stringResource(R.string.pre_ride_power_estimate), CheckLevel.WARN)
-        else -> Check(title, stringResource(R.string.pre_ride_sensor_none), CheckLevel.WARN)
+        kind == SensorKind.POWER -> Check(title, stringResource(R.string.pre_ride_power_estimate), CheckLevel.NEUTRAL)
+        else -> Check(title, stringResource(R.string.pre_ride_sensor_none), CheckLevel.NEUTRAL)
     }
 }
 

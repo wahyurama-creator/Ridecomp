@@ -256,6 +256,7 @@ private fun NavGraphBuilder.rideGraph(navController: NavHostController) {
             tipContent = {
                 GuideTip(GuideTip.FIRST_RIDE, onLearnMore = { navController.navigate(AppRoutes.helpTopic(it)) })
             },
+            onOpenSensors = { navController.navigateToTopLevel(TopLevelDestination.SENSORS) },
         )
     }
     preRideDestination(navController)
@@ -274,7 +275,6 @@ private fun NavGraphBuilder.rideGraph(navController: NavHostController) {
                 navController.navigate(AppRoutes.activityDetail(activityId))
             },
             onDiscarded = { navController.navigateClearingBackStack(TopLevelDestination.HOME.route) },
-            onStravaHelp = { navController.navigate(AppRoutes.STRAVA_HELP) },
             newRecordsContent = { activityId -> NewRecordsCard(activityId) },
         )
     }

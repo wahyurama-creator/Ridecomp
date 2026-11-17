@@ -232,17 +232,16 @@ private fun ActivityCard(
                 color = colors.textPrimary,
                 modifier = Modifier.weight(1f),
             )
-            Text(
-                text = stringResource(
-                    when {
-                        isOnStrava -> R.string.history_on_strava
-                        isExported -> R.string.history_fit_exported
-                        else -> R.string.history_fit_not_exported
-                    },
-                ),
-                style = RideCompTheme.typography.caption.copy(fontWeight = FontWeight.Bold),
-                color = if (isExported) colors.ok else colors.warnText,
-            )
+            // Only good news here: a ride that was not exported is normal, not a warning (D-86).
+            if (isExported) {
+                Text(
+                    text = stringResource(
+                        if (isOnStrava) R.string.history_on_strava else R.string.history_fit_exported,
+                    ),
+                    style = RideCompTheme.typography.caption.copy(fontWeight = FontWeight.Bold),
+                    color = colors.ok,
+                )
+            }
         }
         Text(
             text = relativeTime(ride.startedAtMs, nowMs),

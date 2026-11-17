@@ -148,7 +148,7 @@
     <string name="onboarding_notifications_reason">Ride data shows while the screen is off</string>
     <string name="onboarding_granted">Allowed</string>
     <string name="onboarding_allow">Allow</string>
-    <string name="onboarding_location_required">Location is required to record rides.</string>
+    <string name="onboarding_location_required">Only location is required. Sensors and notifications can wait.</string>
     <string name="onboarding_battery_card_title">Don\'t let your phone kill RideComp</string>
     <string name="onboarding_battery_detected">Detected: %1$s. %2$s</string>
     <string name="onboarding_battery_open">Open battery settings</string>
@@ -170,7 +170,6 @@
     <string name="onboarding_tips_title">Phone mounting tips</string>
     <string name="onboarding_tips">• Use a sturdy handlebar mount\n• Bring a power bank for rides over 3 hours\n• Choose the \"Auto dim\" screen mode to save battery</string>
     <string name="onboarding_finish">Start using RideComp</string>
-    <string name="onboarding_skip">Skip, connect sensors later</string>
     <string name="profile_hand_position">Hand position</string>
     <string name="profile_hand_tops">Tops</string>
     <string name="profile_hand_hoods">Hoods</string>
@@ -343,4 +342,9 @@
     <string name="strava_benefit_private_title">Upload permission only</string>
     <string name="strava_benefit_private_text">RideComp cannot see your other Strava data</string>
     <string name="strava_powered_by" translatable="false">Powered by Strava</string>
+    <string name="onboarding_allow_all">Allow &amp; continue</string>
+    <string name="onboarding_required">Required</string>
+    <string name="onboarding_optional">Optional</string>
+    <string name="profile_advanced_title">Advanced settings (optional)</string>
+    <string name="profile_advanced_subtitle">Wheel size, HR max, FTP, hand position: defaults work fine</string>
 </resources>

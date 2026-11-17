@@ -143,7 +143,7 @@
     <string name="onboarding_notifications_reason">Data ride tampil saat layar mati</string>
     <string name="onboarding_granted">Diizinkan</string>
     <string name="onboarding_allow">Izinkan</string>
-    <string name="onboarding_location_required">Izin lokasi wajib untuk merekam ride.</string>
+    <string name="onboarding_location_required">Hanya lokasi yang wajib. Sensor dan notifikasi bisa nanti.</string>
     <string name="onboarding_battery_card_title">Jangan biarkan HP mematikan RideComp</string>
     <string name="onboarding_battery_detected">Terdeteksi: %1$s. %2$s</string>
     <string name="onboarding_battery_open">Buka pengaturan baterai</string>
@@ -165,7 +165,6 @@
     <string name="onboarding_tips_title">Tips pemasangan HP</string>
     <string name="onboarding_tips">• Pakai holder setang yang kokoh\n• Bawa power bank untuk ride &gt; 3 jam\n• Pilih mode layar \"Redup otomatis\" agar hemat</string>
     <string name="onboarding_finish">Mulai pakai RideComp</string>
-    <string name="onboarding_skip">Lewati, hubungkan sensor nanti</string>
     <string name="profile_hand_position">Posisi tangan</string>
     <string name="profile_hand_tops">Tops</string>
     <string name="profile_hand_hoods">Hoods</string>
@@ -329,4 +328,9 @@
     <string name="strava_benefit_auto_text">Aktifkan, lalu setiap ride yang disimpan terkirim sendiri</string>
     <string name="strava_benefit_private_title">Hanya izin upload</string>
     <string name="strava_benefit_private_text">RideComp tidak bisa melihat data Strava Anda yang lain</string>
+    <string name="onboarding_allow_all">Izinkan &amp; lanjut</string>
+    <string name="onboarding_required">Wajib</string>
+    <string name="onboarding_optional">Opsional</string>
+    <string name="profile_advanced_title">Pengaturan lanjutan (opsional)</string>
+    <string name="profile_advanced_subtitle">Ukuran roda, HR max, FTP, posisi tangan: nilai bawaan sudah cukup</string>
 </resources>

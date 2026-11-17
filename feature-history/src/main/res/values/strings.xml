@@ -45,7 +45,6 @@
     <string name="history_month">This month</string>
     <string name="history_month_rides">Rides</string>
     <string name="history_month_ascent">Climbing</string>
-    <string name="history_fit_not_exported">Not exported</string>
     <string name="history_moving">moving</string>
     <string name="history_ascent_unit">%1$s ↑</string>
     <string name="history_today">Today</string>

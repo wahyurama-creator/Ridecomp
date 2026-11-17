@@ -2,7 +2,7 @@
 <resources>
     <string name="sensors_title">Sensor</string>
     <string name="sensors_empty">Belum ada sensor tersimpan. Pindai sensor heart rate, speed/cadence, atau power.</string>
-    <string name="sensors_scan_action">Scan ulang</string>
+    <string name="sensors_scan_action">Cari sensor</string>
     <string name="sensors_stop_scan">Hentikan pindai</string>
     <string name="sensors_saved">Tersimpan</string>
     <string name="sensors_found">Ditemukan di sekitar</string>

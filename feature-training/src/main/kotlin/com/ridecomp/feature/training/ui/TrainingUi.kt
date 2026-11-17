@@ -160,9 +160,20 @@ private fun TrendCard(overview: TrainingOverview) {
             style = RideCompTheme.typography.caption,
             color = colors.textTertiary,
         )
-        TrendChart(series = series, summary = stringResource(R.string.training_trend_summary))
+        // A single day is a dot, not a trend: say when it will appear instead of an empty box (novice test).
+        if (overview.days.size < MIN_TREND_DAYS) {
+            Text(
+                text = stringResource(R.string.training_trend_later),
+                style = RideCompTheme.typography.body,
+                color = colors.textSecondary,
+            )
+        } else {
+            TrendChart(series = series, summary = stringResource(R.string.training_trend_summary))
+        }
     }
 }
+
+private const val MIN_TREND_DAYS = 2
 
 /** MINGGU INI: rides · distance · hours · load. */
 @Composable

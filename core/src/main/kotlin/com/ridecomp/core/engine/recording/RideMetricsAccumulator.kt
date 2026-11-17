@@ -30,6 +30,8 @@ public data class RecoveredTotals(
     val ascentM: Double = 0.0,
     val descentM: Double = 0.0,
     val lapIndex: Int = 0,
+    /** Where the running lap began (end of the last saved lap, or the ride start); null = now. */
+    val lapStart: RideProgress? = null,
 )
 
 /**

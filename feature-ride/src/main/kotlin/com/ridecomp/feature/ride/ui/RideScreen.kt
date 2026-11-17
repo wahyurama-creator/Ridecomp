@@ -51,6 +51,7 @@ import com.ridecomp.feature.ride.model.MetricUnitLabels
 import com.ridecomp.feature.ride.model.RideMetric
 import com.ridecomp.feature.ride.model.RouteView
 import com.ridecomp.feature.ride.model.rideAction
+import com.ridecomp.feature.ride.model.withFallbacks
 import com.ridecomp.feature.ride.ui.component.BreadcrumbMap
 import com.ridecomp.feature.ride.ui.component.ClimbPage
 import com.ridecomp.feature.ride.ui.component.IncidentAlertedBanner
@@ -183,6 +184,7 @@ fun RideScreen(
             return@Column
         }
         RideBanners(live.value, formatter, onAction)
+        LapDoneBanner(live.value, formatter)
         GuidanceBanners(live.value, formatter)
         val screens = remember(pages, route != null) { ridePages(pages, hasRoute = route != null) }
         val pagerState = rememberPagerState { screens.size }
@@ -250,17 +252,19 @@ private fun DataPageContent(
         ClimbPage(climb, live.value.elevation.gradePercent, formatter)
         return
     }
+    val sensorsInUse = live.value.sensors.snapshot.states.keys
+    val metrics = remember(page.metrics, sensorsInUse) { page.metrics.withFallbacks(sensorsInUse) }
     Column(modifier = Modifier.fillMaxSize()) {
         if (isLapPage) LapHeader(live, formatter)
         DataGrid(
-            count = page.metrics.size,
+            count = metrics.size,
             isFirstFullWidth = page.isFirstFullWidth,
             firstRowWeight = HERO_ROW_WEIGHT,
             modifier = Modifier.weight(1f),
         ) { index, cellModifier ->
             RideField(
                 live = live,
-                metric = page.metrics[index],
+                metric = metrics[index],
                 formatter = formatter,
                 labels = labels,
                 isHero = index == 0 && page.isFirstFullWidth,
@@ -375,6 +379,34 @@ private fun RouteProfile(route: RouteView, live: State<LiveRide>) {
         modifier = Modifier.padding(horizontal = RideCompDimens.spacingS),
     )
 }
+
+/**
+ * "Lap 1 done · 2:04 · 0.72 km" for the first seconds of the next lap: the LAP button (or an auto lap) gets
+ * a visible answer on every page, not only on the lap page (novice test, D-86).
+ */
+@Composable
+private fun LapDoneBanner(live: LiveRide, formatter: UnitFormatter) {
+    val lap = live.lap?.takeIf { it.elapsedMs <= LAP_BANNER_MS } ?: return
+    val previousMs = lap.previousLapMs
+    val previousM = lap.previousLapDistanceM
+    if (previousMs != null && previousM != null) LapDoneMessage(lap.number - 1, previousMs, previousM, formatter)
+}
+
+@Composable
+private fun LapDoneMessage(number: Int, previousMs: Long, previousM: Double, formatter: UnitFormatter) {
+    AlertBanner(
+        message = stringResource(
+            R.string.ride_lap_done,
+            number,
+            formatter.duration(previousMs),
+            formatter.distance(previousM),
+            formatter.distanceUnit,
+        ),
+        severity = AlertSeverity.OK,
+    )
+}
+
+private const val LAP_BANNER_MS = 4_000L
 
 /** Off route, turn and climb (route) and live segment banners. */
 @Composable
@@ -552,7 +584,7 @@ private fun PauseSummary(live: LiveRide, formatter: UnitFormatter, labels: Metri
                 color = colors.textSecondary,
             )
         }
-        PAUSE_STATS.chunked(PAUSE_STATS_COLUMNS).forEach { row ->
+        PAUSE_STATS.withFallbacks(live.sensors.snapshot.states.keys).chunked(PAUSE_STATS_COLUMNS).forEach { row ->
             Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.cardGap)) {
                 row.forEach { metric ->
                     StatCard(

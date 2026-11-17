@@ -4,6 +4,7 @@ import com.ridecomp.core.config.Units
 import com.ridecomp.core.engine.metrics.AverageMax
 import com.ridecomp.core.model.Lap
 import com.ridecomp.core.model.LapTrigger
+import com.ridecomp.core.model.RideSample
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
@@ -83,6 +84,11 @@ public class LapTracker(private val autoLapM: Double? = null) {
             powerSeconds++
             powerW?.let { maxPowerW = maxOf(maxPowerW ?: 0, it) }
         }
+    }
+
+    /** A stored second replayed after a crash/kill (a stored power value means a power meter). */
+    public fun replaySecond(sample: RideSample) {
+        onSensorSecond(sample.heartRateBpm, sample.cadenceRpm, sample.powerW, hasPowerMeter = sample.powerW != null)
     }
 
     /** Starts the first lap (or resumes after recovery with the given lap [startIndex]). */

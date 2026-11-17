@@ -4,4 +4,6 @@
     <string name="developer_title" translatable="false">Developer</string>
     <string name="developer_simulate_gps" translatable="false">Simulated GPS</string>
     <string name="developer_simulate_gps_description" translatable="false">Replays a 3 km loop with stops instead of the real GPS (07-TEST-PLAN §2). Restart the ride after switching.</string>
+    <string name="developer_simulate_sensors" translatable="false">Simulated sensors</string>
+    <string name="developer_simulate_sensors_description" translatable="false">A scan finds a virtual HR strap, speed/cadence sensor and power meter that send real BLE packets during a ride (the HR strap drops out for 12 s every 5 min). Pair them in Sensors.</string>
 </resources>
