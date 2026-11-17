@@ -28,6 +28,8 @@ data class SensorsUiState(
     /** Why scanning is impossible right now (permission, Bluetooth off). */
     val blocker: ScanBlocker? = null,
     val hasScanFailed: Boolean = false,
+    /** The last scan ran to its end and found nothing new (release test: the list just went quiet). */
+    val hasFoundNothing: Boolean = false,
     /** Sensor awaiting "forget" confirmation. */
     val forgetCandidate: SavedSensor? = null,
     val isLoaded: Boolean = false,
@@ -88,13 +90,16 @@ class SensorsViewModel(
 
     private fun startScan() {
         val blocker = scanSensors.blocker()
-        updateState { copy(blocker = blocker, hasScanFailed = false) }
+        updateState { copy(blocker = blocker, hasScanFailed = false, hasFoundNothing = false) }
         if (blocker != null || scanJob?.isActive == true) return
         updateState { copy(isScanning = true, discovered = persistentListOf()) }
         scanJob = viewModelScope.launch {
             scanSensors()
                 .catch { updateState { copy(hasScanFailed = true) } }
-                .onCompletion { updateState { copy(isScanning = false) } }
+                .onCompletion { cause ->
+                    // Stopped by the rider (cancelled) or failed: no "nothing found" note.
+                    updateState { copy(isScanning = false, hasFoundNothing = cause == null && discovered.isEmpty()) }
+                }
                 .collect { result ->
                     updateState {
                         val paired = saved.map { it.address }.toSet()

@@ -176,6 +176,11 @@ private fun SensorsBanner(state: SensorsUiState, onFixBlocker: (ScanBlocker) -> 
             message = stringResource(R.string.sensors_scan_failed),
             severity = AlertSeverity.WARN,
         )
+        state.hasFoundNothing -> AlertBanner(
+            message = stringResource(R.string.sensors_none_found),
+            severity = AlertSeverity.INFO,
+            iconRes = UiR.drawable.ic_info,
+        )
     }
 }
 
