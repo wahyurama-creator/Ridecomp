@@ -8,6 +8,10 @@
 
 Status: **beta 0.9.0**, distributed as an APK on [GitHub Releases](../../releases) (not on the Play Store yet).
 
+<p align="center">
+  <img src="docs/brand/RideComp-poster.png" alt="RideComp poster: the ride screen with speed, distance, time, heart rate and power, and six feature cards" width="540">
+</p>
+
 ## Features
 
 | | |
