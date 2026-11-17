@@ -85,6 +85,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
@@ -240,6 +241,25 @@ class RideViewModelsTest {
         // Leaving the screen stops watching the network (09 §1).
         advanceTimeBy(STOP_TIMEOUT_MS + 1)
         assertEquals(0, network.activeCollectors)
+    }
+
+    @Test
+    fun `back to start follows the ridden line once turned on`() = runTest {
+        val id = repository.create(NewActivity("u", "Ride", 0))
+        repository.appendSamples(id, listOf(RideSample(timeMs = 0, latDeg = -7.0, lonDeg = 110.0)))
+        controller.activityId.value = id
+        controller.live.value = LiveRide(status = RideStatus.RECORDING, latDeg = -7.01, lonDeg = 110.0)
+        val viewModel = rideViewModel()
+
+        viewModel.backToStart.test {
+            assertEquals(null, expectMostRecentItem())
+            viewModel.toggleBackToStart()
+            val back = assertNotNull(expectMostRecentItem())
+            assertEquals(-7.0, back.start.latDeg)
+            assertTrue(back.straightM > 1_000.0)
+            viewModel.toggleBackToStart()
+            assertEquals(null, expectMostRecentItem())
+        }
     }
 
     @Test

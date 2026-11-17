@@ -323,4 +323,14 @@
     <string name="bike_delete_message">Hanya data sepeda ini yang dihapus; riwayat ride tetap ada.</string>
     <string name="pre_ride_bike">Sepeda</string>
     <string name="pre_ride_manage_bikes">Kelola</string>
+
+    <!-- Kembali ke start (T7.2) -->
+    <string name="ride_back_to_start">Ke start</string>
+    <string name="ride_back_close">Tutup</string>
+    <string name="ride_back_along">Lewat jalur tadi</string>
+    <string name="ride_back_straight">Garis lurus</string>
+    <string name="ride_back_distance">%1$s %2$s</string>
+    <string name="ride_back_arrived">✓ Sudah sampai di start</string>
+    <string name="ride_back_waiting">Menunggu posisi GPS…</string>
+    <string name="ride_back_direction">Arah ke start</string>
 </resources>

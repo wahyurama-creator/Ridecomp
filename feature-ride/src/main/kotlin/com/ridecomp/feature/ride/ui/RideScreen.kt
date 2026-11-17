@@ -14,10 +14,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
@@ -30,11 +34,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ridecomp.core.engine.map.BackToStart
 import com.ridecomp.core.engine.recording.BatteryModePolicy
 import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RideAction
@@ -108,6 +115,8 @@ fun RideRoute(
     val isSosAvailable by viewModel.isSosAvailable.collectAsStateWithLifecycle()
     val contactNames by viewModel.contactNames.collectAsStateWithLifecycle()
     val map by viewModel.map.collectAsStateWithLifecycle()
+    val isBackToStart by viewModel.isBackToStart.collectAsStateWithLifecycle()
+    val backToStart by viewModel.backToStart.collectAsStateWithLifecycle()
     val route by viewModel.route.collectAsStateWithLifecycle()
     ObserveEffects(viewModel.effects) { effect ->
         when (effect) {
@@ -138,7 +147,8 @@ fun RideRoute(
         onIncident = viewModel::onIncident,
         isSosAvailable = isSosAvailable,
         contactNames = contactNames,
-        map = map,
+        map = map.copy(isBackToStart = isBackToStart, backToStart = backToStart),
+        onToggleBackToStart = viewModel::toggleBackToStart,
         route = route,
         modifier = modifier
             .volumeKeys(settings.isVolumeButtonsEnabled) { key ->
@@ -167,6 +177,7 @@ fun RideScreen(
     contactNames: ImmutableList<String> = persistentListOf(),
     map: RideMapView = RideMapView(),
     route: RouteView? = null,
+    onToggleBackToStart: () -> Unit = {},
 ) {
     val incident = live.value.incident
     if (incident is IncidentState.Countdown) {
@@ -199,7 +210,7 @@ fun RideScreen(
             },
         ) { index ->
             when (val screen = screens[index]) {
-                RidePage.Navigation -> NavigationPage(route, map, live, formatter, labels)
+                RidePage.Navigation -> NavigationPage(route, map, live, formatter, labels, onToggleBackToStart)
                 is RidePage.Data ->
                     DataPageContent(screen.page, live, formatter, labels, route, isMain = screen.page == pages.first())
             }
@@ -291,6 +302,7 @@ private fun ClimbSection(route: RouteView, live: State<LiveRide>, formatter: Uni
 /**
  * Map page (T3.5/T3.8, D-90): the map while there is one (online or offline file), else the breadcrumb;
  * with a route: the route, distance to go and speed; without: the line ridden so far, distance and speed.
+ * "Ke start" (T7.2) shows the way back along that line, the start and the distance and direction to it.
  */
 @Composable
 private fun NavigationPage(
@@ -299,40 +311,53 @@ private fun NavigationPage(
     live: State<LiveRide>,
     formatter: UnitFormatter,
     labels: MetricUnitLabels,
+    onToggleBackToStart: () -> Unit,
 ) {
     val current = live.value
     // Battery saver turns the tile map into the breadcrumb (13-UI-SCREENS #14, 12-FEATURE-SPECS §3).
     val isTileMap = map.hasMap && current.batteryMode == BatteryMode.NORMAL
+    val followsRoute = route != null && !map.isBackToStart
     Column(modifier = Modifier.fillMaxSize()) {
-        if (isTileMap) {
-            RideMap(route, map, live, Modifier.fillMaxWidth().weight(1f))
-        } else {
-            BreadcrumbMap(
-                line = route?.line ?: map.trail,
-                // Without a route the whole line is drawn as "ahead" (accent) so it stands out.
-                distanceAlongM = if (route != null) current.route?.distanceAlongM else 0.0,
-                latDeg = current.latDeg,
-                lonDeg = current.lonDeg,
-                modifier = Modifier.fillMaxWidth().weight(1f),
+        Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+            if (isTileMap) {
+                RideMap(route.takeIf { followsRoute }, map, live, Modifier.fillMaxSize())
+            } else {
+                BreadcrumbMap(
+                    line = if (followsRoute) route.line else map.trail,
+                    // Without a route the whole line is drawn as "ahead" (accent) so it stands out.
+                    distanceAlongM = if (followsRoute) current.route?.distanceAlongM else 0.0,
+                    latDeg = current.latDeg,
+                    lonDeg = current.lonDeg,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
+            BackToStartButton(
+                isOn = map.isBackToStart,
+                onClick = onToggleBackToStart,
+                modifier = Modifier.align(Alignment.TopStart).padding(RideCompDimens.spacingSm),
             )
         }
-        // Two fixed-height fields side by side, the map takes the rest (13-UI-SCREENS #7); the elevation
-        // profile lives on the climb page.
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(RideCompDimens.navigationFieldHeight)
-                .background(RideCompTheme.colors.divider),
-            horizontalArrangement = Arrangement.spacedBy(RideCompDimens.dividerThickness),
-        ) {
-            (if (route != null) NAVIGATION_FIELDS else FREE_RIDE_MAP_FIELDS).forEach { metric ->
-                RideField(
-                    live = live,
-                    metric = metric,
-                    formatter = formatter,
-                    labels = labels,
-                    modifier = Modifier.weight(1f),
-                )
+        if (map.isBackToStart) {
+            BackToStartBar(map.backToStart, formatter)
+        } else {
+            // Two fixed-height fields side by side, the map takes the rest (13-UI-SCREENS #7); the elevation
+            // profile lives on the climb page.
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(RideCompDimens.navigationFieldHeight)
+                    .background(RideCompTheme.colors.divider),
+                horizontalArrangement = Arrangement.spacedBy(RideCompDimens.dividerThickness),
+            ) {
+                (if (route != null) NAVIGATION_FIELDS else FREE_RIDE_MAP_FIELDS).forEach { metric ->
+                    RideField(
+                        live = live,
+                        metric = metric,
+                        formatter = formatter,
+                        labels = labels,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
         }
     }
@@ -345,11 +370,19 @@ private fun NavigationPage(
 @Composable
 private fun RideMap(route: RouteView?, map: RideMapView, live: State<LiveRide>, modifier: Modifier) {
     var isFollowing by rememberSaveable { mutableStateOf(true) }
-    val line = remember(route) { route?.line.orEmpty().toMapPoints() }
-    val along by remember { derivedStateOf { live.value.route?.distanceAlongM } }
-    val ridden = remember(route, along, map.trail) {
-        if (route != null) route.line.riddenUntil(along ?: 0.0).toMapPoints() else map.trail.toMapPoints()
+    // Back to start (T7.2): the ridden line becomes the way back, in accent, with the start marked.
+    val line = remember(route, map.isBackToStart, map.trail) {
+        if (map.isBackToStart) map.trail.toMapPoints() else route?.line.orEmpty().toMapPoints()
     }
+    val along by remember { derivedStateOf { live.value.route?.distanceAlongM } }
+    val ridden = remember(route, along, map.trail, map.isBackToStart) {
+        when {
+            map.isBackToStart -> persistentListOf()
+            route != null -> route.line.riddenUntil(along ?: 0.0).toMapPoints()
+            else -> map.trail.toMapPoints()
+        }
+    }
+    val start = map.backToStart?.start?.let { MapPoint(it.latDeg, it.lonDeg) }
     val lat = live.value.latDeg
     val lon = live.value.lonDeg
     val position = if (lat != null && lon != null) MapPoint(lat, lon) else null
@@ -362,6 +395,7 @@ private fun RideMap(route: RouteView?, map: RideMapView, live: State<LiveRide>, 
             position = position,
             isFollowing = isFollowing,
             onUserMoved = { isFollowing = false },
+            marker = start.takeIf { map.isBackToStart },
             description = stringResource(R.string.breadcrumb_description),
             modifier = Modifier.fillMaxSize(),
         )
@@ -374,6 +408,94 @@ private fun RideMap(route: RouteView?, map: RideMapView, live: State<LiveRide>, 
                 modifier = Modifier.align(Alignment.BottomEnd).padding(RideCompDimens.spacingSm),
             )
         }
+    }
+}
+
+/** "Ke start" / "Tutup" over the map (T7.2). */
+@Composable
+private fun BackToStartButton(isOn: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val colors = RideCompTheme.colors
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(RideCompDimens.cornerRadiusSmall),
+        color = if (isOn) colors.accent else colors.surface,
+        contentColor = if (isOn) colors.onAccent else colors.textPrimary,
+        modifier = modifier.heightIn(min = RideCompDimens.touchTargetMin),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = RideCompDimens.spacingSm),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS),
+        ) {
+            Icon(
+                painter = painterResource(if (isOn) UiR.drawable.ic_close else UiR.drawable.ic_flag),
+                contentDescription = null,
+                modifier = Modifier.size(RideCompDimens.iconSize),
+            )
+            Text(
+                text = stringResource(if (isOn) R.string.ride_back_close else R.string.ride_back_to_start),
+                style = RideCompTheme.typography.bodyStrong,
+            )
+        }
+    }
+}
+
+/** Distance back along the ridden line, direction arrow (north-up map) and straight-line distance (T7.2). */
+@Composable
+private fun BackToStartBar(back: BackToStart?, formatter: UnitFormatter) {
+    val colors = RideCompTheme.colors
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(RideCompDimens.navigationFieldHeight)
+            .background(colors.bg)
+            .padding(horizontal = RideCompDimens.spacingM),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingM),
+    ) {
+        when {
+            back == null -> Text(
+                text = stringResource(R.string.ride_back_waiting),
+                style = RideCompTheme.typography.bodyStrong,
+                color = colors.textSecondary,
+            )
+            back.isArrived -> Text(
+                text = stringResource(R.string.ride_back_arrived),
+                style = RideCompTheme.typography.cardTitle,
+                color = colors.ok,
+            )
+            else -> {
+                BackDistance(stringResource(R.string.ride_back_along), back.alongTrailM, formatter, Modifier.weight(1f))
+                Icon(
+                    painter = painterResource(UiR.drawable.ic_navigation),
+                    contentDescription = stringResource(R.string.ride_back_direction),
+                    tint = colors.accent,
+                    modifier = Modifier.size(RideCompDimens.touchTargetMin).rotate(back.bearingDeg.toFloat()),
+                )
+                BackDistance(
+                    stringResource(R.string.ride_back_straight),
+                    back.straightM,
+                    formatter,
+                    Modifier.weight(1f),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun BackDistance(label: String, distanceM: Double, formatter: UnitFormatter, modifier: Modifier) {
+    Column(modifier = modifier) {
+        Text(
+            text = label.uppercase(),
+            style = RideCompTheme.typography.dataLabel,
+            color = RideCompTheme.colors.textSecondary,
+        )
+        Text(
+            text = stringResource(R.string.ride_back_distance, formatter.distance(distanceM), formatter.distanceUnit),
+            style = RideCompTheme.typography.title,
+            color = RideCompTheme.colors.textPrimary,
+        )
     }
 }
 

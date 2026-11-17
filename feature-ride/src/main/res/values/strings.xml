@@ -329,4 +329,14 @@
     <string name="unit_mm" translatable="false">mm</string>
     <string name="pre_ride_bike">Bike</string>
     <string name="pre_ride_manage_bikes">Manage</string>
+
+    <!-- Back to start (T7.2) -->
+    <string name="ride_back_to_start">To start</string>
+    <string name="ride_back_close">Close</string>
+    <string name="ride_back_along">The way you came</string>
+    <string name="ride_back_straight">Straight line</string>
+    <string name="ride_back_distance">%1$s %2$s</string>
+    <string name="ride_back_arrived">✓ You\'re back at the start</string>
+    <string name="ride_back_waiting">Waiting for the GPS position…</string>
+    <string name="ride_back_direction">Direction to the start</string>
 </resources>

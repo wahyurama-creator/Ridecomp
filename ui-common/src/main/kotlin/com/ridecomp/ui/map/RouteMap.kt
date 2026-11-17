@@ -68,6 +68,8 @@ fun RouteMap(
     position: MapPoint? = null,
     isFollowing: Boolean = false,
     onUserMoved: () -> Unit = {},
+    /** A green dot, e.g. the start to ride back to (T7.2). */
+    marker: MapPoint? = null,
 ) {
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
@@ -107,12 +109,10 @@ fun RouteMap(
         if (!isFollowing) map?.fitTo(route)
     }
     LaunchedEffect(style, ridden) { style?.geoJson(MapSourceIds.RIDDEN)?.setGeoJson(ridden.toLine()) }
+    LaunchedEffect(style, marker) { style?.geoJson(MapSourceIds.MARKER)?.setGeoJson(marker.toPointCollection()) }
     LaunchedEffect(style, position, isFollowing) {
         val ready = style ?: return@LaunchedEffect
-        ready.geoJson(MapSourceIds.POSITION)?.setGeoJson(
-            position?.let { FeatureCollection.fromFeature(Feature.fromGeometry(it.toPoint())) }
-                ?: FeatureCollection.fromFeatures(emptyList()),
-        )
+        ready.geoJson(MapSourceIds.POSITION)?.setGeoJson(position.toPointCollection())
         if (isFollowing && position != null) {
             // Jump, not animate: the camera moves once a second while riding (02-DESIGN §6).
             map?.moveCamera(CameraUpdateFactory.newLatLngZoom(position.toLatLng(), OfflineMapZoom.FOLLOW))
@@ -166,6 +166,10 @@ private fun Style.geoJson(id: String): GeoJsonSource? = getSource(id) as? GeoJso
 private fun MapPoint.toPoint(): Point = Point.fromLngLat(lonDeg, latDeg)
 
 private fun MapPoint.toLatLng(): LatLng = LatLng(latDeg, lonDeg)
+
+private fun MapPoint?.toPointCollection(): FeatureCollection =
+    this?.let { FeatureCollection.fromFeature(Feature.fromGeometry(it.toPoint())) }
+        ?: FeatureCollection.fromFeatures(emptyList())
 
 private fun List<MapPoint>.toLine(): FeatureCollection = if (size < 2) {
     FeatureCollection.fromFeatures(emptyList())
