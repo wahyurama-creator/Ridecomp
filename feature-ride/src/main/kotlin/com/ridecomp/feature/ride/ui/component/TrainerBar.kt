@@ -2,6 +2,7 @@ package com.ridecomp.feature.ride.ui.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -106,12 +107,10 @@ private fun TrainerButton(label: String, modifier: Modifier, onClick: () -> Unit
         contentColor = RideCompTheme.colors.textPrimary,
         modifier = modifier.heightIn(min = RideCompDimens.touchTargetMin),
     ) {
-        Text(
-            text = label,
-            style = RideCompTheme.typography.cardTitle,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(vertical = RideCompDimens.spacingSm),
-        )
+        // Centered both ways inside the 56 dp touch target (device test: labels sat at the top).
+        Box(contentAlignment = Alignment.Center) {
+            Text(text = label, style = RideCompTheme.typography.cardTitle, textAlign = TextAlign.Center)
+        }
     }
 }
 
