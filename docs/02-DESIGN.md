@@ -23,6 +23,7 @@ Home
 ## 3. Spesifikasi layar
 
 ### 3.1 Onboarding & izin
+- **Sejak T10.12 (D-105):** layar **Sambutan** dulu (logo, "Ubah HP-mu jadi cycling computer.", kartu contoh layar ride, 3 sorotan fitur, tombol Mulai; muncul dengan fade/slide sekali). Langkah: Bahasa → Izin → Level → Profil → Sepeda → Siap ("Langkah n dari 6"), header berikon dalam lingkaran aksen, tombol utama menempel di bawah. **Level, Profil, Sepeda bisa "Lewati"** (nilai bawaan dipakai; level = Menengah, berat 70 kg, sepeda Road 700x25c); profil yang belum diisi diingatkan lewat kartu di layar Siap berangkat ("Lengkapi profilmu · Isi sekarang", bisa ditutup). Bahasa & izin lokasi tetap wajib.
 - 3 langkah singkat: (1) izin lokasi "saat app digunakan" + penjelasan, (2) izin Bluetooth (Android 12+: Nearby devices) dan notifikasi (Android 13+), (3) pengecualian optimasi baterai + tautan panduan pengaturan merek HP terdeteksi (`Build.MANUFACTURER`).
 - Isi profil dasar: berat badan, berat sepeda, keliling roda (default 2105 mm untuk 700x25c, dengan daftar ukuran umum), HR max (opsional), FTP (opsional).
 

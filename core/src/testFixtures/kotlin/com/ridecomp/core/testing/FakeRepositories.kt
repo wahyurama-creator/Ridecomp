@@ -198,6 +198,8 @@ public class FakeProfileRepository(initial: RiderProfile? = null) : ProfileRepos
     }
 
     override suspend fun hasProfile(): Boolean = profile.value != null
+
+    override fun observeHasProfile(): Flow<Boolean> = profile.map { it != null }
 }
 
 /** In-memory [SettingsRepository]. */

@@ -1,6 +1,8 @@
 package com.ridecomp.feature.ride.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,9 +22,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.config.GpsConfig
@@ -76,6 +82,8 @@ fun PreRideRoute(
     onCancel: () -> Unit = {},
     onChooseRoute: () -> Unit = {},
     onManageBikes: () -> Unit = {},
+    /** Profile skipped in onboarding: "Isi sekarang" opens it (T10.12). */
+    onOpenProfile: () -> Unit = {},
     viewModel: PreRideViewModel = koinViewModel(key = routeId?.toString()) { parametersOf(routeId) },
 ) {
     val gps by viewModel.gpsStatus.collectAsStateWithLifecycle()
@@ -93,6 +101,7 @@ fun PreRideRoute(
         onChooseRoute = onChooseRoute,
         onManageBikes = onManageBikes,
         modifier = modifier,
+        onOpenProfile = onOpenProfile,
     )
 }
 
@@ -105,7 +114,9 @@ fun PreRideScreen(
     onCancel: () -> Unit = {},
     onChooseRoute: () -> Unit = {},
     onManageBikes: () -> Unit = {},
+    onOpenProfile: () -> Unit = {},
 ) {
+    var isProfileHintClosed by rememberSaveable { mutableStateOf(false) }
     // While GPS searches, the waiting state is shown first (#29); "Pilihan ride" opens the check list.
     var isChecklistShown by rememberSaveable { mutableStateOf(false) }
     val onStart = { onEvent(PreRideUiEvent.Start) }
@@ -123,6 +134,9 @@ fun PreRideScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = RideCompDimens.screenPaddingHorizontal),
         ) {
+            if (state.isProfileMissing && !isProfileHintClosed) {
+                ProfileHint(onOpenProfile = onOpenProfile, onClose = { isProfileHintClosed = true })
+            }
             if (gps is GpsStatus.Searching && !isChecklistShown) {
                 GpsWaiting(gps, onShowOptions = { isChecklistShown = true })
             } else {
@@ -137,6 +151,61 @@ fun PreRideScreen(
             ),
         ) {
             StartButtons(gps, onStart)
+        }
+    }
+}
+
+/**
+ * Profile skipped in onboarding (T10.12): a quiet dark card in the app's style (accent icon, "Isi sekarang"
+ * link, close button) so an optional reminder never outshouts the ride checks. Defaults are used meanwhile.
+ */
+@Composable
+private fun ProfileHint(onOpenProfile: () -> Unit, onClose: () -> Unit) {
+    val colors = RideCompTheme.colors
+    val closeLabel = stringResource(R.string.pre_ride_profile_later)
+    RideCompCard(modifier = Modifier.padding(bottom = RideCompDimens.blockGap)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm)) {
+            Box(
+                modifier = Modifier
+                    .size(RideCompDimens.iconTileSize)
+                    .clip(CircleShape)
+                    .background(colors.accentTint),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(UiR.drawable.ic_heart),
+                    contentDescription = null,
+                    tint = colors.accent,
+                    modifier = Modifier.size(RideCompDimens.iconSize),
+                )
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.pre_ride_profile_title),
+                    style = RideCompTheme.typography.cardTitle,
+                    color = colors.textPrimary,
+                )
+                Text(
+                    text = stringResource(R.string.pre_ride_profile_text),
+                    style = RideCompTheme.typography.caption,
+                    color = colors.textSecondary,
+                )
+                LinkText(text = stringResource(R.string.pre_ride_profile_fill), onClick = onOpenProfile)
+            }
+            Box(
+                modifier = Modifier
+                    .size(RideCompDimens.touchTargetMin)
+                    .clickable(role = Role.Button, onClick = onClose)
+                    .semantics { contentDescription = closeLabel },
+                contentAlignment = Alignment.TopEnd,
+            ) {
+                Icon(
+                    painter = painterResource(UiR.drawable.ic_close),
+                    contentDescription = null,
+                    tint = colors.textSecondary,
+                    modifier = Modifier.size(RideCompDimens.iconSize),
+                )
+            }
         }
     }
 }

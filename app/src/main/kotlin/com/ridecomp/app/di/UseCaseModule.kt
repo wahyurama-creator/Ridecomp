@@ -74,6 +74,7 @@ import com.ridecomp.core.usecase.ObserveComponentWearUseCase
 import com.ridecomp.core.usecase.ObserveDataPagesUseCase
 import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
 import com.ridecomp.core.usecase.ObserveGuideUseCase
+import com.ridecomp.core.usecase.ObserveHasProfileUseCase
 import com.ridecomp.core.usecase.ObserveHistoryCountUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveLastBackupUseCase
@@ -185,6 +186,7 @@ val useCaseModule = module {
     factory { ExportGpxUseCase(get(), get(), get()) }
     factory { ObserveProfileUseCase(get()) }
     factory { HasProfileUseCase(get()) }
+    factory { ObserveHasProfileUseCase(get()) }
     factory { SaveProfileUseCase(get(), get()) }
     factory { EstimateHrMaxUseCase(get()) }
     factory { ObserveRideSettingsUseCase(get()) }

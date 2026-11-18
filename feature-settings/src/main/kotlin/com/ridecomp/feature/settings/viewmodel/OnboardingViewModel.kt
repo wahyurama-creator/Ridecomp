@@ -18,11 +18,26 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /**
- * Onboarding steps in order (02-DESIGN §3.1, 13-UI-SCREENS #1, #2, #22): LANGUAGE first so every later
- * text is in the rider's language (D-88); LEVEL (Phase 4G) asks how experienced the rider is; BIKE saves
- * the first bike, picked later before each ride (D-89).
+ * Onboarding steps in order (02-DESIGN §3.1, 13-UI-SCREENS #1, #2, #22): WELCOME introduces the app
+ * (T10.12); LANGUAGE first of the setup so every later text is in the rider's language (D-88); LEVEL
+ * (Phase 4G) asks how experienced the rider is; BIKE saves the first bike, picked later before each ride
+ * (D-89). [isSkippable] steps can be left for later (D-105): defaults are used until the rider fills them.
  */
-enum class OnboardingStep { LANGUAGE, PERMISSIONS, LEVEL, PROFILE, BIKE, READY }
+enum class OnboardingStep(val isSkippable: Boolean = false) {
+    WELCOME,
+    LANGUAGE,
+    PERMISSIONS,
+    LEVEL(isSkippable = true),
+    PROFILE(isSkippable = true),
+    BIKE(isSkippable = true),
+    READY,
+    ;
+
+    /** Setup steps after the welcome, numbered "Langkah n dari 6". */
+    companion object {
+        val SETUP: List<OnboardingStep> = entries - WELCOME
+    }
+}
 
 sealed interface OnboardingUiEvent {
     data object Next : OnboardingUiEvent
@@ -31,6 +46,9 @@ sealed interface OnboardingUiEvent {
 
     /** The rider's experience (Phase 4G): stored, then the next step. */
     data class ChooseLevel(val level: RiderLevel) : OnboardingUiEvent
+
+    /** "Lewati" on a skippable step: nothing is saved, defaults stay (D-105). */
+    data object Skip : OnboardingUiEvent
 
     /** "Mulai pakai RideComp" or "Lewati" on the last step. */
     data object Finished : OnboardingUiEvent
@@ -49,7 +67,7 @@ class OnboardingViewModel(
     private val completeOnboarding: CompleteOnboardingUseCase,
     observeGps: ObserveGpsStatusUseCase,
     private val setRiderLevel: SetRiderLevelUseCase,
-) : UdfViewModel<OnboardingStep, OnboardingUiEvent, OnboardingEffect>(OnboardingStep.LANGUAGE) {
+) : UdfViewModel<OnboardingStep, OnboardingUiEvent, OnboardingEffect>(OnboardingStep.WELCOME) {
     val gpsStatus: StateFlow<GpsStatus?> = uiState
         .map { it == OnboardingStep.READY }
         .distinctUntilChanged()
@@ -60,6 +78,9 @@ class OnboardingViewModel(
         when (event) {
             OnboardingUiEvent.Next -> updateState { OnboardingStep.entries.getOrElse(ordinal + 1) { this } }
             OnboardingUiEvent.Back -> updateState { OnboardingStep.entries.getOrElse(ordinal - 1) { this } }
+            OnboardingUiEvent.Skip -> updateState {
+                if (isSkippable) OnboardingStep.entries.getOrElse(ordinal + 1) { this } else this
+            }
             is OnboardingUiEvent.ChooseLevel -> viewModelScope.launch {
                 setRiderLevel(event.level)
                 // A double tap must not skip the profile step.

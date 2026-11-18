@@ -17,6 +17,7 @@ import com.ridecomp.core.usecase.ObserveActivePlanUseCase
 import com.ridecomp.core.usecase.ObserveBikeChoiceUseCase
 import com.ridecomp.core.usecase.ObserveComponentWearUseCase
 import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
+import com.ridecomp.core.usecase.ObserveHasProfileUseCase
 import com.ridecomp.core.usecase.ObserveProfileChoiceUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveRouteUseCase
@@ -62,6 +63,8 @@ data class PreRideUiState(
     val session: PlanSession? = null,
     /** Measure this ride against [session]; on by default. */
     val isSessionOn: Boolean = true,
+    /** Onboarding's profile step was skipped: offer to fill it in (T10.12). */
+    val isProfileMissing: Boolean = false,
 ) {
     /** Screen mode used by the ride: the profile's own choice wins over the general setting (D-32). */
     val screenMode: ScreenMode get() = selected?.screenMode ?: settings.screenMode
@@ -112,6 +115,7 @@ data class PreRideOptionUseCases(
     val observeSettings: ObserveRideSettingsUseCase,
     val saveSettings: SaveRideSettingsUseCase,
     val observeActivePlan: ObserveActivePlanUseCase,
+    val observeHasProfile: ObserveHasProfileUseCase,
 )
 
 /** The picked bike with its activity profile. */
@@ -166,6 +170,9 @@ class PreRideViewModel(routeId: Long?, private val useCases: PreRideUseCases) :
         }
         viewModelScope.launch {
             useCases.options.observeSettings().collect { updateState { copy(settings = it) } }
+        }
+        viewModelScope.launch {
+            useCases.options.observeHasProfile().collect { has -> updateState { copy(isProfileMissing = !has) } }
         }
         routeId?.let { id ->
             viewModelScope.launch { useCases.observeRoute(id).collect { updateState { copy(route = it) } } }

@@ -28,6 +28,11 @@ public class HasProfileUseCase(private val repository: ProfileRepository) {
     public suspend operator fun invoke(): Boolean = repository.hasProfile()
 }
 
+/** Live "the rider saved a profile": the pre-ride check offers to fill one in when not (T10.12). */
+public class ObserveHasProfileUseCase(private val repository: ProfileRepository) {
+    public operator fun invoke(): Flow<Boolean> = repository.observeHasProfile()
+}
+
 /** Validates against the ranges in [ProfileDefaults] (SEC-IN-02) and saves. */
 public class SaveProfileUseCase(private val repository: ProfileRepository, private val clock: Clock) {
     public suspend operator fun invoke(profile: RiderProfile): Outcome<Unit, InvalidProfile> {

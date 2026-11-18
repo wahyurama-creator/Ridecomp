@@ -14,15 +14,15 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -35,6 +35,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -58,6 +59,7 @@ import com.ridecomp.ui.R as UiR
 import com.ridecomp.ui.component.BigButton
 import com.ridecomp.ui.component.BigButtonSize
 import com.ridecomp.ui.component.BigButtonStyle
+import com.ridecomp.ui.component.LinkText
 import com.ridecomp.ui.component.OnboardingProgress
 import com.ridecomp.ui.component.RideCompCard
 import com.ridecomp.ui.component.WarningCard
@@ -105,9 +107,12 @@ fun OnboardingRoute(
             ProfileEffect.Saved -> viewModel.onEvent(OnboardingUiEvent.Next)
         }
     }
-    val header: @Composable () -> Unit = { StepHeader(step) }
+    val header: @Composable () -> Unit = {
+        StepHeader(step, onSkip = { viewModel.onEvent(OnboardingUiEvent.Skip) })
+    }
     Column(modifier = modifier.fillMaxSize().background(RideCompTheme.colors.bg)) {
         when (step) {
+            OnboardingStep.WELCOME -> WelcomeStep(onStart = { viewModel.onEvent(OnboardingUiEvent.Next) })
             OnboardingStep.LANGUAGE -> LanguageStep(onNext = { viewModel.onEvent(OnboardingUiEvent.Next) }, header)
             OnboardingStep.PERMISSIONS -> PermissionsStep(onNext = {
                 viewModel.onEvent(OnboardingUiEvent.Next)
@@ -139,16 +144,47 @@ fun OnboardingRoute(
     }
 }
 
-/** Progress bars, "LANGKAH n DARI 3", title and text of each step. */
+/**
+ * Progress bars and "LANGKAH n DARI 6" with "Lewati" on skippable steps (D-105), then the step's icon in a
+ * tinted circle, its title and text (T10.12).
+ */
 @Composable
-private fun StepHeader(step: OnboardingStep) {
+private fun StepHeader(step: OnboardingStep, onSkip: () -> Unit) {
     val colors = RideCompTheme.colors
+    val number = OnboardingStep.SETUP.indexOf(step) + 1
+    val total = OnboardingStep.SETUP.size
     Column(verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm)) {
-        OnboardingProgress(
-            step = step.ordinal + 1,
-            total = OnboardingStep.entries.size,
-            label = stringResource(R.string.onboarding_step, step.ordinal + 1, OnboardingStep.entries.size).uppercase(),
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            OnboardingProgress(
+                step = number,
+                total = total,
+                label = stringResource(R.string.onboarding_step, number, total).uppercase(),
+                modifier = Modifier.weight(1f),
+            )
+            // Sized to its text: a full-width button would squeeze the progress bars to nothing.
+            if (step.isSkippable) {
+                LinkText(
+                    text = stringResource(R.string.onboarding_skip),
+                    onClick = onSkip,
+                    modifier = Modifier.padding(start = RideCompDimens.spacingSm),
+                )
+            }
+        }
+        Box(
+            modifier = Modifier
+                .padding(top = RideCompDimens.spacingS)
+                .size(RideCompDimens.stepIconCircle)
+                .clip(CircleShape)
+                .background(colors.accentTint),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                painter = painterResource(step.iconRes()),
+                contentDescription = null,
+                tint = colors.accent,
+                modifier = Modifier.size(RideCompDimens.iconSize),
+            )
+        }
         Text(
             text = stringResource(step.titleRes()),
             style = RideCompTheme.typography.screenTitle,
@@ -156,32 +192,42 @@ private fun StepHeader(step: OnboardingStep) {
             modifier = Modifier.semantics { heading() },
         )
         Text(text = stringResource(step.textRes()), style = RideCompTheme.typography.body, color = colors.textTertiary)
+        if (step.isSkippable) {
+            Text(
+                text = stringResource(R.string.onboarding_skip_hint),
+                style = RideCompTheme.typography.caption,
+                color = colors.textSecondary,
+            )
+        }
     }
 }
 
-/** Scrollable step body with its main button kept at the bottom, like the design. */
+/** Scrollable step body; the main buttons stay pinned at the bottom, always reachable (T10.12). */
 @Composable
 private fun StepLayout(content: @Composable () -> Unit, buttons: @Composable () -> Unit) {
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
+                .weight(1f)
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
-                .heightIn(min = maxHeight)
                 .padding(
                     start = RideCompDimens.screenPaddingHorizontal,
                     end = RideCompDimens.screenPaddingHorizontal,
                     top = RideCompDimens.screenPaddingTop,
-                    bottom = RideCompDimens.screenPaddingBottom,
+                    bottom = RideCompDimens.blockGap,
                 ),
-            verticalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap)) { content() }
-            Column(
-                modifier = Modifier.padding(top = RideCompDimens.blockGap),
-                verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS),
-            ) { buttons() }
-        }
+            verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
+        ) { content() }
+        Column(
+            modifier = Modifier.padding(
+                start = RideCompDimens.screenPaddingHorizontal,
+                end = RideCompDimens.screenPaddingHorizontal,
+                top = RideCompDimens.spacingS,
+                bottom = RideCompDimens.screenPaddingBottom,
+            ),
+            verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS),
+        ) { buttons() }
     }
 }
 
@@ -493,8 +539,19 @@ private fun Context.isBatteryExempt(): Boolean =
 private fun Context.batteryExemptionIntent(): Intent =
     Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, (PACKAGE_SCHEME + packageName).toUri())
 
+@DrawableRes
+private fun OnboardingStep.iconRes(): Int = when (this) {
+    OnboardingStep.WELCOME, OnboardingStep.READY -> UiR.drawable.ic_check
+    OnboardingStep.LANGUAGE -> UiR.drawable.ic_language
+    OnboardingStep.PERMISSIONS -> UiR.drawable.ic_location
+    OnboardingStep.LEVEL -> UiR.drawable.ic_trophy
+    OnboardingStep.PROFILE -> UiR.drawable.ic_heart
+    OnboardingStep.BIKE -> UiR.drawable.ic_nav_ride
+}
+
 @StringRes
 private fun OnboardingStep.titleRes(): Int = when (this) {
+    OnboardingStep.WELCOME -> R.string.welcome_app_name
     OnboardingStep.LANGUAGE -> R.string.onboarding_language_title
     OnboardingStep.PERMISSIONS -> R.string.onboarding_permissions_title
     OnboardingStep.LEVEL -> R.string.guide_level_title
@@ -505,6 +562,7 @@ private fun OnboardingStep.titleRes(): Int = when (this) {
 
 @StringRes
 private fun OnboardingStep.textRes(): Int = when (this) {
+    OnboardingStep.WELCOME -> R.string.welcome_text
     OnboardingStep.LANGUAGE -> R.string.onboarding_language_text
     OnboardingStep.PERMISSIONS -> R.string.onboarding_permissions_text
     OnboardingStep.LEVEL -> R.string.guide_level_text
@@ -522,5 +580,5 @@ private fun GpsTestCardPreview() {
 @ThemePreviews
 @Composable
 private fun StepHeaderPreview() {
-    RideCompPreview { StepHeader(OnboardingStep.PERMISSIONS) }
+    RideCompPreview { StepHeader(OnboardingStep.PROFILE, onSkip = {}) }
 }

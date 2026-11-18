@@ -461,6 +461,7 @@ private fun NavGraphBuilder.preRideDestination(navController: NavHostController)
             onCancel = { navController.popBackStack() },
             onChooseRoute = { navController.navigateToTopLevel(TopLevelDestination.ROUTES) },
             onManageBikes = { navController.navigate(BikeRoutes.BIKES) },
+            onOpenProfile = { navController.navigate(AppRoutes.PROFILE) },
             onStarted = {
                 navController.navigate(AppRoutes.RIDE) {
                     popUpTo(AppRoutes.PRE_RIDE) { inclusive = true }
