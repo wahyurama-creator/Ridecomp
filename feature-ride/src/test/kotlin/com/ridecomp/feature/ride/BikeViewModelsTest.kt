@@ -134,8 +134,19 @@ class BikeViewModelsTest {
     }
 
     @Test
-    fun `changing the type of a saved bike keeps its wheel`() = runTest {
+    fun `onboarding a folding bike also starts it on 20 inch wheels`() = runTest {
         val viewModel = editor(BikeTarget.First)
+
+        viewModel.onEvent(BikeEditorUiEvent.TypePicked(FOLDING_ID))
+        assertEquals(
+            ProfileDefaults.FOLDING_WHEEL_CIRCUMFERENCE_MM.toString(),
+            viewModel.uiState.value.wheelCircumferenceMm,
+        )
+    }
+
+    @Test
+    fun `changing the type of a saved bike keeps its wheel`() = runTest {
+        val viewModel = editor(BikeTarget.Existing(1))
 
         viewModel.onEvent(BikeEditorUiEvent.TypePicked(FOLDING_ID))
         assertEquals(ProfileDefaults.WHEEL_CIRCUMFERENCE_MM.toString(), viewModel.uiState.value.wheelCircumferenceMm)
