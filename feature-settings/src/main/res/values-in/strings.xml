@@ -369,4 +369,16 @@
     <string name="update_download">Unduh versi %1$s</string>
     <string name="update_how">Pasang APK baru di atas aplikasi ini: ride, sepeda, dan pengaturan tetap ada. Jangan uninstall dulu.</string>
     <string name="settings_update">Pembaruan aplikasi</string>
+    <string name="welcome_title_start">Ubah HP-mu jadi</string>
+    <string name="welcome_title_accent">cycling computer.</string>
+    <string name="welcome_text">Rekam setiap ride, ikuti rute, dan latihan lebih terarah. Tetap jalan tanpa sinyal, di HP murah sekalipun.</string>
+    <string name="welcome_sample_speed_unit">km/j</string>
+    <string name="welcome_sample_line">18,6 km · 142 bpm · 210 W</string>
+    <string name="welcome_feature_record">GPS &amp; sensor Bluetooth, layar mati pun jalan</string>
+    <string name="welcome_feature_navigate">Rute, peta &amp; rencana latihan</string>
+    <string name="welcome_feature_free">Gratis, tanpa akun, open source</string>
+    <string name="welcome_start">Mulai</string>
+    <string name="welcome_footnote">Sekitar satu menit. Data pribadi boleh dilewati.</string>
+    <string name="onboarding_skip">Lewati</string>
+    <string name="onboarding_skip_hint">Opsional. Lewati saja, bisa diisi nanti sebelum ride atau di Setelan.</string>
 </resources>

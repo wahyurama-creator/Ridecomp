@@ -1,18 +1,27 @@
 package com.ridecomp.feature.settings.ui
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.model.GuidePreferences
@@ -22,6 +31,7 @@ import com.ridecomp.core.model.RiderLevel
 import com.ridecomp.feature.settings.R
 import com.ridecomp.feature.settings.viewmodel.GuideUiEvent
 import com.ridecomp.feature.settings.viewmodel.GuideViewModel
+import com.ridecomp.ui.R as UiR
 import com.ridecomp.ui.component.BigButton
 import com.ridecomp.ui.component.BigButtonStyle
 import com.ridecomp.ui.component.CardTone
@@ -66,22 +76,54 @@ fun GuideTip(
 fun RiderLevelChooser(selected: RiderLevel?, onSelect: (RiderLevel) -> Unit, modifier: Modifier = Modifier) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(RideCompDimens.cardGap)) {
         RiderLevel.entries.forEach { level ->
-            RideCompCard(
-                tone = if (level == selected) CardTone.ACCENT else CardTone.NORMAL,
-                onClick = { onSelect(level) },
-            ) {
-                Text(
-                    text = stringResource(level.titleRes()),
-                    style = RideCompTheme.typography.cardTitle,
-                    color = RideCompTheme.colors.textPrimary,
-                )
-                Text(
-                    text = stringResource(level.hintRes()),
-                    style = RideCompTheme.typography.caption,
-                    color = RideCompTheme.colors.textSecondary,
-                )
+            val isSelected = level == selected
+            RideCompCard(tone = if (isSelected) CardTone.ACCENT else CardTone.NORMAL, onClick = { onSelect(level) }) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm),
+                ) {
+                    LevelIcon(level, isSelected)
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(level.titleRes()),
+                            style = RideCompTheme.typography.cardTitle,
+                            color = RideCompTheme.colors.textPrimary,
+                        )
+                        Text(
+                            text = stringResource(level.hintRes()),
+                            style = RideCompTheme.typography.caption,
+                            color = RideCompTheme.colors.textSecondary,
+                        )
+                    }
+                }
             }
         }
+    }
+}
+
+/** The level's icon in a circle, filled with the accent when chosen (T10.12). */
+@Composable
+private fun LevelIcon(level: RiderLevel, isSelected: Boolean) {
+    val colors = RideCompTheme.colors
+    Box(
+        modifier = Modifier
+            .size(RideCompDimens.welcomeFeatureIcon)
+            .clip(CircleShape)
+            .background(if (isSelected) colors.accent else colors.accentTint),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            painter = painterResource(
+                when (level) {
+                    RiderLevel.BEGINNER -> UiR.drawable.ic_nav_ride
+                    RiderLevel.INTERMEDIATE -> UiR.drawable.ic_flag
+                    RiderLevel.EXPERIENCED -> UiR.drawable.ic_trophy
+                },
+            ),
+            contentDescription = null,
+            tint = if (isSelected) colors.onAccent else colors.accent,
+            modifier = Modifier.size(RideCompDimens.iconSize),
+        )
     }
 }
 

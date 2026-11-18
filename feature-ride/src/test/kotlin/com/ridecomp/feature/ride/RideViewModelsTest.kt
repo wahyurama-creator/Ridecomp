@@ -62,6 +62,7 @@ import com.ridecomp.core.usecase.ObserveBikeChoiceUseCase
 import com.ridecomp.core.usecase.ObserveComponentWearUseCase
 import com.ridecomp.core.usecase.ObserveDataPagesUseCase
 import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
+import com.ridecomp.core.usecase.ObserveHasProfileUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
 import com.ridecomp.core.usecase.ObserveMapTilesUseCase
@@ -152,6 +153,7 @@ class RideViewModelsTest {
 
     private val backupState = FakeBackupStateRepository()
     private val updates = FakeUpdateRepository()
+    private val riderProfiles = FakeProfileRepository()
     private val releases = FakeReleaseSource()
 
     private fun homeViewModel() = HomeViewModel(
@@ -237,9 +239,19 @@ class RideViewModelsTest {
                 ObserveRideSettingsUseCase(settings),
                 SaveRideSettingsUseCase(settings),
                 ObserveActivePlanUseCase(plans, TrainingCalendar(FakeClock())),
+                ObserveHasProfileUseCase(riderProfiles),
             ),
         ),
     )
+
+    @Test
+    fun `a skipped profile is offered on the pre-ride check until it is saved`() = runTest {
+        val viewModel = preRideViewModel()
+        assertTrue(viewModel.uiState.value.isProfileMissing)
+
+        riderProfiles.save(RiderProfile())
+        assertFalse(viewModel.uiState.value.isProfileMissing)
+    }
 
     @Test
     fun `today's planned session is used by default and can be turned off`() = runTest {

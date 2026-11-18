@@ -31,6 +31,9 @@ public interface ProfileRepository {
 
     /** True once the user saved a profile (onboarding done). */
     public suspend fun hasProfile(): Boolean
+
+    /** Whether a profile was saved; false while onboarding's profile step was skipped (T10.12). */
+    public fun observeHasProfile(): Flow<Boolean>
 }
 
 /** App and ride settings (05-DATA-MODEL `settings`). */

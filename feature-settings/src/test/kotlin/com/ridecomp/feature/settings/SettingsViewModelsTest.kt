@@ -174,8 +174,8 @@ class SettingsViewModelsTest {
             )
 
         viewModel.onEvent(OnboardingUiEvent.Back)
-        assertEquals(OnboardingStep.LANGUAGE, viewModel.uiState.value)
-        repeat(5) { viewModel.onEvent(OnboardingUiEvent.Next) }
+        assertEquals(OnboardingStep.WELCOME, viewModel.uiState.value)
+        repeat(6) { viewModel.onEvent(OnboardingUiEvent.Next) }
         assertEquals(OnboardingStep.READY, viewModel.uiState.value)
 
         viewModel.effects.test {
@@ -193,7 +193,7 @@ class SettingsViewModelsTest {
             ObserveGpsStatusUseCase(FakeLocationSource()),
             SetRiderLevelUseCase(guide),
         )
-        repeat(2) { viewModel.onEvent(OnboardingUiEvent.Next) }
+        repeat(3) { viewModel.onEvent(OnboardingUiEvent.Next) }
         assertEquals(OnboardingStep.LEVEL, viewModel.uiState.value)
 
         viewModel.onEvent(OnboardingUiEvent.ChooseLevel(RiderLevel.EXPERIENCED))
@@ -202,6 +202,32 @@ class SettingsViewModelsTest {
 
         assertEquals(OnboardingStep.PROFILE, viewModel.uiState.value)
         assertEquals(RiderLevel.EXPERIENCED, guide.state.value.level)
+    }
+
+    @Test
+    fun `level, profile and bike can be skipped, permissions and language cannot`() = runTest {
+        val guide = FakeGuideRepository()
+        val viewModel = OnboardingViewModel(
+            CompleteOnboardingUseCase(FakeSettingsRepository()),
+            ObserveGpsStatusUseCase(FakeLocationSource()),
+            SetRiderLevelUseCase(guide),
+        )
+        repeat(2) { viewModel.onEvent(OnboardingUiEvent.Next) }
+        assertEquals(OnboardingStep.PERMISSIONS, viewModel.uiState.value)
+        viewModel.onEvent(OnboardingUiEvent.Skip)
+        assertEquals(OnboardingStep.PERMISSIONS, viewModel.uiState.value)
+
+        viewModel.onEvent(OnboardingUiEvent.Next)
+        repeat(3) { viewModel.onEvent(OnboardingUiEvent.Skip) }
+        assertEquals(OnboardingStep.READY, viewModel.uiState.value)
+        assertEquals(null, guide.state.value.level)
+        assertEquals(
+            listOf(OnboardingStep.LEVEL, OnboardingStep.PROFILE, OnboardingStep.BIKE),
+            OnboardingStep.entries.filter {
+                it.isSkippable
+            },
+        )
+        assertEquals(6, OnboardingStep.SETUP.size)
     }
 
     @Test

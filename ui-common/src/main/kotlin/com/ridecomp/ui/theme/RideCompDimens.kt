@@ -86,6 +86,11 @@ object RideCompDimens {
     val stravaButtonHeight = 48.dp
     val routeSketchHeight = 180.dp
     val onboardingProgressHeight = 4.dp
+
+    /** Onboarding welcome (T10.12): the RideComp mark, the step icon circle and the sample ride card. */
+    val welcomeMarkSize = 56.dp
+    val stepIconCircle = 56.dp
+    val welcomeFeatureIcon = 40.dp
     val gpsWaitOuter = 200.dp
     val gpsWaitInner = 140.dp
     val emptyIllustrationWidth = 140.dp
@@ -138,6 +143,13 @@ object RideCompDimens {
     val hugeNumberSize = 96.sp
     val pauseTimeSize = 64.sp
     val screenTitleSize = 26.sp
+
+    /** Welcome headline (T10.12). */
+    val displaySize = 38.sp
+    val displayLineHeight = 42.sp
+
+    /** The big speed on the welcome's sample ride card. */
+    val welcomeSpeedSize = 64.sp
     val titleSize = 22.sp
     val cardTitleSize = 16.sp
     val bodySize = 15.sp

@@ -30,7 +30,7 @@ val rideFeatureModule = module {
     factory { HomeUpdateUseCases(get(), get(), get()) }
     factory { HomeUseCases(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { HomeViewModel(get()) }
-    factory { PreRideOptionUseCases(get(), get(), get(), get()) }
+    factory { PreRideOptionUseCases(get(), get(), get(), get(), get()) }
     factory { PreRideBikeUseCases(get(), get(), get(), get()) }
     factory { PreRideUseCases(get(), get(), get(), get(), get(), get()) }
     viewModel { params -> PreRideViewModel(params.getOrNull(), get()) }

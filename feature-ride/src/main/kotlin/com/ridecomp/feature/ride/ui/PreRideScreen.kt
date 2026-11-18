@@ -43,6 +43,9 @@ import com.ridecomp.feature.ride.viewmodel.PreRideUiEvent
 import com.ridecomp.feature.ride.viewmodel.PreRideUiState
 import com.ridecomp.feature.ride.viewmodel.PreRideViewModel
 import com.ridecomp.ui.R as UiR
+import com.ridecomp.ui.component.AlertBanner
+import com.ridecomp.ui.component.AlertSeverity
+import com.ridecomp.ui.component.BannerAction
 import com.ridecomp.ui.component.BigButton
 import com.ridecomp.ui.component.BigButtonSize
 import com.ridecomp.ui.component.BigButtonStyle
@@ -76,6 +79,8 @@ fun PreRideRoute(
     onCancel: () -> Unit = {},
     onChooseRoute: () -> Unit = {},
     onManageBikes: () -> Unit = {},
+    /** Profile skipped in onboarding: "Isi sekarang" opens it (T10.12). */
+    onOpenProfile: () -> Unit = {},
     viewModel: PreRideViewModel = koinViewModel(key = routeId?.toString()) { parametersOf(routeId) },
 ) {
     val gps by viewModel.gpsStatus.collectAsStateWithLifecycle()
@@ -93,6 +98,7 @@ fun PreRideRoute(
         onChooseRoute = onChooseRoute,
         onManageBikes = onManageBikes,
         modifier = modifier,
+        onOpenProfile = onOpenProfile,
     )
 }
 
@@ -105,7 +111,9 @@ fun PreRideScreen(
     onCancel: () -> Unit = {},
     onChooseRoute: () -> Unit = {},
     onManageBikes: () -> Unit = {},
+    onOpenProfile: () -> Unit = {},
 ) {
+    var isProfileHintClosed by rememberSaveable { mutableStateOf(false) }
     // While GPS searches, the waiting state is shown first (#29); "Pilihan ride" opens the check list.
     var isChecklistShown by rememberSaveable { mutableStateOf(false) }
     val onStart = { onEvent(PreRideUiEvent.Start) }
@@ -123,6 +131,9 @@ fun PreRideScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = RideCompDimens.screenPaddingHorizontal),
         ) {
+            if (state.isProfileMissing && !isProfileHintClosed) {
+                ProfileHint(onOpenProfile = onOpenProfile, onClose = { isProfileHintClosed = true })
+            }
             if (gps is GpsStatus.Searching && !isChecklistShown) {
                 GpsWaiting(gps, onShowOptions = { isChecklistShown = true })
             } else {
@@ -139,6 +150,22 @@ fun PreRideScreen(
             StartButtons(gps, onStart)
         }
     }
+}
+
+/** Profile skipped in onboarding (T10.12): defaults are used until the rider fills it in. */
+@Composable
+private fun ProfileHint(onOpenProfile: () -> Unit, onClose: () -> Unit) {
+    AlertBanner(
+        title = stringResource(R.string.pre_ride_profile_title),
+        message = stringResource(R.string.pre_ride_profile_text),
+        severity = AlertSeverity.INFO,
+        iconRes = UiR.drawable.ic_info,
+        actions = listOf(
+            BannerAction(stringResource(R.string.pre_ride_profile_fill), onOpenProfile),
+            BannerAction(stringResource(R.string.pre_ride_profile_later), onClose),
+        ),
+        modifier = Modifier.padding(bottom = RideCompDimens.blockGap),
+    )
 }
 
 @Composable

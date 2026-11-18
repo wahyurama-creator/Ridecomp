@@ -29,6 +29,8 @@ class ProfileRepositoryImpl(private val dao: ProfileDao) : ProfileRepository {
     }
 
     override suspend fun hasProfile(): Boolean = dao.get() != null
+
+    override fun observeHasProfile(): Flow<Boolean> = dao.observe().map { it != null }.distinctUntilChanged()
 }
 
 /** Room implementation of [SettingsRepository] on the key-value `settings` table (decision D-11). */

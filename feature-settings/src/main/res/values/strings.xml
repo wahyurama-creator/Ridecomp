@@ -386,4 +386,18 @@
     <string name="update_download">Download version %1$s</string>
     <string name="update_how">Install the new APK over this app: rides, bikes and settings stay. Never uninstall first.</string>
     <string name="settings_update">App updates</string>
+    <string name="welcome_app_name" translatable="false">RideComp</string>
+    <string name="welcome_title_start">Turn your phone into a</string>
+    <string name="welcome_title_accent">bike computer.</string>
+    <string name="welcome_text">Record every ride, follow routes and train smarter, even without a signal and on an affordable phone.</string>
+    <string name="welcome_sample_rec" translatable="false">REC</string>
+    <string name="welcome_sample_speed_unit">km/h</string>
+    <string name="welcome_sample_line">18.6 km · 142 bpm · 210 W</string>
+    <string name="welcome_feature_record">GPS and Bluetooth sensors, screen off</string>
+    <string name="welcome_feature_navigate">Routes, maps and training plans</string>
+    <string name="welcome_feature_free">Free, no account, open source</string>
+    <string name="welcome_start">Get started</string>
+    <string name="welcome_footnote">Takes about a minute. You can skip personal details.</string>
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_skip_hint">Optional. Skip it and fill it in later before a ride or in Settings.</string>
 </resources>

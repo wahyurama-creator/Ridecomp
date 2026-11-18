@@ -47,6 +47,19 @@ data class RideCompTypography(
         fontFeatureSettings = TABULAR_NUMBERS,
         fontSize = RideCompDimens.turnDistanceSize,
     ),
+    /** Welcome headline (T10.12). */
+    val display: TextStyle = TextStyle(
+        fontWeight = FontWeight.Black,
+        fontSize = RideCompDimens.displaySize,
+        lineHeight = RideCompDimens.displayLineHeight,
+    ),
+
+    /** The speed on the welcome's sample ride card. */
+    val welcomeSpeed: TextStyle = TextStyle(
+        fontWeight = FontWeight.Black,
+        fontFeatureSettings = TABULAR_NUMBERS,
+        fontSize = RideCompDimens.welcomeSpeedSize,
+    ),
     val screenTitle: TextStyle =
         TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = RideCompDimens.screenTitleSize),
     val title: TextStyle = TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = RideCompDimens.titleSize),
