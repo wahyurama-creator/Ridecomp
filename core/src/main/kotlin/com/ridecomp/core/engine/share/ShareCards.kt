@@ -16,8 +16,14 @@ public object ShareCardConfig {
     public const val STORY_HEIGHT_PX: Int = 1_920
     public const val SQUARE_SIZE_PX: Int = 1_080
 
-    /** At most this many statistics on a card. */
-    public const val MAX_STATS: Int = 4
+    /** At most this many statistics on a card (the list and grid layouts show six, T10.6). */
+    public const val MAX_STATS: Int = 6
+
+    /** The classic, poster, photo and sticker cards show the first four in a 2 × 2 grid. */
+    public const val GRID_STATS: Int = 4
+
+    /** The one-row layouts show the first three. */
+    public const val ROW_STATS: Int = 3
 
     /** PNG files live in the app cache and are deleted at the next app start (§11). */
     public const val FILE_PREFIX: String = "RideComp_card_"
@@ -34,19 +40,82 @@ public object ShareCardConfig {
     public const val MAX_SPLITS: Int = 20
 }
 
-/** Look of a card (T4.5b). */
-public enum class ShareTemplate {
+/** How a card is drawn behind its numbers. */
+public enum class ShareBackdrop {
+    /** A colour, gradient or the rider's photo (or transparent when the rider turns the background off). */
+    FILLED,
+
+    /** Always a transparent PNG, to put on a photo or video in an Instagram Story. */
+    TRANSPARENT,
+
+    /** A real map under the route: shows where the ride was, needs map tiles (T10.6). */
+    MAP,
+}
+
+/** Look of a card (T4.5b; the transparent and map layouts after the owner's references, T10.6). */
+public enum class ShareTemplate(public val backdrop: ShareBackdrop) {
     /** Plain dark/light card (T4.5). */
-    CLASSIC,
+    CLASSIC(ShareBackdrop.FILLED),
 
     /** Big numbers on a colour gradient, glowing route line, elevation strip. */
-    POSTER,
+    POSTER(ShareBackdrop.FILLED),
 
     /** The rider's own photo behind the route and numbers. */
-    PHOTO,
+    PHOTO(ShareBackdrop.FILLED),
 
     /** Route and numbers only, transparent PNG to put on a photo or video in an Instagram Story. */
-    STICKER,
+    STICKER(ShareBackdrop.TRANSPARENT),
+
+    /** Route on the left, the statistics written down the right edge. */
+    ROUTE_SIDE_STATS(ShareBackdrop.TRANSPARENT),
+
+    /** Logo and the statistics written down the right edge, no route. */
+    SIDE_STATS(ShareBackdrop.TRANSPARENT),
+
+    /** Logo and a dotted list of statistics at the bottom. */
+    DOTTED_LIST(ShareBackdrop.TRANSPARENT),
+
+    /** Route on top, dotted list below. */
+    ROUTE_DOTTED_LIST(ShareBackdrop.TRANSPARENT),
+
+    /** Logo and the statistics stacked in the middle. */
+    CENTER_STACK(ShareBackdrop.TRANSPARENT),
+
+    /** Stacked statistics drawn over the route. */
+    ROUTE_UNDER_STACK(ShareBackdrop.TRANSPARENT),
+
+    /** Logo, date and statistics as outlined pills. */
+    PILLS(ShareBackdrop.TRANSPARENT),
+
+    /** Ride icon and logo, three statistics in a row. */
+    STAT_ROW(ShareBackdrop.TRANSPARENT),
+
+    /** Ride icon and logo, statistics in rows of three. */
+    STAT_GRID(ShareBackdrop.TRANSPARENT),
+
+    /** Large route on the left, logo and three statistics on the right. */
+    ROUTE_BESIDE_STATS(ShareBackdrop.TRANSPARENT),
+
+    /** Route on top, logo, three statistics in a row and the ride icon. */
+    ROUTE_OVER_ROW(ShareBackdrop.TRANSPARENT),
+
+    /** Three statistics in very large type, nothing else. */
+    BIG_STATS(ShareBackdrop.TRANSPARENT),
+
+    /** Route and logo only. */
+    ROUTE_LOGO(ShareBackdrop.TRANSPARENT),
+
+    /** Three statistics, a small route and the logo. */
+    STATS_SMALL_ROUTE(ShareBackdrop.TRANSPARENT),
+
+    /** A ticket with the ride icon, the weekday and the date. */
+    DATE_TICKET(ShareBackdrop.TRANSPARENT),
+
+    /** The route on a map with the ride name and three statistics. */
+    MAP(ShareBackdrop.MAP),
+
+    /** A dark card with a framed map, the ride name and "recorded with RideComp". */
+    MAP_FRAMED(ShareBackdrop.MAP),
 }
 
 /** Colour pairs of the poster gradient (defined as colours in the design system). */
@@ -102,8 +171,17 @@ public enum class ShareFormat(public val widthPx: Int, public val heightPx: Int)
     SQUARE(ShareCardConfig.SQUARE_SIZE_PX, ShareCardConfig.SQUARE_SIZE_PX),
 }
 
+/** Where a card is sent (T10.6): the app opens with the image, the rider picks story, post or chat there. */
+public enum class ShareTarget {
+    INSTAGRAM,
+    WHATSAPP,
+
+    /** The Android share sheet. */
+    OTHER,
+}
+
 /** Statistics a card can show (§11: up to 4). */
-public enum class ShareStat { DISTANCE, TIME, ASCENT, AVG_SPEED, AVG_HEART_RATE, AVG_POWER }
+public enum class ShareStat { DISTANCE, ASCENT, TIME, AVG_POWER, AVG_SPEED, CALORIES, AVG_HEART_RATE }
 
 /** A point of the card's line in 0..1 (x right, y down), keeping the ride's proportions. */
 public data class SharePoint(val x: Float, val y: Float)
@@ -116,12 +194,19 @@ public data class LinePoint(val latDeg: Double, val lonDeg: Double, val distance
  * so no coordinate ever reaches the image. Empty when nothing is left to draw.
  */
 public object ShareCardLine {
-    public fun of(points: List<LinePoint>, isEndsHidden: Boolean): List<SharePoint> {
+    public fun of(points: List<LinePoint>, isEndsHidden: Boolean): List<SharePoint> =
+        trimmed(points, isEndsHidden).let { kept -> if (kept.isEmpty()) emptyList() else normalize(kept) }
+
+    /**
+     * The located points left to draw, optionally without the first and last 500 m; empty when fewer than two
+     * remain. Only the map cards (T10.6) use these coordinates, and only to place the map.
+     */
+    public fun trimmed(points: List<LinePoint>, isEndsHidden: Boolean): List<LinePoint> {
         val located = points.filter { GeoMath.isValidCoordinate(it.latDeg, it.lonDeg) }
         val total = located.lastOrNull()?.distanceM ?: return emptyList()
         val hidden = if (isEndsHidden) ShareCardConfig.HIDDEN_ENDS_M else 0.0
         val kept = located.filter { it.distanceM >= hidden && it.distanceM <= total - hidden }
-        return if (kept.size < 2) emptyList() else normalize(kept)
+        return if (kept.size < 2) emptyList() else kept
     }
 
     /** Equirectangular projection fitted into the unit square, centred, north up. */

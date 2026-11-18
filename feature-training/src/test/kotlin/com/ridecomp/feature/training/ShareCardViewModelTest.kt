@@ -1,7 +1,10 @@
 package com.ridecomp.feature.training
 
+import com.ridecomp.core.engine.map.NetworkStatus
+import com.ridecomp.core.engine.share.ShareBackdrop
 import com.ridecomp.core.engine.share.ShareDetail
 import com.ridecomp.core.engine.share.ShareStat
+import com.ridecomp.core.engine.share.ShareTarget
 import com.ridecomp.core.engine.share.ShareTemplate
 import com.ridecomp.core.model.Activity
 import com.ridecomp.core.model.ActivityStatus
@@ -10,17 +13,22 @@ import com.ridecomp.core.model.RideTotals
 import com.ridecomp.core.testing.FakeActivityRepository
 import com.ridecomp.core.testing.FakeBestEffortRepository
 import com.ridecomp.core.testing.FakeClock
+import com.ridecomp.core.testing.FakeNetworkStatusSource
+import com.ridecomp.core.testing.FakeOfflineMapRepository
 import com.ridecomp.core.testing.FakeProfileRepository
 import com.ridecomp.core.testing.FakeSegmentRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.testing.FakeShareCardFiles
 import com.ridecomp.core.testing.TestDispatcherProvider
 import com.ridecomp.core.usecase.GetLoadInputsUseCase
+import com.ridecomp.core.usecase.GetShareTargetsUseCase
 import com.ridecomp.core.usecase.LoadShareCardUseCase
+import com.ridecomp.core.usecase.ObserveMapTilesUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ReadRideTrackUseCase
 import com.ridecomp.core.usecase.SaveShareCardUseCase
 import com.ridecomp.core.usecase.ShareCardImageUseCase
+import com.ridecomp.feature.training.viewmodel.ShareAction
 import com.ridecomp.feature.training.viewmodel.ShareCardUiEvent
 import com.ridecomp.feature.training.viewmodel.ShareCardUseCases
 import com.ridecomp.feature.training.viewmodel.ShareCardViewModel
@@ -41,7 +49,7 @@ class ShareCardViewModelTest {
     private val dispatcher = UnconfinedTestDispatcher()
     private val dispatchers = TestDispatcherProvider(dispatcher)
     private val activities = FakeActivityRepository()
-    private val files = FakeShareCardFiles()
+    private val files = FakeShareCardFiles(installed = setOf(ShareTarget.WHATSAPP))
 
     @BeforeTest
     fun setUp() {
@@ -74,7 +82,7 @@ class ShareCardViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun viewModel() = ShareCardViewModel(
+    private fun viewModel(isOnline: Boolean = true) = ShareCardViewModel(
         1,
         ShareCardUseCases(
             LoadShareCardUseCase(
@@ -88,6 +96,12 @@ class ShareCardViewModelTest {
             ObserveRideSettingsUseCase(FakeSettingsRepository()),
             ShareCardImageUseCase(files, FakeClock()),
             SaveShareCardUseCase(files),
+            GetShareTargetsUseCase(files),
+            ObserveMapTilesUseCase(
+                FakeNetworkStatusSource(NetworkStatus(isConnected = isOnline, isUnmetered = isOnline)),
+                FakeSettingsRepository(),
+                FakeOfflineMapRepository(),
+            ),
         ),
         { _, _ -> null },
         dispatchers,
@@ -99,28 +113,64 @@ class ShareCardViewModelTest {
 
         assertTrue(state.isEndsHidden)
         assertEquals(201, state.line.size)
+        assertEquals(201, state.trail.size)
         assertEquals(
-            listOf(ShareStat.DISTANCE, ShareStat.TIME, ShareStat.ASCENT, ShareStat.AVG_SPEED, ShareStat.AVG_HEART_RATE),
+            listOf(ShareStat.DISTANCE, ShareStat.ASCENT, ShareStat.TIME, ShareStat.AVG_SPEED, ShareStat.AVG_HEART_RATE),
             state.availableStats,
         )
-        assertEquals(4, state.stats.size)
+        assertEquals(state.availableStats, state.stats)
     }
 
     @Test
-    fun `at most four statistics and showing the ends gives the whole line`() {
+    fun `statistics keep their order and showing the ends gives the whole line`() {
         val viewModel = viewModel()
 
         viewModel.onEvent(ShareCardUiEvent.ToggleStat(ShareStat.AVG_HEART_RATE))
-        assertEquals(4, viewModel.uiState.value.stats.size)
         viewModel.onEvent(ShareCardUiEvent.ToggleStat(ShareStat.TIME))
-        viewModel.onEvent(ShareCardUiEvent.ToggleStat(ShareStat.AVG_HEART_RATE))
+        assertEquals(listOf(ShareStat.DISTANCE, ShareStat.ASCENT, ShareStat.AVG_SPEED), viewModel.uiState.value.stats)
+        viewModel.onEvent(ShareCardUiEvent.ToggleStat(ShareStat.TIME))
         assertEquals(
-            listOf(ShareStat.DISTANCE, ShareStat.ASCENT, ShareStat.AVG_SPEED, ShareStat.AVG_HEART_RATE),
+            listOf(ShareStat.DISTANCE, ShareStat.ASCENT, ShareStat.TIME, ShareStat.AVG_SPEED),
             viewModel.uiState.value.stats,
         )
 
         viewModel.onEvent(ShareCardUiEvent.SetEndsHidden(false))
         assertEquals(301, viewModel.uiState.value.line.size)
+        assertEquals(301, viewModel.uiState.value.trail.size)
+    }
+
+    @Test
+    fun `at most six statistics`() {
+        val totals = RideTotals(distanceM = 3_000.0, avgHeartRateBpm = 140, avgPowerW = 180, calories = 300)
+        activities.put(Activity(1, "u1", "Gowes Pagi", ActivityStatus.FINISHED, 0, null, totals, 0))
+        val viewModel = viewModel()
+        assertEquals(7, viewModel.uiState.value.availableStats.size)
+        assertEquals(6, viewModel.uiState.value.stats.size)
+        assertFalse(ShareStat.AVG_HEART_RATE in viewModel.uiState.value.stats)
+
+        viewModel.onEvent(ShareCardUiEvent.ToggleStat(ShareStat.AVG_HEART_RATE))
+        assertEquals(6, viewModel.uiState.value.stats.size)
+    }
+
+    @Test
+    fun `the gallery lists every card, the map cards only with a map`() {
+        val online = viewModel().uiState.value
+        assertEquals(ShareTemplate.entries.toSet(), online.templates.toSet())
+        assertEquals(ShareTemplate.MAP, online.templates.first())
+
+        val offline = viewModel(isOnline = false).uiState.value
+        assertFalse(offline.hasMap)
+        assertTrue(offline.templates.none { it.backdrop == ShareBackdrop.MAP })
+        assertEquals(ShareTemplate.entries.size - 2, offline.templates.size)
+    }
+
+    @Test
+    fun `installed apps get their own button and receive the card`() {
+        val viewModel = viewModel()
+        assertEquals(listOf(ShareTarget.WHATSAPP, ShareTarget.OTHER), viewModel.uiState.value.targets)
+
+        viewModel.onEvent(ShareCardUiEvent.Render(ShareAction.Share(ShareTarget.WHATSAPP)))
+        assertEquals(ShareAction.Share(ShareTarget.WHATSAPP), viewModel.uiState.value.pending)
     }
 
     @Test
@@ -136,5 +186,9 @@ class ShareCardViewModelTest {
         assertFalse(viewModel.uiState.value.isTransparent)
         viewModel.onEvent(ShareCardUiEvent.SetTemplate(ShareTemplate.STICKER))
         assertTrue(viewModel.uiState.value.isTransparent)
+        viewModel.onEvent(ShareCardUiEvent.SetTemplate(ShareTemplate.DOTTED_LIST))
+        assertTrue(viewModel.uiState.value.isTransparent)
+        viewModel.onEvent(ShareCardUiEvent.SetTemplate(ShareTemplate.MAP))
+        assertFalse(viewModel.uiState.value.isTransparent)
     }
 }

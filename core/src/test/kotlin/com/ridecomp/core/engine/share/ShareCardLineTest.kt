@@ -2,6 +2,7 @@ package com.ridecomp.core.engine.share
 
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeShareCardFiles
+import com.ridecomp.core.usecase.GetShareTargetsUseCase
 import com.ridecomp.core.usecase.ShareCardImageUseCase
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -53,7 +54,25 @@ class ShareCardLineTest {
         ShareCardImageUseCase(files, FakeClock(nowMs = 42))(byteArrayOf(1, 2, 3))
 
         assertEquals(listOf("RideComp_card_42.png"), files.shared)
+        assertEquals(listOf(ShareTarget.OTHER), files.targets)
         assertEquals(3, files.saved.getValue("RideComp_card_42.png").size)
+    }
+
+    @Test
+    fun `direct share buttons only for installed apps, the share sheet always`() {
+        val files = FakeShareCardFiles(installed = setOf(ShareTarget.INSTAGRAM))
+
+        assertEquals(listOf(ShareTarget.INSTAGRAM, ShareTarget.OTHER), GetShareTargetsUseCase(files)())
+        assertEquals(listOf(ShareTarget.OTHER), GetShareTargetsUseCase(FakeShareCardFiles())())
+    }
+
+    @Test
+    fun `the map line keeps the coordinates of the trimmed part`() {
+        val trimmed = ShareCardLine.trimmed(ride, isEndsHidden = true)
+
+        assertTrue(trimmed.first().distanceM >= ShareCardConfig.HIDDEN_ENDS_M)
+        assertTrue(trimmed.last().distanceM <= ride.last().distanceM - ShareCardConfig.HIDDEN_ENDS_M)
+        assertEquals(ShareCardLine.of(ride, isEndsHidden = true).size, trimmed.size)
     }
 
     private companion object {

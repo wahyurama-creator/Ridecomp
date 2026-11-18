@@ -4,6 +4,7 @@ import com.ridecomp.core.engine.share.LinePoint
 import com.ridecomp.core.engine.share.ShareCardConfig
 import com.ridecomp.core.engine.share.ShareCardDetails
 import com.ridecomp.core.engine.share.ShareDetails
+import com.ridecomp.core.engine.share.ShareTarget
 import com.ridecomp.core.engine.training.ZoneTime
 import com.ridecomp.core.model.Activity
 import com.ridecomp.core.repository.ActivityRepository
@@ -21,8 +22,11 @@ public interface ShareCardFiles {
     /** Writes the PNG and returns its absolute path. */
     public suspend fun save(fileName: String, png: ByteArray): String
 
-    /** Opens the Android share sheet (WhatsApp, Instagram…) for the image. */
-    public suspend fun share(path: String, fileName: String)
+    /** Sends the image to [target], or opens the Android share sheet for [ShareTarget.OTHER]. */
+    public suspend fun share(path: String, fileName: String, target: ShareTarget)
+
+    /** The direct targets installed on the phone (T10.6); [ShareTarget.OTHER] is always available. */
+    public fun installedTargets(): Set<ShareTarget>
 
     /** Writes the PNG to a document the rider picked ("Simpan gambar", SAF); false when it failed. */
     public suspend fun saveTo(destinationUri: String, png: ByteArray): Boolean
@@ -69,11 +73,21 @@ public class LoadShareCardUseCase(
     }
 }
 
-/** Saves the rendered card and opens the share sheet. */
+/** Saves the rendered card and sends it to the chosen app (or the share sheet). */
 public class ShareCardImageUseCase(private val files: ShareCardFiles, private val clock: Clock) {
-    public suspend operator fun invoke(png: ByteArray) {
+    public suspend operator fun invoke(png: ByteArray, target: ShareTarget = ShareTarget.OTHER) {
         val fileName = ShareCardConfig.FILE_PREFIX + clock.nowMs() + ShareCardConfig.FILE_EXTENSION
-        files.share(files.save(fileName, png), fileName)
+        files.share(files.save(fileName, png), fileName, target)
+    }
+}
+
+/** The share buttons to show: direct apps that are installed, then "more" (T10.6). */
+public class GetShareTargetsUseCase(private val files: ShareCardFiles) {
+    public operator fun invoke(): List<ShareTarget> = files.installedTargets().let { installed ->
+        ShareTarget.entries.filter {
+            it == ShareTarget.OTHER ||
+                it in installed
+        }
     }
 }
 

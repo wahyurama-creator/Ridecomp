@@ -91,13 +91,14 @@
     <string name="share_hide_ends_hint">Protects where you live (500 m)</string>
     <string name="share_show_track">Show the route line</string>
     <string name="share_dark">Dark card</string>
-    <string name="share_stats">Statistics (up to 4)</string>
+    <string name="share_stats">Statistics (up to %1$d)</string>
     <string name="share_stat_distance">Distance</string>
     <string name="share_stat_time">Time</string>
     <string name="share_stat_ascent">Climbing</string>
     <string name="share_stat_speed">Avg speed</string>
     <string name="share_stat_heart_rate">Avg HR</string>
     <string name="share_stat_power">Avg power</string>
+    <string name="share_stat_calories">Calories</string>
     <string name="share_footer" translatable="false">RideComp</string>
     <string name="share_failed">The card could not be shared. Try again, or close other apps if the phone is short on memory.</string>
     <!-- Share card v2 (T4.5b) -->
@@ -105,6 +106,28 @@
     <string name="share_template_poster">Poster</string>
     <string name="share_template_photo">Photo</string>
     <string name="share_template_sticker">Sticker</string>
+    <string name="share_template_route_side">Route &amp; side</string>
+    <string name="share_template_side">Side</string>
+    <string name="share_template_list">List</string>
+    <string name="share_template_route_list">Route &amp; list</string>
+    <string name="share_template_stack">Stack</string>
+    <string name="share_template_route_stack">Stack on route</string>
+    <string name="share_template_pills">Pills</string>
+    <string name="share_template_row">Row</string>
+    <string name="share_template_grid">Grid</string>
+    <string name="share_template_route_beside">Route &amp; numbers</string>
+    <string name="share_template_route_row">Route &amp; row</string>
+    <string name="share_template_big">Big numbers</string>
+    <string name="share_template_route_only">Route</string>
+    <string name="share_template_small_route">Numbers &amp; small route</string>
+    <string name="share_template_ticket">Date ticket</string>
+    <string name="share_template_map">Map</string>
+    <string name="share_template_map_framed">Framed map</string>
+    <string name="share_map_hint">Map cards show where you rode. The first and last 500 m are hidden; change it in Customize.</string>
+    <string name="share_map_loading">Loading the map…</string>
+    <string name="share_recorded_with">Recorded with</string>
+    <string name="share_to_instagram" translatable="false">Instagram</string>
+    <string name="share_to_whatsapp" translatable="false">WhatsApp</string>
     <string name="share_palette_sunset">Sunset</string>
     <string name="share_palette_ocean">Ocean</string>
     <string name="share_palette_forest">Forest</string>

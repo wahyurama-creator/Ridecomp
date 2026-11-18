@@ -264,6 +264,12 @@ Lihat §4; beban dari semua profil digabung (Indoor ikut dihitung).
 - Render offline (Canvas → bitmap → PNG terkompresi) di `Dispatchers.Default`; bitmap dilepas setelah ditulis (MEM-06); file di cache app dan dibagikan via **FileProvider** (SEC-PLT-04), dihapus saat app dibuka berikutnya.
 - Share lewat share sheet Android (WhatsApp, Instagram, dll.); tanpa SDK media sosial.
 
+**Galeri share (T10.6, D-100; referensi pemilik dari layar "Bagikan Aktivitas" Strava):**
+- Layar Bagikan berupa **grid 2 kolom** berisi semua desain dengan data ride asli; ketuk untuk memilih (bingkai aksen + centang). Di bawahnya: opsi gaya terpilih (warna poster, tombol foto, atau catatan stiker/peta), tombol **app langsung** (Instagram, WhatsApp — hanya bila terpasang; membuka app tersebut dengan gambar terlampir, pengguna memilih Story/Feed/Pesan di sana; tanpa Facebook App ID), lalu **Sesuaikan**, **Simpan**, **Bagikan** (share sheet).
+- Desain: Peta; Tiket tanggal; 14 tata letak **stiker transparan** (rute + statistik vertikal di sisi, statistik vertikal, daftar bertitik, rute + daftar bertitik, tumpuk tengah, tumpuk di atas rute, pil, baris 3 statistik, kisi, rute + angka di samping, rute + baris, angka besar, rute + logo, angka + rute kecil); Peta berbingkai; lalu Poster, Foto, Stiker, Klasik. Logo **RideComp** (bukan merek pihak lain).
+- Statistik: hingga **6** (jarak, tanjakan, waktu, avg power, avg speed, kalori, avg HR — hanya yang ada datanya); tata letak baris memakai 3 pertama, gaya lama 4 pertama.
+- **Kartu peta** (Peta, Peta berbingkai): hanya bila ada peta (online diizinkan Setelan → Peta, atau region offline). Gambar peta dibuat sekali per layar dengan `MapSnapshotter` di luar layar, garis dipotong 500 m awal/akhir seperti kartu lain, atribusi peta tercetak di kartu. Kartu peta **memperlihatkan lokasi asli**; catatan privasi tampil saat dipilih. Tombol share terkunci sampai peta siap.
+
 ---
 
 ## 12. Backup & restore data (BK) — Fase 2 (MVP)

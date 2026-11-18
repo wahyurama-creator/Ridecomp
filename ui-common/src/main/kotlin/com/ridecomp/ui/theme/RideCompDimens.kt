@@ -120,6 +120,9 @@ object RideCompDimens {
 
     /** Colour swatch of the poster palette under the share preview. */
     val swatchSize = 32.dp
+
+    /** Check mark on the chosen card of the share gallery (T10.6). */
+    val selectedBadgeSize = 24.dp
     val routeMapHeight = 220.dp
     val turnDistanceSize = 44.sp
 
