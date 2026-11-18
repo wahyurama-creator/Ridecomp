@@ -17,7 +17,7 @@ Tidak yakin file mana? Pilih **arm64-v8a**. Untuk HP lama 32-bit, pilih **armeab
   - Poster, Foto, Stiker, dan Klasik seperti sebelumnya
 
   Statistik yang tampil bisa sampai 6, termasuk kalori. Tombol Instagram dan WhatsApp muncul kalau app-nya terpasang.
-- **Sepeda lipat.** Ada jenis sepeda baru "Sepeda lipat", dengan pilihan roda 16" dan 20" (305, 349, 406, 451). Sepeda lipat baru otomatis memakai roda 20".
+- **Sepeda lipat.** Ada jenis sepeda baru "Sepeda lipat" (juga di onboarding), dengan pilihan roda 16" dan 20" (305, 349, 406, 451). Sepeda lipat baru otomatis memakai roda 20".
 - **Cek pembaruan.** Saat aplikasi dibuka (paling sering sekali sehari), RideComp mengecek apakah ada versi baru. Kalau ada, Beranda menampilkan kartu "Versi … tersedia · Unduh". Fitur ini bisa dimatikan di Setelan → Pembaruan aplikasi, dan di sana juga ada tombol "Cek sekarang".
 
 ## Perbaikan / Fixes
