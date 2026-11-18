@@ -8,6 +8,7 @@ import com.ridecomp.core.engine.safety.IncidentAction
 import com.ridecomp.core.engine.sensors.TrainerControl
 import com.ridecomp.core.engine.training.TargetSource
 import com.ridecomp.core.engine.training.TargetStatus
+import com.ridecomp.core.engine.update.AppRelease
 import com.ridecomp.core.model.ActivePlanState
 import com.ridecomp.core.model.ActivityKind
 import com.ridecomp.core.model.ActivityStatus
@@ -25,6 +26,7 @@ import com.ridecomp.core.model.UnitSystem
 import com.ridecomp.core.repository.NewActivity
 import com.ridecomp.core.testing.FakeActivityProfileRepository
 import com.ridecomp.core.testing.FakeActivityRepository
+import com.ridecomp.core.testing.FakeAppInfoSource
 import com.ridecomp.core.testing.FakeBackupStateRepository
 import com.ridecomp.core.testing.FakeBatteryLevelSource
 import com.ridecomp.core.testing.FakeBikeComponentRepository
@@ -34,14 +36,18 @@ import com.ridecomp.core.testing.FakeLocationSource
 import com.ridecomp.core.testing.FakeNetworkStatusSource
 import com.ridecomp.core.testing.FakeOfflineMapRepository
 import com.ridecomp.core.testing.FakeProfileRepository
+import com.ridecomp.core.testing.FakeReleaseSource
 import com.ridecomp.core.testing.FakeRideController
 import com.ridecomp.core.testing.FakeRouteRepository
 import com.ridecomp.core.testing.FakeSafetyRepository
 import com.ridecomp.core.testing.FakeSensorRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.testing.FakeTrainingPlanRepository
+import com.ridecomp.core.testing.FakeUpdateRepository
 import com.ridecomp.core.testing.TestDispatcherProvider
+import com.ridecomp.core.usecase.CheckForUpdateUseCase
 import com.ridecomp.core.usecase.CheckGpsAvailabilityUseCase
+import com.ridecomp.core.usecase.DismissUpdateUseCase
 import com.ridecomp.core.usecase.GetRecoverableRideUseCase
 import com.ridecomp.core.usecase.GetRoutePointsUseCase
 import com.ridecomp.core.usecase.GpsStatus
@@ -50,6 +56,7 @@ import com.ridecomp.core.usecase.LoadRideTrailUseCase
 import com.ridecomp.core.usecase.ObserveActivePlanUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
+import com.ridecomp.core.usecase.ObserveAvailableUpdateUseCase
 import com.ridecomp.core.usecase.ObserveBackupReminderUseCase
 import com.ridecomp.core.usecase.ObserveBikeChoiceUseCase
 import com.ridecomp.core.usecase.ObserveComponentWearUseCase
@@ -85,6 +92,7 @@ import com.ridecomp.feature.ride.ui.component.TrainerAction
 import com.ridecomp.feature.ride.viewmodel.HomeDeviceUseCases
 import com.ridecomp.feature.ride.viewmodel.HomeEffect
 import com.ridecomp.feature.ride.viewmodel.HomeUiEvent
+import com.ridecomp.feature.ride.viewmodel.HomeUpdateUseCases
 import com.ridecomp.feature.ride.viewmodel.HomeUseCases
 import com.ridecomp.feature.ride.viewmodel.HomeViewModel
 import com.ridecomp.feature.ride.viewmodel.PreRideBikeUseCases
@@ -143,6 +151,8 @@ class RideViewModelsTest {
     }
 
     private val backupState = FakeBackupStateRepository()
+    private val updates = FakeUpdateRepository()
+    private val releases = FakeReleaseSource()
 
     private fun homeViewModel() = HomeViewModel(
         HomeUseCases(
@@ -159,8 +169,30 @@ class RideViewModelsTest {
                 CheckGpsAvailabilityUseCase(FakeLocationSource()),
             ),
             ObserveActivePlanUseCase(plans, TrainingCalendar(FakeClock())),
+            HomeUpdateUseCases(
+                CheckForUpdateUseCase(updates, releases, FakeAppInfoSource("0.9.1"), FakeClock()),
+                ObserveAvailableUpdateUseCase(updates, FakeAppInfoSource("0.9.1")),
+                DismissUpdateUseCase(updates),
+            ),
         ),
     )
+
+    @Test
+    fun `home checks for a new version once, opens its page and can put it off`() = runTest {
+        releases.release = AppRelease("0.9.2", UPDATE_PAGE)
+        val viewModel = homeViewModel()
+        assertEquals("0.9.2", viewModel.uiState.value.update?.version)
+        assertEquals(1, releases.requests)
+
+        viewModel.effects.test {
+            viewModel.onEvent(HomeUiEvent.OpenUpdate)
+            assertEquals(HomeEffect.OpenUrl(UPDATE_PAGE), awaitItem())
+        }
+        viewModel.onEvent(HomeUiEvent.DismissUpdate)
+        assertEquals(null, viewModel.uiState.value.update)
+        homeViewModel()
+        assertEquals(1, releases.requests)
+    }
 
     @Test
     fun `home offers recovery for an unfinished ride and resumes it`() = runTest {
@@ -402,6 +434,7 @@ class RideViewModelsTest {
         /** Built-in ids follow BuiltInProfiles order in the fake (Road = 1 … Indoor = 4). */
         const val INDOOR_ID = 4L
         const val TRAINER_BIKE_ID = 2L
+        const val UPDATE_PAGE = "https://github.com/wahyurama-creator/Ridecomp/releases/tag/v0.9.2"
         const val STOP_TIMEOUT_MS = 5_000L
         const val DAY_MS = 86_400_000L
     }

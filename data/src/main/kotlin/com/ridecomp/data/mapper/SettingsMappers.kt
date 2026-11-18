@@ -40,6 +40,13 @@ internal object SettingsKeys {
     const val SAFETY_LAST_TEST_SMS_AT = "safety.last_test_sms_at"
     const val GUIDE_LEVEL = "guide.rider_level"
     const val GUIDE_DISMISSED_TIPS = "guide.dismissed_tips"
+
+    /** In-app update check (T10.9, D-103). */
+    const val UPDATE_AUTO_CHECK = "update.auto_check"
+    const val UPDATE_LAST_CHECK_MS = "update.last_check_ms"
+    const val UPDATE_LATEST_VERSION = "update.latest_version"
+    const val UPDATE_LATEST_URL = "update.latest_url"
+    const val UPDATE_DISMISSED_VERSION = "update.dismissed_version"
     const val TRAINING_CUSTOM_PLANS = "training.custom_plans"
     const val TRAINING_ACTIVE_PLAN = "training.active_plan"
     const val TRAINING_PLAN_START = "training.plan_start"

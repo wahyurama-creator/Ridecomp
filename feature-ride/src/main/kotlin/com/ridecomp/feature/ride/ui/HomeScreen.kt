@@ -23,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -40,6 +41,7 @@ import com.ridecomp.core.engine.recording.BatteryStatus
 import com.ridecomp.core.engine.sensors.SavedSensor
 import com.ridecomp.core.engine.sensors.SensorKind
 import com.ridecomp.core.engine.sensors.isBatteryLow
+import com.ridecomp.core.engine.update.AppRelease
 import com.ridecomp.core.model.Activity
 import com.ridecomp.core.usecase.ActivePlan
 import com.ridecomp.core.usecase.BackupReminder
@@ -87,6 +89,7 @@ fun HomeRoute(
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val uriHandler = LocalUriHandler.current
     LifecycleResumeEffect(Unit) {
         viewModel.onEvent(HomeUiEvent.Refresh)
         onPauseOrDispose {}
@@ -96,6 +99,7 @@ fun HomeRoute(
             HomeEffect.OpenPreRide -> onOpenPreRide()
             HomeEffect.OpenRide -> onOpenRide()
             HomeEffect.OpenBackup -> onOpenBackup()
+            is HomeEffect.OpenUrl -> uriHandler.openUri(effect.url)
         }
     }
     HomeScreen(
@@ -139,6 +143,7 @@ fun HomeScreen(
         } else {
             state.backupReminder?.let { BackupReminderCard(it, onEvent) }
         }
+        state.update?.let { UpdateCard(it, onEvent) }
         StatusTiles(state, onOpenSensors)
         if (state.isRideInProgress) {
             Text(
@@ -452,6 +457,37 @@ private fun BackupReminderCard(reminder: BackupReminder, onEvent: (HomeUiEvent) 
                 text = stringResource(R.string.home_backup_later),
                 onClick = { onEvent(HomeUiEvent.SnoozeBackupReminder) },
                 style = BigButtonStyle.WARN_OUTLINE,
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
+}
+
+/** "Versi 0.9.1 tersedia": download opens the release page; "Nanti" hides this version (T10.9). */
+@Composable
+private fun UpdateCard(release: AppRelease, onEvent: (HomeUiEvent) -> Unit) {
+    RideCompCard(tone = CardTone.ACCENT) {
+        Text(
+            text = stringResource(R.string.home_update_title, release.version),
+            style = RideCompTheme.typography.cardTitle,
+            color = RideCompTheme.colors.textPrimary,
+        )
+        Text(
+            text = stringResource(R.string.home_update_body),
+            style = RideCompTheme.typography.body,
+            color = RideCompTheme.colors.textSecondary,
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS)) {
+            BigButton(
+                text = stringResource(R.string.home_update_download),
+                onClick = { onEvent(HomeUiEvent.OpenUpdate) },
+                iconRes = UiR.drawable.ic_download,
+                modifier = Modifier.weight(1f),
+            )
+            BigButton(
+                text = stringResource(R.string.home_backup_later),
+                onClick = { onEvent(HomeUiEvent.DismissUpdate) },
+                style = BigButtonStyle.OUTLINE,
                 modifier = Modifier.weight(1f),
             )
         }

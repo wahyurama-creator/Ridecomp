@@ -358,4 +358,15 @@
     <string name="ride_settings_voice">Pengumuman suara</string>
     <string name="ride_settings_voice_laps">Umumkan lap</string>
     <string name="ride_settings_voice_description">HP menyebutkan jarak, waktu, kecepatan rata-rata, dan detak jantung, juga pengingat minum/makan. Musik dipelankan saat bicara. Memakai suara bawaan HP, tanpa internet.</string>
+    <string name="update_title">Pembaruan aplikasi</string>
+    <string name="update_installed">Versi terpasang</string>
+    <string name="update_auto">Cek pembaruan otomatis</string>
+    <string name="update_auto_hint">Saat aplikasi dibuka, paling sering sekali sehari. Hanya bertanya ke GitHub; tidak ada data Anda yang dikirim.</string>
+    <string name="update_check_now">Cek sekarang</string>
+    <string name="update_checking">Mengecek…</string>
+    <string name="update_up_to_date">Anda sudah memakai versi terbaru.</string>
+    <string name="update_failed">Gagal mengecek. Pastikan ada internet lalu coba lagi.</string>
+    <string name="update_download">Unduh versi %1$s</string>
+    <string name="update_how">Pasang APK baru di atas aplikasi ini: ride, sepeda, dan pengaturan tetap ada. Jangan uninstall dulu.</string>
+    <string name="settings_update">Pembaruan aplikasi</string>
 </resources>

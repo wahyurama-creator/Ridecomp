@@ -35,12 +35,14 @@ import com.ridecomp.core.source.SafetyMessages
 import com.ridecomp.core.source.SmsGateway
 import com.ridecomp.core.source.StravaAccountStore
 import com.ridecomp.core.source.StravaApi
+import com.ridecomp.core.usecase.AppInfoSource
 import com.ridecomp.core.usecase.BackupFiles
 import com.ridecomp.core.usecase.ExportFitUseCase
 import com.ridecomp.core.usecase.GetLiveSegmentsUseCase
 import com.ridecomp.core.usecase.GetRideProfileUseCase
 import com.ridecomp.core.usecase.GetRouteGuidanceUseCase
 import com.ridecomp.core.usecase.GetSelectedBikeUseCase
+import com.ridecomp.core.usecase.ReleaseSource
 import com.ridecomp.core.usecase.RideSessionUseCase
 import com.ridecomp.platform.backup.AndroidAppRestarter
 import com.ridecomp.platform.backup.AndroidBackupFiles
@@ -72,6 +74,8 @@ import com.ridecomp.platform.strava.HttpStravaApi
 import com.ridecomp.platform.system.AndroidClock
 import com.ridecomp.platform.system.AndroidLogger
 import com.ridecomp.platform.system.StandardDispatcherProvider
+import com.ridecomp.platform.update.AndroidAppInfoSource
+import com.ridecomp.platform.update.GitHubReleaseSource
 import java.io.File
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.Koin
@@ -95,6 +99,8 @@ val platformModule = module {
     single { StravaSetup(BuildConfig.STRAVA_CLIENT_ID, BuildConfig.STRAVA_TOKEN_SERVER_URL) }
     single<StravaApi> { HttpStravaApi(get(), get(), get(), get()) }
     single<RideNameProvider> { AndroidRideNameProvider(androidContext()) }
+    single<ReleaseSource> { GitHubReleaseSource(get(), get()) }
+    single<AppInfoSource> { AndroidAppInfoSource(androidContext()) }
     single { AlertPlayer(androidContext()) }
     single { RideStateHolder() }
     single<BleScanner> { AndroidBleScanner(androidContext()) }

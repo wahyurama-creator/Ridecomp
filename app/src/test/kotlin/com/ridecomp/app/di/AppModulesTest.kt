@@ -45,6 +45,7 @@ import com.ridecomp.core.testing.FakeAccelerometerSource
 import com.ridecomp.core.testing.FakeActivityAnalysisRepository
 import com.ridecomp.core.testing.FakeActivityProfileRepository
 import com.ridecomp.core.testing.FakeActivityRepository
+import com.ridecomp.core.testing.FakeAppInfoSource
 import com.ridecomp.core.testing.FakeAppRestarter
 import com.ridecomp.core.testing.FakeBackupDatabase
 import com.ridecomp.core.testing.FakeBackupFiles
@@ -66,6 +67,7 @@ import com.ridecomp.core.testing.FakeNetworkStatusSource
 import com.ridecomp.core.testing.FakeOfflineMapRepository
 import com.ridecomp.core.testing.FakePickedContactReader
 import com.ridecomp.core.testing.FakeProfileRepository
+import com.ridecomp.core.testing.FakeReleaseSource
 import com.ridecomp.core.testing.FakeRideController
 import com.ridecomp.core.testing.FakeRouteRepository
 import com.ridecomp.core.testing.FakeSafetyMessages
@@ -80,14 +82,18 @@ import com.ridecomp.core.testing.FakeStravaApi
 import com.ridecomp.core.testing.FakeStravaUploadRepository
 import com.ridecomp.core.testing.FakeTrainingPlanRepository
 import com.ridecomp.core.testing.FakeTrainingRepository
+import com.ridecomp.core.testing.FakeUpdateRepository
 import com.ridecomp.core.testing.RecordingLogger
 import com.ridecomp.core.testing.TestDispatcherProvider
+import com.ridecomp.core.usecase.AppInfoSource
 import com.ridecomp.core.usecase.BackupDatabase
 import com.ridecomp.core.usecase.BackupFiles
 import com.ridecomp.core.usecase.BackupStateRepository
 import com.ridecomp.core.usecase.ExportFileStore
 import com.ridecomp.core.usecase.ExportedFileHandler
+import com.ridecomp.core.usecase.ReleaseSource
 import com.ridecomp.core.usecase.ShareCardFiles
+import com.ridecomp.core.usecase.UpdateRepository
 import com.ridecomp.feature.history.viewmodel.ActivityDetailViewModel
 import com.ridecomp.feature.history.viewmodel.HistoryViewModel
 import com.ridecomp.feature.ride.viewmodel.ActivityProfileEditorViewModel
@@ -105,6 +111,7 @@ import com.ridecomp.feature.ride.viewmodel.SummaryViewModel
 import com.ridecomp.feature.routes.viewmodel.RouteDetailViewModel
 import com.ridecomp.feature.routes.viewmodel.RoutesViewModel
 import com.ridecomp.feature.sensors.viewmodel.SensorsViewModel
+import com.ridecomp.feature.settings.viewmodel.AppUpdateViewModel
 import com.ridecomp.feature.settings.viewmodel.BackupViewModel
 import com.ridecomp.feature.settings.viewmodel.GuideViewModel
 import com.ridecomp.feature.settings.viewmodel.LanguageViewModel
@@ -191,6 +198,9 @@ class AppModulesTest {
         single<SegmentRepository> { FakeSegmentRepository(get()) }
         single<TrainingRepository> { FakeTrainingRepository(FakeActivityRepository()) }
         single<ShareCardFiles> { FakeShareCardFiles() }
+        single<ReleaseSource> { FakeReleaseSource() }
+        single<AppInfoSource> { FakeAppInfoSource() }
+        single<UpdateRepository> { FakeUpdateRepository() }
         single<GuideRepository> { FakeGuideRepository() }
         factory<SharePhotoLoader> { SharePhotoLoader { _, _ -> null } }
         single<ActivityAnalysisRepository> { FakeActivityAnalysisRepository(FakeActivityRepository()) }
@@ -272,5 +282,10 @@ class AppModulesTest {
         assertNotNull(koin.get<BikesViewModel>())
         assertNotNull(koin.get<ComponentEditorViewModel> { parametersOf(ComponentTarget(1L)) })
         assertNotNull(koin.get<BikeEditorViewModel> { parametersOf(BikeTarget.Existing(1L)) })
+    }
+
+    @Test
+    fun `the update check resolves from the app graph`() {
+        assertNotNull(getKoin().get<AppUpdateViewModel>())
     }
 }

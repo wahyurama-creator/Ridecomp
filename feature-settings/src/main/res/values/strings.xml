@@ -375,4 +375,15 @@
     <string name="ride_settings_voice">Voice announcements</string>
     <string name="ride_settings_voice_laps">Announce laps</string>
     <string name="ride_settings_voice_description">The phone speaks distance, time, average speed and heart rate, plus drink/eat reminders. Music is lowered while it speaks. Uses the phone\'s own voice, no internet.</string>
+    <string name="update_title">App updates</string>
+    <string name="update_installed">Installed version</string>
+    <string name="update_auto">Check for updates automatically</string>
+    <string name="update_auto_hint">When you open the app, at most once a day. Only GitHub is asked; nothing about you is sent.</string>
+    <string name="update_check_now">Check now</string>
+    <string name="update_checking">Checking…</string>
+    <string name="update_up_to_date">You have the latest version.</string>
+    <string name="update_failed">Could not check. Make sure you are online and try again.</string>
+    <string name="update_download">Download version %1$s</string>
+    <string name="update_how">Install the new APK over this app: rides, bikes and settings stay. Never uninstall first.</string>
+    <string name="settings_update">App updates</string>
 </resources>
