@@ -48,6 +48,7 @@ import com.ridecomp.core.usecase.GetRideProfileUseCase
 import com.ridecomp.core.usecase.GetRouteGuidanceUseCase
 import com.ridecomp.core.usecase.GetRoutePointsUseCase
 import com.ridecomp.core.usecase.GetSelectedBikeUseCase
+import com.ridecomp.core.usecase.GetShareTargetsUseCase
 import com.ridecomp.core.usecase.GetStravaAccessTokenUseCase
 import com.ridecomp.core.usecase.HandleRecoveredRideUseCase
 import com.ridecomp.core.usecase.HasProfileUseCase
@@ -301,6 +302,7 @@ val useCaseModule = module {
     factory { LoadShareCardUseCase(get(), get(), get(), get(), get(), get()) }
     factory { SaveShareCardUseCase(get()) }
     factory { ShareCardImageUseCase(get(), get()) }
+    factory { GetShareTargetsUseCase(get()) }
     factory { ClearShareCardsUseCase(get()) }
     factory { ObserveGuideUseCase(get()) }
     factory { SetRiderLevelUseCase(get()) }

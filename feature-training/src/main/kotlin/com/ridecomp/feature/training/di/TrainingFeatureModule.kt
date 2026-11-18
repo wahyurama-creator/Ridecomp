@@ -29,7 +29,7 @@ val trainingFeatureModule = module {
     viewModel { params -> PlanDetailViewModel(params.get(), get()) }
     viewModel { params -> PlanBuilderViewModel(params.getOrNull(), get(), get()) }
     factory<SharePhotoLoader> { AndroidSharePhotoLoader(androidContext(), get()) }
-    factory { ShareCardUseCases(get(), get(), get(), get()) }
+    factory { ShareCardUseCases(get(), get(), get(), get(), get(), get()) }
     viewModel { params -> ShareCardViewModel(params.get(), get(), get(), get()) }
     viewModel { params -> SegmentDetailViewModel(params.get(), get(), get(), get(), get()) }
     viewModel { params -> SegmentEditorViewModel(params.get(), get(), get(), get(), get()) }

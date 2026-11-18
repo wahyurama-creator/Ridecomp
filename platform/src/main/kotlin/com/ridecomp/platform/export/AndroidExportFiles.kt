@@ -24,6 +24,10 @@ object ExportPaths {
 
     /** Authority suffix appended to the application id. */
     const val AUTHORITY_SUFFIX = ".fileprovider"
+
+    /** Apps a share card can go to directly (T10.6); also listed in the manifest's `<queries>`. */
+    const val INSTAGRAM_PACKAGE = "com.instagram.android"
+    const val WHATSAPP_PACKAGE = "com.whatsapp"
 }
 
 /**

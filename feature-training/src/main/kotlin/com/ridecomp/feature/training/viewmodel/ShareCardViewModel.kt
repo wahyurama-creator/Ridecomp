@@ -5,6 +5,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.lifecycle.viewModelScope
+import com.ridecomp.core.engine.share.ShareBackdrop
 import com.ridecomp.core.engine.share.ShareCardConfig
 import com.ridecomp.core.engine.share.ShareCardLine
 import com.ridecomp.core.engine.share.ShareDetail
@@ -13,16 +14,20 @@ import com.ridecomp.core.engine.share.ShareFormat
 import com.ridecomp.core.engine.share.SharePalette
 import com.ridecomp.core.engine.share.SharePoint
 import com.ridecomp.core.engine.share.ShareStat
+import com.ridecomp.core.engine.share.ShareTarget
 import com.ridecomp.core.engine.share.ShareTemplate
 import com.ridecomp.core.model.RideTotals
 import com.ridecomp.core.model.UnitSystem
 import com.ridecomp.core.source.DispatcherProvider
+import com.ridecomp.core.usecase.GetShareTargetsUseCase
 import com.ridecomp.core.usecase.LoadShareCardUseCase
+import com.ridecomp.core.usecase.ObserveMapTilesUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.SaveShareCardUseCase
 import com.ridecomp.core.usecase.ShareCardData
 import com.ridecomp.core.usecase.ShareCardImageUseCase
 import com.ridecomp.core.util.runCatchingCancellable
+import com.ridecomp.ui.map.MapPoint
 import com.ridecomp.ui.udf.NoEffect
 import com.ridecomp.ui.udf.UdfViewModel
 import java.io.ByteArrayOutputStream
@@ -37,7 +42,8 @@ import kotlinx.coroutines.withContext
 
 /** What happens with the captured card. */
 sealed interface ShareAction {
-    data object Share : ShareAction
+    /** To one app (Instagram, WhatsApp) or the share sheet. */
+    data class Share(val target: ShareTarget = ShareTarget.OTHER) : ShareAction
 
     /** "Simpan gambar": the SAF document the rider picked. */
     data class SaveTo(val uri: String) : ShareAction
@@ -66,6 +72,13 @@ data class ShareCardUiState(
     val line: ImmutableList<SharePoint> = persistentListOf(),
     val photo: ImageBitmap? = null,
     val unitSystem: UnitSystem = UnitSystem.METRIC,
+    /** Map for the map cards (T10.6): online tiles when allowed, else offline regions. */
+    val isMapOnline: Boolean = false,
+    val mapRegions: ImmutableList<String> = persistentListOf(),
+    /** The trimmed line with its coordinates, used only to place the map cards (privacy as [line]). */
+    val trail: ImmutableList<MapPoint> = persistentListOf(),
+    /** Share buttons: installed direct apps, then the share sheet. */
+    val targets: ImmutableList<ShareTarget> = persistentListOf(ShareTarget.OTHER),
     /** The card is being captured for this action; options are locked meanwhile. */
     val pending: ShareAction? = null,
     /** The last share or save failed (out of memory, storage, no app to share with…). */
@@ -77,8 +90,15 @@ data class ShareCardUiState(
 
     /** True when the exported PNG has no background (preview shows a dark checkerboard behind it). */
     val isTransparent: Boolean
-        get() = template == ShareTemplate.STICKER ||
+        get() = template.backdrop == ShareBackdrop.TRANSPARENT ||
             (isBackgroundTransparent && (template == ShareTemplate.CLASSIC || template == ShareTemplate.POSTER))
+
+    /** The map cards need a line and a map (online, or an offline region). */
+    val hasMap: Boolean get() = trail.size >= 2 && (isMapOnline || mapRegions.isNotEmpty())
+
+    /** Cards of the gallery in the owner's reference order (T10.6); map cards only when there is a map. */
+    val templates: ImmutableList<ShareTemplate>
+        get() = GALLERY_ORDER.filter { hasMap || it.backdrop != ShareBackdrop.MAP }.toImmutableList()
 
     /** Statistics this ride has data for, in display order. */
     val availableStats: ImmutableList<ShareStat>
@@ -143,13 +163,14 @@ sealed interface ShareCardUiEvent {
     data class Captured(val image: ImageBitmap) : ShareCardUiEvent
 }
 
-/** Share card editor (T4.5/T4.5b, 13-UI-SCREENS #21, 12-FEATURE-SPECS §11). */
 /** Use cases of the share card editor. */
 data class ShareCardUseCases(
     val load: LoadShareCardUseCase,
     val observeSettings: ObserveRideSettingsUseCase,
     val share: ShareCardImageUseCase,
     val save: SaveShareCardUseCase,
+    val targets: GetShareTargetsUseCase,
+    val observeMapTiles: ObserveMapTilesUseCase,
 )
 
 class ShareCardViewModel(
@@ -172,6 +193,15 @@ class ShareCardViewModel(
         }
         viewModelScope.launch {
             useCases.observeSettings().collect { settings -> updateState { copy(unitSystem = settings.unitSystem) } }
+        }
+        viewModelScope.launch {
+            useCases.observeMapTiles().collect { tiles ->
+                updateState { copy(isMapOnline = tiles.isOnline, mapRegions = tiles.regionPaths.toImmutableList()) }
+            }
+        }
+        viewModelScope.launch {
+            val targets = withContext(dispatchers.io) { useCases.targets() }
+            updateState { copy(targets = targets.toImmutableList()) }
         }
     }
 
@@ -203,7 +233,7 @@ class ShareCardViewModel(
             val result = runCatchingCancellable {
                 val png = encodePng(image)
                 when (action) {
-                    ShareAction.Share -> useCases.share(png).let { true }
+                    is ShareAction.Share -> useCases.share(png, action.target).let { true }
                     is ShareAction.SaveTo -> useCases.save(action.uri, png)
                 }
             }
@@ -232,8 +262,11 @@ class ShareCardViewModel(
     private suspend fun refreshLine() {
         val data = currentState.data ?: return
         val isHidden = currentState.isEndsHidden
-        val line = withContext(dispatchers.default) { ShareCardLine.of(data.line, isHidden) }
-        updateState { copy(line = line.toImmutableList()) }
+        val (line, trail) = withContext(dispatchers.default) {
+            ShareCardLine.of(data.line, isHidden) to
+                ShareCardLine.trimmed(data.line, isHidden).map { MapPoint(it.latDeg, it.lonDeg) }
+        }
+        updateState { copy(line = line.toImmutableList(), trail = trail.toImmutableList()) }
     }
 }
 
@@ -243,8 +276,34 @@ private fun available(totals: RideTotals): List<ShareStat> = ShareStat.entries.f
         ShareStat.DISTANCE, ShareStat.TIME, ShareStat.ASCENT, ShareStat.AVG_SPEED -> true
         ShareStat.AVG_HEART_RATE -> totals.avgHeartRateBpm != null
         ShareStat.AVG_POWER -> totals.avgPowerW != null
+        ShareStat.CALORIES -> totals.calories != null
     }
 }
+
+/** The owner's references first (map, then the transparent stickers), then the earlier styles (T10.6). */
+private val GALLERY_ORDER = listOf(
+    ShareTemplate.MAP,
+    ShareTemplate.DATE_TICKET,
+    ShareTemplate.ROUTE_SIDE_STATS,
+    ShareTemplate.SIDE_STATS,
+    ShareTemplate.ROUTE_DOTTED_LIST,
+    ShareTemplate.DOTTED_LIST,
+    ShareTemplate.CENTER_STACK,
+    ShareTemplate.ROUTE_UNDER_STACK,
+    ShareTemplate.PILLS,
+    ShareTemplate.STAT_ROW,
+    ShareTemplate.ROUTE_BESIDE_STATS,
+    ShareTemplate.STAT_GRID,
+    ShareTemplate.ROUTE_OVER_ROW,
+    ShareTemplate.BIG_STATS,
+    ShareTemplate.ROUTE_LOGO,
+    ShareTemplate.STATS_SMALL_ROUTE,
+    ShareTemplate.MAP_FRAMED,
+    ShareTemplate.POSTER,
+    ShareTemplate.PHOTO,
+    ShareTemplate.STICKER,
+    ShareTemplate.CLASSIC,
+)
 
 /** PNG is lossless; the value is ignored by the encoder but required by the API. */
 private const val PNG_QUALITY = 100

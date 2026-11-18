@@ -11,29 +11,33 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,16 +49,19 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ridecomp.core.engine.share.ShareBackdrop
 import com.ridecomp.core.engine.share.ShareCardConfig
 import com.ridecomp.core.engine.share.ShareDetail
 import com.ridecomp.core.engine.share.ShareFormat
 import com.ridecomp.core.engine.share.SharePalette
+import com.ridecomp.core.engine.share.ShareTarget
 import com.ridecomp.core.engine.share.ShareTemplate
 import com.ridecomp.feature.training.R
 import com.ridecomp.feature.training.viewmodel.ShareAction
@@ -70,10 +77,10 @@ import com.ridecomp.ui.component.ChoiceChips
 import com.ridecomp.ui.component.EmptyState
 import com.ridecomp.ui.component.IconSquareButton
 import com.ridecomp.ui.component.ListCard
-import com.ridecomp.ui.component.PageIndicator
 import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.component.SectionHeader
 import com.ridecomp.ui.component.SwitchRow
+import com.ridecomp.ui.map.rememberRouteSnapshot
 import com.ridecomp.ui.theme.RideCompDimens
 import com.ridecomp.ui.theme.RideCompTheme
 import com.ridecomp.ui.theme.ShareCardColors
@@ -81,11 +88,7 @@ import kotlinx.collections.immutable.persistentListOf
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
-/** Styles in swipe order: the most striking first. */
-private val PAGER_TEMPLATES =
-    listOf(ShareTemplate.POSTER, ShareTemplate.PHOTO, ShareTemplate.STICKER, ShareTemplate.CLASSIC)
-
-/** Share card editor (T4.5/T4.5b, 13-UI-SCREENS #21): swipe a style, then share; the rest is in "Sesuaikan". */
+/** Share screen (T4.5/T4.5b, gallery after the owner's references T10.6, 13-UI-SCREENS #21). */
 @Composable
 fun ShareCardRoute(
     activityId: Long,
@@ -112,10 +115,35 @@ fun ShareCardRoute(
             saveLauncher.launch(ShareCardConfig.FILE_PREFIX + startedAtMs + ShareCardConfig.FILE_EXTENSION)
         },
         modifier = modifier,
+        maps = rememberShareMaps(state),
     )
 }
 
+/** The two map images, made once while this screen is open and only when there is a map (D-90 rules). */
 @Composable
+private fun rememberShareMaps(state: ShareCardUiState): ShareMaps {
+    val trail = if (state.hasMap) state.trail else persistentListOf()
+    val full = rememberRouteSnapshot(
+        trail,
+        state.isMapOnline,
+        state.mapRegions,
+        state.format.widthPx,
+        state.format.heightPx,
+        isDark = false,
+    )
+    val framed = rememberRouteSnapshot(
+        trail,
+        state.isMapOnline,
+        state.mapRegions,
+        FRAMED_MAP_WIDTH_PX,
+        FRAMED_MAP_HEIGHT_PX,
+        isDark = true,
+    )
+    return remember(full, framed) { ShareMaps(full, framed) }
+}
+
+@Composable
+@Suppress("LongParameterList") // Stateless screen: state, events and the three platform actions.
 fun ShareCardScreen(
     state: ShareCardUiState,
     onEvent: (ShareCardUiEvent) -> Unit,
@@ -123,6 +151,7 @@ fun ShareCardScreen(
     onPickPhoto: () -> Unit,
     onSave: () -> Unit,
     modifier: Modifier = Modifier,
+    maps: ShareMaps = ShareMaps(),
 ) {
     var isCustomizing by rememberSaveable { mutableStateOf(false) }
     ScreenScaffold(
@@ -133,16 +162,22 @@ fun ShareCardScreen(
     ) {
         when {
             state.isMissing -> EmptyState(message = stringResource(R.string.share_missing))
-            state.data != null -> Editor(state, onEvent, onPickPhoto, onSave, onCustomize = { isCustomizing = true })
+            state.data != null -> Gallery(state, maps, onEvent, onPickPhoto, onSave, onCustomize = {
+                isCustomizing =
+                    true
+            })
         }
     }
     if (isCustomizing) CustomizeSheet(state, onEvent, onDismiss = { isCustomizing = false })
-    if (state.isSharing && state.data != null) CardCapture(state, onEvent)
+    if (state.isSharing && state.data != null) CardCapture(state, maps, onEvent)
 }
 
+/** Every card in a grid, the chosen one framed; below it the style's option and the share buttons. */
 @Composable
-private fun Editor(
+@Suppress("LongParameterList") // The gallery's inputs, passed down from the stateless screen.
+private fun Gallery(
     state: ShareCardUiState,
+    maps: ShareMaps,
     onEvent: (ShareCardUiEvent) -> Unit,
     onPickPhoto: () -> Unit,
     onSave: () -> Unit,
@@ -152,92 +187,112 @@ private fun Editor(
         modifier = Modifier
             .fillMaxSize()
             .padding(bottom = RideCompDimens.spacingM),
-        verticalArrangement = Arrangement.spacedBy(RideCompDimens.cardGap),
+        verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm),
     ) {
-        StylePager(state, onEvent, onPickPhoto, Modifier.weight(1f))
-        StyleBar(state, onEvent)
-        Actions(state, onEvent, onSave, onCustomize)
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(GALLERY_COLUMNS),
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(horizontal = RideCompDimens.screenPaddingHorizontal),
+            horizontalArrangement = Arrangement.spacedBy(RideCompDimens.cardGap),
+            verticalArrangement = Arrangement.spacedBy(RideCompDimens.cardGap),
+        ) {
+            items(state.templates, key = { it.name }) { template ->
+                GalleryTile(
+                    state = state.copy(template = template),
+                    maps = maps,
+                    isSelected = template == state.template,
+                    onClick = {
+                        if (state.isSharing) return@GalleryTile
+                        onEvent(ShareCardUiEvent.SetTemplate(template))
+                        if (template == ShareTemplate.PHOTO && state.photo == null) onPickPhoto()
+                    },
+                )
+            }
+        }
+        StyleOption(state, maps, onEvent, onPickPhoto)
+        Actions(state, maps, onEvent, onSave, onCustomize)
     }
 }
 
-/** The card itself, full height; swiping changes the style. */
+/** One card at tile size; transparent cards over a checkerboard, as in the owner's references. */
 @Composable
-private fun StylePager(
-    state: ShareCardUiState,
-    onEvent: (ShareCardUiEvent) -> Unit,
-    onPickPhoto: () -> Unit,
-    modifier: Modifier,
-) {
-    val pager = rememberPagerState(initialPage = PAGER_TEMPLATES.indexOf(state.template).coerceAtLeast(0)) {
-        PAGER_TEMPLATES.size
-    }
-    LaunchedEffect(pager) {
-        snapshotFlow { pager.settledPage }.collect { onEvent(ShareCardUiEvent.SetTemplate(PAGER_TEMPLATES[it])) }
-    }
-    HorizontalPager(
-        state = pager,
-        modifier = modifier.fillMaxWidth(),
-        userScrollEnabled = !state.isSharing,
-    ) { page ->
-        val pageState = state.copy(template = PAGER_TEMPLATES[page])
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+private fun GalleryTile(state: ShareCardUiState, maps: ShareMaps, isSelected: Boolean, onClick: () -> Unit) {
+    val colors = RideCompTheme.colors
+    val shape = RoundedCornerShape(RideCompDimens.cornerRadiusSmall)
+    val label = stringResource(state.template.labelRes())
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(state.format.widthPx.toFloat() / state.format.heightPx)
+            .clip(shape)
+            .border(
+                if (isSelected) RideCompDimens.borderSelected else RideCompDimens.borderThin,
+                if (isSelected) colors.accent else colors.divider,
+                shape,
+            )
+            .selectable(selected = isSelected, role = Role.RadioButton, onClick = onClick)
+            .semantics { contentDescription = label },
+    ) {
+        if (state.isTransparent) Checkerboard(Modifier.fillMaxSize())
+        ShareCard(state = state, modifier = Modifier.fillMaxSize(), maps = maps)
+        if (isSelected) {
             Box(
                 modifier = Modifier
-                    .fillMaxHeight()
-                    .aspectRatio(
-                        state.format.widthPx.toFloat() / state.format.heightPx,
-                        matchHeightConstraintsFirst = true,
-                    )
-                    // A thin frame shows where the card ends on a screen of the same color.
-                    .border(RideCompDimens.borderThin, RideCompTheme.colors.divider),
+                    .align(Alignment.TopEnd)
+                    .padding(RideCompDimens.spacingSm)
+                    .size(RideCompDimens.selectedBadgeSize)
+                    .clip(CircleShape)
+                    .background(colors.accent),
                 contentAlignment = Alignment.Center,
             ) {
-                if (pageState.isTransparent) Checkerboard(Modifier.fillMaxSize())
-                ShareCard(state = pageState, modifier = Modifier.fillMaxSize())
-                if (pageState.template == ShareTemplate.PHOTO) PhotoButton(state.photo != null, onPickPhoto)
+                Icon(
+                    painter = painterResource(UiR.drawable.ic_check),
+                    contentDescription = null,
+                    tint = colors.onAccent,
+                    modifier = Modifier.padding(RideCompDimens.spacingXs),
+                )
             }
         }
     }
 }
 
-/** On the photo style: "Pilih foto" in the middle until there is one, then a small "Ganti foto" at the top. */
+/** What the chosen style needs: poster colours, the photo, or a note on stickers and maps. */
 @Composable
-private fun PhotoButton(hasPhoto: Boolean, onPickPhoto: () -> Unit) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = if (hasPhoto) Alignment.TopEnd else Alignment.Center) {
-        BigButton(
-            text = stringResource(if (hasPhoto) R.string.share_change_photo else R.string.share_pick_photo),
-            onClick = onPickPhoto,
-            style = BigButtonStyle.SECONDARY,
-            size = BigButtonSize.COMPACT,
-            modifier = Modifier.padding(RideCompDimens.spacingSm),
-        )
-    }
-}
-
-/** Page dots with the style name, and the poster colours as swatches. */
-@Composable
-private fun StyleBar(state: ShareCardUiState, onEvent: (ShareCardUiEvent) -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm),
+private fun StyleOption(
+    state: ShareCardUiState,
+    maps: ShareMaps,
+    onEvent: (ShareCardUiEvent) -> Unit,
+    onPickPhoto: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = RideCompDimens.screenPaddingHorizontal),
+        contentAlignment = Alignment.Center,
     ) {
-        val name = stringResource(state.template.labelRes())
-        Text(text = name, style = RideCompTheme.typography.bodyStrong, color = RideCompTheme.colors.textPrimary)
-        PageIndicator(
-            count = PAGER_TEMPLATES.size,
-            current = PAGER_TEMPLATES.indexOf(state.template).coerceAtLeast(0),
-            description = stringResource(R.string.share_style_page, name),
-        )
-        when (state.template) {
-            ShareTemplate.POSTER -> PaletteSwatches(state.palette, onEvent)
-            ShareTemplate.STICKER -> Text(
-                text = stringResource(R.string.share_sticker_hint),
+        val hint = when {
+            state.template == ShareTemplate.POSTER -> null.also { PaletteSwatches(state.palette, onEvent) }
+            state.template == ShareTemplate.PHOTO -> null.also {
+                BigButton(
+                    text = stringResource(
+                        if (state.photo != null) R.string.share_change_photo else R.string.share_pick_photo,
+                    ),
+                    onClick = onPickPhoto,
+                    style = BigButtonStyle.SECONDARY,
+                    size = BigButtonSize.COMPACT,
+                )
+            }
+            state.template.backdrop == ShareBackdrop.MAP ->
+                if (maps.isReady(state.template)) R.string.share_map_hint else R.string.share_map_loading
+            state.isTransparent -> R.string.share_sticker_hint
+            else -> null
+        }
+        hint?.let {
+            Text(
+                text = stringResource(it),
                 style = RideCompTheme.typography.caption,
                 color = RideCompTheme.colors.textSecondary,
-                modifier = Modifier.padding(horizontal = RideCompDimens.screenPaddingHorizontal),
             )
-            ShareTemplate.PHOTO, ShareTemplate.CLASSIC -> Unit
         }
     }
 }
@@ -277,19 +332,39 @@ private fun SharePalette.swatchColors() = when (this) {
     SharePalette.NIGHT -> listOf(ShareCardColors.NightTop, ShareCardColors.NightBottom)
 }
 
-/** "Sesuaikan" as an icon, then two compact buttons: Simpan and Bagikan. */
+/**
+ * The installed direct apps (Instagram, WhatsApp) on one row; then "Sesuaikan", Simpan and Bagikan (share
+ * sheet). Locked while capturing and while a map card waits for its map.
+ */
 @Composable
 private fun Actions(
     state: ShareCardUiState,
+    maps: ShareMaps,
     onEvent: (ShareCardUiEvent) -> Unit,
     onSave: () -> Unit,
     onCustomize: () -> Unit,
 ) {
+    val isReady = !state.isSharing && maps.isReady(state.template)
     Column(
         modifier = Modifier.padding(horizontal = RideCompDimens.screenPaddingHorizontal),
         verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm),
     ) {
         Messages(state)
+        val direct = state.targets.filter { it != ShareTarget.OTHER }
+        if (direct.isNotEmpty()) {
+            Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm)) {
+                direct.forEach { target ->
+                    BigButton(
+                        text = stringResource(target.labelRes()),
+                        onClick = { onEvent(ShareCardUiEvent.Render(ShareAction.Share(target))) },
+                        isEnabled = isReady,
+                        style = BigButtonStyle.OUTLINE,
+                        size = BigButtonSize.COMPACT,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
+        }
         Row(
             horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm),
             verticalAlignment = Alignment.CenterVertically,
@@ -303,7 +378,7 @@ private fun Actions(
             BigButton(
                 text = stringResource(R.string.share_save_short),
                 onClick = onSave,
-                isEnabled = !state.isSharing,
+                isEnabled = isReady,
                 style = BigButtonStyle.OUTLINE,
                 size = BigButtonSize.COMPACT,
                 iconRes = UiR.drawable.ic_download,
@@ -311,8 +386,8 @@ private fun Actions(
             )
             BigButton(
                 text = stringResource(R.string.share_send_short),
-                onClick = { onEvent(ShareCardUiEvent.Render(ShareAction.Share)) },
-                isEnabled = !state.isSharing,
+                onClick = { onEvent(ShareCardUiEvent.Render(ShareAction.Share(ShareTarget.OTHER))) },
+                isEnabled = isReady,
                 size = BigButtonSize.COMPACT,
                 iconRes = UiR.drawable.ic_share,
                 modifier = Modifier.weight(1f),
@@ -403,7 +478,10 @@ private fun DetailsAndStats(state: ShareCardUiState, onEvent: (ShareCardUiEvent)
             }
         }
     }
-    SectionHeader(stringResource(R.string.share_stats), horizontalPadding = RideCompDimens.none)
+    SectionHeader(
+        stringResource(R.string.share_stats, ShareCardConfig.MAX_STATS),
+        horizontalPadding = RideCompDimens.none,
+    )
     ListCard {
         state.availableStats.forEach { stat ->
             SwitchRow(
@@ -452,7 +530,7 @@ private fun Messages(state: ShareCardUiState) {
  * their alpha in the PNG.
  */
 @Composable
-private fun CardCapture(state: ShareCardUiState, onEvent: (ShareCardUiEvent) -> Unit) {
+private fun CardCapture(state: ShareCardUiState, maps: ShareMaps, onEvent: (ShareCardUiEvent) -> Unit) {
     val layer = rememberGraphicsLayer()
     val density = LocalDensity.current
     val width = with(density) { state.format.widthPx.toDp() }
@@ -463,6 +541,7 @@ private fun CardCapture(state: ShareCardUiState, onEvent: (ShareCardUiEvent) -> 
             modifier = Modifier
                 .requiredSize(width, height)
                 .drawWithContent { layer.record { this@drawWithContent.drawContent() } },
+            maps = maps,
         )
     }
     // Composed only while sharing, and the options are locked meanwhile: one capture per tap.
@@ -475,11 +554,10 @@ private fun CardCapture(state: ShareCardUiState, onEvent: (ShareCardUiEvent) -> 
 }
 
 @StringRes
-private fun ShareTemplate.labelRes(): Int = when (this) {
-    ShareTemplate.CLASSIC -> R.string.share_template_classic
-    ShareTemplate.POSTER -> R.string.share_template_poster
-    ShareTemplate.PHOTO -> R.string.share_template_photo
-    ShareTemplate.STICKER -> R.string.share_template_sticker
+private fun ShareTarget.labelRes(): Int = when (this) {
+    ShareTarget.INSTAGRAM -> R.string.share_to_instagram
+    ShareTarget.WHATSAPP -> R.string.share_to_whatsapp
+    ShareTarget.OTHER -> R.string.share_send_short
 }
 
 @StringRes
@@ -499,3 +577,4 @@ private fun ShareDetail.labelRes(): Int = when (this) {
 }
 
 private const val FORMAT_COLUMNS = 2
+private const val GALLERY_COLUMNS = 2

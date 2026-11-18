@@ -39,6 +39,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import com.ridecomp.core.config.Units
+import com.ridecomp.core.engine.share.ShareCardConfig
 import com.ridecomp.core.engine.share.ShareDetail
 import com.ridecomp.core.engine.share.SharePalette
 import com.ridecomp.core.engine.share.ShareStat
@@ -55,23 +56,27 @@ import java.util.Date
 import kotlin.math.roundToLong
 
 /** Colours one template draws with (text on a gradient or photo is white; classic follows its theme). */
-private data class CardInk(val text: Color, val soft: Color, val accent: Color, val line: Color, val hasShadow: Boolean)
+internal data class CardInk(
+    val text: Color,
+    val soft: Color,
+    val accent: Color,
+    val line: Color,
+    val hasShadow: Boolean,
+)
 
 /**
  * A share card (T4.5/T4.5b), laid out on a grid of [CARD_UNITS] across its width so the preview and the
  * 1080 px image look the same. No map tiles and no coordinates: only the route's shape (§11 privacy).
  */
 @Composable
-fun ShareCard(state: ShareCardUiState, modifier: Modifier = Modifier) {
+fun ShareCard(state: ShareCardUiState, modifier: Modifier = Modifier, maps: ShareMaps = ShareMaps()) {
     state.data ?: return
+    if (state.template.isReferenceLayout()) {
+        ReferenceCard(state, maps, modifier)
+        return
+    }
     RideCompTheme(
-        themeMode = if (state.isDark ||
-            state.template != ShareTemplate.CLASSIC
-        ) {
-            ThemeMode.DARK
-        } else {
-            ThemeMode.LIGHT
-        },
+        themeMode = if (state.isDark || state.template != ShareTemplate.CLASSIC) ThemeMode.DARK else ThemeMode.LIGHT,
     ) {
         val colors = RideCompTheme.colors
         val ink = when (state.template) {
@@ -82,22 +87,14 @@ fun ShareCard(state: ShareCardUiState, modifier: Modifier = Modifier) {
                 colors.accent,
                 false,
             )
-            ShareTemplate.POSTER, ShareTemplate.PHOTO ->
-                CardInk(
-                    ShareCardColors.PosterText,
-                    ShareCardColors.PosterSoftText,
-                    colors.accent,
-                    ShareCardColors.PosterText,
-                    false,
-                )
-            ShareTemplate.STICKER ->
-                CardInk(
-                    ShareCardColors.PosterText,
-                    ShareCardColors.PosterText,
-                    colors.accent,
-                    ShareCardColors.PosterText,
-                    true,
-                )
+            ShareTemplate.POSTER, ShareTemplate.PHOTO -> CardInk(
+                ShareCardColors.PosterText,
+                ShareCardColors.PosterSoftText,
+                colors.accent,
+                ShareCardColors.PosterText,
+                false,
+            )
+            else -> stickerInk(colors.accent)
         }
         BoxWithConstraints(modifier = modifier.cardBackground(state, colors.bg)) {
             val unit = maxWidth / CARD_UNITS
@@ -106,6 +103,10 @@ fun ShareCard(state: ShareCardUiState, modifier: Modifier = Modifier) {
         }
     }
 }
+
+/** White text with a soft shadow and an accent line: readable on any photo (transparent cards). */
+internal fun stickerInk(accent: Color) =
+    CardInk(ShareCardColors.PosterText, ShareCardColors.PosterSoftText, accent, ShareCardColors.PosterText, true)
 
 private fun Modifier.cardBackground(state: ShareCardUiState, themeBackground: Color): Modifier = when {
     state.isTransparent -> this
@@ -314,7 +315,7 @@ private fun StatsGrid(
     skipDistance: Boolean,
 ) {
     val totals = state.data?.activity?.totals ?: return
-    val stats = state.stats.filterNot { skipDistance && it == ShareStat.DISTANCE }
+    val stats = state.stats.take(ShareCardConfig.GRID_STATS).filterNot { skipDistance && it == ShareStat.DISTANCE }
     stats.chunked(STAT_COLUMNS).forEach { row ->
         Row(modifier = Modifier.fillMaxWidth().padding(top = unit * GAP_UNITS)) {
             row.forEach { stat ->
@@ -353,7 +354,7 @@ private fun Footer(records: Int, segmentRecords: Int, state: ShareCardUiState, i
 }
 
 @Composable
-private fun CardText(
+internal fun CardText(
     text: String,
     size: Dp,
     color: Color,
@@ -391,19 +392,21 @@ internal fun ShareStat.labelRes(): Int = when (this) {
     ShareStat.AVG_SPEED -> R.string.share_stat_speed
     ShareStat.AVG_HEART_RATE -> R.string.share_stat_heart_rate
     ShareStat.AVG_POWER -> R.string.share_stat_power
+    ShareStat.CALORIES -> R.string.share_stat_calories
 }
 
-private fun ShareStat.value(totals: RideTotals, formatter: UnitFormatter): String = when (this) {
+internal fun ShareStat.value(totals: RideTotals, formatter: UnitFormatter): String = when (this) {
     ShareStat.DISTANCE -> "${formatter.distance(totals.distanceM)} ${formatter.distanceUnit}"
     ShareStat.TIME -> formatter.duration(totals.movingS * Units.MS_PER_SECOND)
     ShareStat.ASCENT -> "${formatter.elevation(totals.ascentM)} ${formatter.elevationUnit}"
     ShareStat.AVG_SPEED -> "${formatter.speed(totals.avgSpeedMps)} ${formatter.speedUnit}"
     ShareStat.AVG_HEART_RATE -> "${formatter.integer(totals.avgHeartRateBpm)} $BPM"
     ShareStat.AVG_POWER -> "${formatter.integer(totals.avgPowerW)} $WATT"
+    ShareStat.CALORIES -> "${formatter.integer(totals.calories)} $KCAL"
 }
 
 /** The card is laid out on a grid of this many units across (sizes below are in units). */
-private const val CARD_UNITS = 360f
+internal const val CARD_UNITS = 360f
 private const val PADDING_UNITS = 24f
 private const val DATE_UNITS = 13f
 private const val NAME_UNITS = 24f
@@ -428,3 +431,4 @@ private val GLOW_LAYERS = listOf(4f to 0.12f, 2.5f to 0.25f)
 private const val SEPARATOR = " · "
 private const val BPM = "bpm"
 private const val WATT = "W"
+private const val KCAL = "kcal"
