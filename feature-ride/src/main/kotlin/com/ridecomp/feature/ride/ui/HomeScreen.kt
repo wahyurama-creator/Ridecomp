@@ -66,6 +66,7 @@ import com.ridecomp.ui.component.BigButtonSize
 import com.ridecomp.ui.component.BigButtonStyle
 import com.ridecomp.ui.component.CardTone
 import com.ridecomp.ui.component.ConfirmDialog
+import com.ridecomp.ui.component.LinkText
 import com.ridecomp.ui.component.RideCompCard
 import com.ridecomp.ui.component.StatusTone
 import com.ridecomp.ui.preview.RideCompPreview
@@ -469,7 +470,8 @@ private fun BackupReminderCard(reminder: BackupReminder, onEvent: (HomeUiEvent) 
 
 /**
  * "Versi 0.9.2 tersedia" (T10.9, redesigned T10.14): a dark card in the app's style, a download icon in an
- * accent circle, a "BARU" tag, one compact download button and ✕ to put this version off.
+ * accent circle, a "BARU" tag, a "Unduh pembaruan" link and ✕ to put this version off. A link, not a filled
+ * button: an optional update must not compete with MULAI RIDE below it.
  */
 @Composable
 private fun UpdateCard(release: AppRelease, onEvent: (HomeUiEvent) -> Unit) {
@@ -510,6 +512,10 @@ private fun UpdateCard(release: AppRelease, onEvent: (HomeUiEvent) -> Unit) {
                     style = RideCompTheme.typography.caption,
                     color = colors.textSecondary,
                 )
+                LinkText(
+                    text = stringResource(R.string.home_update_download),
+                    onClick = { onEvent(HomeUiEvent.OpenUpdate) },
+                )
             }
             Box(
                 modifier = Modifier
@@ -526,13 +532,6 @@ private fun UpdateCard(release: AppRelease, onEvent: (HomeUiEvent) -> Unit) {
                 )
             }
         }
-        BigButton(
-            text = stringResource(R.string.home_update_download),
-            onClick = { onEvent(HomeUiEvent.OpenUpdate) },
-            size = BigButtonSize.COMPACT,
-            iconRes = UiR.drawable.ic_download,
-            modifier = Modifier.padding(top = RideCompDimens.spacingSm),
-        )
     }
 }
 

@@ -165,7 +165,7 @@
     <string name="home_backup_now">Back up now</string>
     <string name="home_backup_later">Later</string>
     <string name="home_update_title">Version %1$s is available</string>
-    <string name="home_update_body">Install it over this app: your rides and settings stay.</string>
+    <string name="home_update_body">Install over it, data stays.</string>
     <string name="home_update_download">Download update</string>
     <string name="home_update_new">New</string>
     <string name="incident_question">Are you OK?</string>
