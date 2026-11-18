@@ -5,12 +5,15 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
@@ -28,6 +31,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
@@ -62,6 +66,7 @@ import com.ridecomp.ui.component.BigButtonSize
 import com.ridecomp.ui.component.BigButtonStyle
 import com.ridecomp.ui.component.CardTone
 import com.ridecomp.ui.component.ConfirmDialog
+import com.ridecomp.ui.component.LinkText
 import com.ridecomp.ui.component.RideCompCard
 import com.ridecomp.ui.component.StatusTone
 import com.ridecomp.ui.preview.RideCompPreview
@@ -463,33 +468,69 @@ private fun BackupReminderCard(reminder: BackupReminder, onEvent: (HomeUiEvent) 
     }
 }
 
-/** "Versi 0.9.1 tersedia": download opens the release page; "Nanti" hides this version (T10.9). */
+/**
+ * "Versi 0.9.2 tersedia" (T10.9, redesigned T10.14): a dark card in the app's style, a download icon in an
+ * accent circle, a "BARU" tag, a "Unduh pembaruan" link and ✕ to put this version off. A link, not a filled
+ * button: an optional update must not compete with MULAI RIDE below it.
+ */
 @Composable
 private fun UpdateCard(release: AppRelease, onEvent: (HomeUiEvent) -> Unit) {
-    RideCompCard(tone = CardTone.ACCENT) {
-        Text(
-            text = stringResource(R.string.home_update_title, release.version),
-            style = RideCompTheme.typography.cardTitle,
-            color = RideCompTheme.colors.textPrimary,
-        )
-        Text(
-            text = stringResource(R.string.home_update_body),
-            style = RideCompTheme.typography.body,
-            color = RideCompTheme.colors.textSecondary,
-        )
-        Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS)) {
-            BigButton(
-                text = stringResource(R.string.home_update_download),
-                onClick = { onEvent(HomeUiEvent.OpenUpdate) },
-                iconRes = UiR.drawable.ic_download,
+    val colors = RideCompTheme.colors
+    val closeLabel = stringResource(R.string.home_backup_later)
+    RideCompCard {
+        Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm)) {
+            Box(
+                modifier = Modifier
+                    .size(RideCompDimens.iconTileSize)
+                    .clip(CircleShape)
+                    .background(colors.accentTint),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(UiR.drawable.ic_download),
+                    contentDescription = null,
+                    tint = colors.accent,
+                    modifier = Modifier.size(RideCompDimens.iconSize),
+                )
+            }
+            Column(
                 modifier = Modifier.weight(1f),
-            )
-            BigButton(
-                text = stringResource(R.string.home_backup_later),
-                onClick = { onEvent(HomeUiEvent.DismissUpdate) },
-                style = BigButtonStyle.OUTLINE,
-                modifier = Modifier.weight(1f),
-            )
+                verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingXs),
+            ) {
+                Text(
+                    text = stringResource(R.string.home_update_new).uppercase(),
+                    style = RideCompTheme.typography.dataLabel,
+                    color = colors.accent,
+                )
+                Text(
+                    text = stringResource(R.string.home_update_title, release.version),
+                    style = RideCompTheme.typography.cardTitle,
+                    color = colors.textPrimary,
+                )
+                Text(
+                    text = stringResource(R.string.home_update_body),
+                    style = RideCompTheme.typography.caption,
+                    color = colors.textSecondary,
+                )
+                LinkText(
+                    text = stringResource(R.string.home_update_download),
+                    onClick = { onEvent(HomeUiEvent.OpenUpdate) },
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .size(RideCompDimens.touchTargetMin)
+                    .clickable(role = Role.Button) { onEvent(HomeUiEvent.DismissUpdate) }
+                    .semantics { contentDescription = closeLabel },
+                contentAlignment = Alignment.TopEnd,
+            ) {
+                Icon(
+                    painter = painterResource(UiR.drawable.ic_close),
+                    contentDescription = null,
+                    tint = colors.textSecondary,
+                    modifier = Modifier.size(RideCompDimens.iconSize),
+                )
+            }
         }
     }
 }
@@ -501,6 +542,7 @@ private fun HomeScreenPreview() {
         HomeScreen(
             state = HomeUiState(
                 battery = BatteryStatus(86, isCharging = false),
+                update = AppRelease("0.9.3", "https://github.com/wahyurama-creator/Ridecomp/releases/tag/v0.9.3"),
                 sensors = persistentListOf(
                     SavedSensor("A", "HRM", setOf(SensorKind.HEART_RATE), lastBatteryPercent = 82),
                     SavedSensor("B", "CSC", setOf(SensorKind.SPEED_CADENCE), lastBatteryPercent = 12),

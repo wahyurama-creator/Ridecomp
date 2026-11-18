@@ -165,8 +165,9 @@
     <string name="home_backup_now">Back up now</string>
     <string name="home_backup_later">Later</string>
     <string name="home_update_title">Version %1$s is available</string>
-    <string name="home_update_body">Download the new APK and install it over this one. Your rides and settings stay.</string>
-    <string name="home_update_download">Download</string>
+    <string name="home_update_body">Install over it, data stays.</string>
+    <string name="home_update_download">Download update</string>
+    <string name="home_update_new">New</string>
     <string name="incident_question">Are you OK?</string>
     <string name="incident_countdown_hint">If you do not answer, your emergency contacts get an SMS with your location.</string>
     <string name="incident_ok">I AM OK</string>
