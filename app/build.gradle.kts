@@ -11,8 +11,8 @@ android {
     defaultConfig {
         applicationId = "com.ridecomp.app"
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 90
-        versionName = "0.9.0"
+        versionCode = 91
+        versionName = "0.9.1"
         // Strava (D-82): RideComp's public Client ID and its token server. Not secret (the Client ID is in
         // every authorize URL); the client secret lives only on the token server. Empty = Strava hidden.
         buildConfigField(
