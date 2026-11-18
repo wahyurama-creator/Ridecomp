@@ -198,10 +198,11 @@ fun RideScreen(
         return
     }
     val labels = rememberMetricUnitLabels()
-    var areBarsVisible by rememberSaveable { mutableStateOf(true) }
+    // Double tap hides only the status strip for more room; PAUSE/LAP always stay (D-101, rider feedback).
+    var isStatusBarVisible by rememberSaveable { mutableStateOf(true) }
     val status = live.value.status
     Column(modifier = modifier.fillMaxSize().background(RideCompTheme.colors.bg)) {
-        if (areBarsVisible || status == RideStatus.PAUSED) RideStatusBar(live.value)
+        if (isStatusBarVisible || status == RideStatus.PAUSED) RideStatusBar(live.value)
         if (incident is IncidentState.Alerted) IncidentAlertedBanner(incident, onIncident)
         if (status == RideStatus.PAUSED) {
             PauseContent(live.value, formatter, labels, onAction, Modifier.weight(1f)) {
@@ -221,7 +222,7 @@ fun RideScreen(
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.weight(1f).pointerInput(Unit) {
-                detectTapGestures(onDoubleTap = { areBarsVisible = !areBarsVisible })
+                detectTapGestures(onDoubleTap = { isStatusBarVisible = !isStatusBarVisible })
             },
         ) { index ->
             when (val screen = screens[index]) {
@@ -237,7 +238,7 @@ fun RideScreen(
                 description = stringResource(R.string.ride_page_indicator, pagerState.currentPage + 1, screens.size),
             )
         }
-        if (areBarsVisible) RideControlBar(status, onAction)
+        RideControlBar(status, onAction)
     }
 }
 

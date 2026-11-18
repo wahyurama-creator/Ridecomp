@@ -71,7 +71,7 @@ Tampil singkat sebelum ride dimulai: status GPS fix (wajib ada fix atau pilih "m
 - Field HR/power boleh berwarna latar sesuai zona (opsi, default mati untuk hemat baterai).
 
 **Kontrol tambahan:**
-- Tap 2x di area data: tampilkan/sembunyikan bar atas & bawah.
+- Tap 2x di area data: tampilkan/sembunyikan bar status atas saja. **Tombol PAUSE/LAP selalu tampil** (D-101: pengguna bingung saat tombol berhenti hilang).
 - Long-press field: ganti metrik field (opsional di Fase 2+).
 - Tombol volume (opsional, setting): Volume Up = Lap, Volume Down = Pause/Resume.
 - Peringatan (keluar jalur, sensor putus, auto-pause): banner atas 3 detik + getar, tidak memblokir layar.
