@@ -3,9 +3,11 @@ package com.ridecomp.feature.ride.viewmodel
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.viewModelScope
 import com.ridecomp.core.config.ProfileDefaults
+import com.ridecomp.core.model.ActivityKind
 import com.ridecomp.core.model.ActivityProfile
 import com.ridecomp.core.model.Bike
 import com.ridecomp.core.model.ComponentWear
+import com.ridecomp.core.model.defaultWheelMm
 import com.ridecomp.core.usecase.BikeField
 import com.ridecomp.core.usecase.DeleteBikeUseCase
 import com.ridecomp.core.usecase.GetBikeUseCase
@@ -186,7 +188,7 @@ class BikeEditorViewModel(private val target: BikeTarget, private val useCases: 
     override fun onEvent(event: BikeEditorUiEvent) {
         when (event) {
             is BikeEditorUiEvent.NameChanged -> updateState { copy(name = event.name) }
-            is BikeEditorUiEvent.TypePicked -> updateState { copy(profileId = event.profileId) }
+            is BikeEditorUiEvent.TypePicked -> updateState { withType(event.profileId) }
             is BikeEditorUiEvent.FieldChanged -> updateState { withField(event.field, event.text) }
             is BikeEditorUiEvent.WheelPicked ->
                 updateState { withField(BikeField.WHEEL_CIRCUMFERENCE, event.circumferenceMm.toString()) }
@@ -236,6 +238,18 @@ class BikeEditorViewModel(private val target: BikeTarget, private val useCases: 
             if (useCases.delete(currentState.id)) sendEffect(BikeEditorEffect.Done)
         }
     }
+}
+
+/**
+ * A new bike still on the previous type's default wheel takes the new type's one (a folding bike gets 20",
+ * D-102); a wheel the rider typed or picked is kept.
+ */
+private fun BikeEditorUiState.withType(newProfileId: Long): BikeEditorUiState {
+    val previousDefault = (profiles.firstOrNull { it.id == profileId }?.kind ?: ActivityKind.ROAD).defaultWheelMm()
+    val newDefault = profiles.firstOrNull { it.id == newProfileId }?.kind?.defaultWheelMm()
+    val isUntouched = isNew && wheelCircumferenceMm.trim().toIntOrNull() == previousDefault
+    val wheel = if (isUntouched && newDefault != null) newDefault.toString() else wheelCircumferenceMm
+    return copy(profileId = newProfileId, wheelCircumferenceMm = wheel)
 }
 
 private fun BikeEditorUiState.withField(field: BikeField, text: String): BikeEditorUiState {

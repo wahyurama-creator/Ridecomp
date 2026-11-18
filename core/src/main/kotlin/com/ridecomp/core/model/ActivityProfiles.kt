@@ -1,7 +1,9 @@
 package com.ridecomp.core.model
 
+import com.ridecomp.core.config.ProfileDefaults
+
 /** Built-in profile kinds (12-FEATURE-SPECS §4); CUSTOM = a copy made by the rider. */
-public enum class ActivityKind { ROAD, GRAVEL, MTB, INDOOR, COMMUTE, CUSTOM }
+public enum class ActivityKind { ROAD, GRAVEL, MTB, INDOOR, COMMUTE, FOLDING, CUSTOM }
 
 /**
  * FIT `sport` / `sub_sport` enum values (FIT SDK Profile.xlsx, types `sport` and `sub_sport`). Only the
@@ -82,7 +84,7 @@ public object BuiltInMetricKeys {
         listOf(SPEED, DISTANCE, MOVING_TIME, CLOCK, HEART_RATE, HEART_RATE_ZONE, ALTITUDE, ASCENT, GRADE, CADENCE)
 }
 
-/** The five built-in profiles, seeded once into the database. */
+/** The built-in profiles, seeded once into the database (folding bike added in schema v10, D-102). */
 public object BuiltInProfiles {
     public val ALL: List<ActivityProfile> = listOf(
         ActivityProfile(kind = ActivityKind.ROAD, fitSubSport = FitSportValues.SUB_SPORT_ROAD, sortOrder = 0),
@@ -115,7 +117,28 @@ public object BuiltInProfiles {
             dataPages = COMMUTE_PAGES,
             sortOrder = 4,
         ),
+        // Folding bike (D-102): upright position on small wheels; FIT has no folding sub sport.
+        ActivityProfile(
+            kind = ActivityKind.FOLDING,
+            ridingPosition = RidingPosition.TOPS,
+            fitSubSport = FitSportValues.SUB_SPORT_GENERIC,
+            sortOrder = 5,
+        ),
     )
+
+    /** The five seeded by the v2→v3 migration; later kinds come with their own migration. */
+    public val FIRST: List<ActivityProfile> = ALL.filter { it.kind != ActivityKind.FOLDING }
+
+    /** Added by the v9→v10 migration. */
+    public val FOLDING: List<ActivityProfile> = ALL.filter { it.kind == ActivityKind.FOLDING }
+}
+
+/** The wheel a new bike of this kind starts with (D-102): small wheels for a folding bike. */
+public fun ActivityKind.defaultWheelMm(): Int = when (this) {
+    ActivityKind.FOLDING -> ProfileDefaults.FOLDING_WHEEL_CIRCUMFERENCE_MM
+    ActivityKind.ROAD, ActivityKind.GRAVEL, ActivityKind.MTB, ActivityKind.INDOOR, ActivityKind.COMMUTE,
+    ActivityKind.CUSTOM,
+    -> ProfileDefaults.WHEEL_CIRCUMFERENCE_MM
 }
 
 /** MTB: elevation and heart rate first (12-FEATURE-SPECS §4). */

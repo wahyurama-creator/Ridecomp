@@ -1,6 +1,7 @@
 package com.ridecomp.feature.ride
 
 import app.cash.turbine.test
+import com.ridecomp.core.config.ProfileDefaults
 import com.ridecomp.core.model.Bike
 import com.ridecomp.core.model.BikeComponent
 import com.ridecomp.core.model.ComponentType
@@ -116,6 +117,31 @@ class BikeViewModelsTest {
     }
 
     @Test
+    fun `a folding bike starts on 20 inch wheels unless the rider chose a wheel`() = runTest {
+        val viewModel = editor(BikeTarget.New)
+
+        viewModel.onEvent(BikeEditorUiEvent.TypePicked(FOLDING_ID))
+        assertEquals(
+            ProfileDefaults.FOLDING_WHEEL_CIRCUMFERENCE_MM.toString(),
+            viewModel.uiState.value.wheelCircumferenceMm,
+        )
+        viewModel.onEvent(BikeEditorUiEvent.TypePicked(ROAD_ID))
+        assertEquals(ProfileDefaults.WHEEL_CIRCUMFERENCE_MM.toString(), viewModel.uiState.value.wheelCircumferenceMm)
+
+        viewModel.onEvent(BikeEditorUiEvent.WheelPicked(MTB_WHEEL_MM))
+        viewModel.onEvent(BikeEditorUiEvent.TypePicked(FOLDING_ID))
+        assertEquals(MTB_WHEEL_MM.toString(), viewModel.uiState.value.wheelCircumferenceMm)
+    }
+
+    @Test
+    fun `changing the type of a saved bike keeps its wheel`() = runTest {
+        val viewModel = editor(BikeTarget.First)
+
+        viewModel.onEvent(BikeEditorUiEvent.TypePicked(FOLDING_ID))
+        assertEquals(ProfileDefaults.WHEEL_CIRCUMFERENCE_MM.toString(), viewModel.uiState.value.wheelCircumferenceMm)
+    }
+
+    @Test
     fun `unparsable and out of range values are marked, nothing is saved`() = runTest {
         val viewModel = editor(BikeTarget.First)
 
@@ -218,6 +244,7 @@ class BikeViewModelsTest {
         const val ROAD_ID = 1L
         const val MTB_ID = 3L
         const val MTB_WHEEL_MM = 2_273
+        const val FOLDING_ID = 6L
         const val CLOCK_START_MS = 1_000L
     }
 }

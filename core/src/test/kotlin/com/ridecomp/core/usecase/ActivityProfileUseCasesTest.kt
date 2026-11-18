@@ -26,11 +26,10 @@ class ActivityProfileUseCasesTest {
     private val known = setOf("speed", "distance", "clock", "grade", "heart_rate")
 
     @Test
-    fun `built-ins cover the five kinds and indoor has no gps`() {
-        assertEquals(
-            listOf(ActivityKind.ROAD, ActivityKind.GRAVEL, ActivityKind.MTB, ActivityKind.INDOOR, ActivityKind.COMMUTE),
-            BuiltInProfiles.ALL.map { it.kind },
-        )
+    fun `built-ins cover every kind but custom, the folding bike last, and indoor has no gps`() {
+        assertEquals(ActivityKind.entries - ActivityKind.CUSTOM, BuiltInProfiles.ALL.map { it.kind })
+        assertEquals(BuiltInProfiles.ALL, BuiltInProfiles.FIRST + BuiltInProfiles.FOLDING)
+        assertEquals(listOf(ActivityKind.FOLDING), BuiltInProfiles.FOLDING.map { it.kind })
         assertEquals(listOf(ActivityKind.INDOOR), BuiltInProfiles.ALL.filterNot { it.isGpsEnabled }.map { it.kind })
     }
 

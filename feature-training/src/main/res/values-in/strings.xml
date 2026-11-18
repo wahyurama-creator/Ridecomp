@@ -17,6 +17,7 @@
     <string name="records_kind_mtb">MTB</string>
     <string name="records_kind_indoor">Indoor</string>
     <string name="records_kind_commute">Commute</string>
+    <string name="records_kind_folding">Sepeda lipat</string>
     <string name="records_kind_custom">Kustom</string>
     <string name="records_set_on">%1$s · %2$s</string>
     <string name="records_empty">Belum ada rekor. Usaha terbaikmu muncul di sini setelah ride disimpan.</string>

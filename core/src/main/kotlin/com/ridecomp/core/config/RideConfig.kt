@@ -158,6 +158,9 @@ public object ProfileDefaults {
 
     /** 700x25c. */
     public const val WHEEL_CIRCUMFERENCE_MM: Int = 2_105
+
+    /** 20x1.75 (ISO 406), the most common folding bike wheel (D-102). */
+    public const val FOLDING_WHEEL_CIRCUMFERENCE_MM: Int = 1_515
     public const val MIN_WEIGHT_KG: Double = 20.0
     public const val MAX_WEIGHT_KG: Double = 250.0
     public const val MIN_BIKE_WEIGHT_KG: Double = 3.0
@@ -187,6 +190,11 @@ public object ProfileDefaults {
         "26x2.0" to 2_055,
         "27.5x2.2" to 2_148,
         "29x2.2" to 2_273,
+        // Folding bikes (D-102).
+        "20x1.75 (406)" to 1_515,
+        "20x1-3/8 (451)" to 1_615,
+        "16x1.75 (305)" to 1_195,
+        "16x1-3/8 (349)" to 1_290,
     )
 }
 

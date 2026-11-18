@@ -24,6 +24,7 @@ fun ActivityKind.labelRes(): Int = when (this) {
     ActivityKind.MTB -> R.string.profile_kind_mtb
     ActivityKind.INDOOR -> R.string.profile_kind_indoor
     ActivityKind.COMMUTE -> R.string.profile_kind_commute
+    ActivityKind.FOLDING -> R.string.profile_kind_folding
     ActivityKind.CUSTOM -> R.string.profile_kind_custom
 }
 

@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.ridecomp.core.model.BuiltInProfiles
 import com.ridecomp.data.db.dao.ActivityDao
 import com.ridecomp.data.db.dao.ActivityProfileDao
 import com.ridecomp.data.db.dao.BestEffortDao
@@ -114,7 +115,7 @@ abstract class RideCompDatabase : RoomDatabase() {
     abstract fun bikeComponentDao(): BikeComponentDao
 
     companion object {
-        const val VERSION = 9
+        const val VERSION = 10
 
         /**
          * Builds the database in internal storage (SEC-STO-01). Destructive migration is never enabled:
@@ -162,7 +163,7 @@ object RideCompMigrations {
                     "`riding_position` TEXT NOT NULL, " +
                     "`fit_sport` INTEGER NOT NULL, `fit_sub_sport` INTEGER NOT NULL, `sort_order` INTEGER NOT NULL)",
             )
-            ProfileSeed.insertBuiltIns(db)
+            ProfileSeed.insertBuiltIns(db, BuiltInProfiles.FIRST)
         }
     }
 
@@ -295,6 +296,13 @@ object RideCompMigrations {
         }
     }
 
+    /** v10: the folding bike profile for existing installs (D-102); no schema change. */
+    val MIGRATION_9_10: Migration = object : Migration(9, 10) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            ProfileSeed.insertBuiltIns(db, BuiltInProfiles.FOLDING)
+        }
+    }
+
     private const val CASCADE_ACTIVITIES =
         "REFERENCES `${DbNames.TABLE_ACTIVITIES}`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE"
     private const val CASCADE_SEGMENTS =
@@ -362,6 +370,7 @@ object RideCompMigrations {
             MIGRATION_6_7,
             MIGRATION_7_8,
             MIGRATION_8_9,
+            MIGRATION_9_10,
         )
 }
 
