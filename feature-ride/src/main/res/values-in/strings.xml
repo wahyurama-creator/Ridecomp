@@ -162,8 +162,9 @@
     <string name="home_backup_now">Buat sekarang</string>
     <string name="home_backup_later">Nanti</string>
     <string name="home_update_title">Versi %1$s tersedia</string>
-    <string name="home_update_body">Unduh APK baru lalu pasang di atas aplikasi ini. Ride dan pengaturan Anda tetap ada.</string>
-    <string name="home_update_download">Unduh</string>
+    <string name="home_update_body">Pasang di atas aplikasi ini, data tetap aman.</string>
+    <string name="home_update_download">Unduh pembaruan</string>
+    <string name="home_update_new">Baru</string>
     <string name="incident_question">Apakah kamu baik-baik saja?</string>
     <string name="incident_countdown_hint">Jika tidak dijawab, kontak darurat menerima SMS berisi lokasimu.</string>
     <string name="incident_ok">SAYA BAIK-BAIK SAJA</string>
