@@ -104,6 +104,8 @@ data class BikeEditorUiState(
     val components: ImmutableList<ComponentWear> = persistentListOf(),
     /** Total of the finished rides on this bike. */
     val bikeDistanceM: Double = 0.0,
+    /** Onboarding: the bike made with the app is set up for the first time, like a new one. */
+    val isFirstSetup: Boolean = false,
 ) {
     val isNew: Boolean get() = id == 0L
 }
@@ -171,6 +173,7 @@ class BikeEditorViewModel(private val target: BikeTarget, private val useCases: 
                 profiles = profiles.toImmutableList(),
                 canDelete = bike != null && bikes.size > 1,
                 isLoaded = true,
+                isFirstSetup = target == BikeTarget.First,
             )
         }
         bike?.let { observeParts(it.id) }
@@ -241,13 +244,13 @@ class BikeEditorViewModel(private val target: BikeTarget, private val useCases: 
 }
 
 /**
- * A new bike still on the previous type's default wheel takes the new type's one (a folding bike gets 20",
- * D-102); a wheel the rider typed or picked is kept.
+ * A new bike, or the first bike during onboarding, still on the previous type's default wheel takes the new
+ * type's one (a folding bike gets 20", D-102); a wheel the rider typed or picked is kept.
  */
 private fun BikeEditorUiState.withType(newProfileId: Long): BikeEditorUiState {
     val previousDefault = (profiles.firstOrNull { it.id == profileId }?.kind ?: ActivityKind.ROAD).defaultWheelMm()
     val newDefault = profiles.firstOrNull { it.id == newProfileId }?.kind?.defaultWheelMm()
-    val isUntouched = isNew && wheelCircumferenceMm.trim().toIntOrNull() == previousDefault
+    val isUntouched = (isNew || isFirstSetup) && wheelCircumferenceMm.trim().toIntOrNull() == previousDefault
     val wheel = if (isUntouched && newDefault != null) newDefault.toString() else wheelCircumferenceMm
     return copy(profileId = newProfileId, wheelCircumferenceMm = wheel)
 }
