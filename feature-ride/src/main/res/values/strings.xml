@@ -418,5 +418,5 @@
     <string name="pre_ride_profile_title">Complete your profile</string>
     <string name="pre_ride_profile_text">Your weight, max heart rate and FTP make calories, zones and estimated power accurate. Defaults are used for now.</string>
     <string name="pre_ride_profile_fill">Fill in now</string>
-    <string name="pre_ride_profile_later">Later</string>
+    <string name="pre_ride_profile_later">Hide</string>
 </resources>

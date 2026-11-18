@@ -15,12 +15,10 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -61,6 +59,7 @@ import com.ridecomp.ui.R as UiR
 import com.ridecomp.ui.component.BigButton
 import com.ridecomp.ui.component.BigButtonSize
 import com.ridecomp.ui.component.BigButtonStyle
+import com.ridecomp.ui.component.LinkText
 import com.ridecomp.ui.component.OnboardingProgress
 import com.ridecomp.ui.component.RideCompCard
 import com.ridecomp.ui.component.WarningCard
@@ -162,12 +161,12 @@ private fun StepHeader(step: OnboardingStep, onSkip: () -> Unit) {
                 label = stringResource(R.string.onboarding_step, number, total).uppercase(),
                 modifier = Modifier.weight(1f),
             )
+            // Sized to its text: a full-width button would squeeze the progress bars to nothing.
             if (step.isSkippable) {
-                BigButton(
+                LinkText(
                     text = stringResource(R.string.onboarding_skip),
                     onClick = onSkip,
-                    style = BigButtonStyle.TEXT,
-                    size = BigButtonSize.TERTIARY,
+                    modifier = Modifier.padding(start = RideCompDimens.spacingSm),
                 )
             }
         }
@@ -203,29 +202,32 @@ private fun StepHeader(step: OnboardingStep, onSkip: () -> Unit) {
     }
 }
 
-/** Scrollable step body with its main button kept at the bottom, like the design. */
+/** Scrollable step body; the main buttons stay pinned at the bottom, always reachable (T10.12). */
 @Composable
 private fun StepLayout(content: @Composable () -> Unit, buttons: @Composable () -> Unit) {
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
+                .weight(1f)
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
-                .heightIn(min = maxHeight)
                 .padding(
                     start = RideCompDimens.screenPaddingHorizontal,
                     end = RideCompDimens.screenPaddingHorizontal,
                     top = RideCompDimens.screenPaddingTop,
-                    bottom = RideCompDimens.screenPaddingBottom,
+                    bottom = RideCompDimens.blockGap,
                 ),
-            verticalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap)) { content() }
-            Column(
-                modifier = Modifier.padding(top = RideCompDimens.blockGap),
-                verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS),
-            ) { buttons() }
-        }
+            verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
+        ) { content() }
+        Column(
+            modifier = Modifier.padding(
+                start = RideCompDimens.screenPaddingHorizontal,
+                end = RideCompDimens.screenPaddingHorizontal,
+                top = RideCompDimens.spacingS,
+                bottom = RideCompDimens.screenPaddingBottom,
+            ),
+            verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS),
+        ) { buttons() }
     }
 }
 
@@ -540,7 +542,7 @@ private fun Context.batteryExemptionIntent(): Intent =
 @DrawableRes
 private fun OnboardingStep.iconRes(): Int = when (this) {
     OnboardingStep.WELCOME, OnboardingStep.READY -> UiR.drawable.ic_check
-    OnboardingStep.LANGUAGE -> UiR.drawable.ic_help
+    OnboardingStep.LANGUAGE -> UiR.drawable.ic_language
     OnboardingStep.PERMISSIONS -> UiR.drawable.ic_location
     OnboardingStep.LEVEL -> UiR.drawable.ic_trophy
     OnboardingStep.PROFILE -> UiR.drawable.ic_heart

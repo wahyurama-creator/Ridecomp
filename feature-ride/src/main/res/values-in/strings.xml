@@ -408,8 +408,8 @@
     <string name="trainer_easy">Santai</string>
     <string name="trainer_zone">Zona %1$d</string>
     <string name="trainer_no_control">Smart trainer tersambung sebagai sensor; app lain sedang mengatur bebannya.</string>
-    <string name="pre_ride_profile_title">Lengkapi profil Anda</string>
-    <string name="pre_ride_profile_text">Berat badan, HR max, dan FTP membuat kalori, zona, dan estimasi power akurat. Sementara ini dipakai nilai bawaan.</string>
+    <string name="pre_ride_profile_title">Lengkapi profilmu</string>
+    <string name="pre_ride_profile_text">Berat badan, HR max, dan FTP bikin kalori, zona, dan estimasi power akurat. Sementara ini dipakai nilai bawaan.</string>
     <string name="pre_ride_profile_fill">Isi sekarang</string>
-    <string name="pre_ride_profile_later">Nanti</string>
+    <string name="pre_ride_profile_later">Tutup</string>
 </resources>

@@ -1,6 +1,8 @@
 package com.ridecomp.feature.ride.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,9 +22,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.config.GpsConfig
@@ -43,9 +49,6 @@ import com.ridecomp.feature.ride.viewmodel.PreRideUiEvent
 import com.ridecomp.feature.ride.viewmodel.PreRideUiState
 import com.ridecomp.feature.ride.viewmodel.PreRideViewModel
 import com.ridecomp.ui.R as UiR
-import com.ridecomp.ui.component.AlertBanner
-import com.ridecomp.ui.component.AlertSeverity
-import com.ridecomp.ui.component.BannerAction
 import com.ridecomp.ui.component.BigButton
 import com.ridecomp.ui.component.BigButtonSize
 import com.ridecomp.ui.component.BigButtonStyle
@@ -152,20 +155,59 @@ fun PreRideScreen(
     }
 }
 
-/** Profile skipped in onboarding (T10.12): defaults are used until the rider fills it in. */
+/**
+ * Profile skipped in onboarding (T10.12): a quiet dark card in the app's style (accent icon, "Isi sekarang"
+ * link, close button) so an optional reminder never outshouts the ride checks. Defaults are used meanwhile.
+ */
 @Composable
 private fun ProfileHint(onOpenProfile: () -> Unit, onClose: () -> Unit) {
-    AlertBanner(
-        title = stringResource(R.string.pre_ride_profile_title),
-        message = stringResource(R.string.pre_ride_profile_text),
-        severity = AlertSeverity.INFO,
-        iconRes = UiR.drawable.ic_info,
-        actions = listOf(
-            BannerAction(stringResource(R.string.pre_ride_profile_fill), onOpenProfile),
-            BannerAction(stringResource(R.string.pre_ride_profile_later), onClose),
-        ),
-        modifier = Modifier.padding(bottom = RideCompDimens.blockGap),
-    )
+    val colors = RideCompTheme.colors
+    val closeLabel = stringResource(R.string.pre_ride_profile_later)
+    RideCompCard(modifier = Modifier.padding(bottom = RideCompDimens.blockGap)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm)) {
+            Box(
+                modifier = Modifier
+                    .size(RideCompDimens.iconTileSize)
+                    .clip(CircleShape)
+                    .background(colors.accentTint),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(UiR.drawable.ic_heart),
+                    contentDescription = null,
+                    tint = colors.accent,
+                    modifier = Modifier.size(RideCompDimens.iconSize),
+                )
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.pre_ride_profile_title),
+                    style = RideCompTheme.typography.cardTitle,
+                    color = colors.textPrimary,
+                )
+                Text(
+                    text = stringResource(R.string.pre_ride_profile_text),
+                    style = RideCompTheme.typography.caption,
+                    color = colors.textSecondary,
+                )
+                LinkText(text = stringResource(R.string.pre_ride_profile_fill), onClick = onOpenProfile)
+            }
+            Box(
+                modifier = Modifier
+                    .size(RideCompDimens.touchTargetMin)
+                    .clickable(role = Role.Button, onClick = onClose)
+                    .semantics { contentDescription = closeLabel },
+                contentAlignment = Alignment.TopEnd,
+            ) {
+                Icon(
+                    painter = painterResource(UiR.drawable.ic_close),
+                    contentDescription = null,
+                    tint = colors.textSecondary,
+                    modifier = Modifier.size(RideCompDimens.iconSize),
+                )
+            }
+        }
+    }
 }
 
 @Composable
