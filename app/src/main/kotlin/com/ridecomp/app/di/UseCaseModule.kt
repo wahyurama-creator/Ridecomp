@@ -7,6 +7,7 @@ import com.ridecomp.core.usecase.AnalyzeActivitiesUseCase
 import com.ridecomp.core.usecase.AuthorizedStravaApi
 import com.ridecomp.core.usecase.BackupWriter
 import com.ridecomp.core.usecase.BestEffortsStep
+import com.ridecomp.core.usecase.CheckForUpdateUseCase
 import com.ridecomp.core.usecase.CheckGpsAvailabilityUseCase
 import com.ridecomp.core.usecase.ClearShareCardsUseCase
 import com.ridecomp.core.usecase.CompleteOnboardingUseCase
@@ -24,6 +25,7 @@ import com.ridecomp.core.usecase.DeleteRouteUseCase
 import com.ridecomp.core.usecase.DeleteSegmentUseCase
 import com.ridecomp.core.usecase.DisconnectStravaUseCase
 import com.ridecomp.core.usecase.DismissTipUseCase
+import com.ridecomp.core.usecase.DismissUpdateUseCase
 import com.ridecomp.core.usecase.DuplicateActivityProfileUseCase
 import com.ridecomp.core.usecase.EstimateHrMaxUseCase
 import com.ridecomp.core.usecase.EvaluateBestEffortsUseCase
@@ -64,6 +66,7 @@ import com.ridecomp.core.usecase.ObserveActivePlanUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfileUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
+import com.ridecomp.core.usecase.ObserveAvailableUpdateUseCase
 import com.ridecomp.core.usecase.ObserveBackupReminderUseCase
 import com.ridecomp.core.usecase.ObserveBikeChoiceUseCase
 import com.ridecomp.core.usecase.ObserveBikeDistanceUseCase
@@ -97,6 +100,7 @@ import com.ridecomp.core.usecase.ObserveStravaStatusUseCase
 import com.ridecomp.core.usecase.ObserveStravaUploadUseCase
 import com.ridecomp.core.usecase.ObserveTrainerUseCase
 import com.ridecomp.core.usecase.ObserveTrainingUseCase
+import com.ridecomp.core.usecase.ObserveUpdateSettingsUseCase
 import com.ridecomp.core.usecase.PairSensorUseCase
 import com.ridecomp.core.usecase.PerformIncidentActionUseCase
 import com.ridecomp.core.usecase.PerformRideActionUseCase
@@ -135,6 +139,7 @@ import com.ridecomp.core.usecase.SelectActivityProfileUseCase
 import com.ridecomp.core.usecase.SelectBikeUseCase
 import com.ridecomp.core.usecase.SendTestSmsUseCase
 import com.ridecomp.core.usecase.SetAppLanguageUseCase
+import com.ridecomp.core.usecase.SetAutoUpdateCheckUseCase
 import com.ridecomp.core.usecase.SetRiderLevelUseCase
 import com.ridecomp.core.usecase.SetSafetyEnabledUseCase
 import com.ridecomp.core.usecase.SetStravaAutoUploadUseCase
@@ -303,6 +308,11 @@ val useCaseModule = module {
     factory { SaveShareCardUseCase(get()) }
     factory { ShareCardImageUseCase(get(), get()) }
     factory { GetShareTargetsUseCase(get()) }
+    factory { CheckForUpdateUseCase(get(), get(), get(), get()) }
+    factory { ObserveAvailableUpdateUseCase(get(), get()) }
+    factory { ObserveUpdateSettingsUseCase(get(), get()) }
+    factory { SetAutoUpdateCheckUseCase(get()) }
+    factory { DismissUpdateUseCase(get()) }
     factory { ClearShareCardsUseCase(get()) }
     factory { ObserveGuideUseCase(get()) }
     factory { SetRiderLevelUseCase(get()) }

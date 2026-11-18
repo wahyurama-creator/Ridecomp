@@ -1,6 +1,8 @@
 package com.ridecomp.feature.settings.di
 
 import com.ridecomp.feature.settings.viewmodel.AndroidLicenseTextReader
+import com.ridecomp.feature.settings.viewmodel.AppUpdateUseCases
+import com.ridecomp.feature.settings.viewmodel.AppUpdateViewModel
 import com.ridecomp.feature.settings.viewmodel.BackupUseCases
 import com.ridecomp.feature.settings.viewmodel.BackupViewModel
 import com.ridecomp.feature.settings.viewmodel.GuideViewModel
@@ -39,6 +41,8 @@ val settingsFeatureModule = module {
     viewModel { BackupViewModel(get()) }
     factory<LicenseTextReader> { AndroidLicenseTextReader(androidContext()) }
     viewModel { OssLicensesViewModel(get(), get()) }
+    factory { AppUpdateUseCases(get(), get(), get()) }
+    viewModel { AppUpdateViewModel(get()) }
     factory { StravaUseCases(get(), get(), get(), get(), get()) }
     viewModel { StravaViewModel(get()) }
 }

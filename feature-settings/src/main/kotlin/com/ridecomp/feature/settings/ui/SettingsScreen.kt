@@ -55,6 +55,7 @@ enum class SettingsSection(@param:StringRes val titleRes: Int, val taskId: Strin
     STRAVA(R.string.settings_strava),
     BATTERY_HELP(R.string.settings_battery_help),
     OPEN_SOURCE_LICENSES(R.string.settings_licenses),
+    APP_UPDATE(R.string.settings_update),
     HELP(R.string.guide_help_title),
 
     /** Debug builds only (simulated GPS, 07-TEST-PLAN §2). */
@@ -82,6 +83,7 @@ private val APP_SECTIONS = listOf(
     SettingsSection.LANGUAGE,
     SettingsSection.BACKUP,
     SettingsSection.STRAVA,
+    SettingsSection.APP_UPDATE,
     SettingsSection.OPEN_SOURCE_LICENSES,
     SettingsSection.DEVELOPER,
 )
@@ -200,6 +202,7 @@ private fun SettingsSection.summary(state: SettingsUiState): Pair<String?, Value
         SettingsSection.STRAVA -> stravaSummary(state)
         SettingsSection.DATA_PAGES, SettingsSection.BATTERY_HELP,
         SettingsSection.OPEN_SOURCE_LICENSES, SettingsSection.HELP, SettingsSection.DEVELOPER,
+        SettingsSection.APP_UPDATE,
         -> null to ValueTone.NORMAL
     }
 }

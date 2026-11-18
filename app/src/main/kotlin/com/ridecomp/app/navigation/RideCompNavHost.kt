@@ -34,6 +34,7 @@ import com.ridecomp.feature.ride.viewmodel.ComponentTarget
 import com.ridecomp.feature.routes.ui.RouteDetailRoute
 import com.ridecomp.feature.routes.ui.RoutesRoute
 import com.ridecomp.feature.sensors.ui.SensorsRoute
+import com.ridecomp.feature.settings.ui.AppUpdateRoute
 import com.ridecomp.feature.settings.ui.BackupRoute
 import com.ridecomp.feature.settings.ui.BatteryHelpRoute
 import com.ridecomp.feature.settings.ui.GuideTip
@@ -81,6 +82,7 @@ object AppRoutes {
     const val BACKUP = "backup"
     const val OFFLINE_MAPS = "offline_maps"
     const val LICENSES = "licenses"
+    const val APP_UPDATE = "app_update"
     const val STRAVA = "strava"
     const val LANGUAGE = "language"
     const val HELP = "help"
@@ -210,6 +212,7 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
             )
         }
         composable(AppRoutes.LICENSES) { OssLicensesRoute(onBack = { navController.popBackStack() }) }
+        composable(AppRoutes.APP_UPDATE) { AppUpdateRoute(onBack = { navController.popBackStack() }) }
         composable(AppRoutes.LANGUAGE) { LanguageRoute(onBack = { navController.popBackStack() }) }
         composable(AppRoutes.STRAVA) {
             val redirect by IncomingStravaAuth.redirect.collectAsStateWithLifecycle()
@@ -348,6 +351,7 @@ private fun SettingsSection.route(): String = when (this) {
     SettingsSection.STRAVA -> AppRoutes.STRAVA
     SettingsSection.OFFLINE_MAPS -> AppRoutes.OFFLINE_MAPS
     SettingsSection.OPEN_SOURCE_LICENSES -> AppRoutes.LICENSES
+    SettingsSection.APP_UPDATE -> AppRoutes.APP_UPDATE
     SettingsSection.HELP -> AppRoutes.HELP
 }
 

@@ -4,15 +4,19 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.viewModelScope
 import com.ridecomp.core.engine.recording.BatteryStatus
 import com.ridecomp.core.engine.sensors.SavedSensor
+import com.ridecomp.core.engine.update.AppRelease
 import com.ridecomp.core.model.Activity
 import com.ridecomp.core.model.UnitSystem
 import com.ridecomp.core.usecase.ActivePlan
 import com.ridecomp.core.usecase.BackupReminder
+import com.ridecomp.core.usecase.CheckForUpdateUseCase
 import com.ridecomp.core.usecase.CheckGpsAvailabilityUseCase
+import com.ridecomp.core.usecase.DismissUpdateUseCase
 import com.ridecomp.core.usecase.GetRecoverableRideUseCase
 import com.ridecomp.core.usecase.GpsAvailability
 import com.ridecomp.core.usecase.HandleRecoveredRideUseCase
 import com.ridecomp.core.usecase.ObserveActivePlanUseCase
+import com.ridecomp.core.usecase.ObserveAvailableUpdateUseCase
 import com.ridecomp.core.usecase.ObserveBackupReminderUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
@@ -46,6 +50,8 @@ data class HomeUiState(
     val gps: GpsAvailability = GpsAvailability.READY,
     /** The training plan followed and today in it (T7.4b); null = none. */
     val plan: ActivePlan? = null,
+    /** A newer RideComp release to download (T10.9); null = none or put off. */
+    val update: AppRelease? = null,
 )
 
 sealed interface HomeUiEvent {
@@ -62,6 +68,12 @@ sealed interface HomeUiEvent {
 
     /** Screen resumed: re-read battery and GPS availability. */
     data object Refresh : HomeUiEvent
+
+    /** "Unduh": open the release page in the browser. */
+    data object OpenUpdate : HomeUiEvent
+
+    /** "Nanti": hide this version's card. */
+    data object DismissUpdate : HomeUiEvent
 }
 
 sealed interface HomeEffect {
@@ -70,6 +82,9 @@ sealed interface HomeEffect {
     data object OpenRide : HomeEffect
 
     data object OpenBackup : HomeEffect
+
+    /** A release page of the project (validated when read, D-103). */
+    data class OpenUrl(val url: String) : HomeEffect
 }
 
 /** Use cases of the home screen, grouped to keep the constructor short. */
@@ -83,6 +98,14 @@ data class HomeUseCases(
     val snoozeBackupReminder: SnoozeBackupReminderUseCase,
     val device: HomeDeviceUseCases,
     val observeActivePlan: ObserveActivePlanUseCase,
+    val updates: HomeUpdateUseCases,
+)
+
+/** The in-app update check (T10.9). */
+data class HomeUpdateUseCases(
+    val check: CheckForUpdateUseCase,
+    val observe: ObserveAvailableUpdateUseCase,
+    val dismiss: DismissUpdateUseCase,
 )
 
 /** Phone and sensor status shown on the home tiles (13-UI-SCREENS #3). */
@@ -97,6 +120,9 @@ class HomeViewModel(private val useCases: HomeUseCases) :
     init {
         refreshDevice()
         viewModelScope.launch { useCases.observeActivePlan().collect { plan -> updateState { copy(plan = plan) } } }
+        // Opening the app checks for a new release at most once a day, when the rider allows it (D-103).
+        viewModelScope.launch { useCases.updates.check() }
+        viewModelScope.launch { useCases.updates.observe().collect { updateState { copy(update = it) } } }
         viewModelScope.launch {
             useCases.observeBackupReminder().collect { updateState { copy(backupReminder = it) } }
         }
@@ -125,6 +151,10 @@ class HomeViewModel(private val useCases: HomeUseCases) :
             HomeUiEvent.OpenBackup -> sendEffect(HomeEffect.OpenBackup)
             HomeUiEvent.SnoozeBackupReminder -> viewModelScope.launch { useCases.snoozeBackupReminder() }
             HomeUiEvent.Refresh -> refreshDevice()
+            HomeUiEvent.OpenUpdate -> currentState.update?.let { sendEffect(HomeEffect.OpenUrl(it.pageUrl)) }
+            HomeUiEvent.DismissUpdate -> currentState.update?.let { release ->
+                viewModelScope.launch { useCases.updates.dismiss(release.version) }
+            }
         }
     }
 
