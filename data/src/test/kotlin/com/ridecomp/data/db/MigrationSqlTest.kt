@@ -48,7 +48,7 @@ class MigrationSqlTest {
         val (creates, inserts) = executed.partition { it.startsWith(CREATE) }
 
         assertEquals(exportedCreateSql(3, DbNames.TABLE_ACTIVITY_PROFILES), creates)
-        assertEquals(BuiltInProfiles.ALL.size, inserts.size)
+        assertEquals(BuiltInProfiles.FIRST.size, inserts.size)
     }
 
     @Test
@@ -123,6 +123,17 @@ class MigrationSqlTest {
         assertTrue(executed.any { it.startsWith("UPDATE `${DbNames.TABLE_ACTIVITIES}` SET `bike_id`") })
         assertTrue(exportedCreateSql(9, DbNames.TABLE_ACTIVITIES).contains(creates.first()))
         assertEquals(exportedCreateSql(9, DbNames.TABLE_BIKE_COMPONENTS), creates.drop(1))
+    }
+
+    @Test
+    fun `migration 9 to 10 adds only the folding bike profile, 2 to 3 never adds it`() {
+        val added = executedSql { RideCompMigrations.MIGRATION_9_10.migrate(it) }
+        val first = executedSql { RideCompMigrations.MIGRATION_2_3.migrate(it) }
+            .filter { it.startsWith("INSERT INTO `${DbNames.TABLE_ACTIVITY_PROFILES}`") }
+
+        assertEquals(1, added.size)
+        assertTrue(added.single().startsWith("INSERT INTO `${DbNames.TABLE_ACTIVITY_PROFILES}`"))
+        assertEquals(BuiltInProfiles.ALL.size - 1, first.size)
     }
 
     @Test

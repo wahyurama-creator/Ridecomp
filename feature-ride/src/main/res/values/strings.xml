@@ -120,6 +120,7 @@
     <string name="profile_kind_mtb">MTB</string>
     <string name="profile_kind_indoor">Indoor</string>
     <string name="profile_kind_commute">Commute</string>
+    <string name="profile_kind_folding">Folding</string>
     <string name="profile_kind_custom">Custom</string>
     <string name="profiles_title">Activity profiles</string>
     <string name="profiles_copy_name">%1$s (copy)</string>

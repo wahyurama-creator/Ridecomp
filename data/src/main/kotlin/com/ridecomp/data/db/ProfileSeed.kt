@@ -1,12 +1,14 @@
 package com.ridecomp.data.db
 
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.ridecomp.core.model.ActivityProfile
 import com.ridecomp.core.model.BuiltInProfiles
 import com.ridecomp.data.mapper.toEntity
 
 /**
- * Inserts the built-in activity profiles (12-FEATURE-SPECS §4). Runs once: in the 2→3 migration for
- * existing installs and in `onCreate` for new ones. Plain SQL with bind arguments (no string building).
+ * Inserts built-in activity profiles (12-FEATURE-SPECS §4): all of them in `onCreate` for new installs; for
+ * existing installs the first five in the 2→3 migration and the folding bike in 9→10 (D-102), so none is
+ * ever inserted twice. Plain SQL with bind arguments (no string building).
  */
 internal object ProfileSeed {
     private const val INSERT_SQL = "INSERT INTO `${DbNames.TABLE_ACTIVITY_PROFILES}` " +
@@ -14,8 +16,8 @@ internal object ProfileSeed {
         "`surface`, `riding_position`, `fit_sport`, `fit_sub_sport`, `sort_order`) " +
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
-    fun insertBuiltIns(db: SupportSQLiteDatabase) {
-        BuiltInProfiles.ALL.map { it.toEntity() }.forEach { profile ->
+    fun insertBuiltIns(db: SupportSQLiteDatabase, profiles: List<ActivityProfile> = BuiltInProfiles.ALL) {
+        profiles.map { it.toEntity() }.forEach { profile ->
             db.execSQL(
                 INSERT_SQL,
                 arrayOf<Any?>(

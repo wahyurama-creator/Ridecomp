@@ -7,7 +7,7 @@ Fitur-fitur ini dipilih pemilik proyek dengan referensi Garmin Edge, Wahoo, dan 
 | AP | Jeda & lanjut otomatis (auto-pause/resume) | 1 | §1 |
 | RM | Pengingat minum & makan | 1 | §2 |
 | BM | Mode baterai kritis otomatis | 1 | §3 |
-| PR-F | Profil aktivitas (Road, Gravel, MTB, Indoor, Commute) | 2 | §4 |
+| PR-F | Profil aktivitas (Road, Gravel, MTB, Indoor, Commute, Sepeda lipat) | 2 | §4 |
 | INC | Deteksi insiden/jatuh + SMS darurat | 2 | §5 |
 | CL | Info tanjakan otomatis (ala ClimbPro) | 3 | §6 |
 | TW | Peringatan belokan | 3 | §7 |
@@ -80,7 +80,7 @@ Tujuan utama: **ride tidak pernah hilang karena HP mati**.
 
 ## 4. Profil aktivitas (PR-F)
 
-Profil bawaan: **Road**, **Gravel**, **MTB**, **Indoor**, **Commute**. Pengguna bisa mengubah dan menduplikasi profil.
+Profil bawaan: **Road**, **Gravel**, **MTB**, **Indoor**, **Commute**, **Sepeda lipat** (skema v10, D-102). Pengguna bisa mengubah dan menduplikasi profil.
 
 Setiap profil menyimpan: halaman data (konfigurasi `05-DATA-MODEL.md` §2), setting auto-pause (§1), pengingat (§2), auto-lap, mode layar default, permukaan (Crr) & posisi (CdA) untuk estimated power, sensor yang dipakai, dan `sport/sub_sport` FIT.
 
@@ -91,6 +91,7 @@ Setiap profil menyimpan: halaman data (konfigurasi `05-DATA-MODEL.md` §2), sett
 | MTB | Crr lebih tinggi; halaman data menonjolkan elevasi & HR |
 | Indoor | **GPS mati**; speed & jarak dari sensor roda; auto-pause dari sensor roda; FIT tanpa posisi, sub_sport indoor |
 | Commute | Halaman data sederhana (speed, jarak, jam); bisa ditandai commute saat upload Strava (Fase 5) |
+| Sepeda lipat | Posisi tegak, permukaan jalan, halaman data umum; sepeda baru berjenis ini mulai dengan roda 20x1.75 (1.515 mm); daftar roda memuat 16"/20" (305, 349, 406, 451). FIT sub_sport generic (D-102) |
 
 - Profil dipilih di **Pre-ride check**; profil terakhir menjadi default.
 - Nilai enum FIT `sport`/`sub_sport` diverifikasi agent terhadap FIT SDK Profile.

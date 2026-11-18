@@ -119,6 +119,7 @@
     <string name="profile_kind_mtb">MTB</string>
     <string name="profile_kind_indoor">Indoor</string>
     <string name="profile_kind_commute">Commute</string>
+    <string name="profile_kind_folding">Sepeda lipat</string>
     <string name="profile_kind_custom">Kustom</string>
     <string name="profiles_title">Profil aktivitas</string>
     <string name="profiles_copy_name">%1$s (salinan)</string>

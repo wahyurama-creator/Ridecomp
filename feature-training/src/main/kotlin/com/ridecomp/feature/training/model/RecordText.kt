@@ -68,6 +68,7 @@ fun ActivityKind.labelRes(): Int = when (this) {
     ActivityKind.MTB -> R.string.records_kind_mtb
     ActivityKind.INDOOR -> R.string.records_kind_indoor
     ActivityKind.COMMUTE -> R.string.records_kind_commute
+    ActivityKind.FOLDING -> R.string.records_kind_folding
     ActivityKind.CUSTOM -> R.string.records_kind_custom
 }
 
