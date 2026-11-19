@@ -135,7 +135,7 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 - Profil HR max belum diisi → zona dari perkiraan umur bila ada, jika tidak tampilkan grafik saja + ajakan isi profil.
 
 #### T11.6 Perkiraan zona power Z1–Z7
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-19 · Feature Report: [`T11.6-power-zones.md`](../reports/features/T11.6-power-zones.md) · D-121
 - Sumber: **power meter** bila ada (`powerW`); jika tidak, **estimasi** (`estPowerW`) dan judul memuat kata **"Perkiraan"**.
 - FTP: dari profil; bila kosong, **perkiraan FTP**. `05-DATA-MODEL` §3.9 baru memuat batas zona, belum ada rumus perkiraan FTP: tetapkan dan tulis di §3.9 (usulan: 95% dari power 20 menit terbaik dalam 6 minggu terakhir; bila belum ada, berat × 2,0 W/kg untuk pemula sesuai level, ditandai "perkiraan"). Teks: "Berdasarkan berat X kg dan perkiraan FTP Y W".
 - Batang Z1 (bawah) … Z7 (atas) dengan **% waktu bergerak** dan **rentang watt** per zona (batas `ZONE_UPPER_PERCENT_FTP` × FTP).
