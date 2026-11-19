@@ -1,6 +1,6 @@
 # 14 — Rencana Fase 11: Analisa Ride, Usaha Terbaik, Tema & Peta Offline
 
-**Status:** rencana (belum dikerjakan). Disusun 2026-11-19 atas permintaan pemilik.
+**Status:** berjalan (1/14: T11.1 selesai). Disusun 2026-11-19 atas permintaan pemilik.
 **Acuan:** `06-ROADMAP.md` (daftar task), `07-TEST-PLAN.md` §4/§5 (uji), `10-FEATURE-CHECKLIST.md` (alur tiap task), aturan wajib `08`–`11`.
 **Referensi visual pemilik:** `~/Downloads/RideComp-Referensi/` (4 screenshot halaman detail aktivitas Strava, 2026-11-18): bagian *Hasil* (Usaha Terbaik · Segmen), *Wawasan Detak Jantung*, grafik *Kecepatan* + 4 angka, grafik *Elevasi* + 2 angka, *Perkiraan Zona Kekuatan* Z1–Z7. Logo, ikon, dan merek Strava **tidak** ditiru: hanya susunan informasinya.
 
@@ -46,7 +46,7 @@ Permintaan tambahan pemilik: **fitur ini tidak boleh mengganggu performa** → �
 Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`); ganti "belum dikerjakan" pada status task di §5 dengan tanggal & tautan Feature Report.
 
 **11A Fondasi**
-- [ ] T11.1 Komponen grafik `RideChart`
+- [x] T11.1 Komponen grafik `RideChart`
 - [ ] T11.2 Tata letak halaman detail per bagian
 
 **11B Analisa**
@@ -93,7 +93,7 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 ### Fase 11A — Fondasi
 
 #### T11.1 Komponen grafik (`:ui-common`)
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-19 · Feature Report: [`T11.1-ride-chart.md`](../reports/features/T11.1-ride-chart.md) · D-115
 - `RideChart` (Compose `Canvas`, **tanpa library baru**, DEP-02): grafik area/garis terhadap **jarak** (sumbu X km/mi sesuai satuan), **angka sumbu Y** "rapi" (1-2-5 × 10ⁿ, 3–5 garis), garis bantu tipis, label satuan di pojok sumbu.
 - **Lapisan latar opsional** (mis. elevasi abu-abu di belakang kecepatan, seperti referensi).
 - **Sentuh & geser** menampilkan penanda vertikal + nilai pada titik itu (opsional fase ini, wajib bila murah).
