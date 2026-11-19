@@ -5,16 +5,18 @@ import androidx.lifecycle.viewModelScope
 import com.ridecomp.core.config.Units
 import com.ridecomp.core.model.Activity
 import com.ridecomp.core.model.Lap
-import com.ridecomp.core.model.RideTotals
 import com.ridecomp.core.model.StravaStatus
 import com.ridecomp.core.model.StravaUpload
 import com.ridecomp.core.model.UnitSystem
 import com.ridecomp.core.source.DispatcherProvider
+import com.ridecomp.core.usecase.ActivityAnalysis
+import com.ridecomp.core.usecase.AnalysisSectionKind
+import com.ridecomp.core.usecase.AnalysisStatKind
 import com.ridecomp.core.usecase.ChartPoint
 import com.ridecomp.core.usecase.DeleteActivityUseCase
 import com.ridecomp.core.usecase.ExportFormat
 import com.ridecomp.core.usecase.GetLapsUseCase
-import com.ridecomp.core.usecase.LoadRideChartUseCase
+import com.ridecomp.core.usecase.LoadActivityAnalysisUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
 import com.ridecomp.core.usecase.ObserveMapTilesUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
@@ -24,6 +26,7 @@ import com.ridecomp.core.usecase.QueueStravaUploadUseCase
 import com.ridecomp.core.usecase.SaveActivityFileUseCase
 import com.ridecomp.core.usecase.ShareActivityFileUseCase
 import com.ridecomp.core.usecase.SuggestExportFileNameUseCase
+import com.ridecomp.core.usecase.valueOf
 import com.ridecomp.core.util.Outcome
 import com.ridecomp.ui.component.ChartValue
 import com.ridecomp.ui.map.MapPoint
@@ -47,8 +50,8 @@ data class ActivityDetailUiState(
     val activity: Activity? = null,
     val isMissing: Boolean = false,
     val laps: ImmutableList<Lap> = persistentListOf(),
-    /** Charts vs distance (km/mi) in display units, downsampled ≤ ~1000 points; only those with data. */
-    val charts: ImmutableList<DetailChart> = persistentListOf(),
+    /** Sections in page order, charts vs distance (km/mi) in display units, ≤ 300 points; only those with data. */
+    val sections: ImmutableList<DetailSection> = persistentListOf(),
     /** The ride's line for the route sketch (same downsampling as the charts); empty without GPS. */
     val route: ImmutableList<MapPoint> = persistentListOf(),
     val unitSystem: UnitSystem = UnitSystem.METRIC,
@@ -81,7 +84,7 @@ sealed interface ActivityDetailEffect {
 data class ActivityDetailUseCases(
     val observeActivity: ObserveActivityUseCase,
     val getLaps: GetLapsUseCase,
-    val loadChart: LoadRideChartUseCase,
+    val loadAnalysis: LoadActivityAnalysisUseCase,
     val observeSettings: ObserveRideSettingsUseCase,
     val share: ShareActivityFileUseCase,
     val save: SaveActivityFileUseCase,
@@ -111,7 +114,7 @@ class ActivityDetailViewModel(
 
     private val observeActivity = useCases.observeActivity
     private val getLaps = useCases.getLaps
-    private val loadChart = useCases.loadChart
+    private val loadAnalysis = useCases.loadAnalysis
     private val share = useCases.share
     private val save = useCases.save
     private val suggestName = useCases.suggestName
@@ -157,14 +160,14 @@ class ActivityDetailViewModel(
 
     private suspend fun loadDetails(unitSystem: UnitSystem) {
         val laps = getLaps(activityId).toImmutableList()
-        // Downsampling and conversion are CPU work: off the main thread (02-DESIGN §6).
-        // The ride's own totals (moving average, max) head the charts, so both show the same numbers.
+        // Downsampling, section numbers and conversion are CPU work: off the main thread (02-DESIGN §6).
+        // The ride's own totals (moving average, max) feed the sections, so both show the same numbers.
         val totals = observeActivity(activityId).first()?.totals
-        val (charts, route) = withContext(dispatchers.default) {
-            val points = loadChart(activityId)
-            points.toCharts(unitSystem, totals) to points.toRoute()
+        val (sections, route) = withContext(dispatchers.default) {
+            val analysis = loadAnalysis(activityId, totals)
+            analysis.toSections(unitSystem) to analysis.points.toRoute()
         }
-        updateState { copy(laps = laps, charts = charts, route = route) }
+        updateState { copy(laps = laps, sections = sections, route = route) }
     }
 
     private fun runFileAction(successMessage: FileMessage?, action: suspend () -> Outcome<*, *>) {
@@ -179,79 +182,39 @@ class ActivityDetailViewModel(
     }
 }
 
-/** Charts of the detail screen (02-DESIGN §3.7, T2.11 adds the sensor charts). */
-enum class ChartKind { SPEED, ELEVATION, HEART_RATE, CADENCE, POWER }
-
-/** A summary number shown above a chart. */
-enum class ChartStatKind { AVG, MAX, MIN }
-
+/** A number of a section, in display units. */
 @Immutable
-data class ChartStat(val kind: ChartStatKind, val value: Double)
+data class SectionStat(val kind: AnalysisStatKind, val value: Double)
 
+/** A section of the detail page (T11.2): its chart and its numbers, in display units. */
 @Immutable
-data class DetailChart(
-    val kind: ChartKind,
+data class DetailSection(
+    val kind: AnalysisSectionKind,
     val values: ImmutableList<ChartValue>,
-    val stats: ImmutableList<ChartStat> = persistentListOf(),
+    val stats: ImmutableList<SectionStat> = persistentListOf(),
 )
 
-/** Converts samples to display-unit charts; a chart without at least two values is left out. */
-internal fun List<ChartPoint>.toCharts(unitSystem: UnitSystem, totals: RideTotals? = null): ImmutableList<DetailChart> {
+/** Converts the analysis to display units: km or mi along, km/h or mph, m or ft. */
+internal fun ActivityAnalysis.toSections(unitSystem: UnitSystem): ImmutableList<DetailSection> {
     val isMetric = unitSystem == UnitSystem.METRIC
     val distanceDivisor = if (isMetric) Units.METERS_PER_KM else Units.METERS_PER_MILE
     val speedFactor = if (isMetric) Units.KMH_PER_MPS else Units.MPH_PER_MPS
-    val altitudeDivisor = if (isMetric) 1.0 else Units.METERS_PER_FOOT
-    return ChartKind.entries.mapNotNull { kind ->
-        val values = map { point ->
-            val y = when (kind) {
-                ChartKind.SPEED -> point.speedMps?.times(speedFactor)
-                ChartKind.ELEVATION -> point.altitudeM?.div(altitudeDivisor)
-                ChartKind.HEART_RATE -> point.heartRateBpm?.toDouble()
-                ChartKind.CADENCE -> point.cadenceRpm?.toDouble()
-                ChartKind.POWER -> point.powerW?.toDouble()
-            }
-            ChartValue(point.distanceM / distanceDivisor, y)
+    val altitudeFactor = if (isMetric) 1.0 else 1.0 / Units.METERS_PER_FOOT
+    return sections.map { section ->
+        val factor = when (section.kind) {
+            AnalysisSectionKind.SPEED -> speedFactor
+            AnalysisSectionKind.ELEVATION -> altitudeFactor
+            AnalysisSectionKind.HEART_RATE, AnalysisSectionKind.POWER, AnalysisSectionKind.CADENCE -> 1.0
         }
-        values.takeIf { list -> list.count { it.y != null } >= MIN_CHART_VALUES }
-            ?.let {
-                DetailChart(kind, it.toImmutableList(), kind.stats(it.mapNotNull(ChartValue::y), totals, speedFactor))
-            }
+        DetailSection(
+            kind = section.kind,
+            values = points.map { point ->
+                ChartValue(point.distanceM / distanceDivisor, section.kind.valueOf(point)?.times(factor))
+            }.toImmutableList(),
+            stats = section.stats.map { SectionStat(it.kind, it.value * factor) }.toImmutableList(),
+        )
     }.toImmutableList()
 }
-
-/**
- * Summary of a chart in display units: elevation shows its range; the others their average and maximum,
- * taken from the ride totals when it has them (the chart is downsampled), else from the chart. Cadence
- * averages only while pedaling (zeros left out).
- */
-private fun ChartKind.stats(ys: List<Double>, totals: RideTotals?, speedFactor: Double): ImmutableList<ChartStat> {
-    fun pair(avg: Double?, max: Double?) = listOfNotNull(
-        avg?.let { ChartStat(ChartStatKind.AVG, it) },
-        ChartStat(ChartStatKind.MAX, max ?: ys.max()),
-    ).toImmutableList()
-    return when (this) {
-        ChartKind.ELEVATION ->
-            persistentListOf(ChartStat(ChartStatKind.MIN, ys.min()), ChartStat(ChartStatKind.MAX, ys.max()))
-        ChartKind.SPEED -> pair(
-            avg = totals?.avgSpeedMps?.takeIf { it > 0 }?.times(speedFactor) ?: ys.filter { it > 0 }.averageOrNull(),
-            max = totals?.maxSpeedMps?.takeIf { it > 0 }?.times(speedFactor),
-        )
-        ChartKind.HEART_RATE -> pair(
-            avg = totals?.avgHeartRateBpm?.toDouble() ?: ys.average(),
-            max = totals?.maxHeartRateBpm?.toDouble(),
-        )
-        ChartKind.CADENCE -> pair(
-            avg = totals?.avgCadenceRpm?.toDouble() ?: ys.filter { it > 0 }.averageOrNull(),
-            max = null,
-        )
-        ChartKind.POWER -> pair(
-            avg = totals?.avgPowerW?.toDouble() ?: ys.average(),
-            max = totals?.maxPowerW?.toDouble(),
-        )
-    }
-}
-
-private fun List<Double>.averageOrNull(): Double? = takeIf { it.isNotEmpty() }?.average()
 
 /** Points with a GPS fix, for the route sketch. */
 internal fun List<ChartPoint>.toRoute(): ImmutableList<MapPoint> = mapNotNull { point ->
@@ -259,9 +222,6 @@ internal fun List<ChartPoint>.toRoute(): ImmutableList<MapPoint> = mapNotNull { 
     val lon = point.lonDeg
     if (lat != null && lon != null) MapPoint(lat, lon) else null
 }.toImmutableList()
-
-/** A line needs two points. */
-private const val MIN_CHART_VALUES = 2
 
 /** Keeps the network watch across quick configuration changes only (CO-07). */
 private const val MAP_STOP_TIMEOUT_MS = 5_000L
