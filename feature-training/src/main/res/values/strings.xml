@@ -223,4 +223,14 @@
     <string name="intensity_tempo_how">Moderate: faster breathing, short sentences only (effort 5–6 of 10).</string>
     <string name="intensity_threshold_how">Hard: e.g. 2–4 × 8–15 min in zone 4 with easy spinning in between (effort 7–8 of 10).</string>
     <string name="intensity_vo2max_how">Very hard: e.g. 5 × 3 min in zone 5 with 3 min easy in between (effort 9 of 10).</string>
+    <string name="results_title">Results</string>
+    <string name="results_info_label">About results</string>
+    <string name="results_info">Best efforts: distances and durations of this ride that were among your 3 best when you rode it. Segments: every segment of yours this ride passed; tap one to see all its efforts. PR = your record at the time.</string>
+    <string name="results_best_efforts">Best efforts</string>
+    <string name="results_segments">Segments</string>
+    <string name="results_rank_pr">PR</string>
+    <string name="results_rank_second">2nd best</string>
+    <string name="results_rank_third">3rd best</string>
+    <string name="results_show_all">See all results (%1$d)</string>
+    <string name="results_show_less">Show less</string>
 </resources>

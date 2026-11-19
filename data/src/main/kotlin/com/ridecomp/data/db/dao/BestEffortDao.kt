@@ -20,6 +20,9 @@ data class RecordRow(
     val startedAt: Long,
 )
 
+/** An effort of a ride with its rank among earlier rides of the same kind (T11.7). */
+data class RankedEffortRow(val key: String, val value: Double, val startT: Long?, val endT: Long?, val rank: Int)
+
 @Dao
 interface BestEffortDao {
     @Insert
@@ -70,4 +73,19 @@ interface BestEffortDao {
             "WHERE b.`key` = :key AND a.started_at >= :sinceStartedAt",
     )
     suspend fun maxSince(key: String, sinceStartedAt: Long): Double?
+
+    /**
+     * Efforts of a ride with their rank: 1 + earlier rides of the same kind as good or better (lower for
+     * [lowerIsBetterType], higher otherwise), so rank 1 matches `is_pr` and a tie is not a record.
+     */
+    @Query(
+        "SELECT b.`key` AS `key`, b.value AS value, b.start_t AS startT, b.end_t AS endT, 1 + (" +
+            "SELECT COUNT(*) FROM ${DbNames.TABLE_BEST_EFFORTS} o " +
+            "JOIN ${DbNames.TABLE_ACTIVITIES} oa ON oa.id = o.activity_id " +
+            "WHERE o.profile_kind = b.profile_kind AND o.`key` = b.`key` AND oa.started_at < a.started_at " +
+            "AND CASE WHEN b.type = :lowerIsBetterType THEN o.value <= b.value ELSE o.value >= b.value END" +
+            ") AS `rank` FROM ${DbNames.TABLE_BEST_EFFORTS} b " +
+            "JOIN ${DbNames.TABLE_ACTIVITIES} a ON a.id = b.activity_id WHERE b.activity_id = :activityId",
+    )
+    fun observeRanked(activityId: Long, lowerIsBetterType: String): Flow<List<RankedEffortRow>>
 }

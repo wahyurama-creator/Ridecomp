@@ -72,4 +72,4 @@ fun ActivityKind.labelRes(): Int = when (this) {
     ActivityKind.CUSTOM -> R.string.records_kind_custom
 }
 
-private const val WATT = "W"
+internal const val WATT = "W"

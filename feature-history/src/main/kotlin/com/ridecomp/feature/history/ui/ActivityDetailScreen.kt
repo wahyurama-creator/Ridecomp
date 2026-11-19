@@ -122,6 +122,8 @@ fun ActivityDetailRoute(
     /** Heart-rate analysis (T11.5): pair a sensor, set HR max. */
     onOpenSensors: () -> Unit = {},
     onOpenProfile: () -> Unit = {},
+    /** The "Results" card (T11.7), from the app: shown below the totals. */
+    resultsContent: (@Composable () -> Unit)? = null,
     viewModel: ActivityDetailViewModel = koinViewModel { parametersOf(activityId) },
 ) {
     val context = LocalContext.current
@@ -151,6 +153,7 @@ fun ActivityDetailRoute(
         isOnlineMap = isOnlineMap,
         onOpenSensors = onOpenSensors,
         onOpenProfile = onOpenProfile,
+        resultsContent = resultsContent,
         onOpenStravaActivity = { stravaId ->
             try {
                 context.startActivity(
@@ -186,6 +189,8 @@ fun ActivityDetailScreen(
     /** Heart-rate analysis (T11.5): pair a sensor, set HR max. */
     onOpenSensors: () -> Unit = {},
     onOpenProfile: () -> Unit = {},
+    /** The "Results" card (T11.7), from the app: shown below the totals. */
+    resultsContent: (@Composable () -> Unit)? = null,
 ) {
     val activity = state.activity
     ScreenScaffold(
@@ -215,11 +220,13 @@ fun ActivityDetailScreen(
                     verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
                 ) {
                     // One item: the route arrives after the totals, and a separate item inserted above the
-                    // first visible one would open the page scrolled past the map.
+                    // first visible one would open the page scrolled past the map. The results may stay empty:
+                    // inside the column they leave no gap.
                     item(key = ITEM_HEADER) {
                         Column(verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap)) {
                             if (state.route.size >= MIN_LINE_POINTS) RouteSketch(state, isOnlineMap)
                             Totals(activity.totals, format)
+                            resultsContent?.invoke()
                         }
                     }
                     onShareCard?.let { item(key = ITEM_SHARE) { ShareCardEntry(it) } }

@@ -213,4 +213,14 @@
     <string name="intensity_tempo_how">Sedang: napas lebih cepat, hanya bisa bicara pendek (usaha 5–6 dari 10).</string>
     <string name="intensity_threshold_how">Berat: mis. 2–4 × 8–15 menit di zona 4, kayuh santai di antaranya (usaha 7–8 dari 10).</string>
     <string name="intensity_vo2max_how">Sangat berat: mis. 5 × 3 menit di zona 5, 3 menit santai di antaranya (usaha 9 dari 10).</string>
+    <string name="results_title">Hasil</string>
+    <string name="results_info_label">Penjelasan Hasil</string>
+    <string name="results_info">Usaha terbaik: jarak dan durasi ride ini yang masuk 3 terbaikmu saat ride itu. Segmen: semua segmenmu yang dilewati ride ini; ketuk untuk melihat semua usahanya. PR = rekormu saat itu.</string>
+    <string name="results_best_efforts">Usaha terbaik</string>
+    <string name="results_segments">Segmen</string>
+    <string name="results_rank_pr">PR</string>
+    <string name="results_rank_second">Terbaik ke-2</string>
+    <string name="results_rank_third">Terbaik ke-3</string>
+    <string name="results_show_all">Lihat semua hasil (%1$d)</string>
+    <string name="results_show_less">Tampilkan lebih sedikit</string>
 </resources>

@@ -2,6 +2,7 @@ package com.ridecomp.core.testing
 
 import com.ridecomp.core.engine.segments.Segment
 import com.ridecomp.core.repository.ActivityRepository
+import com.ridecomp.core.repository.RankedSegmentEffort
 import com.ridecomp.core.repository.SegmentEffort
 import com.ridecomp.core.repository.SegmentEffortView
 import com.ridecomp.core.repository.SegmentRepository
@@ -59,4 +60,20 @@ public class FakeSegmentRepository(private val activities: ActivityRepository) :
         it.activityId == activityId &&
             it.isPr
     }
+
+    override fun observeRanked(activityId: Long): Flow<List<RankedSegmentEffort>> =
+        combine(segments, efforts) { all, efforts ->
+            val startedAt = startedAt(activityId)
+            efforts.filter { it.activityId == activityId }.sortedBy { it.match.startMs }.mapNotNull { effort ->
+                val segment = all[effort.segmentId] ?: return@mapNotNull null
+                val ahead = efforts.count {
+                    it.segmentId == effort.segmentId &&
+                        startedAt(it.activityId) < startedAt &&
+                        it.match.elapsedS <= effort.match.elapsedS
+                }
+                RankedSegmentEffort(segment.id, segment.name, segment.lengthM, effort.match, 1 + ahead)
+            }
+        }
+
+    private suspend fun startedAt(id: Long): Long = activities.get(id)?.startedAtMs ?: Long.MAX_VALUE
 }
