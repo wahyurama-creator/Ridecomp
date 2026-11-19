@@ -1,6 +1,6 @@
 # 14 — Rencana Fase 11: Analisa Ride, Usaha Terbaik, Tema & Peta Offline
 
-**Status:** berjalan (4/14: T11.1–T11.4 selesai). Disusun 2026-11-19 atas permintaan pemilik.
+**Status:** berjalan (5/14: T11.1–T11.5 selesai). Disusun 2026-11-19 atas permintaan pemilik.
 **Acuan:** `06-ROADMAP.md` (daftar task), `07-TEST-PLAN.md` §4/§5 (uji), `10-FEATURE-CHECKLIST.md` (alur tiap task), aturan wajib `08`–`11`.
 **Referensi visual pemilik:** `~/Downloads/RideComp-Referensi/` (4 screenshot halaman detail aktivitas Strava, 2026-11-18): bagian *Hasil* (Usaha Terbaik · Segmen), *Wawasan Detak Jantung*, grafik *Kecepatan* + 4 angka, grafik *Elevasi* + 2 angka, *Perkiraan Zona Kekuatan* Z1–Z7. Logo, ikon, dan merek Strava **tidak** ditiru: hanya susunan informasinya.
 
@@ -54,7 +54,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`); ganti 
 **11B Analisa**
 - [x] T11.3 Kecepatan
 - [x] T11.4 Elevasi (rombak)
-- [ ] T11.5 Detak jantung
+- [x] T11.5 Detak jantung
 - [ ] T11.6 Perkiraan zona power Z1–Z7
 
 **11C Usaha terbaik**
@@ -126,7 +126,7 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 - Tanpa data ketinggian: bagian disembunyikan.
 
 #### T11.5 Detak jantung (bila ada sensor HR)
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-19 · Feature Report: [`T11.5-heart-rate.md`](../reports/features/T11.5-heart-rate.md) · D-120
 - Grafik HR vs jarak (atau waktu) + garis rata-rata.
 - Angka: **HR rata-rata**, **HR maks**.
 - **Waktu di zona Z1–Z5**: batang horizontal per zona (warna zona yang sudah ada), % dan durasi, rentang bpm per zona dari HR max profil. Keterangan "Berdasarkan HR max X bpm" (+ tautan ubah di Profil).
