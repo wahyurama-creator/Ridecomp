@@ -55,6 +55,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`); ganti 
 - [x] T11.3 Kecepatan
 - [x] T11.4 Elevasi (rombak)
 - [x] T11.5 Detak jantung
+- [x] T11.5a Perbaikan tautan perkiraan HR max di Profil · [Feature Report](../reports/features/T11.5a-hr-max-estimate-link.md)
 - [ ] T11.6 Perkiraan zona power Z1–Z7
 
 **11C Usaha terbaik**

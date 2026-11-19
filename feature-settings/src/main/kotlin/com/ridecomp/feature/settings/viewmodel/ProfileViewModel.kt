@@ -2,6 +2,7 @@ package com.ridecomp.feature.settings.viewmodel
 
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.viewModelScope
+import com.ridecomp.core.config.ProfileDefaults
 import com.ridecomp.core.model.RiderProfile
 import com.ridecomp.core.model.RidingPosition
 import com.ridecomp.core.model.Sex
@@ -37,7 +38,10 @@ data class ProfileUiState(
     val isHrMaxEstimated: Boolean = false,
     val isLoaded: Boolean = false,
     val isSaving: Boolean = false,
-)
+) {
+    /** The 220 − age estimate needs a complete birth year (T11.5a): until then the action is not offered. */
+    val canEstimateHrMax: Boolean get() = (birthYear.toIntOrNull() ?: 0) >= ProfileDefaults.MIN_BIRTH_YEAR
+}
 
 sealed interface ProfileUiEvent {
     data class FieldChanged(val field: ProfileField, val text: String) : ProfileUiEvent
