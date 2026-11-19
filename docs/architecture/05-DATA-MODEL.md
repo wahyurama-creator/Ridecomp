@@ -192,6 +192,16 @@ Jika cadence = 0 (coasting) dan tersedia sensor cadence → P = 0. Tampil dengan
 ### 3.9 Zona power (berdasarkan FTP)
 Z1 < 55%, Z2 56–75%, Z3 76–90%, Z4 91–105%, Z5 106–120%, Z6 121–150%, Z7 > 150%.
 
+Batas watt: atas zona = `floor(FTP × %)` (inklusif), bawah = atas zona sebelumnya + 1; Z1 mulai 0 W, Z7 tanpa batas atas.
+Waktu di zona dihitung dari sampel 1 Hz **saat bergerak** (kecepatan > 0): power meter bila ride punya power, selain itu estimated power (§3.7, berlabel "Perkiraan", hanya untuk tampilan — tidak pernah ditulis ke FIT `power`).
+
+**Perkiraan FTP** (urutan prioritas, T11.6):
+1. FTP di profil.
+2. 95 % × power rata-rata 20 menit terbaik dari **power meter** dalam 6 minggu terakhir (`best_efforts`, ride selesai).
+3. Berat × W/kg sesuai level: pemula 2,0 · menengah 2,5 · berpengalaman 3,0 (level kosong = menengah; berat kosong = default profil 70 kg).
+
+Sumber FTP selalu ditampilkan di bawah zona dengan tautan ke Profil.
+
 ### 3.10 Kalori (urutan prioritas)
 1. **Power meter:** `kcal ≈ total_kJ` (asumsi efisiensi tubuh ~24%; 1 kJ mekanik ≈ 1 kcal metabolik).
 2. **HR (Keytel et al.)**, butuh umur, berat, jenis kelamin, per menit:
