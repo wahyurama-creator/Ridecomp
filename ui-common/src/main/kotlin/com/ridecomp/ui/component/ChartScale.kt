@@ -58,8 +58,12 @@ object ChartScale {
 
     /** The vertical axis for data between [dataMin] and [dataMax]. */
     fun yAxis(dataMin: Double, dataMax: Double, scale: ChartYScale, count: Int = Y_TICKS): ChartAxis {
-        val low = if (scale == ChartYScale.FROM_ZERO) minOf(0.0, dataMin) else dataMin
-        val high = max(dataMax, low)
+        // Around the data, some room above and below so the line never runs along an edge (T11.4); never
+        // below zero for data that is not.
+        val margin = if (scale == ChartYScale.DATA_RANGE) (dataMax - dataMin).coerceAtLeast(0.0) * DATA_MARGIN else 0.0
+        val padded = (dataMin - margin).let { if (dataMin >= 0) it.coerceAtLeast(0.0) else it }
+        val low = if (scale == ChartYScale.FROM_ZERO) minOf(0.0, dataMin) else padded
+        val high = max(dataMax + margin, low)
         // A flat line still gets a visible band around it.
         val span = (high - low).takeIf { it > 0 } ?: max(abs(high), 1.0)
         val step = niceStep(span, count)
@@ -96,6 +100,8 @@ object ChartScale {
         return ceil(-log10(step) - EPSILON).toInt().coerceIn(0, MAX_DECIMALS)
     }
 
+    /** Room above and below the data on a [ChartYScale.DATA_RANGE] axis, as a share of the data's span. */
+    private const val DATA_MARGIN = 0.1
     private const val TEN = 10.0
     private const val MAX_DECIMALS = 3
     private const val NICE_ONE = 1.0

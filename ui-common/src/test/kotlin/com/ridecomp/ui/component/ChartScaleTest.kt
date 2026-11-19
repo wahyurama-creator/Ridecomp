@@ -36,6 +36,18 @@ class ChartScaleTest {
     }
 
     @Test
+    fun `the elevation line keeps room above and below`() {
+        // 120–132 m would fit 120..135 exactly, with the low point on the bottom edge.
+        val axis = ChartScale.yAxis(dataMin = 120.0, dataMax = 132.0, scale = ChartYScale.DATA_RANGE)
+        assertTrue(axis.min < 120.0 && axis.max > 132.0)
+        assertEquals(115.0, axis.min)
+        assertEquals(135.0, axis.max)
+
+        // Data near sea level does not get a negative axis.
+        assertEquals(0.0, ChartScale.yAxis(dataMin = 0.5, dataMax = 30.0, scale = ChartYScale.DATA_RANGE).min)
+    }
+
+    @Test
     fun `a flat line still gets a band, small ranges keep decimals`() {
         val flat = ChartScale.yAxis(dataMin = 140.0, dataMax = 140.0, scale = ChartYScale.DATA_RANGE)
         assertTrue(flat.max > flat.min)

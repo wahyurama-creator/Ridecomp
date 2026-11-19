@@ -77,11 +77,13 @@
     <string name="detail_section_cadence">Cadence</string>
     <string name="detail_section_info_label">About %1$s</string>
     <string name="detail_info_speed">The average counts only the time you were moving; stops are left out (total time includes them). The maximum is filtered so GPS jumps do not count. The grey area behind the chart is the elevation.</string>
-    <string name="detail_info_elevation">Ascent and descent add up every climb and drop of the ride. The chart starts at the lowest point so the shape of the climbs shows.</string>
+    <string name="detail_info_elevation">Elevation gain and descent add up every climb and drop of the ride. The chart covers just the range of the ride, with a little room above and below, so the shape of the climbs shows.</string>
     <string name="detail_info_heart_rate">From the heart rate sensor connected during the ride. A gap in the chart means the sensor dropped out for a while.</string>
     <string name="detail_info_power">From a power meter or smart trainer. NP (normalized power) weighs the hard efforts more, so it is closer to how hard the ride felt than the plain average.</string>
     <string name="detail_info_cadence">Pedal turns per minute. The average counts only while pedaling; coasting is left out.</string>
-    <string name="detail_stat_ascent">Ascent</string>
+    <string name="detail_stat_ascent">Elevation gain</string>
+    <string name="detail_stat_elevation_max">Max elevation</string>
+    <string name="detail_stat_elevation_min">Min elevation</string>
     <string name="detail_stat_descent">Descent</string>
     <string name="detail_stat_normalized">Normalized power (NP)</string>
     <string name="detail_section_export">Export &amp; Strava</string>

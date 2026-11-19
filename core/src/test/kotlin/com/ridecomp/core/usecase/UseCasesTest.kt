@@ -167,14 +167,15 @@ class ActivityUseCasesTest {
                 section.stats.associate { it.kind to it.value }
         }
         assertEquals(mapOf(AnalysisStatKind.AVG to 5.5, AnalysisStatKind.MAX to 9.0), stats[AnalysisSectionKind.SPEED])
+        // Elevation (T11.4): gain and highest point first.
         assertEquals(
-            mapOf(
-                AnalysisStatKind.ASCENT to 12.0,
-                AnalysisStatKind.DESCENT to 7.0,
-                AnalysisStatKind.MIN to 101.0,
-                AnalysisStatKind.MAX to 106.0,
+            listOf(
+                AnalysisStat(AnalysisStatKind.ASCENT, 12.0),
+                AnalysisStat(AnalysisStatKind.MAX, 106.0),
+                AnalysisStat(AnalysisStatKind.DESCENT, 7.0),
+                AnalysisStat(AnalysisStatKind.MIN, 101.0),
             ),
-            stats[AnalysisSectionKind.ELEVATION],
+            analysis.sections.single { it.kind == AnalysisSectionKind.ELEVATION }.stats,
         )
         // Without measured power in the totals, from the chart; NP from the totals.
         assertEquals(
