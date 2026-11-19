@@ -7,6 +7,7 @@ import com.ridecomp.core.repository.RankedEffort
 import com.ridecomp.core.repository.RankedSegmentEffort
 import com.ridecomp.core.usecase.ObserveRideResultsUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
+import com.ridecomp.core.usecase.isTopRank
 import com.ridecomp.ui.udf.NoEffect
 import com.ridecomp.ui.udf.UdfViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -32,7 +33,7 @@ sealed interface RideResultLine {
 data class RideResultsUiState(
     val effortCount: Int = 0,
     val segmentCount: Int = 0,
-    /** Best efforts first, then segments. */
+    /** By rank; on a tie, segments before best efforts. */
     val lines: ImmutableList<RideResultLine> = persistentListOf(),
     val unitSystem: UnitSystem = UnitSystem.METRIC,
 ) {
@@ -48,7 +49,10 @@ class RideResultsViewModel(
     init {
         viewModelScope.launch {
             observeResults(activityId).collect { results ->
-                val lines = results.efforts.map(RideResultLine::Effort) + results.segments.map(RideResultLine::Pass)
+                // Medals first, a segment before an effort of the same rank (segments are the rider's own
+                // choice); passes outside the top 3 last, in ride order (stable sort).
+                val lines = (results.segments.map(RideResultLine::Pass) + results.efforts.map(RideResultLine::Effort))
+                    .sortedBy { if (it.rank.isTopRank) it.rank else Int.MAX_VALUE }
                 updateState {
                     copy(
                         effortCount = results.efforts.size,

@@ -215,7 +215,7 @@
     <string name="intensity_vo2max_how">Sangat berat: mis. 5 × 3 menit di zona 5, 3 menit santai di antaranya (usaha 9 dari 10).</string>
     <string name="results_title">Hasil</string>
     <string name="results_info_label">Penjelasan Hasil</string>
-    <string name="results_info">Usaha terbaik: jarak dan durasi ride ini yang masuk 3 terbaikmu saat ride itu. Segmen: semua segmenmu yang dilewati ride ini; ketuk untuk melihat semua usahanya. PR = rekormu saat itu.</string>
+    <string name="results_info">Usaha terbaik: waktu jarak, power, ride terjauh, dan tanjakan ride ini yang masuk 3 terbaikmu saat ride itu. Segmen: semua segmenmu yang dilewati ride ini; ketuk untuk melihat semua usahanya. PR = rekormu saat itu.</string>
     <string name="results_best_efforts">Usaha terbaik</string>
     <string name="results_segments">Segmen</string>
     <string name="results_rank_pr">PR</string>

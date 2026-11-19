@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -82,11 +83,16 @@ fun RideResultsContent(state: RideResultsUiState, onOpenSegment: (Long) -> Unit,
         ),
         modifier = modifier,
         footer = {
-            shown.forEach { line ->
-                HorizontalDivider(color = RideCompTheme.colors.divider, thickness = RideCompDimens.dividerThickness)
-                when (line) {
-                    is RideResultLine.Effort -> EffortLine(line.ranked, formatter)
-                    is RideResultLine.Pass -> PassLine(line.ranked, formatter) { onOpenSegment(line.ranked.segmentId) }
+            // One column: the card spaces its children apart, the lines sit close like the number rows.
+            Column {
+                shown.forEach { line ->
+                    HorizontalDivider(color = RideCompTheme.colors.divider, thickness = RideCompDimens.dividerThickness)
+                    when (line) {
+                        is RideResultLine.Effort -> EffortLine(line.ranked, formatter)
+                        is RideResultLine.Pass -> PassLine(line.ranked, formatter) {
+                            onOpenSegment(line.ranked.segmentId)
+                        }
+                    }
                 }
             }
             if (state.lines.size > VISIBLE_LINES) {
@@ -146,12 +152,17 @@ private fun ResultLine(
     onClick: (() -> Unit)? = null,
 ) {
     val colors = RideCompTheme.colors
-    val clickable = onClick?.let { Modifier.clickable(role = Role.Button, onClick = it) } ?: Modifier
+    // Only a segment line opens something: it gets the full touch height.
+    val clickable = onClick?.let {
+        Modifier
+            .heightIn(min = RideCompDimens.touchTargetMin)
+            .clickable(role = Role.Button, onClick = it)
+    } ?: Modifier
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = RideCompDimens.touchTargetMin)
-            .then(clickable),
+            .then(clickable)
+            .padding(vertical = RideCompDimens.spacingXs),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm),
     ) {

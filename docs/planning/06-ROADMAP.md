@@ -13,7 +13,7 @@ Kerjakan **berurutan**. **Setiap task** mengikuti alur di `10-FEATURE-CHECKLIST.
 | 6 | iOS | Port & uji di iPhone | ⬜ Belum mulai (0/6) |
 | 7, 9 | Fitur lanjutan, trainer & widget | Suara, kembali ke start, komponen sepeda, rencana latihan, smart trainer, widget | ✅ Selesai (7/7) |
 | 10 | Rilis beta & masukan pengguna | Open source, rilis 0.9.0–0.9.3, galeri share, sepeda lipat, cek pembaruan, onboarding baru | ✅ Selesai (7/7) |
-| 11 | Analisa ride, usaha terbaik, tema & peta offline | Halaman detail ala analisa (kecepatan, elevasi, HR, zona power), usaha terbaik, tema terang/gelap, peta tanpa internet (`14-PHASE11-PLAN.md`) | 🟡 Berjalan (6/14) |
+| 11 | Analisa ride, usaha terbaik, tema & peta offline | Halaman detail ala analisa (kecepatan, elevasi, HR, zona power), usaha terbaik, tema terang/gelap, peta tanpa internet (`14-PHASE11-PLAN.md`) | 🟡 Berjalan (7/14) |
 | 12 | Detak jantung dari smartwatch | Jam tangan broadcast HR, pemindaian luas, panduan per merek, Wear OS (opsional), Aolon eksperimental (`15-PHASE12-PLAN.md`) | ⬜ Belum mulai (0/7) |
 
 Spesifikasi detail fitur tambahan: `12-FEATURE-SPECS.md`.
@@ -175,7 +175,7 @@ Spesifikasi, keputusan K1–K5 (dijawab 2026-11-19, D-109…D-113), urutan, risi
 - [x] T11.6 Perkiraan zona power Z1–Z7: % waktu & rentang watt; power meter atau estimasi (berlabel "Perkiraan"), FTP profil atau perkiraan.
 
 **11C — Usaha terbaik**
-- [ ] T11.7 Bagian "Hasil" di detail: jumlah usaha terbaik & segmen, daftar segmen dengan PR, rekor baru.
+- [x] T11.7 Bagian "Hasil" di detail: jumlah usaha terbaik & segmen, daftar segmen dengan PR, rekor baru.
 - [ ] T11.8 Usaha terbaik otomatis (K1): rekor durasi kecepatan/power dan/atau "Tandai sprint" dari grafik.
 
 **11D — Tema**
