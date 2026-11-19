@@ -6,8 +6,8 @@
 - **Rilis terakhir:** **0.9.3** (beta), 2026-11-18 · [GitHub Releases](https://github.com/wahyurama-creator/Ridecomp/releases). Skema DB **v10**.
 - **Fase selesai:** 0–5, 7, 9, dan rilis beta & masukan pengguna (Fase 8/10). Ringkasan: [`planning/06-ROADMAP.md`](planning/06-ROADMAP.md).
 - **Fase berjalan:** **Fase 11 — Analisa ride, usaha terbaik, tema & peta offline.** Rencana lengkap: [`planning/14-PHASE11-PLAN.md`](planning/14-PHASE11-PLAN.md). Keputusan K1–K5 sudah dijawab (D-109…D-113).
-- **Task terakhir:** T11.5a — Perbaikan tautan perkiraan HR max di Profil (selesai 2026-11-19, [Feature Report](reports/features/T11.5a-hr-max-estimate-link.md)); sebelumnya T11.5 analisa detak jantung.
-- **Task berikutnya:** **T11.6 — Perkiraan zona power Z1–Z7** (14-PHASE11-PLAN §5). Belum dimulai.
+- **Task terakhir:** T11.6 — Perkiraan zona power Z1–Z7 (selesai 2026-11-19, [Feature Report](reports/features/T11.6-power-zones.md)); sebelumnya T11.5a tautan perkiraan HR max.
+- **Task berikutnya:** **T11.7 — Bagian "Hasil"** (14-PHASE11-PLAN §5). Belum dimulai.
 
 ## Daftar centang Fase 11
 Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.md` §4 setiap kali task selesai.
@@ -20,8 +20,8 @@ Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.m
 - [x] T11.4 Rombak elevasi
 - [x] T11.5 Analisa detak jantung
 - [x] T11.5a Perbaikan tautan perkiraan HR max di Profil
-- [ ] T11.6 Perkiraan zona power Z1–Z7 ← **berikutnya**
-- [ ] T11.7 Bagian "Hasil"
+- [x] T11.6 Perkiraan zona power Z1–Z7
+- [ ] T11.7 Bagian "Hasil" ← **berikutnya**
 - [ ] T11.8 Usaha terbaik otomatis
 - [ ] T11.9 Pilihan tema
 - [ ] T11.10 Audit tema terang

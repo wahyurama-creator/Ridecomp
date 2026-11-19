@@ -36,4 +36,7 @@ public interface BestEffortRepository {
 
     /** Records a ride set when it was analyzed (share card "2 PR BARU"). */
     public suspend fun countRecords(activityId: Long): Int
+
+    /** Best value of [key] over rides started since [sinceStartedAtMs], any kind (FTP estimate, T11.6). */
+    public suspend fun bestSince(key: BestEffortKey, sinceStartedAtMs: Long): Double?
 }

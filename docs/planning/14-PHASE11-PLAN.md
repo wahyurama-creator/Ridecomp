@@ -1,6 +1,6 @@
 # 14 — Rencana Fase 11: Analisa Ride, Usaha Terbaik, Tema & Peta Offline
 
-**Status:** berjalan (5/14: T11.1–T11.5 selesai). Disusun 2026-11-19 atas permintaan pemilik.
+**Status:** berjalan (6/14: T11.1–T11.6 selesai). Disusun 2026-11-19 atas permintaan pemilik.
 **Acuan:** `06-ROADMAP.md` (daftar task), `07-TEST-PLAN.md` §4/§5 (uji), `10-FEATURE-CHECKLIST.md` (alur tiap task), aturan wajib `08`–`11`.
 **Referensi visual pemilik:** `~/Downloads/RideComp-Referensi/` (4 screenshot halaman detail aktivitas Strava, 2026-11-18): bagian *Hasil* (Usaha Terbaik · Segmen), *Wawasan Detak Jantung*, grafik *Kecepatan* + 4 angka, grafik *Elevasi* + 2 angka, *Perkiraan Zona Kekuatan* Z1–Z7. Logo, ikon, dan merek Strava **tidak** ditiru: hanya susunan informasinya.
 
@@ -56,7 +56,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`); ganti 
 - [x] T11.4 Elevasi (rombak)
 - [x] T11.5 Detak jantung
 - [x] T11.5a Perbaikan tautan perkiraan HR max di Profil · [Feature Report](../reports/features/T11.5a-hr-max-estimate-link.md)
-- [ ] T11.6 Perkiraan zona power Z1–Z7
+- [x] T11.6 Perkiraan zona power Z1–Z7 · [Feature Report](../reports/features/T11.6-power-zones.md)
 
 **11C Usaha terbaik**
 - [ ] T11.7 Bagian "Hasil"

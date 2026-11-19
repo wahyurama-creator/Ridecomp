@@ -45,4 +45,10 @@ public class FakeBestEffortRepository(private val activities: ActivityRepository
         stored.map { all -> all.values.map { it.first }.distinct().sorted() }
 
     override suspend fun countRecords(activityId: Long): Int = stored.value[activityId]?.second?.count { it.isPr } ?: 0
+
+    override suspend fun bestSince(key: BestEffortKey, sinceStartedAtMs: Long): Double? =
+        stored.value.filter { (id, _) -> (activities.get(id)?.startedAtMs ?: Long.MIN_VALUE) >= sinceStartedAtMs }
+            .values.flatMap { it.second }.map { it.effort }
+            .filter { it.key == key }
+            .maxOfOrNull { it.value }
 }

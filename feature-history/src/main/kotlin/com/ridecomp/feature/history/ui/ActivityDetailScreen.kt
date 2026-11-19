@@ -47,6 +47,8 @@ import com.ridecomp.core.model.StravaUploadState
 import com.ridecomp.core.usecase.AnalysisSectionKind
 import com.ridecomp.core.usecase.AnalysisStatKind
 import com.ridecomp.core.usecase.ExportFormat
+import com.ridecomp.core.usecase.FtpEstimate
+import com.ridecomp.core.usecase.FtpSource
 import com.ridecomp.core.usecase.ZoneTimeSlice
 import com.ridecomp.core.usecase.isDuration
 import com.ridecomp.core.util.UnitFormatter
@@ -55,6 +57,7 @@ import com.ridecomp.feature.history.viewmodel.ActivityDetailEffect
 import com.ridecomp.feature.history.viewmodel.ActivityDetailUiEvent
 import com.ridecomp.feature.history.viewmodel.ActivityDetailUiState
 import com.ridecomp.feature.history.viewmodel.ActivityDetailViewModel
+import com.ridecomp.feature.history.viewmodel.DetailPowerZones
 import com.ridecomp.feature.history.viewmodel.DetailSection
 import com.ridecomp.feature.history.viewmodel.FileMessage
 import com.ridecomp.ui.R as UiR
@@ -221,14 +224,10 @@ fun ActivityDetailScreen(
                     }
                     onShareCard?.let { item(key = ITEM_SHARE) { ShareCardEntry(it) } }
                     items(state.sections, key = { it.kind }) { section ->
-                        // Elevation in grey behind speed, as on printed ride summaries.
-                        val background = state.sections.takeIf { section.kind == AnalysisSectionKind.SPEED }
-                            ?.firstOrNull { it.kind == AnalysisSectionKind.ELEVATION }?.values
-                        Section(section, background, format) {
-                            if (section.kind == AnalysisSectionKind.HEART_RATE) {
-                                HeartRateZonesFooter(state, format, onOpenProfile)
-                            }
-                        }
+                        SectionItem(state, section, format, onOpenProfile)
+                    }
+                    state.powerZones?.takeIf { it.isEstimatedPower }?.let { zones ->
+                        item(key = ITEM_ESTIMATED_POWER_ZONES) { EstimatedPowerZonesCard(zones, format, onOpenProfile) }
                     }
                     if (state.isHeartRateTipShown) {
                         item(key = ITEM_HEART_RATE_TIP) {
@@ -413,6 +412,28 @@ private fun ShareCardEntry(onClick: () -> Unit) {
     }
 }
 
+/** A section with what goes under its numbers: heart-rate zones (T11.5), power-meter zones (T11.6). */
+@Composable
+private fun SectionItem(
+    state: ActivityDetailUiState,
+    section: DetailSection,
+    format: UnitFormatter,
+    onOpenProfile: () -> Unit,
+) {
+    // Elevation in grey behind speed, as on printed ride summaries.
+    val background = state.sections.takeIf { section.kind == AnalysisSectionKind.SPEED }
+        ?.firstOrNull { it.kind == AnalysisSectionKind.ELEVATION }?.values
+    Section(section, background, format) {
+        when (section.kind) {
+            AnalysisSectionKind.HEART_RATE -> HeartRateZonesFooter(state, format, onOpenProfile)
+            AnalysisSectionKind.POWER -> state.powerZones?.takeUnless { it.isEstimatedPower }?.let {
+                PowerZonesBlock(it, format, hasHeading = true, onOpenProfile = onOpenProfile)
+            }
+            AnalysisSectionKind.SPEED, AnalysisSectionKind.ELEVATION, AnalysisSectionKind.CADENCE -> Unit
+        }
+    }
+}
+
 /** A section of the analysis (T11.2): title with ⓘ, its chart, then its numbers. */
 @Composable
 private fun Section(
@@ -486,22 +507,7 @@ private fun HeartRateZonesFooter(state: ActivityDetailUiState, format: UnitForma
             modifier = Modifier.padding(top = RideCompDimens.spacingS),
         )
         if (zones != null) {
-            val total = zones.totalSeconds.coerceAtLeast(1)
-            ZoneBars(
-                zones = zones.zones.map { slice ->
-                    ZoneBar(
-                        name = stringResource(zoneNameRes(slice.zone)),
-                        range = zoneRange(slice),
-                        fraction = slice.seconds.toFloat() / total,
-                        percent = stringResource(
-                            R.string.detail_zone_percent,
-                            (slice.seconds * Units.PERCENT / total).roundToInt(),
-                        ),
-                        duration = format.duration(slice.seconds * Units.MS_PER_SECOND),
-                        color = colors.zones[slice.zone - 1],
-                    )
-                }.toImmutableList(),
-            )
+            ZoneBars(zones = zoneBars(zones.zones, zones.totalSeconds, ZoneKind.HEART_RATE, format))
             Text(
                 text = stringResource(
                     if (zones.isEstimated) R.string.detail_zones_based_on_age else R.string.detail_zones_based_on,
@@ -522,27 +528,131 @@ private fun HeartRateZonesFooter(state: ActivityDetailUiState, format: UnitForma
     }
 }
 
+/** Heart-rate zones (bpm, Z1 below a bound) or power zones (W, Z1 up to and including its bound). */
+private enum class ZoneKind(val names: List<Int>) {
+    HEART_RATE(
+        listOf(
+            R.string.detail_zone_1,
+            R.string.detail_zone_2,
+            R.string.detail_zone_3,
+            R.string.detail_zone_4,
+            R.string.detail_zone_5,
+        ),
+    ),
+    POWER(
+        listOf(
+            R.string.detail_power_zone_1,
+            R.string.detail_power_zone_2,
+            R.string.detail_power_zone_3,
+            R.string.detail_power_zone_4,
+            R.string.detail_power_zone_5,
+            R.string.detail_power_zone_6,
+            R.string.detail_power_zone_7,
+        ),
+    ),
+}
+
+/** Bars of [slices] with their share of [totalSeconds], names (as the training plans, D-94) and ranges. */
 @Composable
-private fun zoneRange(slice: ZoneTimeSlice): String {
-    val max = slice.maxBpm
+private fun zoneBars(
+    slices: ImmutableList<ZoneTimeSlice>,
+    totalSeconds: Long,
+    kind: ZoneKind,
+    format: UnitFormatter,
+): ImmutableList<ZoneBar> {
+    val colors = RideCompTheme.colors
+    val total = totalSeconds.coerceAtLeast(1)
+    return slices.map { slice ->
+        ZoneBar(
+            name = stringResource(kind.names[(slice.zone - 1).coerceIn(0, kind.names.lastIndex)]),
+            range = zoneRange(slice, kind),
+            fraction = slice.seconds.toFloat() / total,
+            percent = stringResource(
+                R.string.detail_zone_percent,
+                (slice.seconds * Units.PERCENT / total).roundToInt(),
+            ),
+            duration = format.duration(slice.seconds * Units.MS_PER_SECOND),
+            color = colors.zones[(slice.zone - 1).coerceIn(0, colors.zones.lastIndex)],
+        )
+    }.toImmutableList()
+}
+
+@Composable
+private fun zoneRange(slice: ZoneTimeSlice, kind: ZoneKind): String {
+    val high = slice.high
+    val isPower = kind == ZoneKind.POWER
     return when {
-        slice.minBpm == 0 && max != null -> stringResource(R.string.detail_zone_range_below, max + 1)
-        max == null -> stringResource(R.string.detail_zone_range_above, slice.minBpm)
-        else -> stringResource(R.string.detail_zone_range, slice.minBpm, max)
+        high == null -> stringResource(
+            if (isPower) R.string.detail_power_zone_range_above else R.string.detail_zone_range_above,
+            slice.low,
+        )
+        slice.low == 0 && isPower -> stringResource(R.string.detail_power_zone_range_up_to, high)
+        slice.low == 0 -> stringResource(R.string.detail_zone_range_below, high + 1)
+        else -> stringResource(
+            if (isPower) R.string.detail_power_zone_range else R.string.detail_zone_range,
+            slice.low,
+            high,
+        )
     }
 }
 
-@StringRes
-private fun zoneNameRes(zone: Int): Int = HEART_RATE_ZONE_NAMES[(zone - 1).coerceIn(0, HEART_RATE_ZONE_NAMES.lastIndex)]
+/**
+ * Time in power zones Z1..Z7 (T11.6) and the FTP it is based on, with a link to the profile. With a power
+ * meter it sits under the power numbers ([hasHeading]); without, it is the "Perkiraan zona power" card.
+ */
+@Composable
+private fun PowerZonesBlock(
+    zones: DetailPowerZones,
+    format: UnitFormatter,
+    hasHeading: Boolean,
+    onOpenProfile: () -> Unit,
+) {
+    val colors = RideCompTheme.colors
+    Column(verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS)) {
+        if (hasHeading) {
+            Text(
+                text = stringResource(R.string.detail_power_zones_title),
+                style = RideCompTheme.typography.bodyStrong,
+                color = colors.textPrimary,
+                modifier = Modifier.padding(top = RideCompDimens.spacingS),
+            )
+        }
+        ZoneBars(zones = zoneBars(zones.zones, zones.totalSeconds, ZoneKind.POWER, format))
+        Text(
+            text = ftpCaption(zones.ftp),
+            style = RideCompTheme.typography.caption,
+            color = colors.textSecondary,
+        )
+        LinkText(text = stringResource(R.string.detail_zones_edit_profile), onClick = onOpenProfile)
+    }
+}
 
-/** Names of Z1..Z5, as the training plans call them (D-94). */
-private val HEART_RATE_ZONE_NAMES = listOf(
-    R.string.detail_zone_1,
-    R.string.detail_zone_2,
-    R.string.detail_zone_3,
-    R.string.detail_zone_4,
-    R.string.detail_zone_5,
-)
+@Composable
+private fun ftpCaption(ftp: FtpEstimate): String = when (ftp.source) {
+    FtpSource.PROFILE -> stringResource(R.string.detail_ftp_profile, ftp.ftpW)
+    FtpSource.BEST_20_MIN -> stringResource(R.string.detail_ftp_best_20_min, ftp.ftpW)
+    // Whole kilograms without decimals ("70"), else one ("68,5").
+    FtpSource.WEIGHT -> stringResource(
+        R.string.detail_ftp_weight,
+        number(ftp.weightKg, if (ftp.weightKg % 1.0 == 0.0) 0 else 1),
+        ftp.ftpW,
+    )
+}
+
+/** Without a power meter: the zones of the estimated power, said so in the title and the ⓘ (T11.6). */
+@Composable
+private fun EstimatedPowerZonesCard(zones: DetailPowerZones, format: UnitFormatter, onOpenProfile: () -> Unit) {
+    val title = stringResource(R.string.detail_estimated_power_zones_title)
+    AnalysisCard(
+        texts = AnalysisCardTexts(
+            title = title,
+            info = stringResource(R.string.detail_info_estimated_power_zones),
+            infoLabel = stringResource(R.string.detail_section_info_label, title),
+        ),
+        rows = persistentListOf(),
+        footer = { PowerZonesBlock(zones, format, hasHeading = false, onOpenProfile = onOpenProfile) },
+    )
+}
 
 private fun number(value: Double, decimals: Int): String =
     String.format(Locale.getDefault(), if (decimals == 0) NO_DECIMAL else "%.${decimals}f", value)
@@ -559,6 +669,7 @@ private const val ITEM_HEADER = "header"
 private const val ITEM_SHARE = "share"
 private const val ITEM_LAPS = "laps"
 private const val ITEM_HEART_RATE_TIP = "heart_rate_tip"
+private const val ITEM_ESTIMATED_POWER_ZONES = "estimated_power_zones"
 private const val ITEM_TIP = "tip"
 private const val ITEM_EXPORT = "export"
 private const val ITEM_MORE = "more"

@@ -1,14 +1,21 @@
 package com.ridecomp.core.usecase
 
+import com.ridecomp.core.engine.efforts.BestEffort
+import com.ridecomp.core.engine.efforts.BestEffortKey
 import com.ridecomp.core.model.Activity
+import com.ridecomp.core.model.ActivityKind
 import com.ridecomp.core.model.ActivityStatus
 import com.ridecomp.core.model.RideSample
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RideTotals
+import com.ridecomp.core.model.RiderLevel
 import com.ridecomp.core.model.RiderProfile
 import com.ridecomp.core.repository.NewActivity
+import com.ridecomp.core.repository.RideEffort
 import com.ridecomp.core.testing.FakeActivityRepository
+import com.ridecomp.core.testing.FakeBestEffortRepository
 import com.ridecomp.core.testing.FakeClock
+import com.ridecomp.core.testing.FakeGuideRepository
 import com.ridecomp.core.testing.FakeProfileRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.testing.FakeTrainingRepository
@@ -22,10 +29,8 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 
 class TimeOfDayTest {
@@ -43,14 +48,12 @@ class ActivityUseCasesTest {
     private val repository = FakeActivityRepository()
     private val profiles = FakeProfileRepository()
 
-    /** HR zones read the full track in place: the test dispatcher runs it inline. */
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private fun analysisUseCase() = LoadActivityAnalysisUseCase(
-        LoadRideChartUseCase(repository),
-        ReadRideTrackUseCase(repository, TestDispatcherProvider(UnconfinedTestDispatcher())),
-        profiles,
-        FakeClock(),
-    )
+    private val efforts = FakeBestEffortRepository(repository)
+    private val guide = FakeGuideRepository()
+    private val estimateFtp = EstimateFtpUseCase(profiles, efforts, guide, FakeClock())
+
+    private fun analysisUseCase() =
+        LoadActivityAnalysisUseCase(LoadRideChartUseCase(repository), repository, profiles, estimateFtp, FakeClock())
 
     private fun stored(id: Long, status: ActivityStatus, startedAt: Long) = Activity(
         id = id,
@@ -277,7 +280,7 @@ class ActivityUseCasesTest {
         assertEquals(100L, zones.totalSeconds)
         assertEquals(
             listOf(0 to 119, 120 to 139, 140 to 159, 160 to 179, 180 to null),
-            zones.zones.map { it.minBpm to it.maxBpm },
+            zones.zones.map { it.low to it.high },
         )
     }
 
@@ -301,6 +304,69 @@ class ActivityUseCasesTest {
         val id = rideWithSpeedElevationPowerCadence()
 
         assertNull(analysisUseCase()(id, totals = null).heartRateZones)
+    }
+
+    @Test
+    fun `ftp comes from the profile, else 95 percent of a recent 20 minute best, else weight by level`() = runTest {
+        profiles.save(RiderProfile(weightKg = 70.0))
+        // No power-meter rides: 70 kg × 2.5 W/kg (intermediate, the default level).
+        assertEquals(FtpEstimate(175, FtpSource.WEIGHT, 70.0), estimateFtp())
+        guide.setLevel(RiderLevel.BEGINNER)
+        assertEquals(140, estimateFtp().ftpW)
+
+        val recent = repository.create(NewActivity("r", "Recent", FakeClock.DEFAULT_START_MS - 1_000))
+        val old = repository.create(NewActivity("o", "Old", FakeClock.DEFAULT_START_MS - FtpConfig.BEST_WINDOW_MS - 1))
+        efforts.replace(
+            old,
+            ActivityKind.ROAD,
+            listOf(RideEffort(BestEffort(BestEffortKey.POWER_20_MIN, 400.0, 0, 1), true)),
+        )
+        efforts.replace(
+            recent,
+            ActivityKind.ROAD,
+            listOf(RideEffort(BestEffort(BestEffortKey.POWER_20_MIN, 200.0, 0, 1), true)),
+        )
+        // Only the ride of the last 6 weeks counts: 95 % of 200 W.
+        assertEquals(FtpEstimate(190, FtpSource.BEST_20_MIN, 70.0), estimateFtp())
+
+        profiles.save(RiderProfile(weightKg = 70.0, ftpW = 250))
+        assertEquals(FtpSource.PROFILE, estimateFtp().source)
+    }
+
+    @Test
+    fun `power zones count moving seconds, from the meter or else the estimate`() = runTest {
+        profiles.save(RiderProfile(ftpW = 200))
+        // FTP 200: Z1 ≤ 110, Z2 ≤ 150, Z3 ≤ 180, Z4 ≤ 210, Z5 ≤ 240, Z6 ≤ 300, Z7 above.
+        assertEquals(
+            listOf(0 to 110, 111 to 150, 151 to 180, 181 to 210, 211 to 240, 241 to 300, 301 to null),
+            PowerZoneBounds.of(200).map { it.low to it.high },
+        )
+        val estimated = repository.create(NewActivity("e", "No meter", 0))
+        // 10 s estimated 100 W moving, 5 s estimated 250 W moving, 5 s stopped (not counted).
+        repository.appendSamples(
+            estimated,
+            List(20) { i ->
+                RideSample(
+                    (i + 1) * 1_000L,
+                    distanceM = i * 5.0,
+                    speedMps = if (i >= 15) 0.0 else 5.0,
+                    estPowerW = if (i < 10) 100 else 250,
+                )
+            },
+        )
+
+        val zones = assertNotNull(analysisUseCase()(estimated, totals = null).powerZones)
+
+        assertTrue(zones.isEstimatedPower)
+        assertEquals(listOf(10L, 0L, 0L, 0L, 0L, 5L, 0L), zones.zones.map { it.seconds })
+    }
+
+    @Test
+    fun `a ride without power or estimate has no power zones`() = runTest {
+        val id = repository.create(NewActivity("u", "Ride", 0))
+        repository.appendSamples(id, (1..5).map { RideSample(it * 1_000L, distanceM = it * 5.0, speedMps = 5.0) })
+
+        assertNull(analysisUseCase()(id, totals = null).powerZones)
     }
 }
 

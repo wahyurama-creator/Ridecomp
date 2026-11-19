@@ -138,4 +138,20 @@
     <string name="detail_hr_tip_text">With a heart rate strap or a watch that broadcasts HR, this page shows how long you rode in each heart rate zone.</string>
     <string name="detail_hr_tip_open_sensors">Open Sensors</string>
     <string name="detail_hr_tip_close">Don\'t show again</string>
+    <string name="detail_power_zones_title">Power zones</string>
+    <string name="detail_estimated_power_zones_title">Estimated power zones</string>
+    <string name="detail_info_estimated_power_zones">Without a power meter, power is estimated from speed, slope, weight and bike. It gives a rough picture only and is never saved as power in the FIT file. Only the time you were moving counts.</string>
+    <string name="detail_power_zone_1">Z1 Active recovery</string>
+    <string name="detail_power_zone_2">Z2 Endurance</string>
+    <string name="detail_power_zone_3">Z3 Tempo</string>
+    <string name="detail_power_zone_4">Z4 Threshold</string>
+    <string name="detail_power_zone_5">Z5 VO2max</string>
+    <string name="detail_power_zone_6">Z6 Anaerobic</string>
+    <string name="detail_power_zone_7">Z7 Neuromuscular</string>
+    <string name="detail_power_zone_range">%1$d–%2$d W</string>
+    <string name="detail_power_zone_range_up_to">up to %1$d W</string>
+    <string name="detail_power_zone_range_above">%1$d+ W</string>
+    <string name="detail_ftp_profile">Based on FTP %1$d W</string>
+    <string name="detail_ftp_best_20_min">Based on estimated FTP %1$d W (95%% of your best 20-minute power in the last 6 weeks)</string>
+    <string name="detail_ftp_weight">Based on weight %1$s kg and estimated FTP %2$d W</string>
 </resources>

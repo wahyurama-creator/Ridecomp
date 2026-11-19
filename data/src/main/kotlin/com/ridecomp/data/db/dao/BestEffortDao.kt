@@ -62,4 +62,12 @@ interface BestEffortDao {
 
     @Query("SELECT COUNT(*) FROM ${DbNames.TABLE_BEST_EFFORTS} WHERE activity_id = :activityId AND is_pr = 1")
     suspend fun countRecords(activityId: Long): Int
+
+    /** Highest value of [key] over rides started since [sinceStartedAt] (power keys: higher is better). */
+    @Query(
+        "SELECT MAX(b.value) FROM ${DbNames.TABLE_BEST_EFFORTS} b " +
+            "JOIN ${DbNames.TABLE_ACTIVITIES} a ON a.id = b.activity_id " +
+            "WHERE b.`key` = :key AND a.started_at >= :sinceStartedAt",
+    )
+    suspend fun maxSince(key: String, sinceStartedAt: Long): Double?
 }

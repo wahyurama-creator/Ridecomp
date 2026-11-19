@@ -54,4 +54,10 @@ class BestEffortRepositoryImpl(private val dao: BestEffortDao) : BestEffortRepos
     }
 
     override suspend fun countRecords(activityId: Long): Int = dao.countRecords(activityId)
+
+    override suspend fun bestSince(key: BestEffortKey, sinceStartedAtMs: Long): Double? {
+        // MAX only fits keys where higher is better (power); the FTP estimate asks for those only.
+        require(key.isHigherBetter) { "bestSince needs a higher-is-better key" }
+        return dao.maxSince(key.storageKey, sinceStartedAtMs)
+    }
 }

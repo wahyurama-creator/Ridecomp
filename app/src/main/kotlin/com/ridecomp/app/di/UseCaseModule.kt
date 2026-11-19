@@ -27,6 +27,7 @@ import com.ridecomp.core.usecase.DisconnectStravaUseCase
 import com.ridecomp.core.usecase.DismissTipUseCase
 import com.ridecomp.core.usecase.DismissUpdateUseCase
 import com.ridecomp.core.usecase.DuplicateActivityProfileUseCase
+import com.ridecomp.core.usecase.EstimateFtpUseCase
 import com.ridecomp.core.usecase.EstimateHrMaxUseCase
 import com.ridecomp.core.usecase.EvaluateBestEffortsUseCase
 import com.ridecomp.core.usecase.ExportActivityUseCase
@@ -183,7 +184,8 @@ val useCaseModule = module {
     factory { RenameActivityUseCase(get()) }
     factory { DeleteActivityUseCase(get(), get()) }
     factory { LoadRideChartUseCase(get()) }
-    factory { LoadActivityAnalysisUseCase(get(), get(), get(), get()) }
+    factory { LoadActivityAnalysisUseCase(get(), get(), get(), get(), get()) }
+    factory { EstimateFtpUseCase(get(), get(), get(), get()) }
     factory { ExportFitUseCase(get(), get(), get(), get(), get()) }
     factory { ExportGpxUseCase(get(), get(), get()) }
     factory { ObserveProfileUseCase(get()) }
