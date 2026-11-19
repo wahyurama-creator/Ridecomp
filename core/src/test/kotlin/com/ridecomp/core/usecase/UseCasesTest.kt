@@ -115,6 +115,29 @@ class ActivityUseCasesTest {
     }
 
     @Test
+    fun `a 3 hour ride becomes at most 300 averaged points, gaps stay gaps`() = runTest {
+        val id = repository.create(NewActivity("u", "Ride", 0))
+        val samples = (1..10_800).map {
+            RideSample(
+                timeMs = it * 1_000L,
+                distanceM = it * 7.0,
+                speedMps = if (it % 2 == 0) 6.0 else 8.0,
+                // No heart rate in the first hour (sensor not connected yet).
+                heartRateBpm = if (it > 3_600) 140 else null,
+            )
+        }
+        repository.appendSamples(id, samples)
+
+        val chart = LoadRideChartUseCase(repository)(id)
+
+        assertEquals(300, chart.size)
+        assertTrue(chart.all { it.speedMps == 7.0 })
+        assertTrue(chart.take(99).all { it.heartRateBpm == null })
+        assertTrue(chart.drop(101).all { it.heartRateBpm == 140 })
+        assertEquals(samples.last().distanceM, chart.last().distanceM)
+    }
+
+    @Test
     fun `chart of an empty ride is empty`() = runTest {
         val id = repository.create(NewActivity("u", "Ride", 0))
 

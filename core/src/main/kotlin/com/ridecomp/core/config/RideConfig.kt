@@ -209,8 +209,11 @@ public object ActivityConfig {
     /** Track points read per chunk for export/charts (DATA-04). */
     public const val TRACK_CHUNK_SIZE: Int = 1_000
 
-    /** Charts are downsampled to at most this many points (02-DESIGN §6). */
-    public const val CHART_MAX_POINTS: Int = 1_000
+    /**
+     * Charts are reduced to at most this many points (02-DESIGN §6; T11.1 performance budget,
+     * 14-PHASE11-PLAN §8): each point is the average of a run of samples.
+     */
+    public const val CHART_MAX_POINTS: Int = 300
 
     /** Local hours where the default ride name changes: morning/noon/afternoon/evening. */
     public const val NOON_START_HOUR: Int = 11

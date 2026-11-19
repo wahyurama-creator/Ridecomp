@@ -58,14 +58,16 @@ import com.ridecomp.feature.history.viewmodel.FileMessage
 import com.ridecomp.ui.R as UiR
 import com.ridecomp.ui.component.AlertBanner
 import com.ridecomp.ui.component.AlertSeverity
-import com.ridecomp.ui.component.AxisLineChart
 import com.ridecomp.ui.component.BannerAction
 import com.ridecomp.ui.component.CardTone
+import com.ridecomp.ui.component.ChartYScale
 import com.ridecomp.ui.component.ConfirmDialog
 import com.ridecomp.ui.component.ErrorState
 import com.ridecomp.ui.component.IconTile
 import com.ridecomp.ui.component.ListCard
 import com.ridecomp.ui.component.ListCardRow
+import com.ridecomp.ui.component.RideChart
+import com.ridecomp.ui.component.RideChartLabels
 import com.ridecomp.ui.component.RideCompCard
 import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.component.SectionHeader
@@ -375,6 +377,11 @@ private fun Charts(state: ActivityDetailUiState, format: UnitFormatter) {
     val decimals = chart.kind.decimals()
     val distanceDecimals = if ((chart.values.lastOrNull()?.x ?: 0.0) < SHORT_RIDE_DISTANCE) 2 else 1
     val color = chart.kind.color()
+    // Read aloud as "Speed, avg 20.9 km/h, max 50.4 km/h" (14-PHASE11-PLAN T11.1).
+    val description = (
+        listOf(stringResource(chart.kind.titleRes())) +
+            chart.stats.map { "${stringResource(it.kind.labelRes())} ${withUnit(number(it.value, decimals), unit)}" }
+        ).joinToString(", ")
     RideCompCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -389,14 +396,21 @@ private fun Charts(state: ActivityDetailUiState, format: UnitFormatter) {
                 }
             }
         }
-        AxisLineChart(
+        RideChart(
             values = chart.values,
+            labels = RideChartLabels(
+                yUnit = unit,
+                xUnit = format.distanceUnit,
+                hint = stringResource(R.string.detail_chart_hint),
+                description = description,
+            ),
             formatX = { withUnit(number(it, distanceDecimals), format.distanceUnit) },
             formatY = { withUnit(number(it, decimals), unit) },
-            formatYAxis = { number(it, decimals) },
-            hint = stringResource(R.string.detail_chart_hint),
-            description = stringResource(chart.kind.titleRes()),
             color = color,
+            // Elevation shows its shape; the others start at zero, with the elevation in grey behind speed.
+            yScale = if (chart.kind == ChartKind.ELEVATION) ChartYScale.DATA_RANGE else ChartYScale.FROM_ZERO,
+            background = state.charts.takeIf { chart.kind == ChartKind.SPEED }
+                ?.firstOrNull { it.kind == ChartKind.ELEVATION }?.values,
         )
     }
 }

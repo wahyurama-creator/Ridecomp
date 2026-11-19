@@ -13,7 +13,7 @@ Kerjakan **berurutan**. **Setiap task** mengikuti alur di `10-FEATURE-CHECKLIST.
 | 6 | iOS | Port & uji di iPhone | ⬜ Belum mulai (0/6) |
 | 7, 9 | Fitur lanjutan, trainer & widget | Suara, kembali ke start, komponen sepeda, rencana latihan, smart trainer, widget | ✅ Selesai (7/7) |
 | 10 | Rilis beta & masukan pengguna | Open source, rilis 0.9.0–0.9.3, galeri share, sepeda lipat, cek pembaruan, onboarding baru | ✅ Selesai (7/7) |
-| 11 | Analisa ride, usaha terbaik, tema & peta offline | Halaman detail ala analisa (kecepatan, elevasi, HR, zona power), usaha terbaik, tema terang/gelap, peta tanpa internet (`14-PHASE11-PLAN.md`) | ⬜ Belum mulai (0/14) |
+| 11 | Analisa ride, usaha terbaik, tema & peta offline | Halaman detail ala analisa (kecepatan, elevasi, HR, zona power), usaha terbaik, tema terang/gelap, peta tanpa internet (`14-PHASE11-PLAN.md`) | 🟡 Berjalan (1/14) |
 | 12 | Detak jantung dari smartwatch | Jam tangan broadcast HR, pemindaian luas, panduan per merek, Wear OS (opsional), Aolon eksperimental (`15-PHASE12-PLAN.md`) | ⬜ Belum mulai (0/7) |
 
 Spesifikasi detail fitur tambahan: `12-FEATURE-SPECS.md`.
@@ -162,7 +162,7 @@ Ikuti `03-ARCHITECTURE.md` §9. Memerlukan Mac + Apple Developer Program untuk i
 Spesifikasi, keputusan K1–K5 (dijawab 2026-11-19, D-109…D-113), urutan, risiko, **anggaran performa §8**, dan DoD: **`14-PHASE11-PLAN.md`**.
 
 **11A — Fondasi**
-- [ ] T11.1 Komponen grafik `RideChart` di `:ui-common` (angka sumbu, garis bantu, lapisan latar, sentuh-geser; tanpa library) (K3).
+- [x] T11.1 Komponen grafik `RideChart` di `:ui-common` (angka sumbu, garis bantu, lapisan latar, sentuh-geser; tanpa library) (K3).
 - [ ] T11.2 Halaman detail menjadi bagian vertikal: Ringkasan → Hasil → Kecepatan → Elevasi → Detak jantung → Zona power → Lap → Ekspor.
 
 **11B — Analisa**
