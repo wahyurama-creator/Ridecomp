@@ -119,4 +119,23 @@
     <string name="detail_strava_on_strava">Ride ini sudah ada di Strava</string>
     <string name="detail_strava_sent">Terkirim</string>
     <string name="history_on_strava">Di Strava</string>
+    <string name="detail_zones_title">Waktu di zona</string>
+    <string name="detail_zone_1">Z1 Pemulihan</string>
+    <string name="detail_zone_2">Z2 Daya tahan</string>
+    <string name="detail_zone_3">Z3 Tempo</string>
+    <string name="detail_zone_4">Z4 Ambang</string>
+    <string name="detail_zone_5">Z5 VO2max</string>
+    <string name="detail_zone_range">%1$d–%2$d bpm</string>
+    <string name="detail_zone_range_below">di bawah %1$d bpm</string>
+    <string name="detail_zone_range_above">%1$d+ bpm</string>
+    <string name="detail_zone_percent">%1$d%%</string>
+    <string name="detail_zones_based_on">Berdasarkan HR max %1$d bpm</string>
+    <string name="detail_zones_based_on_age">Berdasarkan HR max %1$d bpm (perkiraan dari umur)</string>
+    <string name="detail_zones_edit_profile">Ubah di Profil</string>
+    <string name="detail_zones_missing_hr_max">Isi HR max atau tahun lahir di Profil untuk melihat waktu di tiap zona.</string>
+    <string name="detail_zones_open_profile">Buka Profil</string>
+    <string name="detail_hr_tip_title">Pasang sensor detak jantung</string>
+    <string name="detail_hr_tip_text">Dengan sabuk HR atau jam tangan yang membagikan detak jantung, halaman ini menampilkan berapa lama kamu di tiap zona.</string>
+    <string name="detail_hr_tip_open_sensors">Buka Sensor</string>
+    <string name="detail_hr_tip_close">Jangan tampilkan lagi</string>
 </resources>

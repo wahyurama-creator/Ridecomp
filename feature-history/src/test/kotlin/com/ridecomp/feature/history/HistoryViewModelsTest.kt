@@ -2,8 +2,10 @@ package com.ridecomp.feature.history
 
 import app.cash.turbine.test
 import com.ridecomp.core.model.ActivityStatus
+import com.ridecomp.core.model.GuideTip
 import com.ridecomp.core.model.RideSample
 import com.ridecomp.core.model.RideTotals
+import com.ridecomp.core.model.RiderProfile
 import com.ridecomp.core.model.StravaAccount
 import com.ridecomp.core.model.StravaStatus
 import com.ridecomp.core.model.StravaUpload
@@ -14,8 +16,10 @@ import com.ridecomp.core.testing.FakeActivityRepository
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeExportFileStore
 import com.ridecomp.core.testing.FakeExportedFileHandler
+import com.ridecomp.core.testing.FakeGuideRepository
 import com.ridecomp.core.testing.FakeNetworkStatusSource
 import com.ridecomp.core.testing.FakeOfflineMapRepository
+import com.ridecomp.core.testing.FakeProfileRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.testing.FakeStravaAccountStore
 import com.ridecomp.core.testing.FakeStravaApi
@@ -25,6 +29,7 @@ import com.ridecomp.core.testing.TestDispatcherProvider
 import com.ridecomp.core.usecase.AnalysisSectionKind
 import com.ridecomp.core.usecase.AnalysisStatKind
 import com.ridecomp.core.usecase.DeleteActivityUseCase
+import com.ridecomp.core.usecase.DismissTipUseCase
 import com.ridecomp.core.usecase.ExportActivityUseCase
 import com.ridecomp.core.usecase.ExportFitUseCase
 import com.ridecomp.core.usecase.ExportFormat
@@ -33,6 +38,7 @@ import com.ridecomp.core.usecase.GetLapsUseCase
 import com.ridecomp.core.usecase.LoadActivityAnalysisUseCase
 import com.ridecomp.core.usecase.LoadRideChartUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
+import com.ridecomp.core.usecase.ObserveGuideUseCase
 import com.ridecomp.core.usecase.ObserveHistoryCountUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveMapTilesUseCase
@@ -42,6 +48,7 @@ import com.ridecomp.core.usecase.ObserveRidesOnStravaUseCase
 import com.ridecomp.core.usecase.ObserveStravaStatusUseCase
 import com.ridecomp.core.usecase.ObserveStravaUploadUseCase
 import com.ridecomp.core.usecase.QueueStravaUploadUseCase
+import com.ridecomp.core.usecase.ReadRideTrackUseCase
 import com.ridecomp.core.usecase.RecomputeTrainingUseCase
 import com.ridecomp.core.usecase.SaveActivityFileUseCase
 import com.ridecomp.core.usecase.ShareActivityFileUseCase
@@ -61,11 +68,14 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -78,6 +88,8 @@ class HistoryViewModelsTest {
     private val settings = FakeSettingsRepository()
     private val handler = FakeExportedFileHandler()
     private val store = FakeExportFileStore()
+    private val profiles = FakeProfileRepository()
+    private val guide = FakeGuideRepository()
 
     @BeforeTest
     fun setUp() {
@@ -131,7 +143,12 @@ class HistoryViewModelsTest {
         val useCases = ActivityDetailUseCases(
             observeActivity = ObserveActivityUseCase(repository),
             getLaps = GetLapsUseCase(repository),
-            loadAnalysis = LoadActivityAnalysisUseCase(LoadRideChartUseCase(repository)),
+            loadAnalysis = LoadActivityAnalysisUseCase(
+                LoadRideChartUseCase(repository),
+                ReadRideTrackUseCase(repository, TestDispatcherProvider(dispatcher)),
+                profiles,
+                FakeClock(),
+            ),
             observeSettings = ObserveRideSettingsUseCase(settings),
             share = ShareActivityFileUseCase(export, handler),
             save = SaveActivityFileUseCase(export, handler),
@@ -145,6 +162,8 @@ class HistoryViewModelsTest {
                 ),
             ),
             observeMapTiles = ObserveMapTilesUseCase(FakeNetworkStatusSource(), settings, FakeOfflineMapRepository()),
+            observeGuide = ObserveGuideUseCase(guide),
+            dismissTip = DismissTipUseCase(guide),
         )
         val strava = ActivityStravaUseCases(
             ObserveStravaStatusUseCase(stravaStore, FakeStravaApi.SETUP),
@@ -201,6 +220,35 @@ class HistoryViewModelsTest {
         assertEquals(1_000.0, stats[2].value, DELTA)
         // The last sample has no fix: left out of the route.
         assertEquals(5, state.route.size)
+    }
+
+    @Test
+    fun `a ride without heart rate shows the sensor card until it is closed`() = runTest {
+        val id = savedRide(FakeClock.DEFAULT_START_MS)
+        repository.appendSamples(id, (1..5).map { RideSample(it * 1_000L, distanceM = it * 10.0, speedMps = 5.0) })
+        val viewModel = detailViewModel(id)
+        assertTrue(viewModel.uiState.value.isHeartRateTipShown)
+
+        viewModel.onEvent(ActivityDetailUiEvent.DismissHeartRateTip)
+
+        assertFalse(viewModel.uiState.value.isHeartRateTipShown)
+        assertTrue(GuideTip.HEART_RATE_ZONES in guide.observe().first().dismissed)
+    }
+
+    @Test
+    fun `a ride with heart rate shows its zones, or asks for hr max`() = runTest {
+        val id = savedRide(FakeClock.DEFAULT_START_MS)
+        repository.appendSamples(id, (1..5).map { RideSample(it * 1_000L, distanceM = it * 10.0, heartRateBpm = 150) })
+
+        val missing = detailViewModel(id).uiState.value
+        assertTrue(missing.isHrMaxMissing)
+        assertFalse(missing.isHeartRateTipShown)
+
+        profiles.save(RiderProfile(hrMaxBpm = 200))
+        val zones = assertNotNull(detailViewModel(id).uiState.value.heartRateZones)
+        assertEquals(200, zones.hrMaxBpm)
+        assertFalse(zones.isEstimated)
+        assertEquals(5L, zones.zones[2].seconds)
     }
 
     @Test

@@ -47,6 +47,7 @@ import com.ridecomp.core.model.StravaUploadState
 import com.ridecomp.core.usecase.AnalysisSectionKind
 import com.ridecomp.core.usecase.AnalysisStatKind
 import com.ridecomp.core.usecase.ExportFormat
+import com.ridecomp.core.usecase.ZoneTimeSlice
 import com.ridecomp.core.usecase.isDuration
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.history.R
@@ -69,6 +70,7 @@ import com.ridecomp.ui.component.ChartYScale
 import com.ridecomp.ui.component.ConfirmDialog
 import com.ridecomp.ui.component.ErrorState
 import com.ridecomp.ui.component.IconTile
+import com.ridecomp.ui.component.LinkText
 import com.ridecomp.ui.component.ListCard
 import com.ridecomp.ui.component.ListCardRow
 import com.ridecomp.ui.component.RideChart
@@ -78,8 +80,11 @@ import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.component.SectionHeader
 import com.ridecomp.ui.component.StatGrid
 import com.ridecomp.ui.component.StatItem
+import com.ridecomp.ui.component.TipCard
 import com.ridecomp.ui.component.TrackSketch
 import com.ridecomp.ui.component.ValueTone
+import com.ridecomp.ui.component.ZoneBar
+import com.ridecomp.ui.component.ZoneBars
 import com.ridecomp.ui.map.RouteMap
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
@@ -91,6 +96,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
+import kotlin.math.roundToInt
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -110,6 +116,9 @@ fun ActivityDetailRoute(
     onShareCard: (() -> Unit)? = null,
     tipContent: (@Composable () -> Unit)? = null,
     onOpenStravaSettings: () -> Unit = {},
+    /** Heart-rate analysis (T11.5): pair a sensor, set HR max. */
+    onOpenSensors: () -> Unit = {},
+    onOpenProfile: () -> Unit = {},
     viewModel: ActivityDetailViewModel = koinViewModel { parametersOf(activityId) },
 ) {
     val context = LocalContext.current
@@ -137,6 +146,8 @@ fun ActivityDetailRoute(
         tipContent = tipContent,
         onOpenStravaSettings = onOpenStravaSettings,
         isOnlineMap = isOnlineMap,
+        onOpenSensors = onOpenSensors,
+        onOpenProfile = onOpenProfile,
         onOpenStravaActivity = { stravaId ->
             try {
                 context.startActivity(
@@ -169,6 +180,9 @@ fun ActivityDetailScreen(
     onOpenStravaActivity: (Long) -> Unit = {},
     /** Draws the track on the online map instead of the sketch (D-90). */
     isOnlineMap: Boolean = false,
+    /** Heart-rate analysis (T11.5): pair a sensor, set HR max. */
+    onOpenSensors: () -> Unit = {},
+    onOpenProfile: () -> Unit = {},
 ) {
     val activity = state.activity
     ScreenScaffold(
@@ -210,7 +224,25 @@ fun ActivityDetailScreen(
                         // Elevation in grey behind speed, as on printed ride summaries.
                         val background = state.sections.takeIf { section.kind == AnalysisSectionKind.SPEED }
                             ?.firstOrNull { it.kind == AnalysisSectionKind.ELEVATION }?.values
-                        Section(section, background, format)
+                        Section(section, background, format) {
+                            if (section.kind == AnalysisSectionKind.HEART_RATE) {
+                                HeartRateZonesFooter(state, format, onOpenProfile)
+                            }
+                        }
+                    }
+                    if (state.isHeartRateTipShown) {
+                        item(key = ITEM_HEART_RATE_TIP) {
+                            TipCard(
+                                title = stringResource(R.string.detail_hr_tip_title),
+                                text = stringResource(R.string.detail_hr_tip_text),
+                                learnMoreLabel = stringResource(R.string.detail_hr_tip_open_sensors),
+                                closeLabel = stringResource(R.string.detail_hr_tip_close),
+                                onLearnMore = onOpenSensors,
+                                onClose = { onEvent(ActivityDetailUiEvent.DismissHeartRateTip) },
+                                iconRes = UiR.drawable.ic_heart,
+                                iconTint = RideCompTheme.colors.danger,
+                            )
+                        }
                     }
                     if (state.laps.size >= MIN_LAPS) item(key = ITEM_LAPS) { Laps(state, format) }
                     tipContent?.let { item(key = ITEM_TIP) { it() } }
@@ -383,7 +415,12 @@ private fun ShareCardEntry(onClick: () -> Unit) {
 
 /** A section of the analysis (T11.2): title with ⓘ, its chart, then its numbers. */
 @Composable
-private fun Section(section: DetailSection, background: ImmutableList<ChartValue>?, format: UnitFormatter) {
+private fun Section(
+    section: DetailSection,
+    background: ImmutableList<ChartValue>?,
+    format: UnitFormatter,
+    footer: @Composable () -> Unit = {},
+) {
     val kind = section.kind
     val unit = kind.unit(format)
     val decimals = kind.decimals()
@@ -408,6 +445,7 @@ private fun Section(section: DetailSection, background: ImmutableList<ChartValue
             infoLabel = stringResource(R.string.detail_section_info_label, title),
         ),
         rows = rows,
+        footer = footer,
     ) {
         RideChart(
             values = section.values,
@@ -424,9 +462,87 @@ private fun Section(section: DetailSection, background: ImmutableList<ChartValue
             // Elevation shows its shape; the others start at zero.
             yScale = if (kind == AnalysisSectionKind.ELEVATION) ChartYScale.DATA_RANGE else ChartYScale.FROM_ZERO,
             background = background,
+            // Heart rate: its average as a dashed line (T11.5).
+            averageY = section.stats.firstOrNull { it.kind == AnalysisStatKind.AVG }
+                ?.value?.takeIf { kind == AnalysisSectionKind.HEART_RATE },
         )
     }
 }
+
+/**
+ * Time in zones Z1..Z5 under the heart-rate numbers (T11.5) and the HR max it is based on, with a link to the
+ * profile; without an HR max (nor birth year) only the invitation to fill it.
+ */
+@Composable
+private fun HeartRateZonesFooter(state: ActivityDetailUiState, format: UnitFormatter, onOpenProfile: () -> Unit) {
+    val colors = RideCompTheme.colors
+    val zones = state.heartRateZones
+    if (zones == null && !state.isHrMaxMissing) return
+    Column(verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS)) {
+        Text(
+            text = stringResource(R.string.detail_zones_title),
+            style = RideCompTheme.typography.bodyStrong,
+            color = colors.textPrimary,
+            modifier = Modifier.padding(top = RideCompDimens.spacingS),
+        )
+        if (zones != null) {
+            val total = zones.totalSeconds.coerceAtLeast(1)
+            ZoneBars(
+                zones = zones.zones.map { slice ->
+                    ZoneBar(
+                        name = stringResource(zoneNameRes(slice.zone)),
+                        range = zoneRange(slice),
+                        fraction = slice.seconds.toFloat() / total,
+                        percent = stringResource(
+                            R.string.detail_zone_percent,
+                            (slice.seconds * Units.PERCENT / total).roundToInt(),
+                        ),
+                        duration = format.duration(slice.seconds * Units.MS_PER_SECOND),
+                        color = colors.zones[slice.zone - 1],
+                    )
+                }.toImmutableList(),
+            )
+            Text(
+                text = stringResource(
+                    if (zones.isEstimated) R.string.detail_zones_based_on_age else R.string.detail_zones_based_on,
+                    zones.hrMaxBpm,
+                ),
+                style = RideCompTheme.typography.caption,
+                color = colors.textSecondary,
+            )
+            LinkText(text = stringResource(R.string.detail_zones_edit_profile), onClick = onOpenProfile)
+        } else {
+            Text(
+                text = stringResource(R.string.detail_zones_missing_hr_max),
+                style = RideCompTheme.typography.body,
+                color = colors.textSecondary,
+            )
+            LinkText(text = stringResource(R.string.detail_zones_open_profile), onClick = onOpenProfile)
+        }
+    }
+}
+
+@Composable
+private fun zoneRange(slice: ZoneTimeSlice): String {
+    val max = slice.maxBpm
+    return when {
+        slice.minBpm == 0 && max != null -> stringResource(R.string.detail_zone_range_below, max + 1)
+        max == null -> stringResource(R.string.detail_zone_range_above, slice.minBpm)
+        else -> stringResource(R.string.detail_zone_range, slice.minBpm, max)
+    }
+}
+
+@StringRes
+private fun zoneNameRes(zone: Int): Int = HEART_RATE_ZONE_NAMES[(zone - 1).coerceIn(0, HEART_RATE_ZONE_NAMES.lastIndex)]
+
+/** Names of Z1..Z5, as the training plans call them (D-94). */
+private val HEART_RATE_ZONE_NAMES = listOf(
+    R.string.detail_zone_1,
+    R.string.detail_zone_2,
+    R.string.detail_zone_3,
+    R.string.detail_zone_4,
+    R.string.detail_zone_5,
+)
 
 private fun number(value: Double, decimals: Int): String =
     String.format(Locale.getDefault(), if (decimals == 0) NO_DECIMAL else "%.${decimals}f", value)
@@ -442,6 +558,7 @@ private const val MIN_LAPS = 2
 private const val ITEM_HEADER = "header"
 private const val ITEM_SHARE = "share"
 private const val ITEM_LAPS = "laps"
+private const val ITEM_HEART_RATE_TIP = "heart_rate_tip"
 private const val ITEM_TIP = "tip"
 private const val ITEM_EXPORT = "export"
 private const val ITEM_MORE = "more"

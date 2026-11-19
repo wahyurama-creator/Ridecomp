@@ -400,4 +400,5 @@
     <string name="welcome_footnote">Takes about a minute. You can skip personal details.</string>
     <string name="onboarding_skip">Skip</string>
     <string name="onboarding_skip_hint">Optional. Skip it and fill it in later before a ride or in Settings.</string>
+    <string name="guide_tip_heart_rate_zones">Pair a heart rate sensor to see the time in each heart rate zone on the ride page.</string>
 </resources>

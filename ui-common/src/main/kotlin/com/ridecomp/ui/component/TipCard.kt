@@ -1,5 +1,6 @@
 package com.ridecomp.ui.component
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -34,12 +36,15 @@ fun TipCard(
     onLearnMore: () -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
+    /** The icon at the left; the info icon in green by default. */
+    @DrawableRes iconRes: Int = R.drawable.ic_info,
+    iconTint: Color? = null,
 ) {
     val colors = RideCompTheme.colors
     // The whole card opens the Help topic (a large touch target, UI-07); the link only says so.
     RideCompCard(modifier = modifier, onClick = onLearnMore) {
         Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm)) {
-            IconTile(R.drawable.ic_info, tint = colors.ok)
+            IconTile(iconRes, tint = iconTint ?: colors.ok)
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingXs),
