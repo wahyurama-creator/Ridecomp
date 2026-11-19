@@ -6,15 +6,15 @@
 - **Rilis terakhir:** **0.9.3** (beta), 2026-11-18 · [GitHub Releases](https://github.com/wahyurama-creator/Ridecomp/releases). Skema DB **v10**.
 - **Fase selesai:** 0–5, 7, 9, dan rilis beta & masukan pengguna (Fase 8/10). Ringkasan: [`planning/06-ROADMAP.md`](planning/06-ROADMAP.md).
 - **Fase berjalan:** **Fase 11 — Analisa ride, usaha terbaik, tema & peta offline.** Rencana lengkap: [`planning/14-PHASE11-PLAN.md`](planning/14-PHASE11-PLAN.md). Keputusan K1–K5 sudah dijawab (D-109…D-113).
-- **Task terakhir:** T11.1 — Komponen grafik `RideChart` (selesai 2026-11-19, [Feature Report](reports/features/T11.1-ride-chart.md)).
-- **Task berikutnya:** **T11.2 — Tata letak halaman detail per bagian** (14-PHASE11-PLAN §5). Belum dimulai.
+- **Task terakhir:** T11.2 — Tata letak halaman detail per bagian (selesai 2026-11-19, [Feature Report](reports/features/T11.2-detail-sections.md)).
+- **Task berikutnya:** **T11.3 — Analisa kecepatan** (14-PHASE11-PLAN §5). Belum dimulai.
 
 ## Daftar centang Fase 11
 Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.md` §4 setiap kali task selesai.
 
 - [x] T11.1 Komponen grafik `RideChart`
-- [ ] T11.2 Tata letak halaman detail per bagian ← **berikutnya**
-- [ ] T11.3 Analisa kecepatan
+- [x] T11.2 Tata letak halaman detail per bagian
+- [ ] T11.3 Analisa kecepatan ← **berikutnya**
 - [ ] T11.4 Rombak elevasi
 - [ ] T11.5 Analisa detak jantung
 - [ ] T11.6 Perkiraan zona power Z1–Z7
@@ -66,6 +66,7 @@ Branch `feature/<TaskID>-<slug>` → rencana disetujui pemilik → kode + test �
 Naikkan `versionCode`/`versionName` di `app/build.gradle.kts` → catatan rilis `releases/RELEASE-NOTES-x.y.z.md` → `./gradlew … assembleRelease` → cek sertifikat sama (`apksigner`, SHA-256 `F4:E9:68:90…:09:41`) → `SHA256SUMS.txt` → tag `vX.Y.Z` → `gh release create … --prerelease` dengan APK per ABI, checksum, `releases/PRIVACY.md`. Pengguna 0.9.1+ otomatis melihat kartu "Versi … tersedia".
 
 ## Catatan terbuka
-- Anggaran performa Fase 11 (§8): T11.1 baru diukur dengan build debug (indikasi); pengukuran build rilis + pembanding sebelum Fase 11 di akhir fase.
+- StrictMode di thread utama saat MapView peta online dibuat (±120–320 ms, terlihat di uji T11.2; jenis belum diketahui) — perlu task perbaikan.
+- Anggaran performa Fase 11 (§8): T11.1–T11.2 baru diukur dengan build debug (indikasi); pengukuran build rilis + pembanding sebelum Fase 11 di akhir fase.
 - Strava: kapasitas atlet 10 (self-service); pengajuan kenaikan menunggu 10 slot penuh (formulir sudah diisi, belum dikirim).
 - Uji lapangan nyata (bukan simulasi) untuk smart trainer dan ride panjang belum dilakukan ([`testing/field-tests.md`](testing/field-tests.md)).

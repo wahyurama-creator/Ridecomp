@@ -1,6 +1,6 @@
 # 14 — Rencana Fase 11: Analisa Ride, Usaha Terbaik, Tema & Peta Offline
 
-**Status:** berjalan (1/14: T11.1 selesai). Disusun 2026-11-19 atas permintaan pemilik.
+**Status:** berjalan (2/14: T11.1–T11.2 selesai). Disusun 2026-11-19 atas permintaan pemilik.
 **Acuan:** `06-ROADMAP.md` (daftar task), `07-TEST-PLAN.md` §4/§5 (uji), `10-FEATURE-CHECKLIST.md` (alur tiap task), aturan wajib `08`–`11`.
 **Referensi visual pemilik:** `~/Downloads/RideComp-Referensi/` (4 screenshot halaman detail aktivitas Strava, 2026-11-18): bagian *Hasil* (Usaha Terbaik · Segmen), *Wawasan Detak Jantung*, grafik *Kecepatan* + 4 angka, grafik *Elevasi* + 2 angka, *Perkiraan Zona Kekuatan* Z1–Z7. Logo, ikon, dan merek Strava **tidak** ditiru: hanya susunan informasinya.
 
@@ -47,7 +47,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`); ganti 
 
 **11A Fondasi**
 - [x] T11.1 Komponen grafik `RideChart`
-- [ ] T11.2 Tata letak halaman detail per bagian
+- [x] T11.2 Tata letak halaman detail per bagian
 
 **11B Analisa**
 - [ ] T11.3 Kecepatan
@@ -103,7 +103,7 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 - Preview `@ThemePreviews` gelap & terang.
 
 #### T11.2 Tata letak halaman detail
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-19 · Feature Report: [`T11.2-detail-sections.md`](../reports/features/T11.2-detail-sections.md) · D-116
 - Ganti grafik bertab menjadi **bagian vertikal**: Judul & peta → Ringkasan (kotak statistik ringkas) → **Hasil** (11C) → **Kecepatan** → **Elevasi** → **Detak jantung** (bila ada HR) → **Zona power** → Cadence (bila ada) → Lap → Bagikan & Ekspor → Lainnya.
 - Setiap bagian: judul + ikon info (ⓘ membuka penjelasan singkat), grafik, lalu **daftar angka** label-kiri/nilai-kanan (seperti referensi).
 - Bagian tanpa data **disembunyikan** (bukan kosong), kecuali HR yang menampilkan kartu ajakan (T11.5).
