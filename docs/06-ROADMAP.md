@@ -12,6 +12,7 @@ Kerjakan **berurutan**. **Setiap task** mengikuti alur di `10-FEATURE-CHECKLIST.
 | 5 | Strava API (opsional) | Upload otomatis bila pengguna berlangganan Strava |
 | 6 | iOS | Port & uji di iPhone |
 | 7+ | Peningkatan | Ide lanjutan |
+| 11 | Analisa ride, usaha terbaik, tema & peta offline | Halaman detail ala analisa (kecepatan, elevasi, HR, zona power), usaha terbaik, tema terang/gelap, peta tanpa internet (`14-PHASE11-PLAN.md`) |
 
 Spesifikasi detail fitur tambahan: `12-FEATURE-SPECS.md`.
 
@@ -135,6 +136,35 @@ Ikuti `03-ARCHITECTURE.md` §9: jadikan `:core` modul KMP, tulis UI (SwiftUI ata
 ## Fase 9 — Trainer & widget (dipilih pemilik 2026-11-17)
 - [x] T9.1 Smart trainer (BLE FTMS): data power/cadence/kecepatan + ERG terhubung rencana latihan (D-95).
 - [x] T9.2 Widget layar utama: sesi hari ini, minggu ini, tombol mulai; jarak & waktu saat ride (D-96).
+
+## Fase 11 — Analisa ride, usaha terbaik, tema & peta offline (direncanakan 2026-11-19)
+Spesifikasi, keputusan terbuka K1–K5, urutan, risiko, dan DoD: **`14-PHASE11-PLAN.md`**. Jangan mulai task yang terhalang keputusan sebelum dijawab pemilik.
+
+**11A — Fondasi**
+- [ ] T11.1 Komponen grafik `RideChart` di `:ui-common` (angka sumbu, garis bantu, lapisan latar, sentuh-geser; tanpa library) (K3).
+- [ ] T11.2 Halaman detail menjadi bagian vertikal: Ringkasan → Hasil → Kecepatan → Elevasi → Detak jantung → Zona power → Lap → Ekspor.
+
+**11B — Analisa**
+- [ ] T11.3 Analisa kecepatan: grafik + elevasi latar; Kec. rata-rata, Kec. maks, Waktu bergerak, Waktu total.
+- [ ] T11.4 Rombak elevasi: grafik dengan angka bantu; Kenaikan elevasi, Elevasi maks.
+- [ ] T11.5 Analisa detak jantung (bila ada sensor HR): grafik, rata-rata/maks, waktu di zona Z1–Z5; kartu ajakan bila tanpa HR.
+- [ ] T11.6 Perkiraan zona power Z1–Z7: % waktu & rentang watt; power meter atau estimasi (berlabel "Perkiraan"), FTP profil atau perkiraan.
+
+**11C — Usaha terbaik**
+- [ ] T11.7 Bagian "Hasil" di detail: jumlah usaha terbaik & segmen, daftar segmen dengan PR, rekor baru.
+- [ ] T11.8 Usaha terbaik otomatis (K1): rekor durasi kecepatan/power dan/atau "Tandai sprint" dari grafik.
+
+**11D — Tema**
+- [ ] T11.9 Setelan → Tema: Ikuti HP · Gelap · Terang (K2).
+- [ ] T11.10 Audit & uji tampilan terang di semua layar (ride di bawah matahari, peta, grafik, share, widget).
+
+**11E — Peta offline**
+- [ ] T11.11 Cache peta otomatis (yang pernah dilihat) dipakai saat sinyal hilang; Setelan ukuran & hapus cache.
+- [ ] T11.12 "Unduh peta untuk rute ini" (koridor rute, ukuran & progres, Wi‑Fi default) (K4, K5).
+- [ ] T11.13 "Unduh peta area" kota/provinsi (opsional) (K4, K5).
+- [ ] T11.14 Batas penyimpanan, keamanan unduhan, atribusi.
+
+**DoD:** lihat `14-PHASE11-PLAN.md` §8.
 
 ## Fase 8+ — Ide lanjutan (belum dijadwalkan)
 Workout/interval terstruktur, target zona dengan alert, pengumuman suara (TTS), kembali ke titik start, pelacakan komponen sepeda, ghost/virtual partner, backup ke file/Google Drive, radar belakang BLE, export ke platform lain (intervals.icu dll. via file).

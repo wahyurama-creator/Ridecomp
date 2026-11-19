@@ -1,6 +1,6 @@
 # CLAUDE.md — Aturan Kerja untuk Claude Code
 
-Proyek: **RideComp**, aplikasi cycling computer untuk HP Android low-end (native Kotlin + Jetpack Compose). Spesifikasi lengkap ada di `docs/01-PRD.md` s.d. `docs/07-TEST-PLAN.md` (fitur tambahan detail di `docs/12-FEATURE-SPECS.md`). **Baca semua dokumen di `docs/` sebelum mengerjakan apa pun.** Aturan di `docs/08-CODING-RULES.md`, `docs/09-RELIABILITY-RULES.md`, `docs/10-FEATURE-CHECKLIST.md`, dan `docs/11-SECURITY-RULES.md` bersifat WAJIB. Keputusan yang sudah diambil tercatat di `docs/reports/DECISIONS.md`.
+Proyek: **RideComp**, aplikasi cycling computer untuk HP Android low-end (native Kotlin + Jetpack Compose). Spesifikasi lengkap ada di `docs/01-PRD.md` s.d. `docs/07-TEST-PLAN.md` (fitur tambahan detail di `docs/12-FEATURE-SPECS.md`; rencana Fase 11 di `docs/14-PHASE11-PLAN.md`). **Baca semua dokumen di `docs/` sebelum mengerjakan apa pun.** Aturan di `docs/08-CODING-RULES.md`, `docs/09-RELIABILITY-RULES.md`, `docs/10-FEATURE-CHECKLIST.md`, dan `docs/11-SECURITY-RULES.md` bersifat WAJIB. Keputusan yang sudah diambil tercatat di `docs/reports/DECISIONS.md`.
 
 ## Prinsip kerja (WAJIB)
 
