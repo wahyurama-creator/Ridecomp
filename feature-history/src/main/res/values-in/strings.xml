@@ -67,6 +67,7 @@
     <string name="detail_share_card_subtitle">Poster, foto, atau stiker untuk Story dan WhatsApp</string>
     <string name="detail_chart_hint">Sentuh atau geser grafik untuk melihat nilainya</string>
     <string name="detail_stat_avg">Rata-rata</string>
+    <string name="detail_stat_avg_moving">Rata-rata (bergerak)</string>
     <string name="detail_stat_max">Maksimum</string>
     <string name="detail_stat_min">Minimum</string>
     <string name="detail_section_speed">Kecepatan</string>
@@ -75,7 +76,7 @@
     <string name="detail_section_power">Power</string>
     <string name="detail_section_cadence">Cadence</string>
     <string name="detail_section_info_label">Penjelasan %1$s</string>
-    <string name="detail_info_speed">Rata-rata dihitung hanya saat bergerak; waktu berhenti tidak ikut. Area abu-abu di belakang grafik adalah elevasi.</string>
+    <string name="detail_info_speed">Rata-rata dihitung hanya saat bergerak; waktu berhenti tidak ikut (waktu total menghitungnya). Kecepatan maksimum disaring agar lonjakan GPS tidak terhitung. Area abu-abu di belakang grafik adalah elevasi.</string>
     <string name="detail_info_elevation">Tanjakan dan turunan adalah total naik dan turun sepanjang ride. Grafik dimulai dari titik terendah agar bentuk tanjakan terlihat.</string>
     <string name="detail_info_heart_rate">Dari sensor detak jantung yang tersambung saat ride. Celah pada grafik berarti sensor sempat terputus.</string>
     <string name="detail_info_power">Dari power meter atau smart trainer. NP (normalized power) memberi bobot lebih pada usaha berat, sehingga lebih mendekati beratnya ride yang terasa daripada rata-rata biasa.</string>

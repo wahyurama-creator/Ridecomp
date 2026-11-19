@@ -6,9 +6,13 @@ import com.ridecomp.core.model.RideTotals
 public enum class AnalysisSectionKind { SPEED, ELEVATION, HEART_RATE, POWER, CADENCE }
 
 /** A number in a section's list. */
-public enum class AnalysisStatKind { AVG, MAX, MIN, ASCENT, DESCENT, NORMALIZED }
+public enum class AnalysisStatKind { AVG, MAX, MIN, ASCENT, DESCENT, NORMALIZED, MOVING_TIME, ELAPSED_TIME }
 
-/** One number of a section, in SI units (m/s, m, bpm, W, rpm); converted only for display. */
+/** Times are seconds, not values of the section's unit: they are never converted. */
+public val AnalysisStatKind.isDuration: Boolean
+    get() = this == AnalysisStatKind.MOVING_TIME || this == AnalysisStatKind.ELAPSED_TIME
+
+/** One number of a section, in SI units (m/s, m, bpm, W, rpm, s); converted only for display. */
 public data class AnalysisStat(val kind: AnalysisStatKind, val value: Double)
 
 /** A section with its numbers; its chart is the matching value of each [ChartPoint]. */
@@ -62,10 +66,16 @@ private fun AnalysisSectionKind.stats(values: List<Double>, totals: RideTotals?)
     )
 }
 
-/** Average while moving (stops left out), as the ride totals do. */
+/**
+ * Speed analysis (T11.3): average while moving (stops left out), as the ride totals do; the maximum is the
+ * one filtered while recording (EMA, no GPS spikes, D-118), so it matches the ride screen; moving and total
+ * time from the totals.
+ */
 private fun speedStats(values: List<Double>, totals: RideTotals?): List<AnalysisStat> = listOfNotNull(
     stat(AnalysisStatKind.AVG, totals?.avgSpeedMps?.takeIf { it > 0 } ?: values.filter { it > 0 }.averageOrNull()),
     stat(AnalysisStatKind.MAX, totals?.maxSpeedMps?.takeIf { it > 0 } ?: values.max()),
+    stat(AnalysisStatKind.MOVING_TIME, totals?.movingS?.takeIf { it > 0 }?.toDouble()),
+    stat(AnalysisStatKind.ELAPSED_TIME, totals?.elapsedS?.takeIf { it > 0 }?.toDouble()),
 )
 
 private fun elevationStats(values: List<Double>, totals: RideTotals?): List<AnalysisStat> = listOfNotNull(

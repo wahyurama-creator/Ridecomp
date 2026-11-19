@@ -26,6 +26,7 @@ import com.ridecomp.core.usecase.QueueStravaUploadUseCase
 import com.ridecomp.core.usecase.SaveActivityFileUseCase
 import com.ridecomp.core.usecase.ShareActivityFileUseCase
 import com.ridecomp.core.usecase.SuggestExportFileNameUseCase
+import com.ridecomp.core.usecase.isDuration
 import com.ridecomp.core.usecase.valueOf
 import com.ridecomp.core.util.Outcome
 import com.ridecomp.ui.component.ChartValue
@@ -182,7 +183,7 @@ class ActivityDetailViewModel(
     }
 }
 
-/** A number of a section, in display units. */
+/** A number of a section, in display units (times stay in seconds). */
 @Immutable
 data class SectionStat(val kind: AnalysisStatKind, val value: Double)
 
@@ -211,7 +212,9 @@ internal fun ActivityAnalysis.toSections(unitSystem: UnitSystem): ImmutableList<
             values = points.map { point ->
                 ChartValue(point.distanceM / distanceDivisor, section.kind.valueOf(point)?.times(factor))
             }.toImmutableList(),
-            stats = section.stats.map { SectionStat(it.kind, it.value * factor) }.toImmutableList(),
+            stats = section.stats.map {
+                SectionStat(it.kind, if (it.kind.isDuration) it.value else it.value * factor)
+            }.toImmutableList(),
         )
     }.toImmutableList()
 }

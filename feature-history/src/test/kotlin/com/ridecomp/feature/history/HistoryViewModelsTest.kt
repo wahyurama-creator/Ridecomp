@@ -191,9 +191,14 @@ class HistoryViewModelsTest {
         val state = detailViewModel(id).uiState.value
 
         val stats = state.sections.single { it.kind == AnalysisSectionKind.SPEED }.stats
-        assertEquals(listOf(AnalysisStatKind.AVG, AnalysisStatKind.MAX), stats.map { it.kind })
+        assertEquals(
+            listOf(AnalysisStatKind.AVG, AnalysisStatKind.MAX, AnalysisStatKind.MOVING_TIME),
+            stats.map { it.kind },
+        )
         assertEquals(18.0, stats[0].value, DELTA)
         assertEquals(36.0, stats[1].value, DELTA)
+        // Times stay in seconds: not converted like the speeds (T11.3).
+        assertEquals(1_000.0, stats[2].value, DELTA)
         // The last sample has no fix: left out of the route.
         assertEquals(5, state.route.size)
     }
