@@ -12,6 +12,7 @@ Kerjakan **berurutan**. **Setiap task** mengikuti alur di `10-FEATURE-CHECKLIST.
 | 5 | Strava API (opsional) | Upload otomatis bila pengguna berlangganan Strava |
 | 6 | iOS | Port & uji di iPhone |
 | 7+ | Peningkatan | Ide lanjutan |
+| 10 | Rilis beta & masukan pengguna | Open source, rilis 0.9.0–0.9.3, galeri share, sepeda lipat, cek pembaruan, onboarding baru |
 | 11 | Analisa ride, usaha terbaik, tema & peta offline | Halaman detail ala analisa (kecepatan, elevasi, HR, zona power), usaha terbaik, tema terang/gelap, peta tanpa internet (`14-PHASE11-PLAN.md`) |
 
 Spesifikasi detail fitur tambahan: `12-FEATURE-SPECS.md`.
@@ -136,6 +137,15 @@ Ikuti `03-ARCHITECTURE.md` §9: jadikan `:core` modul KMP, tulis UI (SwiftUI ata
 ## Fase 9 — Trainer & widget (dipilih pemilik 2026-11-17)
 - [x] T9.1 Smart trainer (BLE FTMS): data power/cadence/kecepatan + ERG terhubung rencana latihan (D-95).
 - [x] T9.2 Widget layar utama: sesi hari ini, minggu ini, tombol mulai; jarak & waktu saat ride (D-96).
+
+## Fase 8 / 10 — Rilis beta & masukan pengguna (selesai 2026-11-18)
+- [x] T8.1 Pemeriksaan akhir Fase 7; T8.2 rilis awal **0.9.0** (APK sideload per ABI, GitHub Release) (D-97).
+- [x] T10.1 Open source: audit secret seluruh riwayat (bersih), lisensi Apache-2.0, README publik (D-98); T10.3 bersih-bersih dokumen (D-99); T10.4–T10.5 gambar pratinjau sosial & poster di README.
+- [x] T10.6 Galeri share 21 desain (stiker transparan, tiket tanggal, kartu peta), tombol Instagram/WhatsApp (D-100).
+- [x] T10.7 Tombol PAUSE/LAP selalu tampil (D-101); T10.8 + T10.11 sepeda lipat & roda 16"/20", skema v10 (D-102).
+- [x] T10.9 Cek pembaruan dalam aplikasi dari GitHub Releases (D-103); T10.14 kartu pembaruan didesain ulang (D-107).
+- [x] T10.12 Onboarding baru: layar sambutan, langkah bisa dilewati, pengingat profil (D-105).
+- [x] Rilis **0.9.1** (D-104), **0.9.2** (D-106, uji ujung-ke-ujung pembaruan), **0.9.3** (D-108). Catatan rilis: `docs/releases/`.
 
 ## Fase 11 — Analisa ride, usaha terbaik, tema & peta offline (direncanakan 2026-11-19)
 Spesifikasi, keputusan K1–K5 (dijawab 2026-11-19, D-109…D-113), urutan, risiko, **anggaran performa §8**, dan DoD: **`14-PHASE11-PLAN.md`**.

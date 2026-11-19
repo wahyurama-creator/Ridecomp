@@ -104,4 +104,4 @@
 - **Rilis MVP (akhir Fase 2):** L1–L6, L9–L17, L20, R1, R2, S1–S7, S10, S11, S13 lulus di HP low-end.
 
 ## 6. Pencatatan hasil uji lapangan
-Untuk setiap uji lapangan catat: tanggal, HP & versi Android, durasi, mode layar, sensor, % baterai awal/akhir, temuan/bug. Simpan di `docs/field-tests.md` (dibuat agent di Fase 1).
+Untuk setiap uji lapangan catat: tanggal, HP & versi Android, durasi, mode layar, sensor, % baterai awal/akhir, temuan/bug. Simpan di `docs/testing/field-tests.md` (dibuat agent di Fase 1).

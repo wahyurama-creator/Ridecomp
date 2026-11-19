@@ -89,7 +89,7 @@ Tabel 09 §1 sudah diperbarui.
   3. HR istirahat yang tidak masuk akal lolos validasi;
   4. hook secret-scan meloloskan password;
   5. coverage gate terlewati karena exit code tertutup pipe (dicatat terbuka di commit `fix(core)`).
-- **Uji perangkat / lapangan (L1, L3, L4, L5, L9, L11, L12, L14–L16, R1, R2, S5, S7): BELUM.** Template pencatatan ada di `docs/field-tests.md`.
+- **Uji perangkat / lapangan (L1, L3, L4, L5, L9, L11, L12, L14–L16, R1, R2, S5, S7): BELUM.** Template pencatatan ada di `docs/testing/field-tests.md`.
 
 ## 7. Keamanan
 - **Checklist manual §D:**
@@ -131,5 +131,5 @@ Lengkapnya di `DECISIONS.md`.
 1. Jalankan `./gradlew installDebug`, buka app. Lalui onboarding (izinkan lokasi, notifikasi, berjalan di latar), lalu isi profil.
 2. **Coba di dalam rumah:** Pengaturan → Developer → aktifkan *Simulated GPS*. Lalu Beranda → MULAI RIDE → MULAI. Amati angka berjalan, jeda otomatis tiap ±2 menit, getar, notifikasi. Coba LAP, JEDA → SELESAI & SIMPAN → beri nama → SIMPAN → di detail ketuk EKSPOR FIT → pilih Drive/WhatsApp.
 3. **Uji recovery (L4):** saat merekam, `adb shell am force-stop com.ridecomp.app`, lalu buka app lagi. Banner "Ride belum tersimpan" harus muncul.
-4. **Uji lapangan:** matikan simulasi, gowes ≥ 30 menit (L1/L5/L14). Upload FIT ke strava.com (L9). Catat semua di `docs/field-tests.md`.
-5. **Setelah ride disimpan**, jalankan perintah `dumpsys` di `docs/field-tests.md`. Pastikan tidak ada GPS, wakelock, maupun service yang tersisa (L11).
+4. **Uji lapangan:** matikan simulasi, gowes ≥ 30 menit (L1/L5/L14). Upload FIT ke strava.com (L9). Catat semua di `docs/testing/field-tests.md`.
+5. **Setelah ride disimpan**, jalankan perintah `dumpsys` di `docs/testing/field-tests.md`. Pastikan tidak ada GPS, wakelock, maupun service yang tersisa (L11).

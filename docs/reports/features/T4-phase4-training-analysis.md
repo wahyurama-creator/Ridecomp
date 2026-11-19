@@ -148,4 +148,4 @@ D-65…D-73 di `DECISIONS.md`. Yang paling perlu ditinjau:
 3. **Tanjakan → segmen:** detail rute → daftar tanjakan → "Jadikan segmen".
 4. **Latihan:** isi HR maks (atau tahun lahir) di profil, ride dengan sensor HR → Riwayat → Latihan. Kartu Fitness/Kelelahan/Form, tren, minggu ini, dan zona akan terisi.
 5. **Kartu share:** detail aktivitas → "Bagikan kartu" → pilih Story/Kotak, statistik, dan tema → Bagikan → WhatsApp. Pastikan awal/akhir rute tidak tampil.
-6. **Setelah simpan:** jalankan `dumpsys` di `docs/field-tests.md`. Tidak boleh ada service, wakelock, atau GPS aktif.
+6. **Setelah simpan:** jalankan `dumpsys` di `docs/testing/field-tests.md`. Tidak boleh ada service, wakelock, atau GPS aktif.

@@ -166,4 +166,4 @@ D-43…D-64 di `DECISIONS.md`. Yang paling perlu ditinjau:
    - Keluar jalur ±100 m selama >10 dtk: getar panjang + banner.
    - Kembali: getar ganda.
 4. **Tanjakan/belokan:** pada rute bertanjakan, banner muncul ±500 m sebelum tanjakan. Halaman Grade berganti panel tanjakan. Belokan tajam diberi peringatan 150 m dan 30 m sebelumnya.
-5. **Setelah simpan:** jalankan `dumpsys` di `docs/field-tests.md` (L11). Tidak boleh ada service, wakelock, atau GPS aktif.
+5. **Setelah simpan:** jalankan `dumpsys` di `docs/testing/field-tests.md` (L11). Tidak boleh ada service, wakelock, atau GPS aktif.

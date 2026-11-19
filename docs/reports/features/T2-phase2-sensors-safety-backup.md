@@ -174,4 +174,4 @@ D-24…D-42 di `DECISIONS.md`. Yang paling perlu ditinjau:
 5. **Backup:**
    - Pengaturan → Backup & restore → aktifkan kata sandi → Buat backup ke Drive.
    - Di HP lain (atau setelah uninstall), Pilih file backup → kata sandi → ringkasan → konfirmasi 2× → Mulai ulang. Riwayat harus kembali, dan kontak darurat perlu diisi ulang.
-6. Setelah ride disimpan, jalankan `dumpsys` di `docs/field-tests.md` (L11, L13), ditambah `adb shell dumpsys sensorservice` (tidak ada listener milik app).
+6. Setelah ride disimpan, jalankan `dumpsys` di `docs/testing/field-tests.md` (L11, L13), ditambah `adb shell dumpsys sensorservice` (tidak ada listener milik app).
