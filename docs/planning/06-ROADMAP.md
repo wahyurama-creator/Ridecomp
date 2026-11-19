@@ -15,6 +15,7 @@ Kerjakan **berurutan**. **Setiap task** mengikuti alur di `10-FEATURE-CHECKLIST.
 | 10 | Rilis beta & masukan pengguna | Open source, rilis 0.9.0–0.9.3, galeri share, sepeda lipat, cek pembaruan, onboarding baru | ✅ Selesai (7/7) |
 | 11 | Analisa ride, usaha terbaik, tema & peta offline | Halaman detail ala analisa (kecepatan, elevasi, HR, zona power), usaha terbaik, tema terang/gelap, peta tanpa internet (`14-PHASE11-PLAN.md`) | 🟡 Berjalan (7/14) |
 | 12 | Detak jantung dari smartwatch | Jam tangan broadcast HR, pemindaian luas, panduan per merek, Wear OS (opsional), Aolon eksperimental (`15-PHASE12-PLAN.md`) | ⬜ Belum mulai (0/7) |
+| 13 | Tampilan responsif layar kecil | Semua layar benar di 320 dp; 360 dp ke atas tidak berubah (bukti screenshot) (`16-PHASE13-PLAN.md`) | ⬜ Belum mulai (0/8) |
 
 Spesifikasi detail fitur tambahan: `12-FEATURE-SPECS.md`.
 
@@ -207,6 +208,23 @@ Rencana, keputusan S1–S4, risiko, dan DoD: **`15-PHASE12-PLAN.md`** (D-114).
 - [ ] T12.5c Uji ride sungguhan ±30 menit.
 
 **DoD:** lihat `15-PHASE12-PLAN.md` §8.
+
+## Fase 13 — Tampilan responsif layar kecil (direncanakan 2026-11-19, setelah Fase 11 & 12)
+Rencana, keputusan R1–R4, prinsip teknis, risiko, dan DoD: **`16-PHASE13-PLAN.md`** (D-124).
+
+**13A — Fondasi & audit**
+- [ ] T13.1 Audit layar kecil (320 dp & 360 dp) + daftar masalah per layar.
+- [ ] T13.2 Skrip screenshot pembanding + baseline 412/390/360 dp.
+- [ ] T13.3 Fondasi: `WindowWidthClass`, token `Regular`/`Compact`, preview layar kecil.
+
+**13B — Layar prioritas**
+- [ ] T13.4 Layar ride & persiapan ride.
+- [ ] T13.5 Beranda, onboarding & sambutan.
+
+**13C — Layar lain**
+- [ ] T13.6 Riwayat & detail ride.
+- [ ] T13.7 Rute, sensor, latihan.
+- [ ] T13.8 Setelan & sub-layar.
 
 ## Ide lanjutan (bank ide, belum dijadwalkan)
 Ide yang sudah terwujud dicentang beserta task-nya; sisanya dipindah ke fase bila dipilih pemilik.

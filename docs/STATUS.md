@@ -39,6 +39,16 @@ Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.m
 - [ ] T12.5b Sensor "Jam tangan (eksperimental)"
 - [ ] T12.5c Uji ride sungguhan
 
+**Setelah Fase 12 — Fase 13: Tampilan responsif layar kecil** ([`planning/16-PHASE13-PLAN.md`](planning/16-PHASE13-PLAN.md), D-124):
+- [ ] T13.1 Audit layar kecil
+- [ ] T13.2 Skrip screenshot pembanding
+- [ ] T13.3 Fondasi ukuran `Regular`/`Compact`
+- [ ] T13.4 Layar ride & persiapan ride
+- [ ] T13.5 Beranda, onboarding & sambutan
+- [ ] T13.6 Riwayat & detail ride
+- [ ] T13.7 Rute, sensor, latihan
+- [ ] T13.8 Setelan & sub-layar
+
 Fase lain: lihat kolom Status di tabel atas `planning/06-ROADMAP.md` (Fase 0–5, 7, 9, 10 selesai; Fase 6 iOS belum mulai).
 
 ## Urutan Fase 11
