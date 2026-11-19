@@ -61,7 +61,7 @@ scripts/git-hooks/pre-commit (otomatis saat commit)  # secret scan; gitleaks bil
 ./gradlew generateLicenseReport                     # akhir fase
 ```
 Daemon Gradle berjalan di JDK 21 (`gradle/gradle-daemon-jvm.properties`, lihat D-07).
-Plus verifikasi manual sesuai `docs/rules/10-FEATURE-CHECKLIST.md` tahap ③. Setelah task selesai, **perbarui `docs/STATUS.md`** (task terakhir & berikutnya).
+Plus verifikasi manual sesuai `docs/rules/10-FEATURE-CHECKLIST.md` tahap ③. Setiap task baru dicatat sebagai `- [ ]` sebelum dikerjakan; setelah selesai **centang `- [x]`** di `docs/planning/06-ROADMAP.md` (perbarui kolom Status fase), di rencana fasenya, dan di **`docs/STATUS.md`** (task terakhir & berikutnya).
 
 ## Yang TIDAK boleh dilakukan
 

@@ -41,7 +41,41 @@
 
 Permintaan tambahan pemilik: **fitur ini tidak boleh mengganggu performa** → §8 Anggaran performa (wajib setiap task).
 
-## 4. Urutan & ketergantungan
+## 4. Daftar centang Fase 11
+
+Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`); ganti "belum dikerjakan" pada status task di §5 dengan tanggal & tautan Feature Report.
+
+**11A Fondasi**
+- [ ] T11.1 Komponen grafik `RideChart`
+- [ ] T11.2 Tata letak halaman detail per bagian
+
+**11B Analisa**
+- [ ] T11.3 Kecepatan
+- [ ] T11.4 Elevasi (rombak)
+- [ ] T11.5 Detak jantung
+- [ ] T11.6 Perkiraan zona power Z1–Z7
+
+**11C Usaha terbaik**
+- [ ] T11.7 Bagian "Hasil"
+- [ ] T11.8 Usaha terbaik otomatis (rekor durasi + tandai sprint)
+
+**11D Tema**
+- [ ] T11.9 Pilihan tema
+- [ ] T11.10 Audit tema terang
+
+**11E Peta offline**
+- [ ] T11.11 Cache peta otomatis
+- [ ] T11.13 Paket peta per provinsi (skrip pemilik)
+- [ ] T11.12 Peta wilayah otomatis
+- [ ] T11.14 Penyimpanan, baterai, keamanan
+
+**Penutup fase**
+- [ ] Anggaran performa §8 terukur untuk semua task
+- [ ] Uji lapangan A1–A7 (`07-TEST-PLAN.md` §4b)
+- [ ] Scan CVE, lisensi, MobSF, threat model
+- [ ] Rilis beta berikutnya
+
+## 4a. Urutan & ketergantungan
 
 ```
 11A (fondasi grafik + tata letak detail)
@@ -59,6 +93,7 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 ### Fase 11A — Fondasi
 
 #### T11.1 Komponen grafik (`:ui-common`)
+- [ ] **Status:** belum dikerjakan · Feature Report: —
 - `RideChart` (Compose `Canvas`, **tanpa library baru**, DEP-02): grafik area/garis terhadap **jarak** (sumbu X km/mi sesuai satuan), **angka sumbu Y** "rapi" (1-2-5 × 10ⁿ, 3–5 garis), garis bantu tipis, label satuan di pojok sumbu.
 - **Lapisan latar opsional** (mis. elevasi abu-abu di belakang kecepatan, seperti referensi).
 - **Sentuh & geser** menampilkan penanda vertikal + nilai pada titik itu (opsional fase ini, wajib bila murah).
@@ -68,6 +103,7 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 - Preview `@ThemePreviews` gelap & terang.
 
 #### T11.2 Tata letak halaman detail
+- [ ] **Status:** belum dikerjakan · Feature Report: —
 - Ganti grafik bertab menjadi **bagian vertikal**: Judul & peta → Ringkasan (kotak statistik ringkas) → **Hasil** (11C) → **Kecepatan** → **Elevasi** → **Detak jantung** (bila ada HR) → **Zona power** → Cadence (bila ada) → Lap → Bagikan & Ekspor → Lainnya.
 - Setiap bagian: judul + ikon info (ⓘ membuka penjelasan singkat), grafik, lalu **daftar angka** label-kiri/nilai-kanan (seperti referensi).
 - Bagian tanpa data **disembunyikan** (bukan kosong), kecuali HR yang menampilkan kartu ajakan (T11.5).
@@ -76,16 +112,19 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 ### Fase 11B — Analisa
 
 #### T11.3 Kecepatan
+- [ ] **Status:** belum dikerjakan · Feature Report: —
 - Grafik kecepatan vs jarak (warna aksen/trek) + **elevasi abu-abu di belakang**.
 - Angka: **Kec. rata-rata** (berdasarkan waktu bergerak), **Kec. maks** (puncak tersaring, bukan lonjakan GPS: median 3 sampel), **Waktu bergerak**, **Waktu total**.
 - Satuan mengikuti Setelan (km/j atau mph).
 
 #### T11.4 Elevasi (rombak)
+- [ ] **Status:** belum dikerjakan · Feature Report: —
 - Grafik ketinggian vs jarak dengan angka sumbu & garis bantu; skala Y tidak dimulai dari 0 (rentang data + margin) agar bentuk terlihat.
 - Angka: **Kenaikan elevasi**, **Elevasi maks**; tambahan bila ada: Penurunan, Elevasi min.
 - Tanpa data ketinggian: bagian disembunyikan.
 
 #### T11.5 Detak jantung (bila ada sensor HR)
+- [ ] **Status:** belum dikerjakan · Feature Report: —
 - Grafik HR vs jarak (atau waktu) + garis rata-rata.
 - Angka: **HR rata-rata**, **HR maks**.
 - **Waktu di zona Z1–Z5**: batang horizontal per zona (warna zona yang sudah ada), % dan durasi, rentang bpm per zona dari HR max profil. Keterangan "Berdasarkan HR max X bpm" (+ tautan ubah di Profil).
@@ -93,6 +132,7 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 - Profil HR max belum diisi → zona dari perkiraan umur bila ada, jika tidak tampilkan grafik saja + ajakan isi profil.
 
 #### T11.6 Perkiraan zona power Z1–Z7
+- [ ] **Status:** belum dikerjakan · Feature Report: —
 - Sumber: **power meter** bila ada (`powerW`); jika tidak, **estimasi** (`estPowerW`) dan judul memuat kata **"Perkiraan"**.
 - FTP: dari profil; bila kosong, **perkiraan FTP**. `05-DATA-MODEL` §3.9 baru memuat batas zona, belum ada rumus perkiraan FTP: tetapkan dan tulis di §3.9 (usulan: 95% dari power 20 menit terbaik dalam 6 minggu terakhir; bila belum ada, berat × 2,0 W/kg untuk pemula sesuai level, ditandai "perkiraan"). Teks: "Berdasarkan berat X kg dan perkiraan FTP Y W".
 - Batang Z1 (bawah) … Z7 (atas) dengan **% waktu bergerak** dan **rentang watt** per zona (batas `ZONE_UPPER_PERCENT_FTP` × FTP).
@@ -102,6 +142,7 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 ### Fase 11C — Usaha terbaik
 
 #### T11.7 Bagian "Hasil" di halaman detail
+- [ ] **Status:** belum dikerjakan · Feature Report: —
 - Baris angka: **Usaha terbaik** (jumlah rekor/PR ride ini) · **Segmen** (jumlah segmen yang dilewati).
 - Daftar: tiap segmen yang dilewati (ikon pin, nama, jarak, waktu, kecepatan, power bila ada) dengan tanda **🏆 PR** / peringkat pribadi (1st/2nd/3rd terbaik).
 - Rekor baru ride ini (dari `BestEffortRepository`), mis. "Tercepat 5 km · 9:41 · PR".
@@ -109,6 +150,7 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 - Data sudah dihitung oleh `SegmentsStep` & best efforts: task ini terutama UI + query ringkas.
 
 #### T11.8 Usaha terbaik otomatis (bergantung K1)
+- [ ] **Status:** belum dikerjakan · Feature Report: —
 - **(a) Rekor durasi:** tambah `BestEffortKey` untuk **kecepatan terbaik 30 dtk, 1, 3, 5, 20 mnt** (dan power 30 dtk, 3 mnt bila belum ada). Algoritma jendela geser O(n) di `:core`, hanya waktu bergerak. `storageKey` baru; **re-analisa** ride lama lewat mekanisme versi analisa yang ada (`AnalysisConfig`), tanpa migrasi destruktif.
 - **(b) Tandai sprint:** di halaman detail, aksi "Tandai sebagai sprint/segmen" langsung dari grafik kecepatan (seret rentang) atau dari "Usaha terbaik" (mis. "simpan jalur 3 menit tercepat sebagai segmen"). Nama default dari nama jalan bila tersedia, jika tidak "Sprint 18 Nov". Ride berikutnya dicocokkan otomatis (sudah ada).
 - Tampil di bagian Hasil (T11.7) dan layar "Rekor baru".
@@ -116,23 +158,27 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 ### Fase 11D — Tema
 
 #### T11.9 Pilihan tema
+- [ ] **Status:** belum dikerjakan · Feature Report: —
 - Setelan → Tampilan → **Tema: Gelap · Terang · Ikuti HP** (default **Gelap**, K2). Disimpan di tabel `settings` (`ui.theme`).
 - Diterapkan di root (`RideCompTheme(themeMode)`), berlaku langsung tanpa restart; status bar & navigation bar ikut.
 - Pengecualian yang tetap gelap: kartu share bergaya gelap, layar hitung mundur insiden.
 
 #### T11.10 Audit tampilan terang
+- [ ] **Status:** belum dikerjakan · Feature Report: —
 - Semua layar diperiksa di tema terang (kontras WCAG 4.5:1 teks, 3:1 elemen besar), terutama: **layar ride di bawah matahari** (tema terang mungkin lebih terbaca), peta (gaya terang sudah ada), grafik baru, galeri share, widget (ikuti tema sistem), onboarding.
 - Uji perangkat kedua tema; screenshot sebelum/sesudah di Feature Report.
 
 ### Fase 11E — Peta offline
 
 #### T11.11 Cache peta otomatis
+- [ ] **Status:** belum dikerjakan · Feature Report: —
 - Potongan peta online yang pernah dilihat disimpan di cache MapLibre (batas ukuran default **150 MB**, LRU), lalu dipakai saat sinyal hilang; area yang belum pernah dimuat tetap jatuh ke garis rute (D-90).
 - Ubah perilaku D-90: tanpa internet, **tampilkan peta bila ada cache/region yang menutupi area**, bukan langsung garis.
 - Tidak ada unduhan di muka (bukan *bulk download*): aman untuk OpenFreeMap.
 - Setelan → Peta: ukuran cache + "Hapus cache peta".
 
 #### T11.12 Peta wilayah otomatis (K4, K5)
+- [ ] **Status:** belum dikerjakan · Feature Report: —
 - **Indeks wilayah** kecil (JSON di dalam APK, ±20 KB): nama provinsi, kotak batas (bbox), nama file, ukuran, versi, SHA-256. Dibuat oleh skrip pemilik (lihat T11.13).
 - **Deteksi wilayah:** dari lokasi terakhir yang sudah ada (titik akhir ride terakhir atau posisi di persiapan ride) dicocokkan ke bbox; **tidak ada permintaan GPS baru** (BAT-01).
 - **Tawaran:** kartu di Beranda / Setelan → Peta offline: "Unduh peta wilayahmu: Jawa Tengah · ± 120 MB · Wi‑Fi" (Unduh / Nanti); muncul lagi bila pengguna berada di wilayah lain yang belum diunduh. Tidak pernah saat ride berjalan.
@@ -141,12 +187,14 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 - **Pembaruan peta:** indeks berisi versi; tawaran "Perbarui peta (data OSM lebih baru)" paling cepat tiap 3 bulan, hanya lewat Wi‑Fi.
 
 #### T11.13 Paket peta per provinsi (pekerjaan pemilik + skrip)
+- [ ] **Status:** belum dikerjakan · Feature Report: —
 - Skrip `scripts/maps/build-regions` (di Mac pemilik, **bukan** bagian aplikasi): memotong build Protomaps per provinsi (`pmtiles extract --bbox`/batas wilayah, zoom 0–15), menghitung SHA-256, menulis indeks JSON, mengunggah ke GitHub Release `maps-YYYY-MM`.
 - Butuh alat `pmtiles` (CLI resmi Protomaps) di Mac pemilik: unduhan alat baru → **minta izin** saat task dimulai.
 - Atribusi "© OpenStreetMap contributors, Protomaps" di peta & catatan rilis peta; lisensi ODbL dicantumkan di Lisensi open source.
 - Bila satu provinsi > 300 MB, pecah menjadi kota/kabupaten besar (indeks mendukung beberapa file per wilayah).
 
 #### T11.14 Penyimpanan, baterai, keamanan
+- [ ] **Status:** belum dikerjakan · Feature Report: —
 - Batas total peta offline (mis. 1 GB, bisa diubah), peringatan ruang < 500 MB, validasi header PMTiles (sudah ada), HTTPS saja, ukuran unduhan dicek dulu (SEC-IN), unduhan dapat dibatalkan, file sementara dibersihkan.
 - Atribusi OpenStreetMap/Protomaps tampil di peta offline.
 
