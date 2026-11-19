@@ -14,6 +14,7 @@ Kerjakan **berurutan**. **Setiap task** mengikuti alur di `10-FEATURE-CHECKLIST.
 | 7, 9 | Fitur lanjutan, trainer & widget | Suara, kembali ke start, komponen sepeda, rencana latihan, smart trainer, widget | ✅ Selesai (7/7) |
 | 10 | Rilis beta & masukan pengguna | Open source, rilis 0.9.0–0.9.3, galeri share, sepeda lipat, cek pembaruan, onboarding baru | ✅ Selesai (7/7) |
 | 11 | Analisa ride, usaha terbaik, tema & peta offline | Halaman detail ala analisa (kecepatan, elevasi, HR, zona power), usaha terbaik, tema terang/gelap, peta tanpa internet (`14-PHASE11-PLAN.md`) | ⬜ Belum mulai (0/14) |
+| 12 | Detak jantung dari smartwatch | Jam tangan broadcast HR, pemindaian luas, panduan per merek, Wear OS (opsional), Aolon eksperimental (`15-PHASE12-PLAN.md`) | ⬜ Belum mulai (0/7) |
 
 Spesifikasi detail fitur tambahan: `12-FEATURE-SPECS.md`.
 
@@ -185,6 +186,24 @@ Spesifikasi, keputusan K1–K5 (dijawab 2026-11-19, D-109…D-113), urutan, risi
 - [ ] T11.14 Batas penyimpanan, keamanan unduhan, atribusi.
 
 **DoD:** lihat `14-PHASE11-PLAN.md` §9.
+
+## Fase 12 — Detak jantung dari smartwatch (direncanakan 2026-11-19, setelah Fase 11)
+Rencana, keputusan S1–S4, risiko, dan DoD: **`15-PHASE12-PLAN.md`** (D-114).
+
+**12A — Jam tangan dengan broadcast HR standar**
+- [ ] T12.1 Uji kompatibilitas jam tangan sungguhan & tabel kompatibilitas.
+- [ ] T12.2 Pemindaian luas "Tampilkan semua perangkat Bluetooth" (untuk jam tangan yang tidak mengiklankan layanan HR).
+- [ ] T12.3 UX jam tangan: label/ikon & panduan menyalakan broadcast HR per merek.
+
+**12B — Wear OS (opsional)**
+- [ ] T12.4 Aplikasi pendamping Wear OS (butuh persetujuan dependency).
+
+**12C — Jam tangan tanpa broadcast (eksperimental, Aolon milik pemilik)**
+- [ ] T12.5a Identifikasi protokol Aolon (go/no-go: HR real-time ≥ 1 nilai per 1–2 dtk).
+- [ ] T12.5b Implementasi sensor "Jam tangan (eksperimental)" (hanya bila T12.5a lolos).
+- [ ] T12.5c Uji ride sungguhan ±30 menit.
+
+**DoD:** lihat `15-PHASE12-PLAN.md` §8.
 
 ## Ide lanjutan (bank ide, belum dijadwalkan)
 Ide yang sudah terwujud dicentang beserta task-nya; sisanya dipindah ke fase bila dipilih pemilik.

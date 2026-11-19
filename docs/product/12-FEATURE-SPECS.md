@@ -20,6 +20,7 @@ Fitur-fitur ini dipilih pemilik proyek dengan referensi Garmin Edge, Wahoo, dan 
 | UT | Usaha terbaik otomatis & bagian Hasil | 11 | `14-PHASE11-PLAN.md` §5 (T11.7–T11.8) |
 | TM | Tema terang/gelap | 11 | `14-PHASE11-PLAN.md` §5 (T11.9–T11.10) |
 | PO | Peta tanpa internet (cache, unduh rute/area) | 11 | `14-PHASE11-PLAN.md` §5 (T11.11–T11.14) |
+| SW | Detak jantung dari smartwatch (broadcast HR, Wear OS, jam tangan eksperimental) | 12 | `15-PHASE12-PLAN.md` §5 (T12.1–T12.5) |
 
 ---
 

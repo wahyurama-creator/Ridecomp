@@ -93,6 +93,14 @@
 | A6 | Setelah ride di Jawa Tengah, terima tawaran "Unduh peta wilayahmu" via Wi‑Fi, lalu navigasi rute dengan mode pesawat | Tawaran menyebut wilayah yang benar tanpa menyalakan GPS tambahan; peta & navigasi tampil penuh; ukuran sesuai indeks ±5% |
 | A7 | Anggaran performa (`14-PHASE11-PLAN.md` §8) dengan build rilis | Semua batas terpenuhi; angka dicatat di Feature Report |
 
+### 4c. Uji lapangan Fase 12 (`15-PHASE12-PLAN.md`)
+| # | Skenario | Lulus bila |
+|---|---|---|
+| W1 | Jam tangan dengan broadcast HR menyala, Sensor → Pindai | Muncul (langsung atau via "Tampilkan semua perangkat"), terpasang sebagai sensor HR |
+| W2 | Ride 30 mnt dengan HR dari jam tangan | Data HR ≥ 1 nilai/dtk rata-rata, putus-sambung pulih otomatis, zona & analisa HR benar |
+| W3 | Perangkat Bluetooth tanpa layanan HR dipilih di pemindaian luas | Pesan "tidak membagikan detak jantung", koneksi ditutup, tidak crash |
+| W4 | (Bila T12.5 lolos) Aolon eksperimental, ride 30 mnt | HR terbaca sepanjang ride; berhenti mengirim perintah saat ride selesai; tidak memengaruhi sensor lain |
+
 ## 5. Acceptance criteria per fase
 - **Semua fase:** setiap task punya Feature Report yang diterima; perintah verifikasi lulus; LeakCanary & StrictMode bersih (`09-RELIABILITY-RULES.md`).
 - **Fase 0:** app terpasang di HP fisik; tooling kualitas, penjaga arsitektur, dan fondasi keamanan (T0.13) berjalan; S4, S6, S10 lulus.
