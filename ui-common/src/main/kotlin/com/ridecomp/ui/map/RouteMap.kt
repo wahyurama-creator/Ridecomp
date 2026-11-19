@@ -1,5 +1,6 @@
 package com.ridecomp.ui.map
 
+import android.view.View
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -106,7 +107,8 @@ fun RouteMap(
     LaunchedEffect(style, route) {
         val ready = style ?: return@LaunchedEffect
         ready.geoJson(MapSourceIds.ROUTE)?.setGeoJson(route.toLine())
-        if (!isFollowing) map?.fitTo(route)
+        // Bounds need the view's size: in a lazy list the style can load before the first layout (T11.2).
+        if (!isFollowing) map?.let { loaded -> mapView.afterLayout { loaded.fitTo(route) } }
     }
     LaunchedEffect(style, ridden) { style?.geoJson(MapSourceIds.RIDDEN)?.setGeoJson(ridden.toLine()) }
     LaunchedEffect(style, marker) { style?.geoJson(MapSourceIds.MARKER)?.setGeoJson(marker.toPointCollection()) }
@@ -175,6 +177,32 @@ private fun List<MapPoint>.toLine(): FeatureCollection = if (size < 2) {
     FeatureCollection.fromFeatures(emptyList())
 } else {
     FeatureCollection.fromFeature(Feature.fromGeometry(LineString.fromLngLats(map { it.toPoint() })))
+}
+
+/** Runs [action] now when the view has a size, else once after its first layout. */
+private fun View.afterLayout(action: () -> Unit) {
+    if (width > 0 && height > 0) {
+        action()
+        return
+    }
+    addOnLayoutChangeListener(
+        object : View.OnLayoutChangeListener {
+            override fun onLayoutChange(
+                view: View,
+                left: Int,
+                top: Int,
+                right: Int,
+                bottom: Int,
+                oldLeft: Int,
+                oldTop: Int,
+                oldRight: Int,
+                oldBottom: Int,
+            ) {
+                view.removeOnLayoutChangeListener(this)
+                action()
+            }
+        },
+    )
 }
 
 private fun MapLibreMap.fitTo(route: List<MapPoint>) {

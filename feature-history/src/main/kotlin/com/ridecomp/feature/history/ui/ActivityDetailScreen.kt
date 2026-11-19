@@ -8,20 +8,20 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -44,6 +44,8 @@ import com.ridecomp.core.model.RideTotals
 import com.ridecomp.core.model.StravaStatus
 import com.ridecomp.core.model.StravaUploadError
 import com.ridecomp.core.model.StravaUploadState
+import com.ridecomp.core.usecase.AnalysisSectionKind
+import com.ridecomp.core.usecase.AnalysisStatKind
 import com.ridecomp.core.usecase.ExportFormat
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.history.R
@@ -51,15 +53,17 @@ import com.ridecomp.feature.history.viewmodel.ActivityDetailEffect
 import com.ridecomp.feature.history.viewmodel.ActivityDetailUiEvent
 import com.ridecomp.feature.history.viewmodel.ActivityDetailUiState
 import com.ridecomp.feature.history.viewmodel.ActivityDetailViewModel
-import com.ridecomp.feature.history.viewmodel.ChartKind
-import com.ridecomp.feature.history.viewmodel.ChartStat
-import com.ridecomp.feature.history.viewmodel.ChartStatKind
+import com.ridecomp.feature.history.viewmodel.DetailSection
 import com.ridecomp.feature.history.viewmodel.FileMessage
 import com.ridecomp.ui.R as UiR
 import com.ridecomp.ui.component.AlertBanner
 import com.ridecomp.ui.component.AlertSeverity
+import com.ridecomp.ui.component.AnalysisCard
+import com.ridecomp.ui.component.AnalysisCardTexts
+import com.ridecomp.ui.component.AnalysisRow
 import com.ridecomp.ui.component.BannerAction
 import com.ridecomp.ui.component.CardTone
+import com.ridecomp.ui.component.ChartValue
 import com.ridecomp.ui.component.ChartYScale
 import com.ridecomp.ui.component.ConfirmDialog
 import com.ridecomp.ui.component.ErrorState
@@ -71,7 +75,6 @@ import com.ridecomp.ui.component.RideChartLabels
 import com.ridecomp.ui.component.RideCompCard
 import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.component.SectionHeader
-import com.ridecomp.ui.component.SegmentedTabs
 import com.ridecomp.ui.component.StatGrid
 import com.ridecomp.ui.component.StatItem
 import com.ridecomp.ui.component.TrackSketch
@@ -87,6 +90,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
@@ -180,27 +184,42 @@ fun ActivityDetailScreen(
     ) {
         when {
             state.isMissing -> ErrorState(message = stringResource(R.string.detail_not_found))
-            activity != null -> Column(
-                modifier = Modifier
-                    .verticalScroll(rememberScrollState())
-                    .padding(
+            activity != null -> {
+                val format = remember(state.unitSystem) { UnitFormatter(state.unitSystem) }
+                // Lazy (T11.2): sections below the screen are composed only when they scroll in, and the map
+                // is released while scrolled away. Empty items would still get a gap, so they are left out.
+                LazyColumn(
+                    contentPadding = PaddingValues(
                         start = RideCompDimens.screenPaddingHorizontal,
                         end = RideCompDimens.screenPaddingHorizontal,
                         bottom = RideCompDimens.screenPaddingBottom,
                     ),
-                verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
-            ) {
-                val format = remember(state.unitSystem) { UnitFormatter(state.unitSystem) }
-                RouteSketch(state, isOnlineMap)
-                Totals(activity.totals, format)
-                onShareCard?.let { ShareCardEntry(it) }
-                Charts(state, format)
-                Laps(state, format)
-                tipContent?.invoke()
-                ExportSection(state, onEvent, onSaveFit, onOpenStravaHelp) {
-                    StravaRow(state, onEvent, onOpenStravaSettings, onOpenStravaActivity)
+                    verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
+                ) {
+                    // One item: the route arrives after the totals, and a separate item inserted above the
+                    // first visible one would open the page scrolled past the map.
+                    item(key = ITEM_HEADER) {
+                        Column(verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap)) {
+                            if (state.route.size >= MIN_LINE_POINTS) RouteSketch(state, isOnlineMap)
+                            Totals(activity.totals, format)
+                        }
+                    }
+                    onShareCard?.let { item(key = ITEM_SHARE) { ShareCardEntry(it) } }
+                    items(state.sections, key = { it.kind }) { section ->
+                        // Elevation in grey behind speed, as on printed ride summaries.
+                        val background = state.sections.takeIf { section.kind == AnalysisSectionKind.SPEED }
+                            ?.firstOrNull { it.kind == AnalysisSectionKind.ELEVATION }?.values
+                        Section(section, background, format)
+                    }
+                    if (state.laps.size >= MIN_LAPS) item(key = ITEM_LAPS) { Laps(state, format) }
+                    tipContent?.let { item(key = ITEM_TIP) { it() } }
+                    item(key = ITEM_EXPORT) {
+                        ExportSection(state, onEvent, onSaveFit, onOpenStravaHelp) {
+                            StravaRow(state, onEvent, onOpenStravaSettings, onOpenStravaActivity)
+                        }
+                    }
+                    item(key = ITEM_MORE) { MoreSection(onEvent, onCreateSegment) }
                 }
-                MoreSection(onEvent, onCreateSegment)
             }
         }
     }
@@ -217,7 +236,6 @@ private val START_FORMAT: DateTimeFormatter = DateTimeFormatter.ofLocalizedDateT
  */
 @Composable
 private fun RouteSketch(state: ActivityDetailUiState, isOnlineMap: Boolean) {
-    if (state.route.size < 2) return
     if (isOnlineMap) {
         RouteMap(
             isOnline = true,
@@ -362,71 +380,45 @@ private fun ShareCardEntry(onClick: () -> Unit) {
     }
 }
 
-/** One chart at a time (tabs when there are several), with its summary and numbers on the axes. */
+/** A section of the analysis (T11.2): title with ⓘ, its chart, then its numbers. */
 @Composable
-private fun Charts(state: ActivityDetailUiState, format: UnitFormatter) {
-    if (state.charts.isEmpty()) return
-    var selected by rememberSaveable { mutableIntStateOf(0) }
-    val index = selected.coerceIn(0, state.charts.lastIndex)
-    if (state.charts.size > 1) {
-        val tabs = state.charts.map { stringResource(it.kind.tabRes()) }.toImmutableList()
-        SegmentedTabs(tabs = tabs, selectedIndex = index, onSelect = { selected = it })
-    }
-    val chart = state.charts[index]
-    val unit = chart.kind.unit(format)
-    val decimals = chart.kind.decimals()
-    val distanceDecimals = if ((chart.values.lastOrNull()?.x ?: 0.0) < SHORT_RIDE_DISTANCE) 2 else 1
-    val color = chart.kind.color()
-    // Read aloud as "Speed, avg 20.9 km/h, max 50.4 km/h" (14-PHASE11-PLAN T11.1).
-    val description = (
-        listOf(stringResource(chart.kind.titleRes())) +
-            chart.stats.map { "${stringResource(it.kind.labelRes())} ${withUnit(number(it.value, decimals), unit)}" }
-        ).joinToString(", ")
-    RideCompCard {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = stringResource(chart.kind.tabRes()),
-                style = RideCompTheme.typography.cardTitle,
-                color = RideCompTheme.colors.textPrimary,
-                modifier = Modifier.weight(1f),
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingM)) {
-                chart.stats.forEach { stat ->
-                    ChartStatValue(stat, withUnit(number(stat.value, decimals), unit), color)
-                }
-            }
-        }
+private fun Section(section: DetailSection, background: ImmutableList<ChartValue>?, format: UnitFormatter) {
+    val kind = section.kind
+    val unit = kind.unit(format)
+    val decimals = kind.decimals()
+    val distanceDecimals = if ((section.values.lastOrNull()?.x ?: 0.0) < SHORT_RIDE_DISTANCE) 2 else 1
+    val color = kind.color()
+    val title = stringResource(kind.titleRes())
+    val rows = section.stats.map { stat ->
+        AnalysisRow(
+            label = stringResource(stat.kind.labelRes()),
+            value = withUnit(number(stat.value, decimals), unit),
+            valueColor = color.takeIf { stat.kind == AnalysisStatKind.MAX },
+        )
+    }.toImmutableList()
+    AnalysisCard(
+        texts = AnalysisCardTexts(
+            title = title,
+            info = stringResource(kind.infoRes()),
+            infoLabel = stringResource(R.string.detail_section_info_label, title),
+        ),
+        rows = rows,
+    ) {
         RideChart(
-            values = chart.values,
+            values = section.values,
             labels = RideChartLabels(
                 yUnit = unit,
                 xUnit = format.distanceUnit,
                 hint = stringResource(R.string.detail_chart_hint),
-                description = description,
+                // Read aloud as "Speed, Average 20.9 km/h, Maximum 50.4 km/h" (14-PHASE11-PLAN T11.1).
+                description = (listOf(title) + rows.map { "${it.label} ${it.value}" }).joinToString(", "),
             ),
             formatX = { withUnit(number(it, distanceDecimals), format.distanceUnit) },
             formatY = { withUnit(number(it, decimals), unit) },
             color = color,
-            // Elevation shows its shape; the others start at zero, with the elevation in grey behind speed.
-            yScale = if (chart.kind == ChartKind.ELEVATION) ChartYScale.DATA_RANGE else ChartYScale.FROM_ZERO,
-            background = state.charts.takeIf { chart.kind == ChartKind.SPEED }
-                ?.firstOrNull { it.kind == ChartKind.ELEVATION }?.values,
-        )
-    }
-}
-
-@Composable
-private fun ChartStatValue(stat: ChartStat, value: String, color: Color) {
-    Column(horizontalAlignment = Alignment.End) {
-        Text(
-            text = stringResource(stat.kind.labelRes()).uppercase(),
-            style = RideCompTheme.typography.navLabel,
-            color = RideCompTheme.colors.textSecondary,
-        )
-        Text(
-            text = value,
-            style = RideCompTheme.typography.bodyStrong,
-            color = if (stat.kind == ChartStatKind.MAX) color else RideCompTheme.colors.textPrimary,
+            // Elevation shows its shape; the others start at zero.
+            yScale = if (kind == AnalysisSectionKind.ELEVATION) ChartYScale.DATA_RANGE else ChartYScale.FROM_ZERO,
+            background = background,
         )
     }
 }
@@ -436,12 +428,23 @@ private fun number(value: Double, decimals: Int): String =
 
 /** Below this (km or mi) the distance axis shows two decimals. */
 private const val SHORT_RIDE_DISTANCE = 10.0
+
+/** A line needs two points; a lap table, two laps. */
+private const val MIN_LINE_POINTS = 2
+private const val MIN_LAPS = 2
+
+/** Keys of the page's fixed items (the sections are keyed by their kind). */
+private const val ITEM_HEADER = "header"
+private const val ITEM_SHARE = "share"
+private const val ITEM_LAPS = "laps"
+private const val ITEM_TIP = "tip"
+private const val ITEM_EXPORT = "export"
+private const val ITEM_MORE = "more"
 private const val NO_DECIMAL = "%.0f"
 
 /** Lap table; the fastest lap is highlighted in the accent color (and bold, not by color alone). */
 @Composable
 private fun Laps(state: ActivityDetailUiState, format: UnitFormatter) {
-    if (state.laps.size < 2) return
     val fastest = state.laps.maxByOrNull { it.avgSpeedMps }
     RideCompCard {
         Text(
@@ -788,46 +791,49 @@ private fun ActivityDetailMissingPreview() {
 }
 
 @StringRes
-private fun ChartKind.titleRes(): Int = when (this) {
-    ChartKind.SPEED -> R.string.detail_chart_speed
-    ChartKind.ELEVATION -> R.string.detail_chart_elevation
-    ChartKind.HEART_RATE -> R.string.detail_chart_heart_rate
-    ChartKind.CADENCE -> R.string.detail_chart_cadence
-    ChartKind.POWER -> R.string.detail_chart_power
+private fun AnalysisSectionKind.titleRes(): Int = when (this) {
+    AnalysisSectionKind.SPEED -> R.string.detail_section_speed
+    AnalysisSectionKind.ELEVATION -> R.string.detail_section_elevation
+    AnalysisSectionKind.HEART_RATE -> R.string.detail_section_heart_rate
+    AnalysisSectionKind.POWER -> R.string.detail_section_power
+    AnalysisSectionKind.CADENCE -> R.string.detail_section_cadence
 }
 
 @StringRes
-private fun ChartKind.tabRes(): Int = when (this) {
-    ChartKind.SPEED -> R.string.detail_tab_speed
-    ChartKind.ELEVATION -> R.string.detail_tab_elevation
-    ChartKind.HEART_RATE -> R.string.detail_tab_heart_rate
-    ChartKind.CADENCE -> R.string.detail_tab_cadence
-    ChartKind.POWER -> R.string.detail_tab_power
+private fun AnalysisSectionKind.infoRes(): Int = when (this) {
+    AnalysisSectionKind.SPEED -> R.string.detail_info_speed
+    AnalysisSectionKind.ELEVATION -> R.string.detail_info_elevation
+    AnalysisSectionKind.HEART_RATE -> R.string.detail_info_heart_rate
+    AnalysisSectionKind.POWER -> R.string.detail_info_power
+    AnalysisSectionKind.CADENCE -> R.string.detail_info_cadence
 }
 
 @Composable
-private fun ChartKind.color(): Color = when (this) {
-    ChartKind.SPEED, ChartKind.CADENCE -> RideCompTheme.colors.accent
-    ChartKind.ELEVATION -> RideCompTheme.colors.track
-    ChartKind.HEART_RATE -> RideCompTheme.colors.danger
-    ChartKind.POWER -> RideCompTheme.colors.warn
+private fun AnalysisSectionKind.color(): Color = when (this) {
+    AnalysisSectionKind.SPEED, AnalysisSectionKind.CADENCE -> RideCompTheme.colors.accent
+    AnalysisSectionKind.ELEVATION -> RideCompTheme.colors.track
+    AnalysisSectionKind.HEART_RATE -> RideCompTheme.colors.danger
+    AnalysisSectionKind.POWER -> RideCompTheme.colors.warn
 }
 
 @StringRes
-private fun ChartStatKind.labelRes(): Int = when (this) {
-    ChartStatKind.AVG -> R.string.detail_stat_avg
-    ChartStatKind.MAX -> R.string.detail_stat_max
-    ChartStatKind.MIN -> R.string.detail_stat_min
+private fun AnalysisStatKind.labelRes(): Int = when (this) {
+    AnalysisStatKind.AVG -> R.string.detail_stat_avg
+    AnalysisStatKind.MAX -> R.string.detail_stat_max
+    AnalysisStatKind.MIN -> R.string.detail_stat_min
+    AnalysisStatKind.ASCENT -> R.string.detail_stat_ascent
+    AnalysisStatKind.DESCENT -> R.string.detail_stat_descent
+    AnalysisStatKind.NORMALIZED -> R.string.detail_stat_normalized
 }
 
 @Composable
-private fun ChartKind.unit(format: UnitFormatter): String = when (this) {
-    ChartKind.SPEED -> format.speedUnit
-    ChartKind.ELEVATION -> format.elevationUnit
-    ChartKind.HEART_RATE -> stringResource(R.string.detail_unit_bpm)
-    ChartKind.CADENCE -> stringResource(R.string.detail_unit_rpm)
-    ChartKind.POWER -> stringResource(R.string.detail_unit_watt)
+private fun AnalysisSectionKind.unit(format: UnitFormatter): String = when (this) {
+    AnalysisSectionKind.SPEED -> format.speedUnit
+    AnalysisSectionKind.ELEVATION -> format.elevationUnit
+    AnalysisSectionKind.HEART_RATE -> stringResource(R.string.detail_unit_bpm)
+    AnalysisSectionKind.CADENCE -> stringResource(R.string.detail_unit_rpm)
+    AnalysisSectionKind.POWER -> stringResource(R.string.detail_unit_watt)
 }
 
 /** Speed reads to 0.1; the others are whole numbers. */
-private fun ChartKind.decimals(): Int = if (this == ChartKind.SPEED) 1 else 0
+private fun AnalysisSectionKind.decimals(): Int = if (this == AnalysisSectionKind.SPEED) 1 else 0

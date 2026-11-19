@@ -56,6 +56,7 @@ import com.ridecomp.core.usecase.HandleRecoveredRideUseCase
 import com.ridecomp.core.usecase.HasProfileUseCase
 import com.ridecomp.core.usecase.ImportGpxUseCase
 import com.ridecomp.core.usecase.ImportOfflineMapUseCase
+import com.ridecomp.core.usecase.LoadActivityAnalysisUseCase
 import com.ridecomp.core.usecase.LoadRideChartUseCase
 import com.ridecomp.core.usecase.LoadRideTrailUseCase
 import com.ridecomp.core.usecase.LoadShareCardUseCase
@@ -182,6 +183,7 @@ val useCaseModule = module {
     factory { RenameActivityUseCase(get()) }
     factory { DeleteActivityUseCase(get(), get()) }
     factory { LoadRideChartUseCase(get()) }
+    factory { LoadActivityAnalysisUseCase(get()) }
     factory { ExportFitUseCase(get(), get(), get(), get(), get()) }
     factory { ExportGpxUseCase(get(), get(), get()) }
     factory { ObserveProfileUseCase(get()) }

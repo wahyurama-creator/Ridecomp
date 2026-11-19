@@ -22,12 +22,15 @@ import com.ridecomp.core.testing.FakeStravaApi
 import com.ridecomp.core.testing.FakeStravaUploadRepository
 import com.ridecomp.core.testing.FakeTrainingRepository
 import com.ridecomp.core.testing.TestDispatcherProvider
+import com.ridecomp.core.usecase.AnalysisSectionKind
+import com.ridecomp.core.usecase.AnalysisStatKind
 import com.ridecomp.core.usecase.DeleteActivityUseCase
 import com.ridecomp.core.usecase.ExportActivityUseCase
 import com.ridecomp.core.usecase.ExportFitUseCase
 import com.ridecomp.core.usecase.ExportFormat
 import com.ridecomp.core.usecase.ExportGpxUseCase
 import com.ridecomp.core.usecase.GetLapsUseCase
+import com.ridecomp.core.usecase.LoadActivityAnalysisUseCase
 import com.ridecomp.core.usecase.LoadRideChartUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
 import com.ridecomp.core.usecase.ObserveHistoryCountUseCase
@@ -50,8 +53,6 @@ import com.ridecomp.feature.history.viewmodel.ActivityDetailUiEvent
 import com.ridecomp.feature.history.viewmodel.ActivityDetailUseCases
 import com.ridecomp.feature.history.viewmodel.ActivityDetailViewModel
 import com.ridecomp.feature.history.viewmodel.ActivityStravaUseCases
-import com.ridecomp.feature.history.viewmodel.ChartKind
-import com.ridecomp.feature.history.viewmodel.ChartStatKind
 import com.ridecomp.feature.history.viewmodel.FileMessage
 import com.ridecomp.feature.history.viewmodel.HistoryUiEvent
 import com.ridecomp.feature.history.viewmodel.HistoryViewModel
@@ -130,7 +131,7 @@ class HistoryViewModelsTest {
         val useCases = ActivityDetailUseCases(
             observeActivity = ObserveActivityUseCase(repository),
             getLaps = GetLapsUseCase(repository),
-            loadChart = LoadRideChartUseCase(repository),
+            loadAnalysis = LoadActivityAnalysisUseCase(LoadRideChartUseCase(repository)),
             observeSettings = ObserveRideSettingsUseCase(settings),
             share = ShareActivityFileUseCase(export, handler),
             save = SaveActivityFileUseCase(export, handler),
@@ -154,23 +155,23 @@ class HistoryViewModelsTest {
     }
 
     @Test
-    fun `detail shows the ride and downsampled charts in display units`() = runTest {
+    fun `detail shows the ride and its sections in display units`() = runTest {
         val id = savedRide(FakeClock.DEFAULT_START_MS)
         repository.appendSamples(id, (1..10).map { RideSample(it * 1_000L, distanceM = it * 1_000.0, speedMps = 10.0) })
 
         val state = detailViewModel(id).uiState.value
 
         assertEquals(ActivityStatus.FINISHED, state.activity?.status)
-        val speed = state.charts.single { it.kind == ChartKind.SPEED }.values
+        val speed = state.sections.single { it.kind == AnalysisSectionKind.SPEED }.values
         assertEquals(10, speed.size)
         assertEquals(36.0, speed.first().y)
         assertEquals(1.0, speed.first().x)
-        // No altitude or sensor data: those charts are left out.
-        assertEquals(listOf(ChartKind.SPEED), state.charts.map { it.kind })
+        // No altitude or sensor data: those sections are hidden.
+        assertEquals(listOf(AnalysisSectionKind.SPEED), state.sections.map { it.kind })
     }
 
     @Test
-    fun `chart summary uses the ride totals and the route follows the gps points`() = runTest {
+    fun `section numbers use the ride totals and the route follows the gps points`() = runTest {
         val id = repository.create(NewActivity("u1", "Ride", FakeClock.DEFAULT_START_MS))
         val totals = RideTotals(distanceM = 5_000.0, movingS = 1_000, avgSpeedMps = 5.0, maxSpeedMps = 10.0)
         repository.finish(id, "Ride", totals, FakeClock.DEFAULT_START_MS + 1_000)
@@ -189,8 +190,8 @@ class HistoryViewModelsTest {
 
         val state = detailViewModel(id).uiState.value
 
-        val stats = state.charts.single { it.kind == ChartKind.SPEED }.stats
-        assertEquals(listOf(ChartStatKind.AVG, ChartStatKind.MAX), stats.map { it.kind })
+        val stats = state.sections.single { it.kind == AnalysisSectionKind.SPEED }.stats
+        assertEquals(listOf(AnalysisStatKind.AVG, AnalysisStatKind.MAX), stats.map { it.kind })
         assertEquals(18.0, stats[0].value, DELTA)
         assertEquals(36.0, stats[1].value, DELTA)
         // The last sample has no fix: left out of the route.
@@ -211,7 +212,7 @@ class HistoryViewModelsTest {
     }
 
     @Test
-    fun `sensor charts appear when the ride has sensor data`() = runTest {
+    fun `sensor sections appear when the ride has sensor data`() = runTest {
         val id = savedRide(FakeClock.DEFAULT_START_MS)
         repository.appendSamples(
             id,
@@ -220,13 +221,14 @@ class HistoryViewModelsTest {
             },
         )
 
-        val charts = detailViewModel(id).uiState.value.charts
+        val sections = detailViewModel(id).uiState.value.sections
 
+        // Page order (T11.2): heart rate, power, cadence; no speed or elevation data, so those are hidden.
         assertEquals(
-            listOf(ChartKind.HEART_RATE, ChartKind.CADENCE, ChartKind.POWER),
-            charts.map { it.kind },
+            listOf(AnalysisSectionKind.HEART_RATE, AnalysisSectionKind.POWER, AnalysisSectionKind.CADENCE),
+            sections.map { it.kind },
         )
-        assertEquals(200.0, charts.last().values.first().y)
+        assertEquals(200.0, sections.single { it.kind == AnalysisSectionKind.POWER }.values.first().y)
     }
 
     @Test

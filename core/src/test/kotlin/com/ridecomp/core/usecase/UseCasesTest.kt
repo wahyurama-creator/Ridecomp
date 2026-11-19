@@ -143,6 +143,84 @@ class ActivityUseCasesTest {
 
         assertEquals(emptyList(), LoadRideChartUseCase(repository)(id))
     }
+
+    @Test
+    fun `analysis shows only sections with data, in page order, numbers from the totals`() = runTest {
+        val id = rideWithSpeedElevationPowerCadence()
+        val totals =
+            RideTotals(avgSpeedMps = 5.5, maxSpeedMps = 9.0, ascentM = 12.0, descentM = 7.0, normalizedPowerW = 230)
+
+        val analysis = LoadActivityAnalysisUseCase(LoadRideChartUseCase(repository))(id, totals)
+
+        // No heart rate: that section is hidden.
+        assertEquals(
+            listOf(
+                AnalysisSectionKind.SPEED,
+                AnalysisSectionKind.ELEVATION,
+                AnalysisSectionKind.POWER,
+                AnalysisSectionKind.CADENCE,
+            ),
+            analysis.sections.map { it.kind },
+        )
+        val stats = analysis.sections.associate { section ->
+            section.kind to
+                section.stats.associate { it.kind to it.value }
+        }
+        assertEquals(mapOf(AnalysisStatKind.AVG to 5.5, AnalysisStatKind.MAX to 9.0), stats[AnalysisSectionKind.SPEED])
+        assertEquals(
+            mapOf(
+                AnalysisStatKind.ASCENT to 12.0,
+                AnalysisStatKind.DESCENT to 7.0,
+                AnalysisStatKind.MIN to 101.0,
+                AnalysisStatKind.MAX to 106.0,
+            ),
+            stats[AnalysisSectionKind.ELEVATION],
+        )
+        // Without measured power in the totals, from the chart; NP from the totals.
+        assertEquals(
+            mapOf(AnalysisStatKind.AVG to 200.0, AnalysisStatKind.NORMALIZED to 230.0, AnalysisStatKind.MAX to 200.0),
+            stats[AnalysisSectionKind.POWER],
+        )
+        // Cadence averages only while pedaling.
+        assertEquals(90.0, stats.getValue(AnalysisSectionKind.CADENCE).getValue(AnalysisStatKind.AVG))
+        assertEquals(6, analysis.points.size)
+    }
+
+    private suspend fun rideWithSpeedElevationPowerCadence(): Long {
+        val id = repository.create(NewActivity("u", "Ride", 0))
+        repository.appendSamples(
+            id,
+            (1..6).map {
+                RideSample(
+                    timeMs = it * 1_000L,
+                    distanceM = it * 10.0,
+                    speedMps = if (it == 3) 0.0 else 5.0,
+                    altitudeM = 100.0 + it,
+                    powerW = 200,
+                    cadenceRpm = if (it == 3) 0 else 90,
+                )
+            },
+        )
+        return id
+    }
+
+    @Test
+    fun `analysis without totals takes speed from the moving chart values`() = runTest {
+        val id = repository.create(NewActivity("u", "Ride", 0))
+        repository.appendSamples(
+            id,
+            listOf(0.0, 4.0, 8.0).mapIndexed { i, speed ->
+                RideSample((i + 1) * 1_000L, distanceM = i * 5.0, speedMps = speed)
+            },
+        )
+
+        val speed = LoadActivityAnalysisUseCase(LoadRideChartUseCase(repository))(id, totals = null).sections.single()
+
+        assertEquals(
+            listOf(AnalysisStat(AnalysisStatKind.AVG, 6.0), AnalysisStat(AnalysisStatKind.MAX, 8.0)),
+            speed.stats,
+        )
+    }
 }
 
 class ProfileUseCasesTest {
