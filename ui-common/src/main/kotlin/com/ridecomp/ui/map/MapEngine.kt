@@ -6,6 +6,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlinx.coroutines.withContext
 import org.maplibre.android.LibraryLoader
+import org.maplibre.android.MapLibre
 import org.maplibre.android.maps.MapLibreMapOptions
 
 /**
@@ -24,9 +25,13 @@ internal object MapEngine {
         withContext(io) { LibraryLoader.load() }
     }
 
-    /** The library plus the MapView options, which read the theme's resources from disk (±8 ms each map). */
+    /**
+     * The library, MapLibre itself (main thread only, cheap once the library is loaded), then the MapView
+     * options, which read the theme's resources from disk (±8 ms each map). Call from the main thread.
+     */
     suspend fun prepareView(context: Context, io: CoroutineContext): MapLibreMapOptions {
         loadLibrary(io)
+        MapLibre.getInstance(context.applicationContext)
         return withContext(io) { MapLibreMapOptions.createFromAttributes(context) }
     }
 }
