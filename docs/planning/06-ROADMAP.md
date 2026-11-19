@@ -2,20 +2,24 @@
 
 Kerjakan **berurutan**. **Setiap task** mengikuti alur di `10-FEATURE-CHECKLIST.md` (Rencana → persetujuan → implementasi + test → verifikasi → Feature Report). Fase selesai hanya setelah lolos Phase Gate (`10-FEATURE-CHECKLIST.md`) dan acceptance criteria di `07-TEST-PLAN.md`.
 
-| Fase | Nama | Hasil |
-|---|---|---|
-| 0 | Fondasi | Proyek Kotlin multi-modul berjalan, tema, DB, lint & test |
-| 1 | Perekam GPS (MVP-a) | Rekam ride GPS dengan andal, jeda/lanjut otomatis, pengingat, mode baterai kritis, simpan, export FIT |
-| 2 | Sensor BLE, keselamatan & backup (MVP-b) | HR, speed/cadence, power; profil aktivitas; deteksi insiden + SMS darurat; backup & restore |
-| 3 | Navigasi rute | Import GPX, peta offline, off-route, info tanjakan (ClimbPro), peringatan belokan |
-| 4 | Latihan & analisis | Personal record, segmen pribadi, beban latihan, kartu share |
-| 5 | Strava API (opsional) | Upload otomatis bila pengguna berlangganan Strava |
-| 6 | iOS | Port & uji di iPhone |
-| 7+ | Peningkatan | Ide lanjutan |
-| 10 | Rilis beta & masukan pengguna | Open source, rilis 0.9.0–0.9.3, galeri share, sepeda lipat, cek pembaruan, onboarding baru |
-| 11 | Analisa ride, usaha terbaik, tema & peta offline | Halaman detail ala analisa (kecepatan, elevasi, HR, zona power), usaha terbaik, tema terang/gelap, peta tanpa internet (`14-PHASE11-PLAN.md`) |
+| Fase | Nama | Hasil | Status (selesai/total task) |
+|---|---|---|---|
+| 0 | Fondasi | Proyek Kotlin multi-modul berjalan, tema, DB, lint & test | ✅ Selesai (13/13) |
+| 1 | Perekam GPS (MVP-a) | Rekam ride GPS dengan andal, jeda/lanjut otomatis, pengingat, mode baterai kritis, simpan, export FIT | ✅ Selesai (19/20, 1 ditunda: T1.16) |
+| 2 | Sensor BLE, keselamatan & backup (MVP-b) | HR, speed/cadence, power; profil aktivitas; deteksi insiden + SMS darurat; backup & restore | ✅ Selesai (17/17) |
+| 3 | Navigasi rute | Import GPX, peta offline, off-route, info tanjakan (ClimbPro), peringatan belokan | ✅ Selesai (13/13) |
+| 4 | Latihan & analisis | Personal record, segmen pribadi, beban latihan, kartu share | ✅ Selesai (9/9) |
+| 5 | Strava API (opsional) | Upload otomatis bila pengguna berlangganan Strava | ✅ Selesai (5/5) |
+| 6 | iOS | Port & uji di iPhone | ⬜ Belum mulai (0/6) |
+| 7, 9 | Fitur lanjutan, trainer & widget | Suara, kembali ke start, komponen sepeda, rencana latihan, smart trainer, widget | ✅ Selesai (7/7) |
+| 10 | Rilis beta & masukan pengguna | Open source, rilis 0.9.0–0.9.3, galeri share, sepeda lipat, cek pembaruan, onboarding baru | ✅ Selesai (7/7) |
+| 11 | Analisa ride, usaha terbaik, tema & peta offline | Halaman detail ala analisa (kecepatan, elevasi, HR, zona power), usaha terbaik, tema terang/gelap, peta tanpa internet (`14-PHASE11-PLAN.md`) | ⬜ Belum mulai (0/14) |
 
 Spesifikasi detail fitur tambahan: `12-FEATURE-SPECS.md`.
+
+**Status fase:** ✅ selesai · 🟡 berjalan · ⬜ belum mulai (angka = task selesai/total; perbarui saat mencentang).
+
+**Status task:** `- [x]` selesai · `- [ ]` belum dikerjakan · `- [ ] … *(Ditunda: alasan)*` ditunda. Task baru selalu ditulis sebagai `- [ ]` **sebelum** dikerjakan, dan dicentang di file ini, di rencana fasenya (mis. `14-PHASE11-PLAN.md`), dan di `docs/STATUS.md` saat task selesai (`10-FEATURE-CHECKLIST.md`).
 
 ---
 
@@ -124,8 +128,14 @@ Spesifikasi detail fitur tambahan: `12-FEATURE-SPECS.md`.
 
 **DoD:** ride tersimpan otomatis ter-upload ke Strava; mode offline mengantrikan upload.
 
-## Fase 6 — iOS
-Ikuti `03-ARCHITECTURE.md` §9: jadikan `:core` modul KMP, tulis UI (SwiftUI atau Compose Multiplatform, ajukan pilihan) dan lapisan platform iOS (lokasi, BLE, background). Memerlukan Mac + Apple Developer Program untuk instalasi permanen.
+## Fase 6 — iOS (belum dijadwalkan)
+Ikuti `03-ARCHITECTURE.md` §9. Memerlukan Mac + Apple Developer Program untuk instalasi permanen.
+- [ ] T6.1 Jadikan `:core` modul Kotlin Multiplatform (KMP).
+- [ ] T6.2 Pilih & siapkan UI iOS (SwiftUI atau Compose Multiplatform; ajukan pilihan ke pemilik).
+- [ ] T6.3 Lapisan platform iOS: lokasi & rekaman di latar.
+- [ ] T6.4 Sensor BLE di iOS (HR, speed/cadence, power, smart trainer).
+- [ ] T6.5 Export FIT/GPX & berbagi di iOS.
+- [ ] T6.6 Uji di iPhone & cara distribusi (TestFlight/App Store).
 
 ## Fase 7 — Fitur lanjutan (dipilih pemilik 2026-11-17)
 - [x] T7.1 Pengumuman suara (TTS bawaan HP): tiap 1/5/10 km, lap, pengingat minum/makan (D-91).
@@ -176,5 +186,16 @@ Spesifikasi, keputusan K1–K5 (dijawab 2026-11-19, D-109…D-113), urutan, risi
 
 **DoD:** lihat `14-PHASE11-PLAN.md` §9.
 
-## Fase 8+ — Ide lanjutan (belum dijadwalkan)
-Workout/interval terstruktur, target zona dengan alert, pengumuman suara (TTS), kembali ke titik start, pelacakan komponen sepeda, ghost/virtual partner, backup ke file/Google Drive, radar belakang BLE, export ke platform lain (intervals.icu dll. via file).
+## Ide lanjutan (bank ide, belum dijadwalkan)
+Ide yang sudah terwujud dicentang beserta task-nya; sisanya dipindah ke fase bila dipilih pemilik.
+- [x] Target zona dengan alert (T7.4b).
+- [x] Pengumuman suara / TTS (T7.1).
+- [x] Kembali ke titik start (T7.2).
+- [x] Pelacakan komponen sepeda (T7.3).
+- [x] Backup ke file (T2, backup terenkripsi).
+- [x] Export file untuk platform lain (FIT/GPX, T1/T3).
+- [ ] Workout/interval terstruktur langkah demi langkah (pemanasan → interval → pendinginan).
+- [ ] Ghost / virtual partner (lawan ride terbaik sendiri di rute/segmen).
+- [ ] Backup otomatis ke Google Drive.
+- [ ] Radar belakang BLE.
+- [ ] Unggah langsung ke intervals.icu dan platform lain.

@@ -8,6 +8,26 @@
 - **Fase berjalan:** **Fase 11 — Analisa ride, usaha terbaik, tema & peta offline.** Rencana lengkap: [`planning/14-PHASE11-PLAN.md`](planning/14-PHASE11-PLAN.md). Keputusan K1–K5 sudah dijawab (D-109…D-113).
 - **Task berikutnya:** **T11.1 — Komponen grafik `RideChart`** di `:ui-common` (14-PHASE11-PLAN §5). Belum dimulai.
 
+## Daftar centang Fase 11
+Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.md` §4 setiap kali task selesai.
+
+- [ ] T11.1 Komponen grafik `RideChart` ← **berikutnya**
+- [ ] T11.2 Tata letak halaman detail per bagian
+- [ ] T11.3 Analisa kecepatan
+- [ ] T11.4 Rombak elevasi
+- [ ] T11.5 Analisa detak jantung
+- [ ] T11.6 Perkiraan zona power Z1–Z7
+- [ ] T11.7 Bagian "Hasil"
+- [ ] T11.8 Usaha terbaik otomatis
+- [ ] T11.9 Pilihan tema
+- [ ] T11.10 Audit tema terang
+- [ ] T11.11 Cache peta otomatis
+- [ ] T11.13 Paket peta per provinsi
+- [ ] T11.12 Peta wilayah otomatis
+- [ ] T11.14 Penyimpanan, baterai, keamanan peta
+
+Fase lain: lihat kolom Status di tabel atas `planning/06-ROADMAP.md` (Fase 0–5, 7, 9, 10 selesai; Fase 6 iOS belum mulai).
+
 ## Urutan Fase 11
 1. **11A** T11.1 grafik → T11.2 tata letak halaman detail (wajib duluan).
 2. **11B** T11.3 kecepatan · T11.4 elevasi · T11.5 detak jantung · T11.6 zona power Z1–Z7.
