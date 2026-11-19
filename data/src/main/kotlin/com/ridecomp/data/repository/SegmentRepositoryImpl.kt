@@ -5,6 +5,7 @@ import com.ridecomp.core.engine.segments.Segment
 import com.ridecomp.core.engine.segments.SegmentMatch
 import com.ridecomp.core.engine.segments.SegmentPoint
 import com.ridecomp.core.engine.segments.SegmentSource
+import com.ridecomp.core.repository.RankedSegmentEffort
 import com.ridecomp.core.repository.SegmentEffort
 import com.ridecomp.core.repository.SegmentEffortView
 import com.ridecomp.core.repository.SegmentRepository
@@ -71,6 +72,14 @@ class SegmentRepositoryImpl(private val dao: SegmentDao) : SegmentRepository {
             },
         )
     }
+
+    override fun observeRanked(activityId: Long): Flow<List<RankedSegmentEffort>> =
+        dao.observeRanked(activityId).map { rows ->
+            rows.map { row ->
+                val match = row.effort.toDomain().match
+                RankedSegmentEffort(row.effort.segmentId, row.segmentName, row.lengthM, match, row.rank)
+            }
+        }
 
     private fun Segment.toEntity() = SegmentEntity(
         name = name,

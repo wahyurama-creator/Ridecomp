@@ -56,6 +56,7 @@ import com.ridecomp.feature.training.ui.PlanBuilderRoute
 import com.ridecomp.feature.training.ui.PlanDetailRoute
 import com.ridecomp.feature.training.ui.PlansRoute
 import com.ridecomp.feature.training.ui.RecordsRoute
+import com.ridecomp.feature.training.ui.RideResultsCard
 import com.ridecomp.feature.training.ui.SegmentDetailRoute
 import com.ridecomp.feature.training.ui.SegmentEditorRoute
 import com.ridecomp.feature.training.ui.SegmentsRoute
@@ -316,7 +317,7 @@ private fun NavGraphBuilder.historyGraph(navController: NavHostController) {
     }
 }
 
-/** Ride detail with its links: export help, segment, share card, Strava, sensors and profile (T11.5). */
+/** Ride detail with its links: export help, segment, share card, Strava, sensors, profile and results (T11.7). */
 @Composable
 private fun ActivityDetail(id: Long, navController: NavHostController) {
     ActivityDetailRoute(
@@ -332,6 +333,11 @@ private fun ActivityDetail(id: Long, navController: NavHostController) {
         onCreateSegment = { navController.navigate(AppRoutes.newSegment(id)) },
         onShareCard = { navController.navigate(AppRoutes.shareCard(id)) },
         onOpenStravaSettings = { navController.navigate(AppRoutes.STRAVA) },
+        resultsContent = {
+            RideResultsCard(id, onOpenSegment = { segmentId ->
+                navController.navigate(AppRoutes.segmentDetail(segmentId))
+            })
+        },
     )
 }
 

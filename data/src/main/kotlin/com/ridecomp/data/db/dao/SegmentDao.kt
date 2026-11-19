@@ -17,6 +17,14 @@ data class SegmentSummaryRow(@Embedded val segment: SegmentEntity, val bestElaps
 /** An effort with its ride's name and start (segment detail). */
 data class SegmentEffortRow(@Embedded val effort: SegmentEffortEntity, val activityName: String, val startedAt: Long)
 
+/** A ride's pass over a segment with the segment's name and length and its rank (T11.7). */
+data class RankedSegmentEffortRow(
+    @Embedded val effort: SegmentEffortEntity,
+    val segmentName: String,
+    val lengthM: Double,
+    val rank: Int,
+)
+
 @Dao
 interface SegmentDao {
     @Insert
@@ -69,6 +77,19 @@ interface SegmentDao {
 
     @Query("SELECT COUNT(*) FROM ${DbNames.TABLE_SEGMENT_EFFORTS} WHERE activity_id = :activityId AND is_pr = 1")
     suspend fun countRecords(activityId: Long): Int
+
+    /** Passes of a ride in ride order; rank = 1 + passes of earlier rides as fast or faster. */
+    @Query(
+        "SELECT e.*, s.name AS segmentName, s.length_m AS lengthM, 1 + (" +
+            "SELECT COUNT(*) FROM ${DbNames.TABLE_SEGMENT_EFFORTS} o " +
+            "JOIN ${DbNames.TABLE_ACTIVITIES} oa ON oa.id = o.activity_id " +
+            "WHERE o.segment_id = e.segment_id AND oa.started_at < a.started_at AND o.elapsed_s <= e.elapsed_s" +
+            ") AS `rank` FROM ${DbNames.TABLE_SEGMENT_EFFORTS} e " +
+            "JOIN ${DbNames.TABLE_SEGMENTS} s ON s.id = e.segment_id " +
+            "JOIN ${DbNames.TABLE_ACTIVITIES} a ON a.id = e.activity_id " +
+            "WHERE e.activity_id = :activityId ORDER BY e.start_t",
+    )
+    fun observeRanked(activityId: Long): Flow<List<RankedSegmentEffortRow>>
 
     @Query("DELETE FROM ${DbNames.TABLE_SEGMENT_EFFORTS} WHERE activity_id = :activityId")
     suspend fun deleteEffortsForActivity(activityId: Long)

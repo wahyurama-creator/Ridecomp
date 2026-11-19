@@ -1,6 +1,6 @@
 # 14 — Rencana Fase 11: Analisa Ride, Usaha Terbaik, Tema & Peta Offline
 
-**Status:** berjalan (6/14: T11.1–T11.6 selesai). Disusun 2026-11-19 atas permintaan pemilik.
+**Status:** berjalan (7/14: T11.1–T11.7 selesai). Disusun 2026-11-19 atas permintaan pemilik.
 **Acuan:** `06-ROADMAP.md` (daftar task), `07-TEST-PLAN.md` §4/§5 (uji), `10-FEATURE-CHECKLIST.md` (alur tiap task), aturan wajib `08`–`11`.
 **Referensi visual pemilik:** `~/Downloads/RideComp-Referensi/` (4 screenshot halaman detail aktivitas Strava, 2026-11-18): bagian *Hasil* (Usaha Terbaik · Segmen), *Wawasan Detak Jantung*, grafik *Kecepatan* + 4 angka, grafik *Elevasi* + 2 angka, *Perkiraan Zona Kekuatan* Z1–Z7. Logo, ikon, dan merek Strava **tidak** ditiru: hanya susunan informasinya.
 
@@ -59,7 +59,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`); ganti 
 - [x] T11.6 Perkiraan zona power Z1–Z7 · [Feature Report](../reports/features/T11.6-power-zones.md)
 
 **11C Usaha terbaik**
-- [ ] T11.7 Bagian "Hasil"
+- [x] T11.7 Bagian "Hasil" · [Feature Report](../reports/features/T11.7-results.md)
 - [ ] T11.8 Usaha terbaik otomatis (rekor durasi + tandai sprint)
 
 **11D Tema**
@@ -145,7 +145,7 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 ### Fase 11C — Usaha terbaik
 
 #### T11.7 Bagian "Hasil" di halaman detail
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-19 · Feature Report: [T11.7](../reports/features/T11.7-results.md) · D-122
 - Baris angka: **Usaha terbaik** (jumlah rekor/PR ride ini) · **Segmen** (jumlah segmen yang dilewati).
 - Daftar: tiap segmen yang dilewati (ikon pin, nama, jarak, waktu, kecepatan, power bila ada) dengan tanda **🏆 PR** / peringkat pribadi (1st/2nd/3rd terbaik).
 - Rekor baru ride ini (dari `BestEffortRepository`), mis. "Tercepat 5 km · 9:41 · PR".

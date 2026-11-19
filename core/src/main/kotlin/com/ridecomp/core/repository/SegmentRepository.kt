@@ -10,6 +10,18 @@ public data class SegmentEffort(val segmentId: Long, val activityId: Long, val m
 /** An effort with the ride it belongs to (segment detail list). */
 public data class SegmentEffortView(val effort: SegmentEffort, val activityName: String, val startedAtMs: Long)
 
+/**
+ * A ride's pass over a segment and its place among the passes of earlier rides: 1 = segment record when the
+ * ride was done (T11.7).
+ */
+public data class RankedSegmentEffort(
+    val segmentId: Long,
+    val segmentName: String,
+    val lengthM: Double,
+    val match: SegmentMatch,
+    val rank: Int,
+)
+
 /** A segment in the list: its best time and how many efforts it has. */
 public data class SegmentSummary(val segment: Segment, val bestElapsedS: Double?, val effortCount: Int)
 
@@ -39,4 +51,7 @@ public interface SegmentRepository {
 
     /** Replaces the segment efforts of a ride in one transaction (re-analysis is idempotent). */
     public suspend fun replaceForActivity(activityId: Long, efforts: List<SegmentEffort>)
+
+    /** Segments a ride passed, in ride order, each ranked against earlier rides (T11.7). */
+    public fun observeRanked(activityId: Long): Flow<List<RankedSegmentEffort>>
 }

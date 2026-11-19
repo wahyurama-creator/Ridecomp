@@ -8,6 +8,12 @@ import kotlinx.coroutines.flow.Flow
 /** One effort of a ride and whether it was a personal record when the ride was analyzed. */
 public data class RideEffort(val effort: BestEffort, val isPr: Boolean)
 
+/**
+ * One effort of a ride and its place among the same record of earlier rides of its kind: 1 = record when the
+ * ride was done, 2 = one earlier ride was as good or better (T11.7).
+ */
+public data class RankedEffort(val effort: BestEffort, val rank: Int)
+
 /** The current best of a record for one profile kind, with the ride that set it (Records tab). */
 public data class PersonalRecord(
     val key: BestEffortKey,
@@ -39,4 +45,7 @@ public interface BestEffortRepository {
 
     /** Best value of [key] over rides started since [sinceStartedAtMs], any kind (FTP estimate, T11.6). */
     public suspend fun bestSince(key: BestEffortKey, sinceStartedAtMs: Long): Double?
+
+    /** Efforts of a ride, each ranked against rides of its kind started before it (T11.7). */
+    public fun observeRanked(activityId: Long): Flow<List<RankedEffort>>
 }

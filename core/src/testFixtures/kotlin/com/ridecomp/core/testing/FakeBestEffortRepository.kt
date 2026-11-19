@@ -5,6 +5,7 @@ import com.ridecomp.core.model.ActivityKind
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.BestEffortRepository
 import com.ridecomp.core.repository.PersonalRecord
+import com.ridecomp.core.repository.RankedEffort
 import com.ridecomp.core.repository.RideEffort
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,4 +52,18 @@ public class FakeBestEffortRepository(private val activities: ActivityRepository
             .values.flatMap { it.second }.map { it.effort }
             .filter { it.key == key }
             .maxOfOrNull { it.value }
+
+    override fun observeRanked(activityId: Long): Flow<List<RankedEffort>> = stored.map { all ->
+        val (kind, efforts) = all[activityId] ?: return@map emptyList()
+        val startedAt = startedAt(activityId)
+        val earlier = all.filter { (id, entry) -> entry.first == kind && startedAt(id) < startedAt }
+            .values.flatMap { it.second }.map { it.effort }
+        efforts.map { (effort) ->
+            // As good or better: a tie with an earlier ride is not a record (rank 1 = is_pr).
+            val ahead = earlier.count { it.key == effort.key && !effort.key.isBetter(effort.value, it.value) }
+            RankedEffort(effort, 1 + ahead)
+        }
+    }
+
+    private suspend fun startedAt(id: Long): Long = activities.get(id)?.startedAtMs ?: Long.MAX_VALUE
 }

@@ -1,10 +1,12 @@
 package com.ridecomp.data.repository
 
+import com.ridecomp.core.engine.efforts.BestEffort
 import com.ridecomp.core.engine.efforts.BestEffortKey
 import com.ridecomp.core.engine.efforts.BestEffortType
 import com.ridecomp.core.model.ActivityKind
 import com.ridecomp.core.repository.BestEffortRepository
 import com.ridecomp.core.repository.PersonalRecord
+import com.ridecomp.core.repository.RankedEffort
 import com.ridecomp.core.repository.RideEffort
 import com.ridecomp.data.db.dao.BestEffortDao
 import com.ridecomp.data.db.entity.BestEffortEntity
@@ -60,4 +62,13 @@ class BestEffortRepositoryImpl(private val dao: BestEffortDao) : BestEffortRepos
         require(key.isHigherBetter) { "bestSince needs a higher-is-better key" }
         return dao.maxSince(key.storageKey, sinceStartedAtMs)
     }
+
+    override fun observeRanked(activityId: Long): Flow<List<RankedEffort>> =
+        dao.observeRanked(activityId, BestEffortType.DISTANCE.storageValue).map { rows ->
+            rows.mapNotNull { row ->
+                BestEffortKey.fromStorage(row.key)?.let {
+                    RankedEffort(BestEffort(it, row.value, row.startT, row.endT), row.rank)
+                }
+            }
+        }
 }

@@ -90,6 +90,7 @@ import com.ridecomp.core.usecase.ObservePlansUseCase
 import com.ridecomp.core.usecase.ObserveProfileChoiceUseCase
 import com.ridecomp.core.usecase.ObserveProfileUseCase
 import com.ridecomp.core.usecase.ObserveRecordKindsUseCase
+import com.ridecomp.core.usecase.ObserveRideResultsUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveRidesOnStravaUseCase
 import com.ridecomp.core.usecase.ObserveRouteUseCase
@@ -298,6 +299,7 @@ val useCaseModule = module {
     }
     factory { PreviewNewRecordsUseCase(get(), get(), get()) }
     factory { ObservePersonalRecordsUseCase(get()) }
+    factory { ObserveRideResultsUseCase(get(), get()) }
     factory { ObserveRecordKindsUseCase(get()) }
     factory { CreateSegmentFromActivityUseCase(get(), get(), get(), get()) }
     factory { CreateSegmentFromClimbUseCase(get(), get(), get(), get()) }
