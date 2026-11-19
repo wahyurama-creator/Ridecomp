@@ -5,6 +5,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
@@ -46,8 +47,15 @@ fun rememberRouteSnapshot(
     val context = LocalContext.current
     val request = SnapshotRequest(trail, isOnline, regionPaths, widthPx, heightPx, isDark)
     var snapshot by remember(request) { mutableStateOf<RouteSnapshot?>(null) }
-    DisposableEffect(request) {
-        if (trail.size < 2 || (!isOnline && regionPaths.isEmpty())) return@DisposableEffect onDispose { }
+    // The native library loads off the main thread first (T11.2a).
+    val io = LocalMapIoContext.current
+    val isLibraryReady by produceState(false, io) {
+        MapEngine.loadLibrary(io)
+        value = true
+    }
+    DisposableEffect(request, isLibraryReady) {
+        val hasMap = trail.size >= 2 && (isOnline || regionPaths.isNotEmpty())
+        if (!isLibraryReady || !hasMap) return@DisposableEffect onDispose { }
         MapLibre.getInstance(context.applicationContext)
         MapLibre.setConnected(isOnline)
         val colors = if (isDark) DarkRideCompColors else LightRideCompColors

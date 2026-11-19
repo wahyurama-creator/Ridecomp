@@ -8,6 +8,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
@@ -31,6 +32,7 @@ import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.maps.MapLibreMap
+import org.maplibre.android.maps.MapLibreMapOptions
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.maps.Style
 import org.maplibre.android.style.sources.GeoJsonSource
@@ -79,11 +81,19 @@ fun RouteMap(
     val currentOnUserMoved by rememberUpdatedState(onUserMoved)
     var map by remember { mutableStateOf<MapLibreMap?>(null) }
     var style by remember { mutableStateOf<Style?>(null) }
-    val mapView = remember {
-        MapLibre.getInstance(context.applicationContext)
-        MapView(context).apply { onCreate(null) }
+    // Prepared off the main thread; until then the box stays empty, same size (T11.2a).
+    val io = LocalMapIoContext.current
+    val options by produceState<MapLibreMapOptions?>(null, context, io) {
+        value = MapEngine.prepareView(context, io)
+    }
+    val mapView = remember(options) {
+        options?.let {
+            MapLibre.getInstance(context.applicationContext)
+            MapView(context, it).apply { onCreate(null) }
+        }
     }
     DisposableEffect(lifecycle, mapView) {
+        if (mapView == null) return@DisposableEffect onDispose { }
         val observer = mapView.lifecycleObserver()
         lifecycle.addObserver(observer)
         mapView.getMapAsync { loaded ->
@@ -108,7 +118,7 @@ fun RouteMap(
         val ready = style ?: return@LaunchedEffect
         ready.geoJson(MapSourceIds.ROUTE)?.setGeoJson(route.toLine())
         // Bounds need the view's size: in a lazy list the style can load before the first layout (T11.2).
-        if (!isFollowing) map?.let { loaded -> mapView.afterLayout { loaded.fitTo(route) } }
+        if (!isFollowing) map?.let { loaded -> mapView?.afterLayout { loaded.fitTo(route) } }
     }
     LaunchedEffect(style, ridden) { style?.geoJson(MapSourceIds.RIDDEN)?.setGeoJson(ridden.toLine()) }
     LaunchedEffect(style, marker) { style?.geoJson(MapSourceIds.MARKER)?.setGeoJson(marker.toPointCollection()) }
@@ -121,7 +131,7 @@ fun RouteMap(
         }
     }
     Box(modifier = modifier.semantics { contentDescription = description }) {
-        AndroidView(factory = { mapView }, modifier = Modifier.matchParentSize())
+        mapView?.let { view -> AndroidView(factory = { view }, modifier = Modifier.matchParentSize()) }
         MapAttribution(
             text = stringResource(if (isOnline) R.string.map_attribution_online else R.string.map_attribution),
             modifier = Modifier.align(Alignment.BottomStart),

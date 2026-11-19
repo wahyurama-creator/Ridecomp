@@ -48,6 +48,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`); ganti 
 **11A Fondasi**
 - [x] T11.1 Komponen grafik `RideChart`
 - [x] T11.2 Tata letak halaman detail per bagian
+- [x] T11.2a Perbaikan StrictMode peta (temuan uji T11.2) · [Feature Report](../reports/features/T11.2a-map-strictmode.md)
 
 **11B Analisa**
 - [ ] T11.3 Kecepatan
