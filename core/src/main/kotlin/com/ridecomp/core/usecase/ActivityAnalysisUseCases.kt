@@ -78,11 +78,12 @@ private fun speedStats(values: List<Double>, totals: RideTotals?): List<Analysis
     stat(AnalysisStatKind.ELAPSED_TIME, totals?.elapsedS?.takeIf { it > 0 }?.toDouble()),
 )
 
+/** Elevation analysis (T11.4): gain and highest point first, then descent and lowest point. */
 private fun elevationStats(values: List<Double>, totals: RideTotals?): List<AnalysisStat> = listOfNotNull(
     stat(AnalysisStatKind.ASCENT, totals?.ascentM),
+    stat(AnalysisStatKind.MAX, values.max()),
     stat(AnalysisStatKind.DESCENT, totals?.descentM),
     stat(AnalysisStatKind.MIN, values.min()),
-    stat(AnalysisStatKind.MAX, values.max()),
 )
 
 private fun stat(kind: AnalysisStatKind, value: Double?): AnalysisStat? = value?.let { AnalysisStat(kind, it) }

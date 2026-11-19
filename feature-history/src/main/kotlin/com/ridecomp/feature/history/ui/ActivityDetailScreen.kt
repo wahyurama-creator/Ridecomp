@@ -831,8 +831,21 @@ private fun AnalysisStatKind.labelRes(section: AnalysisSectionKind): Int = when 
     } else {
         R.string.detail_stat_avg
     }
-    AnalysisStatKind.MAX -> R.string.detail_stat_max
-    AnalysisStatKind.MIN -> R.string.detail_stat_min
+    // Elevation names its numbers in full (T11.4): "Elevasi maks", not just "Maksimum".
+    AnalysisStatKind.MAX -> if (section ==
+        AnalysisSectionKind.ELEVATION
+    ) {
+        R.string.detail_stat_elevation_max
+    } else {
+        R.string.detail_stat_max
+    }
+    AnalysisStatKind.MIN -> if (section ==
+        AnalysisSectionKind.ELEVATION
+    ) {
+        R.string.detail_stat_elevation_min
+    } else {
+        R.string.detail_stat_min
+    }
     AnalysisStatKind.ASCENT -> R.string.detail_stat_ascent
     AnalysisStatKind.DESCENT -> R.string.detail_stat_descent
     AnalysisStatKind.NORMALIZED -> R.string.detail_stat_normalized
