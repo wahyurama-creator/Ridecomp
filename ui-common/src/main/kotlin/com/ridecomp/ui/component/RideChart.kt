@@ -91,7 +91,9 @@ fun RideChart(
         val xLayouts = remember(chart, labels.xUnit, labelStyle) {
             chart.xTicks.indices.map { measurer.measure(chart.xLabel(it, labels.xUnit), labelStyle) }
         }
-        val gutterPx = (yLayouts.maxOfOrNull { it.size.width } ?: 0).coerceAtLeast(unitLayout.size.width) + gapPx
+        // Same left edge on every tab: room for at least a 4-digit label, whatever this chart's numbers are.
+        val minGutter = remember(labelStyle) { measurer.measure(GUTTER_SAMPLE, labelStyle).size.width }
+        val gutterPx = maxOf(yLayouts.maxOfOrNull { it.size.width } ?: 0, unitLayout.size.width, minGutter) + gapPx
         Canvas(
             modifier = Modifier
                 .fillMaxWidth()
@@ -117,25 +119,13 @@ fun RideChart(
             drawGrid(plot, chart, yLayouts, colors.divider)
             drawXLabels(plot, chart, xLayouts, gapPx, colors.divider)
             if (background != null && backgroundRange != null) {
-                drawArea(
-                    background,
-                    plot,
-                    chart.minX,
-                    chart.width,
-                    backgroundRange,
-                    colors.textTertiary.copy(alpha = BACKGROUND_ALPHA),
-                    null,
-                )
+                val shade = colors.textTertiary.copy(alpha = BACKGROUND_ALPHA)
+                drawArea(background, plot, chart.minX, chart.width, backgroundRange, shade, null)
             }
-            drawArea(
-                values,
-                plot,
-                chart.minX,
-                chart.width,
-                chart.axis.min..chart.axis.max,
-                color.copy(alpha = FILL_ALPHA),
-                color,
-            )
+            // Over a background the main area is more opaque, so it reads first (as in the reference).
+            val fillAlpha = if (background != null) FILL_OVER_BACKGROUND_ALPHA else FILL_ALPHA
+            val range = chart.axis.min..chart.axis.max
+            drawArea(values, plot, chart.minX, chart.width, range, color.copy(alpha = fillAlpha), color)
             averageY?.let { drawAverage(plot, chart, it, colors.textPrimary) }
             inspected?.let { drawMarker(it, plot, chart, color, colors.textPrimary) }
         }
@@ -340,7 +330,11 @@ private fun format(value: Double, decimals: Int, locale: Locale): String =
     String.format(locale, "%.${decimals}f", value)
 
 private const val FILL_ALPHA = 0.28f
-private const val BACKGROUND_ALPHA = 0.35f
+private const val FILL_OVER_BACKGROUND_ALPHA = 0.55f
+private const val BACKGROUND_ALPHA = 0.16f
+
+/** Widest axis label every chart leaves room for, so the plot does not shift between tabs. */
+private const val GUTTER_SAMPLE = "8888"
 private const val AVERAGE_ALPHA = 0.6f
 private const val DASH_SCALE = 2f
 private const val NO_VALUE = "--"
