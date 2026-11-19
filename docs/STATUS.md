@@ -6,8 +6,8 @@
 - **Rilis terakhir:** **0.9.3** (beta), 2026-11-18 · [GitHub Releases](https://github.com/wahyurama-creator/Ridecomp/releases). Skema DB **v10**.
 - **Fase selesai:** 0–5, 7, 9, dan rilis beta & masukan pengguna (Fase 8/10). Ringkasan: [`planning/06-ROADMAP.md`](planning/06-ROADMAP.md).
 - **Fase berjalan:** **Fase 11 — Analisa ride, usaha terbaik, tema & peta offline.** Rencana lengkap: [`planning/14-PHASE11-PLAN.md`](planning/14-PHASE11-PLAN.md). Keputusan K1–K5 sudah dijawab (D-109…D-113).
-- **Task terakhir:** T11.2a — Perbaikan StrictMode peta (selesai 2026-11-19, [Feature Report](reports/features/T11.2a-map-strictmode.md)); sebelumnya T11.2 tata letak halaman detail.
-- **Task berikutnya:** **T11.3 — Analisa kecepatan** (14-PHASE11-PLAN §5). Belum dimulai.
+- **Task terakhir:** T11.3 — Analisa kecepatan (selesai 2026-11-19, [Feature Report](reports/features/T11.3-speed-analysis.md)).
+- **Task berikutnya:** **T11.2b — perbaikan peta tidak tampil saat detail dibuka dari aplikasi dingin** (regresi T11.2a), lalu **T11.4 — Rombak elevasi**.
 
 ## Daftar centang Fase 11
 Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.md` §4 setiap kali task selesai.
@@ -15,7 +15,7 @@ Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.m
 - [x] T11.1 Komponen grafik `RideChart`
 - [x] T11.2 Tata letak halaman detail per bagian
 - [x] T11.2a Perbaikan StrictMode peta (temuan uji T11.2)
-- [ ] T11.3 Analisa kecepatan ← **berikutnya**
+- [x] T11.3 Analisa kecepatan
 - [ ] T11.4 Rombak elevasi
 - [ ] T11.5 Analisa detak jantung
 - [ ] T11.6 Perkiraan zona power Z1–Z7

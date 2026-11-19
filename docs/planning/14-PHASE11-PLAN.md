@@ -1,6 +1,6 @@
 # 14 — Rencana Fase 11: Analisa Ride, Usaha Terbaik, Tema & Peta Offline
 
-**Status:** berjalan (2/14: T11.1–T11.2 selesai). Disusun 2026-11-19 atas permintaan pemilik.
+**Status:** berjalan (3/14: T11.1–T11.3 selesai). Disusun 2026-11-19 atas permintaan pemilik.
 **Acuan:** `06-ROADMAP.md` (daftar task), `07-TEST-PLAN.md` §4/§5 (uji), `10-FEATURE-CHECKLIST.md` (alur tiap task), aturan wajib `08`–`11`.
 **Referensi visual pemilik:** `~/Downloads/RideComp-Referensi/` (4 screenshot halaman detail aktivitas Strava, 2026-11-18): bagian *Hasil* (Usaha Terbaik · Segmen), *Wawasan Detak Jantung*, grafik *Kecepatan* + 4 angka, grafik *Elevasi* + 2 angka, *Perkiraan Zona Kekuatan* Z1–Z7. Logo, ikon, dan merek Strava **tidak** ditiru: hanya susunan informasinya.
 
@@ -51,7 +51,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`); ganti 
 - [x] T11.2a Perbaikan StrictMode peta (temuan uji T11.2) · [Feature Report](../reports/features/T11.2a-map-strictmode.md)
 
 **11B Analisa**
-- [ ] T11.3 Kecepatan
+- [x] T11.3 Kecepatan
 - [ ] T11.4 Elevasi (rombak)
 - [ ] T11.5 Detak jantung
 - [ ] T11.6 Perkiraan zona power Z1–Z7
@@ -113,7 +113,7 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 ### Fase 11B — Analisa
 
 #### T11.3 Kecepatan
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-19 · Feature Report: [`T11.3-speed-analysis.md`](../reports/features/T11.3-speed-analysis.md) · D-118
 - Grafik kecepatan vs jarak (warna aksen/trek) + **elevasi abu-abu di belakang**.
 - Angka: **Kec. rata-rata** (berdasarkan waktu bergerak), **Kec. maks** (puncak tersaring, bukan lonjakan GPS: median 3 sampel), **Waktu bergerak**, **Waktu total**.
 - Satuan mengikuti Setelan (km/j atau mph).

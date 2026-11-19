@@ -47,6 +47,7 @@ import com.ridecomp.core.model.StravaUploadState
 import com.ridecomp.core.usecase.AnalysisSectionKind
 import com.ridecomp.core.usecase.AnalysisStatKind
 import com.ridecomp.core.usecase.ExportFormat
+import com.ridecomp.core.usecase.isDuration
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.history.R
 import com.ridecomp.feature.history.viewmodel.ActivityDetailEffect
@@ -391,8 +392,12 @@ private fun Section(section: DetailSection, background: ImmutableList<ChartValue
     val title = stringResource(kind.titleRes())
     val rows = section.stats.map { stat ->
         AnalysisRow(
-            label = stringResource(stat.kind.labelRes()),
-            value = withUnit(number(stat.value, decimals), unit),
+            label = stringResource(stat.kind.labelRes(kind)),
+            value = if (stat.kind.isDuration) {
+                format.duration(stat.value.toLong() * Units.MS_PER_SECOND)
+            } else {
+                withUnit(number(stat.value, decimals), unit)
+            },
             valueColor = color.takeIf { stat.kind == AnalysisStatKind.MAX },
         )
     }.toImmutableList()
@@ -817,13 +822,22 @@ private fun AnalysisSectionKind.color(): Color = when (this) {
 }
 
 @StringRes
-private fun AnalysisStatKind.labelRes(): Int = when (this) {
-    AnalysisStatKind.AVG -> R.string.detail_stat_avg
+private fun AnalysisStatKind.labelRes(section: AnalysisSectionKind): Int = when (this) {
+    // Speed averages only while moving (T11.3); said so, next to the moving time.
+    AnalysisStatKind.AVG -> if (section ==
+        AnalysisSectionKind.SPEED
+    ) {
+        R.string.detail_stat_avg_moving
+    } else {
+        R.string.detail_stat_avg
+    }
     AnalysisStatKind.MAX -> R.string.detail_stat_max
     AnalysisStatKind.MIN -> R.string.detail_stat_min
     AnalysisStatKind.ASCENT -> R.string.detail_stat_ascent
     AnalysisStatKind.DESCENT -> R.string.detail_stat_descent
     AnalysisStatKind.NORMALIZED -> R.string.detail_stat_normalized
+    AnalysisStatKind.MOVING_TIME -> R.string.detail_moving_time
+    AnalysisStatKind.ELAPSED_TIME -> R.string.detail_elapsed_time
 }
 
 @Composable

@@ -221,6 +221,26 @@ class ActivityUseCasesTest {
             speed.stats,
         )
     }
+
+    @Test
+    fun `speed analysis lists average, filtered max, moving and total time`() = runTest {
+        val id = rideWithSpeedElevationPowerCadence()
+        val totals = RideTotals(movingS = 3_000, elapsedS = 3_600, avgSpeedMps = 6.0, maxSpeedMps = 12.5)
+
+        val speed = LoadActivityAnalysisUseCase(LoadRideChartUseCase(repository))(id, totals)
+            .sections.first { it.kind == AnalysisSectionKind.SPEED }
+
+        assertEquals(
+            listOf(
+                AnalysisStat(AnalysisStatKind.AVG, 6.0),
+                AnalysisStat(AnalysisStatKind.MAX, 12.5),
+                AnalysisStat(AnalysisStatKind.MOVING_TIME, 3_000.0),
+                AnalysisStat(AnalysisStatKind.ELAPSED_TIME, 3_600.0),
+            ),
+            speed.stats,
+        )
+        assertTrue(AnalysisStatKind.MOVING_TIME.isDuration && !AnalysisStatKind.MAX.isDuration)
+    }
 }
 
 class ProfileUseCasesTest {
