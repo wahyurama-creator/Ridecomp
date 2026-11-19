@@ -13,6 +13,7 @@ import com.ridecomp.core.model.StravaUploadState
 import com.ridecomp.core.repository.NewActivity
 import com.ridecomp.core.testing.FakeActivityProfileRepository
 import com.ridecomp.core.testing.FakeActivityRepository
+import com.ridecomp.core.testing.FakeBestEffortRepository
 import com.ridecomp.core.testing.FakeClock
 import com.ridecomp.core.testing.FakeExportFileStore
 import com.ridecomp.core.testing.FakeExportedFileHandler
@@ -30,6 +31,7 @@ import com.ridecomp.core.usecase.AnalysisSectionKind
 import com.ridecomp.core.usecase.AnalysisStatKind
 import com.ridecomp.core.usecase.DeleteActivityUseCase
 import com.ridecomp.core.usecase.DismissTipUseCase
+import com.ridecomp.core.usecase.EstimateFtpUseCase
 import com.ridecomp.core.usecase.ExportActivityUseCase
 import com.ridecomp.core.usecase.ExportFitUseCase
 import com.ridecomp.core.usecase.ExportFormat
@@ -48,7 +50,6 @@ import com.ridecomp.core.usecase.ObserveRidesOnStravaUseCase
 import com.ridecomp.core.usecase.ObserveStravaStatusUseCase
 import com.ridecomp.core.usecase.ObserveStravaUploadUseCase
 import com.ridecomp.core.usecase.QueueStravaUploadUseCase
-import com.ridecomp.core.usecase.ReadRideTrackUseCase
 import com.ridecomp.core.usecase.RecomputeTrainingUseCase
 import com.ridecomp.core.usecase.SaveActivityFileUseCase
 import com.ridecomp.core.usecase.ShareActivityFileUseCase
@@ -145,8 +146,9 @@ class HistoryViewModelsTest {
             getLaps = GetLapsUseCase(repository),
             loadAnalysis = LoadActivityAnalysisUseCase(
                 LoadRideChartUseCase(repository),
-                ReadRideTrackUseCase(repository, TestDispatcherProvider(dispatcher)),
+                repository,
                 profiles,
+                EstimateFtpUseCase(profiles, FakeBestEffortRepository(repository), guide, FakeClock()),
                 FakeClock(),
             ),
             observeSettings = ObserveRideSettingsUseCase(settings),

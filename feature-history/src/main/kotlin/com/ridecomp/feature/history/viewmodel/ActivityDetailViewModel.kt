@@ -17,6 +17,7 @@ import com.ridecomp.core.usecase.ChartPoint
 import com.ridecomp.core.usecase.DeleteActivityUseCase
 import com.ridecomp.core.usecase.DismissTipUseCase
 import com.ridecomp.core.usecase.ExportFormat
+import com.ridecomp.core.usecase.FtpEstimate
 import com.ridecomp.core.usecase.GetLapsUseCase
 import com.ridecomp.core.usecase.HrMaxSource
 import com.ridecomp.core.usecase.LoadActivityAnalysisUseCase
@@ -68,6 +69,8 @@ data class ActivityDetailUiState(
     val stravaUpload: StravaUpload? = null,
     /** Time in heart-rate zones (T11.5); null without heart rate or without a known HR max. */
     val heartRateZones: DetailHeartRateZones? = null,
+    /** Time in power zones (T11.6): power meter, else estimated power; null without either. */
+    val powerZones: DetailPowerZones? = null,
     /** True once the sections are loaded, so a missing heart rate is not mistaken for "still loading". */
     val isAnalysisLoaded: Boolean = false,
     /** The rider closed the "Pasang sensor detak jantung" card for good (T11.5); hidden until known. */
@@ -81,6 +84,18 @@ data class ActivityDetailUiState(
     /** A ride without heart rate invites to pair a sensor, until the card is closed (T11.5). */
     val isHeartRateTipShown: Boolean get() = isAnalysisLoaded && !hasHeartRate && !isHeartRateTipDismissed
 }
+
+/**
+ * Time in power zones Z1..Z7 for the page: [ftp] with where it comes from, [isEstimatedPower] when the ride
+ * has no power meter (the card then says "Perkiraan").
+ */
+@Immutable
+data class DetailPowerZones(
+    val ftp: FtpEstimate,
+    val isEstimatedPower: Boolean,
+    val zones: ImmutableList<ZoneTimeSlice>,
+    val totalSeconds: Long,
+)
 
 /** Time in zones Z1..Z5 for the page; [isEstimated] when HR max is 220 − age, not from the profile. */
 @Immutable
@@ -211,12 +226,16 @@ class ActivityDetailViewModel(
         val zones = analysis.heartRateZones?.let {
             DetailHeartRateZones(it.hrMaxBpm, it.source == HrMaxSource.AGE, it.zones.toImmutableList(), it.totalSeconds)
         }
+        val power = analysis.powerZones?.let {
+            DetailPowerZones(it.ftp, it.isEstimatedPower, it.zones.toImmutableList(), it.totalSeconds)
+        }
         updateState {
             copy(
                 laps = laps,
                 sections = sections,
                 route = route,
                 heartRateZones = zones,
+                powerZones = power,
                 isAnalysisLoaded = true,
             )
         }

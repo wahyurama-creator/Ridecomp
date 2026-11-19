@@ -3,8 +3,8 @@ package com.ridecomp.core.usecase
 import com.ridecomp.core.config.HeartRateConfig
 import com.ridecomp.core.config.Units
 import com.ridecomp.core.engine.training.LoadInputs
-import com.ridecomp.core.engine.training.ZoneTime
 import com.ridecomp.core.model.RideTotals
+import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.ProfileRepository
 import com.ridecomp.core.source.Clock
 import kotlin.math.ceil
@@ -28,8 +28,8 @@ public data class AnalysisSection(val kind: AnalysisSectionKind, val stats: List
 /** Where the HR max of the zones comes from: the profile, or 220 − age when the profile has none. */
 public enum class HrMaxSource { PROFILE, AGE }
 
-/** One heart-rate zone: its bpm range ([maxBpm] null for the top zone) and the ride's seconds in it. */
-public data class ZoneTimeSlice(val zone: Int, val minBpm: Int, val maxBpm: Int?, val seconds: Long)
+/** One zone: its range in bpm or W ([high] null for the top zone) and the ride's seconds in it. */
+public data class ZoneTimeSlice(val zone: Int, val low: Int, val high: Int?, val seconds: Long)
 
 /** Time in zones Z1..Z5 of a ride (T11.5), from every sample, not the averaged chart points. */
 public data class HeartRateZones(val hrMaxBpm: Int, val source: HrMaxSource, val zones: List<ZoneTimeSlice>) {
@@ -44,6 +44,8 @@ public data class ActivityAnalysis(
     val points: List<ChartPoint>,
     val sections: List<AnalysisSection>,
     val heartRateZones: HeartRateZones? = null,
+    /** Time in power zones (T11.6): from the power meter, else the estimate; null without either. */
+    val powerZones: PowerZones? = null,
 )
 
 /**
@@ -54,8 +56,9 @@ public data class ActivityAnalysis(
  */
 public class LoadActivityAnalysisUseCase(
     private val loadChart: LoadRideChartUseCase,
-    private val readTrack: ReadRideTrackUseCase,
+    private val activities: ActivityRepository,
     private val profiles: ProfileRepository,
+    private val estimateFtp: EstimateFtpUseCase,
     private val clock: Clock,
 ) {
     public suspend operator fun invoke(activityId: Long, totals: RideTotals?): ActivityAnalysis {
@@ -64,27 +67,28 @@ public class LoadActivityAnalysisUseCase(
             val values = points.mapNotNull { kind.valueOf(it) }
             if (values.size < MIN_SECTION_VALUES) null else AnalysisSection(kind, kind.stats(values, totals))
         }
-        val hasHeartRate = sections.any { it.kind == AnalysisSectionKind.HEART_RATE }
-        return ActivityAnalysis(points, sections, if (hasHeartRate) heartRateZones(activityId) else null)
-    }
-
-    /** Zones from the full track (1 Hz); null without an HR max in the profile or a birth year. */
-    private suspend fun heartRateZones(activityId: Long): HeartRateZones? {
+        if (points.isEmpty()) return ActivityAnalysis(points, sections)
+        // Zones from every sample (1 Hz), not the averaged chart points: one more pass over the ride.
         val profile = profiles.get()
-        val source = if (profile.hrMaxBpm != null) HrMaxSource.PROFILE else HrMaxSource.AGE
-        val hrMax = LoadInputs.of(profile, clock.nowMs()).hrMaxBpm ?: return null
-        val seconds = ZoneTime.heartRate(readTrack(activityId), hrMax)
-        return seconds.takeIf { it.isNotEmpty() }?.let {
-            HeartRateZones(
-                hrMax,
-                source,
-                HeartRateZoneBounds.of(hrMax).zip(it) { bounds, s ->
-                    bounds.copy(seconds = s)
-                },
-            )
+        val hrMax = LoadInputs.of(profile, clock.nowMs()).hrMaxBpm
+        val ftp = estimateFtp()
+        val isMeter = sections.any { it.kind == AnalysisSectionKind.POWER }
+        val counter = ZoneCounter(hrMax, ftp.ftpW, isMeter).countAll(activities, activityId)
+        val heartRateZones = hrMax?.takeIf { counter.hasHeartRate }?.let {
+            val source = if (profile.hrMaxBpm != null) HrMaxSource.PROFILE else HrMaxSource.AGE
+            HeartRateZones(it, source, HeartRateZoneBounds.of(it).withSeconds(counter.heartRate))
         }
+        val powerZones = if (counter.hasPower) {
+            PowerZones(ftp, !isMeter, PowerZoneBounds.of(ftp.ftpW).withSeconds(counter.power))
+        } else {
+            null
+        }
+        return ActivityAnalysis(points, sections, heartRateZones, powerZones)
     }
 }
+
+private fun List<ZoneTimeSlice>.withSeconds(seconds: LongArray): List<ZoneTimeSlice> =
+    mapIndexed { index, slice -> slice.copy(seconds = seconds[index]) }
 
 /** The bpm range of each zone for [hrMax], as `Zones.heartRate` assigns them (upper bound starts the next). */
 public object HeartRateZoneBounds {
@@ -92,7 +96,7 @@ public object HeartRateZoneBounds {
         val starts =
             listOf(0) + HeartRateConfig.ZONE_UPPER_PERCENT_HR_MAX.map { ceil(hrMax * it / Units.PERCENT).toInt() }
         return starts.mapIndexed { index, start ->
-            ZoneTimeSlice(zone = index + 1, minBpm = start, maxBpm = starts.getOrNull(index + 1)?.minus(1), seconds = 0)
+            ZoneTimeSlice(zone = index + 1, low = start, high = starts.getOrNull(index + 1)?.minus(1), seconds = 0)
         }
     }
 }

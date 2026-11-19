@@ -138,4 +138,20 @@
     <string name="detail_hr_tip_text">Dengan sabuk HR atau jam tangan yang membagikan detak jantung, halaman ini menampilkan berapa lama kamu di tiap zona.</string>
     <string name="detail_hr_tip_open_sensors">Buka Sensor</string>
     <string name="detail_hr_tip_close">Jangan tampilkan lagi</string>
+    <string name="detail_power_zones_title">Zona power</string>
+    <string name="detail_estimated_power_zones_title">Perkiraan zona power</string>
+    <string name="detail_info_estimated_power_zones">Tanpa power meter, power diperkirakan dari kecepatan, tanjakan, berat, dan sepeda. Hanya gambaran kasar dan tidak pernah disimpan sebagai power di file FIT. Hanya waktu bergerak yang dihitung.</string>
+    <string name="detail_power_zone_1">Z1 Pemulihan aktif</string>
+    <string name="detail_power_zone_2">Z2 Daya tahan</string>
+    <string name="detail_power_zone_3">Z3 Tempo</string>
+    <string name="detail_power_zone_4">Z4 Ambang</string>
+    <string name="detail_power_zone_5">Z5 VO2max</string>
+    <string name="detail_power_zone_6">Z6 Anaerobik</string>
+    <string name="detail_power_zone_7">Z7 Neuromuskular</string>
+    <string name="detail_power_zone_range">%1$d–%2$d W</string>
+    <string name="detail_power_zone_range_up_to">hingga %1$d W</string>
+    <string name="detail_power_zone_range_above">%1$d+ W</string>
+    <string name="detail_ftp_profile">Berdasarkan FTP %1$d W</string>
+    <string name="detail_ftp_best_20_min">Berdasarkan perkiraan FTP %1$d W (95%% dari power 20 menit terbaik, 6 minggu terakhir)</string>
+    <string name="detail_ftp_weight">Berdasarkan berat %1$s kg dan perkiraan FTP %2$d W</string>
 </resources>
