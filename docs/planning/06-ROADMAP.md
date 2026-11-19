@@ -171,6 +171,7 @@ Spesifikasi, keputusan K1–K5 (dijawab 2026-11-19, D-109…D-113), urutan, risi
 - [x] T11.3 Analisa kecepatan: grafik + elevasi latar; Kec. rata-rata, Kec. maks, Waktu bergerak, Waktu total.
 - [x] T11.4 Rombak elevasi: grafik dengan angka bantu; Kenaikan elevasi, Elevasi maks.
 - [x] T11.5 Analisa detak jantung (bila ada sensor HR): grafik, rata-rata/maks, waktu di zona Z1–Z5; kartu ajakan bila tanpa HR.
+- [x] T11.5a Perbaikan: tautan perkiraan HR max di Profil hanya tampil bila tahun lahir terisi (temuan uji T11.5).
 - [ ] T11.6 Perkiraan zona power Z1–Z7: % waktu & rentang watt; power meter atau estimasi (berlabel "Perkiraan"), FTP profil atau perkiraan.
 
 **11C — Usaha terbaik**

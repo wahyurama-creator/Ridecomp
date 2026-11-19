@@ -6,7 +6,7 @@
 - **Rilis terakhir:** **0.9.3** (beta), 2026-11-18 · [GitHub Releases](https://github.com/wahyurama-creator/Ridecomp/releases). Skema DB **v10**.
 - **Fase selesai:** 0–5, 7, 9, dan rilis beta & masukan pengguna (Fase 8/10). Ringkasan: [`planning/06-ROADMAP.md`](planning/06-ROADMAP.md).
 - **Fase berjalan:** **Fase 11 — Analisa ride, usaha terbaik, tema & peta offline.** Rencana lengkap: [`planning/14-PHASE11-PLAN.md`](planning/14-PHASE11-PLAN.md). Keputusan K1–K5 sudah dijawab (D-109…D-113).
-- **Task terakhir:** T11.5 — Analisa detak jantung (selesai 2026-11-19, [Feature Report](reports/features/T11.5-heart-rate.md)).
+- **Task terakhir:** T11.5a — Perbaikan tautan perkiraan HR max di Profil (selesai 2026-11-19, [Feature Report](reports/features/T11.5a-hr-max-estimate-link.md)); sebelumnya T11.5 analisa detak jantung.
 - **Task berikutnya:** **T11.6 — Perkiraan zona power Z1–Z7** (14-PHASE11-PLAN §5). Belum dimulai.
 
 ## Daftar centang Fase 11
@@ -19,6 +19,7 @@ Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.m
 - [x] T11.3 Analisa kecepatan
 - [x] T11.4 Rombak elevasi
 - [x] T11.5 Analisa detak jantung
+- [x] T11.5a Perbaikan tautan perkiraan HR max di Profil
 - [ ] T11.6 Perkiraan zona power Z1–Z7 ← **berikutnya**
 - [ ] T11.7 Bagian "Hasil"
 - [ ] T11.8 Usaha terbaik otomatis
@@ -68,7 +69,6 @@ Branch `feature/<TaskID>-<slug>` → rencana disetujui pemilik → kode + test �
 Naikkan `versionCode`/`versionName` di `app/build.gradle.kts` → catatan rilis `releases/RELEASE-NOTES-x.y.z.md` → `./gradlew … assembleRelease` → cek sertifikat sama (`apksigner`, SHA-256 `F4:E9:68:90…:09:41`) → `SHA256SUMS.txt` → tag `vX.Y.Z` → `gh release create … --prerelease` dengan APK per ABI, checksum, `releases/PRIVACY.md`. Pengguna 0.9.1+ otomatis melihat kartu "Versi … tersedia".
 
 ## Catatan terbuka
-- Layar Profil menampilkan "Perkiraan dari umur (220 – umur)" walau tahun lahir kosong (temuan uji T11.5, belum diperiksa).
 - Data uji di HP: ride simulasi "Gowes Siang" (tanpa HR) ditambahkan atas izin pemilik saat uji T11.5.
 - Anggaran performa Fase 11 (§8): T11.1–T11.2 baru diukur dengan build debug (indikasi); pengukuran build rilis + pembanding sebelum Fase 11 di akhir fase.
 - Strava: kapasitas atlet 10 (self-service); pengajuan kenaikan menunggu 10 slot penuh (formulir sudah diisi, belum dikirim).
