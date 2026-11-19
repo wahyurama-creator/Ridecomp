@@ -7,7 +7,7 @@
 - **Fase selesai:** 0–5, 7, 9, dan rilis beta & masukan pengguna (Fase 8/10). Ringkasan: [`planning/06-ROADMAP.md`](planning/06-ROADMAP.md).
 - **Fase berjalan:** **Fase 11 — Analisa ride, usaha terbaik, tema & peta offline.** Rencana lengkap: [`planning/14-PHASE11-PLAN.md`](planning/14-PHASE11-PLAN.md). Keputusan K1–K5 sudah dijawab (D-109…D-113).
 - **Task terakhir:** T11.3 — Analisa kecepatan (selesai 2026-11-19, [Feature Report](reports/features/T11.3-speed-analysis.md)).
-- **Task berikutnya:** **T11.2b — perbaikan peta tidak tampil saat detail dibuka dari aplikasi dingin** (regresi T11.2a), lalu **T11.4 — Rombak elevasi**.
+- **Task berikutnya:** **T11.4 — Rombak elevasi** (14-PHASE11-PLAN §5). Belum dimulai. (T11.2b perbaikan peta selesai 2026-11-19.)
 
 ## Daftar centang Fase 11
 Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.md` §4 setiap kali task selesai.
@@ -15,8 +15,9 @@ Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.m
 - [x] T11.1 Komponen grafik `RideChart`
 - [x] T11.2 Tata letak halaman detail per bagian
 - [x] T11.2a Perbaikan StrictMode peta (temuan uji T11.2)
+- [x] T11.2b Perbaikan peta saat aplikasi dingin (regresi T11.2a)
 - [x] T11.3 Analisa kecepatan
-- [ ] T11.4 Rombak elevasi
+- [ ] T11.4 Rombak elevasi ← **berikutnya**
 - [ ] T11.5 Analisa detak jantung
 - [ ] T11.6 Perkiraan zona power Z1–Z7
 - [ ] T11.7 Bagian "Hasil"
