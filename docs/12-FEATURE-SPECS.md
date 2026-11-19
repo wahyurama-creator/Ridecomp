@@ -16,6 +16,10 @@ Fitur-fitur ini dipilih pemilik proyek dengan referensi Garmin Edge, Wahoo, dan 
 | TL | Beban latihan (fitness, kelelahan, form) | 4 | §10 |
 | SC | Kartu share WA/IG | 4 | §11 |
 | BK | Backup & restore data | 2 | §12 |
+| AN | Analisa ride di detail (kecepatan, elevasi, HR, zona power Z1–Z7) | 11 | `14-PHASE11-PLAN.md` §5 (T11.1–T11.6) |
+| UT | Usaha terbaik otomatis & bagian Hasil | 11 | `14-PHASE11-PLAN.md` §5 (T11.7–T11.8) |
+| TM | Tema terang/gelap | 11 | `14-PHASE11-PLAN.md` §5 (T11.9–T11.10) |
+| PO | Peta tanpa internet (cache, unduh rute/area) | 11 | `14-PHASE11-PLAN.md` §5 (T11.11–T11.14) |
 
 ---
 

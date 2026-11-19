@@ -82,6 +82,16 @@
 | L19 | 3 ride di rute yang sama dengan segmen | Effort & PR terdeteksi; live segment menampilkan selisih vs PR |
 | L20 | Backup → simpan ke Google Drive → uninstall → install → restore | Semua data kembali; kontak darurat diminta diisi ulang |
 
+### 4b. Uji lapangan Fase 11 (`14-PHASE11-PLAN.md`)
+| # | Skenario | Lulus bila |
+|---|---|---|
+| A1 | Ride ≥ 30 mnt dengan sensor HR, buka detail | Grafik kecepatan/elevasi/HR tampil < 1 dtk di HP 2 GB; angka sama dengan ringkasan; zona HR berjumlah 100% |
+| A2 | Ride tanpa HR & tanpa power meter | Bagian HR berupa kartu ajakan; zona power berlabel "Perkiraan" dengan FTP & berat yang dipakai |
+| A3 | Rute sprint yang sama 2 hari (contoh Jl. Soekarno Hatta, ±3 mnt) | Hari ke-2: bagian Hasil menampilkan segmen/usaha terbaik dengan PR bila lebih cepat |
+| A4 | Tema Terang & Gelap, termasuk layar ride di bawah matahari | Semua teks terbaca (kontras ≥ 4.5:1), tidak ada elemen hilang |
+| A5 | Lihat peta saat online, lalu mode pesawat di area yang sama | Peta tetap tampil dari cache |
+| A6 | "Unduh peta untuk rute ini" via Wi‑Fi, lalu navigasi rute dengan mode pesawat | Peta & navigasi tampil penuh sepanjang rute; ukuran unduhan sesuai perkiraan ±20% |
+
 ## 5. Acceptance criteria per fase
 - **Semua fase:** setiap task punya Feature Report yang diterima; perintah verifikasi lulus; LeakCanary & StrictMode bersih (`09-RELIABILITY-RULES.md`).
 - **Fase 0:** app terpasang di HP fisik; tooling kualitas, penjaga arsitektur, dan fondasi keamanan (T0.13) berjalan; S4, S6, S10 lulus.
