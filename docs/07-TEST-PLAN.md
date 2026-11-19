@@ -91,7 +91,7 @@
 | A4 | Tema Terang & Gelap, termasuk layar ride di bawah matahari | Semua teks terbaca (kontras ≥ 4.5:1), tidak ada elemen hilang |
 | A5 | Lihat peta saat online, lalu mode pesawat di area yang sama | Peta tetap tampil dari cache |
 | A6 | Setelah ride di Jawa Tengah, terima tawaran "Unduh peta wilayahmu" via Wi‑Fi, lalu navigasi rute dengan mode pesawat | Tawaran menyebut wilayah yang benar tanpa menyalakan GPS tambahan; peta & navigasi tampil penuh; ukuran sesuai indeks ±5% |
-| A7 | Anggaran performa (`14-PHASE11-PLAN.md` §9) dengan build rilis | Semua batas terpenuhi; angka dicatat di Feature Report |
+| A7 | Anggaran performa (`14-PHASE11-PLAN.md` §8) dengan build rilis | Semua batas terpenuhi; angka dicatat di Feature Report |
 
 ## 5. Acceptance criteria per fase
 - **Semua fase:** setiap task punya Feature Report yang diterima; perintah verifikasi lulus; LeakCanary & StrictMode bersih (`09-RELIABILITY-RULES.md`).

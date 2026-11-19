@@ -39,7 +39,7 @@
 | K4 | Peta saat offline | Diserahkan ke agent → **dua lapis**: (1) cache otomatis peta yang pernah dilihat (tanpa unduhan di muka, aman untuk OpenFreeMap); (2) **peta wilayah** dari data Protomaps/OSM (ODbL) yang dipotong per wilayah dan **di-hosting di GitHub Release proyek** (bukan dari server pihak lain, tidak melanggar larangan unduh massal) | D-112 |
 | K5 | Pemotongan wilayah | **Per daerah tempat GPS berada**: aplikasi mengenali wilayah dari lokasi terakhir yang sudah diketahui (ride terakhir/persiapan ride; **tanpa menyalakan GPS tambahan**) dan menawarkan unduhan wilayah itu lewat Wi‑Fi. Satuan wilayah awal: **provinsi** (38 file); kota besar menyusul bila ukuran provinsi terlalu besar | D-113 |
 
-Permintaan tambahan pemilik: **fitur ini tidak boleh mengganggu performa** → §9 Anggaran performa (wajib setiap task).
+Permintaan tambahan pemilik: **fitur ini tidak boleh mengganggu performa** → §8 Anggaran performa (wajib setiap task).
 
 ## 4. Urutan & ketergantungan
 
@@ -171,7 +171,7 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 | Biaya/beban hosting peta | Hosting di GitHub Release proyek (gratis); pembaruan peta paling cepat tiap 3 bulan |
 | Tema terang di layar ride | Audit kontras & uji di bawah matahari (T11.10) |
 
-## 9. Anggaran performa (wajib setiap task, permintaan pemilik)
+## 8. Anggaran performa (wajib setiap task, permintaan pemilik)
 
 Diukur dengan **build rilis** (R8) di HP uji low-end (realme RMX3830; target HP RAM 2–3 GB), dibandingkan dengan sebelum task. Hasil masuk Feature Report.
 
@@ -190,9 +190,9 @@ Diukur dengan **build rilis** (R8) di HP uji low-end (realme RMX3830; target HP 
 
 Melampaui batas = bug yang diperbaiki sebelum task selesai.
 
-## 8. Definition of Done Fase 11
+## 9. Definition of Done Fase 11
 
-- Semua task 11A–11E selesai dengan Feature Report; keputusan K1–K5 tercatat (D-109 … D-113); **anggaran performa §9 terpenuhi** dengan angka terukur.
+- Semua task 11A–11E selesai dengan Feature Report; keputusan K1–K5 tercatat (D-109 … D-113); **anggaran performa §8 terpenuhi** dengan angka terukur.
 - `./gradlew ktlintCheck detekt lint test koverVerify assembleDebug` lulus; uji perangkat (subagent Sonnet) untuk tiap task UI di **tema gelap dan terang**.
 - Uji lapangan: ride ≥ 30 menit dengan HR (analisa HR & zona), ride rute yang sama 2× (usaha terbaik/segmen PR muncul di hari ke-2), navigasi rute dengan **mode pesawat** setelah mengunduh peta wilayah (peta tetap tampil).
 - Akhir fase: scan CVE, lisensi, MobSF, threat model diperbarui (peta offline & unduhan).
