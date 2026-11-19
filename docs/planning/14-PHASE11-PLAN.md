@@ -1,6 +1,6 @@
 # 14 — Rencana Fase 11: Analisa Ride, Usaha Terbaik, Tema & Peta Offline
 
-**Status:** berjalan (3/14: T11.1–T11.3 selesai). Disusun 2026-11-19 atas permintaan pemilik.
+**Status:** berjalan (4/14: T11.1–T11.4 selesai). Disusun 2026-11-19 atas permintaan pemilik.
 **Acuan:** `06-ROADMAP.md` (daftar task), `07-TEST-PLAN.md` §4/§5 (uji), `10-FEATURE-CHECKLIST.md` (alur tiap task), aturan wajib `08`–`11`.
 **Referensi visual pemilik:** `~/Downloads/RideComp-Referensi/` (4 screenshot halaman detail aktivitas Strava, 2026-11-18): bagian *Hasil* (Usaha Terbaik · Segmen), *Wawasan Detak Jantung*, grafik *Kecepatan* + 4 angka, grafik *Elevasi* + 2 angka, *Perkiraan Zona Kekuatan* Z1–Z7. Logo, ikon, dan merek Strava **tidak** ditiru: hanya susunan informasinya.
 
@@ -53,7 +53,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`); ganti 
 
 **11B Analisa**
 - [x] T11.3 Kecepatan
-- [ ] T11.4 Elevasi (rombak)
+- [x] T11.4 Elevasi (rombak)
 - [ ] T11.5 Detak jantung
 - [ ] T11.6 Perkiraan zona power Z1–Z7
 
@@ -120,7 +120,7 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 - Satuan mengikuti Setelan (km/j atau mph).
 
 #### T11.4 Elevasi (rombak)
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-19 · Feature Report: [`T11.4-elevation.md`](../reports/features/T11.4-elevation.md)
 - Grafik ketinggian vs jarak dengan angka sumbu & garis bantu; skala Y tidak dimulai dari 0 (rentang data + margin) agar bentuk terlihat.
 - Angka: **Kenaikan elevasi**, **Elevasi maks**; tambahan bila ada: Penurunan, Elevasi min.
 - Tanpa data ketinggian: bagian disembunyikan.
