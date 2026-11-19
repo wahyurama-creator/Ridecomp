@@ -74,6 +74,50 @@ fun RouteMap(
     /** A green dot, e.g. the start to ride back to (T7.2). */
     marker: MapPoint? = null,
 ) {
+    // MapLibre is prepared off the main thread first (T11.2a); meanwhile an empty box of the same size.
+    // The whole map then replaces the box in one composition: a MapView added later into an existing box
+    // never started rendering on a cold start (RMX3830).
+    val context = LocalContext.current
+    val io = LocalMapIoContext.current
+    val options by produceState<MapLibreMapOptions?>(null, context, io) {
+        value = MapEngine.prepareView(context, io)
+    }
+    val ready = options
+    if (ready == null) {
+        Box(modifier = modifier.semantics { contentDescription = description })
+        return
+    }
+    PreparedRouteMap(
+        options = ready,
+        isOnline = isOnline,
+        regionPaths = regionPaths,
+        route = route,
+        description = description,
+        modifier = modifier,
+        ridden = ridden,
+        position = position,
+        isFollowing = isFollowing,
+        onUserMoved = onUserMoved,
+        marker = marker,
+    )
+}
+
+@Composable
+@Suppress("LongParameterList") // The inputs of RouteMap plus the prepared options.
+private fun PreparedRouteMap(
+    options: MapLibreMapOptions,
+    isOnline: Boolean,
+    regionPaths: ImmutableList<String>,
+    route: ImmutableList<MapPoint>,
+    description: String,
+    modifier: Modifier = Modifier,
+    ridden: ImmutableList<MapPoint> = persistentListOf(),
+    position: MapPoint? = null,
+    isFollowing: Boolean = false,
+    onUserMoved: () -> Unit = {},
+    /** A green dot, e.g. the start to ride back to (T7.2). */
+    marker: MapPoint? = null,
+) {
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val colors = RideCompTheme.colors
@@ -81,19 +125,10 @@ fun RouteMap(
     val currentOnUserMoved by rememberUpdatedState(onUserMoved)
     var map by remember { mutableStateOf<MapLibreMap?>(null) }
     var style by remember { mutableStateOf<Style?>(null) }
-    // Prepared off the main thread; until then the box stays empty, same size (T11.2a).
-    val io = LocalMapIoContext.current
-    val options by produceState<MapLibreMapOptions?>(null, context, io) {
-        value = MapEngine.prepareView(context, io)
-    }
-    val mapView = remember(options) {
-        options?.let {
-            MapLibre.getInstance(context.applicationContext)
-            MapView(context, it).apply { onCreate(null) }
-        }
+    val mapView = remember {
+        MapView(context, options).apply { onCreate(null) }
     }
     DisposableEffect(lifecycle, mapView) {
-        if (mapView == null) return@DisposableEffect onDispose { }
         val observer = mapView.lifecycleObserver()
         lifecycle.addObserver(observer)
         mapView.getMapAsync { loaded ->
@@ -118,7 +153,7 @@ fun RouteMap(
         val ready = style ?: return@LaunchedEffect
         ready.geoJson(MapSourceIds.ROUTE)?.setGeoJson(route.toLine())
         // Bounds need the view's size: in a lazy list the style can load before the first layout (T11.2).
-        if (!isFollowing) map?.let { loaded -> mapView?.afterLayout { loaded.fitTo(route) } }
+        if (!isFollowing) map?.let { loaded -> mapView.afterLayout { loaded.fitTo(route) } }
     }
     LaunchedEffect(style, ridden) { style?.geoJson(MapSourceIds.RIDDEN)?.setGeoJson(ridden.toLine()) }
     LaunchedEffect(style, marker) { style?.geoJson(MapSourceIds.MARKER)?.setGeoJson(marker.toPointCollection()) }
@@ -131,7 +166,7 @@ fun RouteMap(
         }
     }
     Box(modifier = modifier.semantics { contentDescription = description }) {
-        mapView?.let { view -> AndroidView(factory = { view }, modifier = Modifier.matchParentSize()) }
+        AndroidView(factory = { mapView }, modifier = Modifier.matchParentSize())
         MapAttribution(
             text = stringResource(if (isOnline) R.string.map_attribution_online else R.string.map_attribution),
             modifier = Modifier.align(Alignment.BottomStart),

@@ -165,6 +165,7 @@ Spesifikasi, keputusan K1–K5 (dijawab 2026-11-19, D-109…D-113), urutan, risi
 - [x] T11.1 Komponen grafik `RideChart` di `:ui-common` (angka sumbu, garis bantu, lapisan latar, sentuh-geser; tanpa library) (K3).
 - [x] T11.2 Halaman detail menjadi bagian vertikal: Ringkasan → Hasil → Kecepatan → Elevasi → Detak jantung → Zona power → Lap → Ekspor.
 - [x] T11.2a Perbaikan: library & opsi peta MapLibre dimuat di luar thread utama (StrictMode, temuan uji T11.2).
+- [x] T11.2b Perbaikan: peta tidak tampil saat detail dibuka dari aplikasi dingin (regresi T11.2a).
 
 **11B — Analisa**
 - [x] T11.3 Analisa kecepatan: grafik + elevasi latar; Kec. rata-rata, Kec. maks, Waktu bergerak, Waktu total.
