@@ -25,7 +25,8 @@
     <string name="profile_sex_male">Pria</string>
     <string name="profile_sex_female">Wanita</string>
     <string name="profile_sex_unset">Tidak diisi</string>
-    <string name="profile_estimate_hr_max">Perkiraan dari umur (220 − umur)</string>
+    <string name="profile_estimate_hr_max">Isi HR max dari umur (220 − umur)</string>
+    <string name="profile_estimate_hr_max_needs_year">Isi tahun lahir untuk memperkirakan HR max dari umur (220 − umur).</string>
     <string name="profile_hr_max_estimated">Hanya perkiraan — uji lapangan lebih akurat.</string>
     <string name="profile_save">SIMPAN</string>
     <string name="profile_error_invalid">Periksa nilai ini</string>

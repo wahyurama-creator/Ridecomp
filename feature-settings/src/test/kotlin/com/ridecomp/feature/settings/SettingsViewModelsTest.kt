@@ -48,6 +48,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -138,11 +139,17 @@ class SettingsViewModelsTest {
     @Test
     fun `hr max estimate needs a birth year`() {
         val viewModel = profileViewModel()
+        // Not offered while the birth year is empty or still being typed (T11.5a).
+        assertFalse(viewModel.uiState.value.canEstimateHrMax)
+        viewModel.onEvent(ProfileUiEvent.FieldChanged(ProfileField.BIRTH_YEAR, "19"))
+        assertFalse(viewModel.uiState.value.canEstimateHrMax)
+        viewModel.onEvent(ProfileUiEvent.FieldChanged(ProfileField.BIRTH_YEAR, ""))
 
         viewModel.onEvent(ProfileUiEvent.EstimateHrMax)
         assertTrue(ProfileField.BIRTH_YEAR in viewModel.uiState.value.invalidFields)
 
         viewModel.onEvent(ProfileUiEvent.FieldChanged(ProfileField.BIRTH_YEAR, "1996"))
+        assertTrue(viewModel.uiState.value.canEstimateHrMax)
         viewModel.onEvent(ProfileUiEvent.EstimateHrMax)
         assertEquals("190", viewModel.uiState.value.hrMaxBpm)
         assertTrue(viewModel.uiState.value.isHrMaxEstimated)

@@ -26,7 +26,8 @@
     <string name="profile_sex_male">Male</string>
     <string name="profile_sex_female">Female</string>
     <string name="profile_sex_unset">Not set</string>
-    <string name="profile_estimate_hr_max">Estimate from age (220 − age)</string>
+    <string name="profile_estimate_hr_max">Fill HR max from age (220 − age)</string>
+    <string name="profile_estimate_hr_max_needs_year">Enter your birth year to estimate HR max from age (220 − age).</string>
     <string name="profile_hr_max_estimated">Estimate only — a field test is more accurate.</string>
     <string name="profile_save">SAVE</string>
     <string name="profile_error_invalid">Check this value</string>

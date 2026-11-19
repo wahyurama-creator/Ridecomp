@@ -237,7 +237,16 @@ private fun OptionalFields(
             modifier = Modifier.weight(1f),
         )
     }
-    LinkText(stringResource(R.string.profile_estimate_hr_max), onClick = { onEvent(ProfileUiEvent.EstimateHrMax) })
+    // An action only once there is a birth year to estimate from (T11.5a); before that, what it needs.
+    if (state.canEstimateHrMax) {
+        LinkText(stringResource(R.string.profile_estimate_hr_max), onClick = { onEvent(ProfileUiEvent.EstimateHrMax) })
+    } else {
+        Text(
+            text = stringResource(R.string.profile_estimate_hr_max_needs_year),
+            style = RideCompTheme.typography.caption,
+            color = RideCompTheme.colors.textSecondary,
+        )
+    }
     ChoiceChips(
         label = stringResource(R.string.profile_sex),
         choices = listOf<Choice<Sex?>>(
