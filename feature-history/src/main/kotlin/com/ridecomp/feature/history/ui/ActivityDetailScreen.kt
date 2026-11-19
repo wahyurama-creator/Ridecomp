@@ -196,10 +196,14 @@ fun ActivityDetailScreen(
                     ),
                     verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
                 ) {
-                    if (state.route.size >= MIN_LINE_POINTS) {
-                        item(key = ITEM_ROUTE) { RouteSketch(state, isOnlineMap) }
+                    // One item: the route arrives after the totals, and a separate item inserted above the
+                    // first visible one would open the page scrolled past the map.
+                    item(key = ITEM_HEADER) {
+                        Column(verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap)) {
+                            if (state.route.size >= MIN_LINE_POINTS) RouteSketch(state, isOnlineMap)
+                            Totals(activity.totals, format)
+                        }
                     }
-                    item(key = ITEM_TOTALS) { Totals(activity.totals, format) }
                     onShareCard?.let { item(key = ITEM_SHARE) { ShareCardEntry(it) } }
                     items(state.sections, key = { it.kind }) { section ->
                         // Elevation in grey behind speed, as on printed ride summaries.
@@ -430,8 +434,7 @@ private const val MIN_LINE_POINTS = 2
 private const val MIN_LAPS = 2
 
 /** Keys of the page's fixed items (the sections are keyed by their kind). */
-private const val ITEM_ROUTE = "route"
-private const val ITEM_TOTALS = "totals"
+private const val ITEM_HEADER = "header"
 private const val ITEM_SHARE = "share"
 private const val ITEM_LAPS = "laps"
 private const val ITEM_TIP = "tip"
