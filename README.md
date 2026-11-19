@@ -63,7 +63,7 @@ Tip: some phones (Xiaomi, Oppo, Vivo, Samsung) stop apps in the background. If r
 
 ## Privacy
 
-All data stays on your phone. There is no account, no analytics and no ads. The app goes online only for map tiles (when the online map is on) and when you upload to Strava. See [docs/PRIVACY.md](docs/PRIVACY.md).
+All data stays on your phone. There is no account, no analytics and no ads. The app goes online only for map tiles (when the online map is on), when you upload to Strava, and for a once-a-day update check on GitHub (can be turned off). See [docs/releases/PRIVACY.md](docs/releases/PRIVACY.md).
 
 ## Building from source
 
@@ -102,7 +102,7 @@ server/          Strava token server (Cloudflare Worker)
 docs/            specs, rules, decisions, feature reports
 ```
 
-The specifications and working rules live in [`docs/`](docs). Start with [CLAUDE.md](CLAUDE.md), [docs/08-CODING-RULES.md](docs/08-CODING-RULES.md) and [docs/reports/DECISIONS.md](docs/reports/DECISIONS.md).
+The specifications and working rules live in [`docs/`](docs), grouped by folder (product, architecture, planning, rules, testing, releases, reports): see the map in [docs/README.md](docs/README.md). **New contributors start with [docs/STATUS.md](docs/STATUS.md)**: current status, the next task and setup. Agent rules: [CLAUDE.md](CLAUDE.md).
 
 ## Contributing
 

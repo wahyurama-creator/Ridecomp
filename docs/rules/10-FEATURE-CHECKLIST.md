@@ -104,7 +104,7 @@ Agent menampilkan:
 
 ## ④ Feature Report
 
-Agent membuat laporan menggunakan template `docs/templates/FEATURE_REPORT.md`, menyimpannya di `docs/reports/<TaskID>-<slug>.md`, dan menampilkannya ke pemilik proyek. Task dianggap **selesai** hanya setelah pemilik proyek menerima laporan.
+Agent membuat laporan menggunakan template `docs/templates/FEATURE_REPORT.md`, menyimpannya di `docs/reports/features/<TaskID>-<slug>.md`, memperbarui `docs/STATUS.md`, dan menampilkannya ke pemilik proyek. Task dianggap **selesai** hanya setelah pemilik proyek menerima laporan.
 
 ---
 

@@ -1,5 +1,5 @@
 # Overrides on top of detekt's default config (buildUponDefaultConfig = true).
-# Rule IDs refer to docs/08-CODING-RULES.md.
+# Rule IDs refer to docs/rules/08-CODING-RULES.md.
 
 complexity:
   LongMethod:            # KT-05: functions max ~40 lines
