@@ -138,7 +138,7 @@ Ikuti `03-ARCHITECTURE.md` §9: jadikan `:core` modul KMP, tulis UI (SwiftUI ata
 - [x] T9.2 Widget layar utama: sesi hari ini, minggu ini, tombol mulai; jarak & waktu saat ride (D-96).
 
 ## Fase 11 — Analisa ride, usaha terbaik, tema & peta offline (direncanakan 2026-11-19)
-Spesifikasi, keputusan K1–K5 (dijawab 2026-11-19, D-109…D-113), urutan, risiko, **anggaran performa §9**, dan DoD: **`14-PHASE11-PLAN.md`**.
+Spesifikasi, keputusan K1–K5 (dijawab 2026-11-19, D-109…D-113), urutan, risiko, **anggaran performa §8**, dan DoD: **`14-PHASE11-PLAN.md`**.
 
 **11A — Fondasi**
 - [ ] T11.1 Komponen grafik `RideChart` di `:ui-common` (angka sumbu, garis bantu, lapisan latar, sentuh-geser; tanpa library) (K3).
@@ -164,7 +164,7 @@ Spesifikasi, keputusan K1–K5 (dijawab 2026-11-19, D-109…D-113), urutan, risi
 - [ ] T11.12 Peta wilayah otomatis: deteksi wilayah dari lokasi terakhir, tawaran unduh lewat Wi‑Fi, verifikasi, dipakai otomatis saat offline (K5).
 - [ ] T11.14 Batas penyimpanan, keamanan unduhan, atribusi.
 
-**DoD:** lihat `14-PHASE11-PLAN.md` §8.
+**DoD:** lihat `14-PHASE11-PLAN.md` §9.
 
 ## Fase 8+ — Ide lanjutan (belum dijadwalkan)
 Workout/interval terstruktur, target zona dengan alert, pengumuman suara (TTS), kembali ke titik start, pelacakan komponen sepeda, ghost/virtual partner, backup ke file/Google Drive, radar belakang BLE, export ke platform lain (intervals.icu dll. via file).
