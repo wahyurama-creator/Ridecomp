@@ -26,6 +26,15 @@ Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.m
 - [ ] T11.12 Peta wilayah otomatis
 - [ ] T11.14 Penyimpanan, baterai, keamanan peta
 
+**Setelah Fase 11 — Fase 12: Detak jantung dari smartwatch** ([`planning/15-PHASE12-PLAN.md`](planning/15-PHASE12-PLAN.md)):
+- [ ] T12.1 Uji kompatibilitas jam tangan
+- [ ] T12.2 Pemindaian luas
+- [ ] T12.3 UX & panduan jam tangan
+- [ ] T12.4 Aplikasi pendamping Wear OS (opsional)
+- [ ] T12.5a Identifikasi protokol Aolon (go/no-go) — butuh model & nama aplikasi pendamping dari pemilik
+- [ ] T12.5b Sensor "Jam tangan (eksperimental)"
+- [ ] T12.5c Uji ride sungguhan
+
 Fase lain: lihat kolom Status di tabel atas `planning/06-ROADMAP.md` (Fase 0–5, 7, 9, 10 selesai; Fase 6 iOS belum mulai).
 
 ## Urutan Fase 11
