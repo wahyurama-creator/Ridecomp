@@ -138,7 +138,7 @@ Ikuti `03-ARCHITECTURE.md` §9: jadikan `:core` modul KMP, tulis UI (SwiftUI ata
 - [x] T9.2 Widget layar utama: sesi hari ini, minggu ini, tombol mulai; jarak & waktu saat ride (D-96).
 
 ## Fase 11 — Analisa ride, usaha terbaik, tema & peta offline (direncanakan 2026-11-19)
-Spesifikasi, keputusan terbuka K1–K5, urutan, risiko, dan DoD: **`14-PHASE11-PLAN.md`**. Jangan mulai task yang terhalang keputusan sebelum dijawab pemilik.
+Spesifikasi, keputusan K1–K5 (dijawab 2026-11-19, D-109…D-113), urutan, risiko, **anggaran performa §9**, dan DoD: **`14-PHASE11-PLAN.md`**.
 
 **11A — Fondasi**
 - [ ] T11.1 Komponen grafik `RideChart` di `:ui-common` (angka sumbu, garis bantu, lapisan latar, sentuh-geser; tanpa library) (K3).
@@ -155,13 +155,13 @@ Spesifikasi, keputusan terbuka K1–K5, urutan, risiko, dan DoD: **`14-PHASE11-P
 - [ ] T11.8 Usaha terbaik otomatis (K1): rekor durasi kecepatan/power dan/atau "Tandai sprint" dari grafik.
 
 **11D — Tema**
-- [ ] T11.9 Setelan → Tema: Ikuti HP · Gelap · Terang (K2).
+- [ ] T11.9 Setelan → Tema: Gelap · Terang · Ikuti HP, default Gelap (K2).
 - [ ] T11.10 Audit & uji tampilan terang di semua layar (ride di bawah matahari, peta, grafik, share, widget).
 
 **11E — Peta offline**
 - [ ] T11.11 Cache peta otomatis (yang pernah dilihat) dipakai saat sinyal hilang; Setelan ukuran & hapus cache.
-- [ ] T11.12 "Unduh peta untuk rute ini" (koridor rute, ukuran & progres, Wi‑Fi default) (K4, K5).
-- [ ] T11.13 "Unduh peta area" kota/provinsi (opsional) (K4, K5).
+- [ ] T11.13 Paket peta per provinsi dari data Protomaps/OSM, di-hosting di GitHub Release proyek (skrip pemilik) (K4).
+- [ ] T11.12 Peta wilayah otomatis: deteksi wilayah dari lokasi terakhir, tawaran unduh lewat Wi‑Fi, verifikasi, dipakai otomatis saat offline (K5).
 - [ ] T11.14 Batas penyimpanan, keamanan unduhan, atribusi.
 
 **DoD:** lihat `14-PHASE11-PLAN.md` §8.

@@ -29,17 +29,17 @@
 | Peta | Online OpenFreeMap (D-90); offline **impor `.pmtiles` manual** (D-64); tanpa internet → garis/breadcrumb | Cache otomatis; unduh peta rute/area di dalam aplikasi |
 | Navigasi | Aba-aba belokan, tanjakan, off-route dari GPX — **sudah offline** | — |
 
-## 3. Keputusan terbuka (jawab sebelum task terkait dimulai)
+## 3. Keputusan (dijawab pemilik 2026-11-19)
 
-| # | Pertanyaan | Pilihan | Rekomendasi agent | Menghalangi |
-|---|---|---|---|---|
-| K1 | Arti "usaha terbaik otomatis" | (a) **Rekor durasi otomatis**: kecepatan & power terbaik 30 dtk / 1 / 3 / 5 / 20 mnt tiap ride, PR bila melampaui ride sebelumnya. (b) **Tandai sprint sekali**: pengguna menandai jalur di grafik/peta (segmen), ride berikutnya dicocokkan otomatis. (c) Keduanya | **(c)**: (a) tanpa usaha apa pun; (b) untuk jalur favorit seperti contoh Soekarno Hatta (Strava bisa otomatis karena jutaan segmen komunitas; RideComp offline tanpa server) | T11.8 |
-| K2 | Pilihan tema di onboarding? | Ya (langkah Bahasa) / Hanya di Setelan | Hanya di Setelan, default **Ikuti HP** | T11.9 |
-| K3 | Gaya grafik | Ikuti referensi (area berwarna, angka sumbu, daftar angka di bawah) / gaya kartu gelap RideComp saat ini | Ikuti susunan referensi, warna dari token tema (cocok gelap & terang) | T11.1 |
-| K4 | Sumber unduhan peta offline | OpenFreeMap (kebijakan unduh massal **belum ditemukan**; server peta OpenStreetMap sendiri melarangnya) / **Protomaps** (data ODbL, memang disediakan untuk diunduh, potongan wilayah) | Protomaps untuk unduhan; OpenFreeMap tetap untuk tampilan online. Larangan CLAUDE.md: tidak memakai server yang melarang unduh massal | T11.12, T11.13 |
-| K5 | Cara memotong wilayah Protomaps | (a) Aplikasi membaca rentang file langsung dari build Protomaps (HTTP range, seperti `pmtiles extract`), (b) file per provinsi/kota disiapkan pemilik (mis. di GitHub Release), (c) pengguna tetap impor manual | (a) bila build Protomaps mengizinkan pemakaian langsung dari aplikasi; jika tidak, (b) | T11.12, T11.13 |
+| # | Pertanyaan | Keputusan | Catatan |
+|---|---|---|---|
+| K1 | Arti "usaha terbaik otomatis" | **(c) Keduanya**: rekor durasi otomatis (kecepatan & power 30 dtk / 1 / 3 / 5 / 20 mnt) **dan** "Tandai sprint" sekali, lalu dicocokkan otomatis di ride berikutnya | D-109 |
+| K2 | Tema | Tambah **Tema Terang**; pengguna memilih di **Setelan → Tampilan → Tema: Gelap · Terang · Ikuti HP**. Default **Gelap** (tampilan saat ini tidak berubah bagi pengguna lama) | D-110 |
+| K3 | Gaya grafik | **Susunan seperti referensi** (judul bagian, grafik dengan angka sumbu & garis bantu, daftar angka label-kiri/nilai-kanan), **warna dari token RideComp** (gelap & terang) | D-111 |
+| K4 | Peta saat offline | Diserahkan ke agent → **dua lapis**: (1) cache otomatis peta yang pernah dilihat (tanpa unduhan di muka, aman untuk OpenFreeMap); (2) **peta wilayah** dari data Protomaps/OSM (ODbL) yang dipotong per wilayah dan **di-hosting di GitHub Release proyek** (bukan dari server pihak lain, tidak melanggar larangan unduh massal) | D-112 |
+| K5 | Pemotongan wilayah | **Per daerah tempat GPS berada**: aplikasi mengenali wilayah dari lokasi terakhir yang sudah diketahui (ride terakhir/persiapan ride; **tanpa menyalakan GPS tambahan**) dan menawarkan unduhan wilayah itu lewat Wi‑Fi. Satuan wilayah awal: **provinsi** (38 file); kota besar menyusul bila ukuran provinsi terlalu besar | D-113 |
 
-Keputusan yang sudah diambil dicatat sebagai D-1xx di `reports/DECISIONS.md`.
+Permintaan tambahan pemilik: **fitur ini tidak boleh mengganggu performa** → §9 Anggaran performa (wajib setiap task).
 
 ## 4. Urutan & ketergantungan
 
@@ -48,7 +48,7 @@ Keputusan yang sudah diambil dicatat sebagai D-1xx di `reports/DECISIONS.md`.
   ├─ 11B analisa: T11.3 kecepatan · T11.4 elevasi · T11.5 HR · T11.6 zona power
   └─ 11C usaha terbaik: T11.7 bagian Hasil · T11.8 usaha terbaik otomatis (K1)
 11D tema (T11.9, T11.10) — boleh paralel, tetapi semua UI baru 11A–11C wajib memakai token warna
-11E peta offline: T11.11 cache (tanpa keputusan) → T11.12 rute → T11.13 area (K4, K5) → T11.14
+11E peta offline: T11.11 cache → T11.13 paket peta per provinsi (skrip pemilik) → T11.12 peta wilayah otomatis → T11.14
 ```
 Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; logika & kode di model utama (preferensi pemilik).
 
@@ -116,7 +116,7 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 ### Fase 11D — Tema
 
 #### T11.9 Pilihan tema
-- Setelan → Tampilan → **Tema: Ikuti HP · Gelap · Terang** (default Ikuti HP, K2). Disimpan di tabel `settings` (`ui.theme`).
+- Setelan → Tampilan → **Tema: Gelap · Terang · Ikuti HP** (default **Gelap**, K2). Disimpan di tabel `settings` (`ui.theme`).
 - Diterapkan di root (`RideCompTheme(themeMode)`), berlaku langsung tanpa restart; status bar & navigation bar ikut.
 - Pengecualian yang tetap gelap: kartu share bergaya gelap, layar hitung mundur insiden.
 
@@ -132,14 +132,19 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 - Tidak ada unduhan di muka (bukan *bulk download*): aman untuk OpenFreeMap.
 - Setelan → Peta: ukuran cache + "Hapus cache peta".
 
-#### T11.12 "Unduh peta untuk rute ini" (K4, K5)
-- Di detail rute: tombol **Unduh peta offline** → perkiraan ukuran ("± 15 MB") → progres → selesai; koridor ±2 km di sepanjang rute, zoom sampai 15.
-- Disimpan sebagai file `.pmtiles` di internal storage seperti peta offline yang ada (SEC-STO-01), tercantum di Setelan → Peta offline (layar yang ada), bisa dihapus.
-- Default **hanya Wi‑Fi** (bisa diubah); jeda/lanjut bila koneksi putus; tidak berjalan saat ride (tanpa foreground service tambahan; bila perlu `WorkManager` → ajukan dependency).
-- Saat ride memakai rute tersebut tanpa internet: peta tampil penuh.
+#### T11.12 Peta wilayah otomatis (K4, K5)
+- **Indeks wilayah** kecil (JSON di dalam APK, ±20 KB): nama provinsi, kotak batas (bbox), nama file, ukuran, versi, SHA-256. Dibuat oleh skrip pemilik (lihat T11.13).
+- **Deteksi wilayah:** dari lokasi terakhir yang sudah ada (titik akhir ride terakhir atau posisi di persiapan ride) dicocokkan ke bbox; **tidak ada permintaan GPS baru** (BAT-01).
+- **Tawaran:** kartu di Beranda / Setelan → Peta offline: "Unduh peta wilayahmu: Jawa Tengah · ± 120 MB · Wi‑Fi" (Unduh / Nanti); muncul lagi bila pengguna berada di wilayah lain yang belum diunduh. Tidak pernah saat ride berjalan.
+- **Unduhan:** HTTPS dari GitHub Release proyek, bisa dilanjutkan (HTTP Range), progres, dibatalkan; **hanya Wi‑Fi** (default, bisa diubah); hanya saat aplikasi terbuka (tanpa kerja latar baru; bila ternyata wajib kerja latar → ajukan dependency/izin dulu). Verifikasi SHA-256 + header PMTiles (yang sudah ada) sebelum dipakai; file sementara dihapus bila gagal.
+- **Pemakaian:** file masuk mekanisme peta offline yang ada (`.pmtiles` di internal storage); saat tanpa internet peta wilayah dipakai otomatis, baik ride bebas maupun navigasi rute.
+- **Pembaruan peta:** indeks berisi versi; tawaran "Perbarui peta (data OSM lebih baru)" paling cepat tiap 3 bulan, hanya lewat Wi‑Fi.
 
-#### T11.13 "Unduh peta area" (opsional)
-- Pilih kota/provinsi dari daftar, atau kotak di peta → ukuran → unduh. Sumber per K4/K5.
+#### T11.13 Paket peta per provinsi (pekerjaan pemilik + skrip)
+- Skrip `scripts/maps/build-regions` (di Mac pemilik, **bukan** bagian aplikasi): memotong build Protomaps per provinsi (`pmtiles extract --bbox`/batas wilayah, zoom 0–15), menghitung SHA-256, menulis indeks JSON, mengunggah ke GitHub Release `maps-YYYY-MM`.
+- Butuh alat `pmtiles` (CLI resmi Protomaps) di Mac pemilik: unduhan alat baru → **minta izin** saat task dimulai.
+- Atribusi "© OpenStreetMap contributors, Protomaps" di peta & catatan rilis peta; lisensi ODbL dicantumkan di Lisensi open source.
+- Bila satu provinsi > 300 MB, pecah menjadi kota/kabupaten besar (indeks mendukung beberapa file per wilayah).
 
 #### T11.14 Penyimpanan, baterai, keamanan
 - Batas total peta offline (mis. 1 GB, bisa diubah), peringatan ruang < 500 MB, validasi header PMTiles (sudah ada), HTTPS saja, ukuran unduhan dicek dulu (SEC-IN), unduhan dapat dibatalkan, file sementara dibersihkan.
@@ -162,13 +167,33 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 | Kec. maks palsu dari lonjakan GPS | Penyaringan median, batas percepatan (sudah ada di pipeline) |
 | Estimasi power dianggap akurat | Label "Perkiraan", tidak pernah masuk FIT `power` |
 | Kebijakan unduh peta | K4: Protomaps; OpenFreeMap hanya cache pasif |
-| Ukuran unduhan peta | Perkiraan ukuran sebelum unduh, Wi‑Fi default, batas total |
+| Ukuran unduhan peta | Ukuran ditampilkan sebelum unduh, Wi‑Fi default, batas total, provinsi besar dipecah |
+| Biaya/beban hosting peta | Hosting di GitHub Release proyek (gratis); pembaruan peta paling cepat tiap 3 bulan |
 | Tema terang di layar ride | Audit kontras & uji di bawah matahari (T11.10) |
+
+## 9. Anggaran performa (wajib setiap task, permintaan pemilik)
+
+Diukur dengan **build rilis** (R8) di HP uji low-end (realme RMX3830; target HP RAM 2–3 GB), dibandingkan dengan sebelum task. Hasil masuk Feature Report.
+
+| Ukuran | Batas |
+|---|---|
+| Buka halaman detail ride 1 jam (dari ketuk sampai grafik pertama tampil) | **< 1 dtk**; tidak ada frame > 700 ms (`adb shell dumpsys gfxinfo`) |
+| Titik per grafik | **≤ 300**; diturunkan di `Dispatchers.Default`, sekali per layar |
+| Scroll halaman detail | Tanpa jank berarti (≥ 90% frame < 16 ms di gfxinfo) |
+| Memori saat detail terbuka | Naik **< 20 MB** dibanding sebelum Fase 11 (`dumpsys meminfo`); dilepas saat keluar (LeakCanary bersih) |
+| Layar ride | **Tidak berubah**: tidak ada perhitungan analisa baru saat merekam; update UI tetap ≤ 1 Hz |
+| Kerja latar & GPS | **Tidak ada** WorkManager/alarm/service baru; **tidak ada** permintaan GPS baru (deteksi wilayah memakai lokasi terakhir yang sudah ada) |
+| Jaringan | Unduhan peta hanya saat aplikasi terbuka, default Wi‑Fi, tidak pernah saat ride |
+| Penyimpanan | Cache peta ≤ 150 MB (LRU); total peta offline dibatasi (default 1 GB) |
+| Ukuran APK | Naik **< 1 MB** per ABI (indeks wilayah ±20 KB; tanpa library baru) |
+| Rekor durasi baru | Dihitung di analisa setelah ride disimpan (yang sudah ada), O(n), < 300 ms untuk ride 3 jam |
+
+Melampaui batas = bug yang diperbaiki sebelum task selesai.
 
 ## 8. Definition of Done Fase 11
 
-- Semua task 11A–11E selesai dengan Feature Report; keputusan K1–K5 tercatat sebagai D-1xx.
+- Semua task 11A–11E selesai dengan Feature Report; keputusan K1–K5 tercatat (D-109 … D-113); **anggaran performa §9 terpenuhi** dengan angka terukur.
 - `./gradlew ktlintCheck detekt lint test koverVerify assembleDebug` lulus; uji perangkat (subagent Sonnet) untuk tiap task UI di **tema gelap dan terang**.
-- Uji lapangan: ride ≥ 30 menit dengan HR (analisa HR & zona), ride rute yang sama 2× (usaha terbaik/segmen PR muncul di hari ke-2), navigasi rute dengan **mode pesawat** setelah "Unduh peta untuk rute ini" (peta tetap tampil).
+- Uji lapangan: ride ≥ 30 menit dengan HR (analisa HR & zona), ride rute yang sama 2× (usaha terbaik/segmen PR muncul di hari ke-2), navigasi rute dengan **mode pesawat** setelah mengunduh peta wilayah (peta tetap tampil).
 - Akhir fase: scan CVE, lisensi, MobSF, threat model diperbarui (peta offline & unduhan).
 - Rilis beta berikutnya dengan catatan rilis & cek pembaruan dalam aplikasi.
