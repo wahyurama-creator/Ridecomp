@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.text.style.TextAlign
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
 import com.ridecomp.ui.theme.RideCompDimens
@@ -83,8 +85,21 @@ fun ZoneBars(zones: ImmutableList<ZoneBar>, modifier: Modifier = Modifier) {
                                 .background(zone.color),
                         )
                     }
-                    Text(text = zone.percent, style = RideCompTheme.typography.bodyStrong, color = colors.textPrimary)
-                    Text(text = zone.duration, style = RideCompTheme.typography.caption, color = colors.textSecondary)
+                    // Fixed columns so every bar has the same length whatever its numbers ("0%" or "57%").
+                    Text(
+                        text = zone.percent,
+                        style = RideCompTheme.typography.bodyStrong,
+                        color = colors.textPrimary,
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.width(RideCompDimens.zonePercentWidth),
+                    )
+                    Text(
+                        text = zone.duration,
+                        style = RideCompTheme.typography.caption,
+                        color = colors.textSecondary,
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.width(RideCompDimens.zoneDurationWidth),
+                    )
                 }
             }
         }

@@ -76,6 +76,10 @@ object RideCompDimens {
 
     /** Bar of a zone in ZoneBars (T11.5). */
     val zoneBarHeight = 10.dp
+
+    /** Number columns of ZoneBars: "100%" and "1:23:45" fit at the largest font scale the app supports. */
+    val zonePercentWidth = 44.dp
+    val zoneDurationWidth = 60.dp
     val chartLabelGap = 6.dp
     val iconTileSize = 40.dp
     val formatBadgeWidth = 44.dp
