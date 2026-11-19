@@ -48,7 +48,7 @@ data class ActivityDetailUiState(
     val isMissing: Boolean = false,
     val laps: ImmutableList<Lap> = persistentListOf(),
     /** Charts vs distance (km/mi) in display units, downsampled ≤ ~1000 points; only those with data. */
-    val charts: ImmutableList<RideChart> = persistentListOf(),
+    val charts: ImmutableList<DetailChart> = persistentListOf(),
     /** The ride's line for the route sketch (same downsampling as the charts); empty without GPS. */
     val route: ImmutableList<MapPoint> = persistentListOf(),
     val unitSystem: UnitSystem = UnitSystem.METRIC,
@@ -189,14 +189,14 @@ enum class ChartStatKind { AVG, MAX, MIN }
 data class ChartStat(val kind: ChartStatKind, val value: Double)
 
 @Immutable
-data class RideChart(
+data class DetailChart(
     val kind: ChartKind,
     val values: ImmutableList<ChartValue>,
     val stats: ImmutableList<ChartStat> = persistentListOf(),
 )
 
 /** Converts samples to display-unit charts; a chart without at least two values is left out. */
-internal fun List<ChartPoint>.toCharts(unitSystem: UnitSystem, totals: RideTotals? = null): ImmutableList<RideChart> {
+internal fun List<ChartPoint>.toCharts(unitSystem: UnitSystem, totals: RideTotals? = null): ImmutableList<DetailChart> {
     val isMetric = unitSystem == UnitSystem.METRIC
     val distanceDivisor = if (isMetric) Units.METERS_PER_KM else Units.METERS_PER_MILE
     val speedFactor = if (isMetric) Units.KMH_PER_MPS else Units.MPH_PER_MPS
@@ -214,7 +214,7 @@ internal fun List<ChartPoint>.toCharts(unitSystem: UnitSystem, totals: RideTotal
         }
         values.takeIf { list -> list.count { it.y != null } >= MIN_CHART_VALUES }
             ?.let {
-                RideChart(kind, it.toImmutableList(), kind.stats(it.mapNotNull(ChartValue::y), totals, speedFactor))
+                DetailChart(kind, it.toImmutableList(), kind.stats(it.mapNotNull(ChartValue::y), totals, speedFactor))
             }
     }.toImmutableList()
 }

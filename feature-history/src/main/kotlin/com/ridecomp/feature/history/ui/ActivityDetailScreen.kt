@@ -58,14 +58,16 @@ import com.ridecomp.feature.history.viewmodel.FileMessage
 import com.ridecomp.ui.R as UiR
 import com.ridecomp.ui.component.AlertBanner
 import com.ridecomp.ui.component.AlertSeverity
-import com.ridecomp.ui.component.AxisLineChart
 import com.ridecomp.ui.component.BannerAction
 import com.ridecomp.ui.component.CardTone
+import com.ridecomp.ui.component.ChartYScale
 import com.ridecomp.ui.component.ConfirmDialog
 import com.ridecomp.ui.component.ErrorState
 import com.ridecomp.ui.component.IconTile
 import com.ridecomp.ui.component.ListCard
 import com.ridecomp.ui.component.ListCardRow
+import com.ridecomp.ui.component.RideChart
+import com.ridecomp.ui.component.RideChartLabels
 import com.ridecomp.ui.component.RideCompCard
 import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.component.SectionHeader
@@ -389,14 +391,21 @@ private fun Charts(state: ActivityDetailUiState, format: UnitFormatter) {
                 }
             }
         }
-        AxisLineChart(
+        RideChart(
             values = chart.values,
+            labels = RideChartLabels(
+                yUnit = unit,
+                xUnit = format.distanceUnit,
+                hint = stringResource(R.string.detail_chart_hint),
+                description = stringResource(chart.kind.titleRes()),
+            ),
             formatX = { withUnit(number(it, distanceDecimals), format.distanceUnit) },
             formatY = { withUnit(number(it, decimals), unit) },
-            formatYAxis = { number(it, decimals) },
-            hint = stringResource(R.string.detail_chart_hint),
-            description = stringResource(chart.kind.titleRes()),
             color = color,
+            // Elevation shows its shape; the others start at zero, with the elevation in grey behind speed.
+            yScale = if (chart.kind == ChartKind.ELEVATION) ChartYScale.DATA_RANGE else ChartYScale.FROM_ZERO,
+            background = state.charts.takeIf { chart.kind == ChartKind.SPEED }
+                ?.firstOrNull { it.kind == ChartKind.ELEVATION }?.values,
         )
     }
 }

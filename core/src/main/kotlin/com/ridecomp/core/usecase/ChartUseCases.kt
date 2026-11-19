@@ -19,8 +19,10 @@ public data class ChartPoint(
 )
 
 /**
- * Loads a ride's samples for charts, downsampled to at most [ActivityConfig.CHART_MAX_POINTS] by keeping
- * every n-th point. Reads in bounded chunks, never the whole track at once (DATA-04, 02-DESIGN §6).
+ * Loads a ride's samples for charts, reduced to at most [ActivityConfig.CHART_MAX_POINTS] (T11.1): each
+ * point averages a run of consecutive samples, so short spikes are smoothed instead of skipped and a long
+ * ride never draws thousands of points. A value with no data in the whole run stays null (a gap). Reads in
+ * bounded chunks, never the whole track at once (DATA-04, 02-DESIGN §6).
  */
 public class LoadRideChartUseCase(private val repository: ActivityRepository) {
     public suspend operator fun invoke(
@@ -29,30 +31,81 @@ public class LoadRideChartUseCase(private val repository: ActivityRepository) {
     ): List<ChartPoint> {
         val count = repository.getSampleCount(activityId)
         if (count == 0) return emptyList()
-        val stride = ceil(count.toDouble() / maxPoints).toInt().coerceAtLeast(1)
+        val bucket = ChartBucket(ceil(count.toDouble() / maxPoints).toInt().coerceAtLeast(1))
         val result = ArrayList<ChartPoint>(minOf(count, maxPoints))
-        var index = 0
         var after = Long.MIN_VALUE
         while (true) {
             val chunk = repository.getSamples(activityId, after, ActivityConfig.TRACK_CHUNK_SIZE)
             if (chunk.isEmpty()) break
-            chunk.forEach { sample ->
-                if (index % stride == 0) result += sample.toChartPoint()
-                index++
-            }
+            chunk.forEach { sample -> bucket.add(sample)?.let(result::add) }
             after = chunk.last().timeMs
         }
+        bucket.flush()?.let(result::add)
         return result
     }
+}
 
-    private fun RideSample.toChartPoint() = ChartPoint(
-        distanceM,
-        speedMps,
-        altitudeM,
-        heartRateBpm,
-        cadenceRpm,
-        powerW,
-        latDeg,
-        lonDeg,
-    )
+/** Averages [size] samples into one chart point; nulls are skipped, an all-null value stays null. */
+private class ChartBucket(private val size: Int) {
+    private var samples = 0
+    private var distanceM = 0.0
+    private val speed = Average()
+    private val altitude = Average()
+    private val heartRate = Average()
+    private val cadence = Average()
+    private val power = Average()
+    private var latDeg: Double? = null
+    private var lonDeg: Double? = null
+
+    /** Adds a sample; returns the finished point when the bucket is full. */
+    fun add(sample: RideSample): ChartPoint? {
+        samples++
+        distanceM = sample.distanceM
+        speed.add(sample.speedMps)
+        altitude.add(sample.altitudeM)
+        heartRate.add(sample.heartRateBpm?.toDouble())
+        cadence.add(sample.cadenceRpm?.toDouble())
+        power.add(sample.powerW?.toDouble())
+        if (latDeg == null && sample.latDeg != null && sample.lonDeg != null) {
+            latDeg = sample.latDeg
+            lonDeg = sample.lonDeg
+        }
+        return if (samples == size) flush() else null
+    }
+
+    /** The point of the samples added since the last one, or null when there are none. */
+    fun flush(): ChartPoint? {
+        if (samples == 0) return null
+        val point = ChartPoint(
+            distanceM = distanceM,
+            speedMps = speed.take(),
+            altitudeM = altitude.take(),
+            heartRateBpm = heartRate.take()?.let(Math::round)?.toInt(),
+            cadenceRpm = cadence.take()?.let(Math::round)?.toInt(),
+            powerW = power.take()?.let(Math::round)?.toInt(),
+            latDeg = latDeg,
+            lonDeg = lonDeg,
+        )
+        samples = 0
+        latDeg = null
+        lonDeg = null
+        return point
+    }
+}
+
+/** Running mean that resets when taken. */
+private class Average {
+    private var sum = 0.0
+    private var count = 0
+
+    fun add(value: Double?) {
+        if (value == null || !value.isFinite()) return
+        sum += value
+        count++
+    }
+
+    fun take(): Double? = (if (count == 0) null else sum / count).also {
+        sum = 0.0
+        count = 0
+    }
 }
