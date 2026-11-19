@@ -14,13 +14,18 @@ import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.testing.FakeTrainingRepository
 import com.ridecomp.core.testing.TestDispatcherProvider
 import com.ridecomp.core.util.Outcome
+import java.time.Instant
+import java.time.ZoneOffset
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 
 class TimeOfDayTest {
@@ -36,6 +41,16 @@ class TimeOfDayTest {
 
 class ActivityUseCasesTest {
     private val repository = FakeActivityRepository()
+    private val profiles = FakeProfileRepository()
+
+    /** HR zones read the full track in place: the test dispatcher runs it inline. */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun analysisUseCase() = LoadActivityAnalysisUseCase(
+        LoadRideChartUseCase(repository),
+        ReadRideTrackUseCase(repository, TestDispatcherProvider(UnconfinedTestDispatcher())),
+        profiles,
+        FakeClock(),
+    )
 
     private fun stored(id: Long, status: ActivityStatus, startedAt: Long) = Activity(
         id = id,
@@ -150,7 +165,7 @@ class ActivityUseCasesTest {
         val totals =
             RideTotals(avgSpeedMps = 5.5, maxSpeedMps = 9.0, ascentM = 12.0, descentM = 7.0, normalizedPowerW = 230)
 
-        val analysis = LoadActivityAnalysisUseCase(LoadRideChartUseCase(repository))(id, totals)
+        val analysis = analysisUseCase()(id, totals)
 
         // No heart rate: that section is hidden.
         assertEquals(
@@ -215,7 +230,7 @@ class ActivityUseCasesTest {
             },
         )
 
-        val speed = LoadActivityAnalysisUseCase(LoadRideChartUseCase(repository))(id, totals = null).sections.single()
+        val speed = analysisUseCase()(id, totals = null).sections.single()
 
         assertEquals(
             listOf(AnalysisStat(AnalysisStatKind.AVG, 6.0), AnalysisStat(AnalysisStatKind.MAX, 8.0)),
@@ -228,7 +243,7 @@ class ActivityUseCasesTest {
         val id = rideWithSpeedElevationPowerCadence()
         val totals = RideTotals(movingS = 3_000, elapsedS = 3_600, avgSpeedMps = 6.0, maxSpeedMps = 12.5)
 
-        val speed = LoadActivityAnalysisUseCase(LoadRideChartUseCase(repository))(id, totals)
+        val speed = analysisUseCase()(id, totals)
             .sections.first { it.kind == AnalysisSectionKind.SPEED }
 
         assertEquals(
@@ -241,6 +256,51 @@ class ActivityUseCasesTest {
             speed.stats,
         )
         assertTrue(AnalysisStatKind.MOVING_TIME.isDuration && !AnalysisStatKind.MAX.isDuration)
+    }
+
+    @Test
+    fun `heart rate zones count every sample against the profile hr max`() = runTest {
+        profiles.save(RiderProfile(hrMaxBpm = 200))
+        val id = repository.create(NewActivity("u", "Ride", 0))
+        // 60 s at 110 bpm (Z1 < 120), 30 s at 150 bpm (Z3 140–159), 10 s at 185 bpm (Z5 ≥ 180).
+        val bpm = List(60) { 110 } + List(30) { 150 } + List(10) { 185 }
+        repository.appendSamples(
+            id,
+            bpm.mapIndexed { i, hr -> RideSample((i + 1) * 1_000L, distanceM = i * 5.0, heartRateBpm = hr) },
+        )
+
+        val zones = assertNotNull(analysisUseCase()(id, totals = null).heartRateZones)
+
+        assertEquals(200, zones.hrMaxBpm)
+        assertEquals(HrMaxSource.PROFILE, zones.source)
+        assertEquals(listOf(60L, 0L, 30L, 0L, 10L), zones.zones.map { it.seconds })
+        assertEquals(100L, zones.totalSeconds)
+        assertEquals(
+            listOf(0 to 119, 120 to 139, 140 to 159, 160 to 179, 180 to null),
+            zones.zones.map { it.minBpm to it.maxBpm },
+        )
+    }
+
+    @Test
+    fun `without hr max the zones use the age, without either there are none`() = runTest {
+        val id = repository.create(NewActivity("u", "Ride", 0))
+        repository.appendSamples(id, (1..5).map { RideSample(it * 1_000L, distanceM = it * 5.0, heartRateBpm = 140) })
+        val year = Instant.ofEpochMilli(FakeClock.DEFAULT_START_MS).atZone(ZoneOffset.UTC).year
+
+        assertNull(analysisUseCase()(id, totals = null).heartRateZones)
+
+        profiles.save(RiderProfile(birthYear = year - 30))
+        val zones = assertNotNull(analysisUseCase()(id, totals = null).heartRateZones)
+        assertEquals(190, zones.hrMaxBpm)
+        assertEquals(HrMaxSource.AGE, zones.source)
+    }
+
+    @Test
+    fun `a ride without heart rate has no zones`() = runTest {
+        profiles.save(RiderProfile(hrMaxBpm = 190))
+        val id = rideWithSpeedElevationPowerCadence()
+
+        assertNull(analysisUseCase()(id, totals = null).heartRateZones)
     }
 }
 

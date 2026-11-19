@@ -73,6 +73,9 @@ object RideCompDimens {
     val contentMaxWidth = 600.dp
     val chartHeight = 140.dp
     val chartHeightLarge = 180.dp
+
+    /** Bar of a zone in ZoneBars (T11.5). */
+    val zoneBarHeight = 10.dp
     val chartLabelGap = 6.dp
     val iconTileSize = 40.dp
     val formatBadgeWidth = 44.dp

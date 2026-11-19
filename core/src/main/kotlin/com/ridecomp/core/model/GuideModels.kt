@@ -51,6 +51,12 @@ public enum class GuideTip(
     EXPORT("export", GuideTopic.EXPORT_STRAVA, isAdvanced = true),
     BACKUP("backup", GuideTopic.BACKUP, isAdvanced = true),
     OFFLINE_MAPS("offline_maps", GuideTopic.OFFLINE_MAPS, isAdvanced = true),
+
+    /**
+     * "Pasang sensor detak jantung" on a ride without heart rate (T11.5). Shown at every level until closed,
+     * so the detail page checks only [GuidePreferences.dismissed].
+     */
+    HEART_RATE_ZONES("heart_rate_zones", GuideTopic.SENSORS, isAdvanced = false),
 }
 
 /** The rider's level and the tips already closed. A rider who never chose a level is treated as intermediate. */

@@ -239,6 +239,7 @@ private fun GuideTip.textRes(): Int = when (this) {
     GuideTip.EXPORT -> R.string.guide_tip_export
     GuideTip.BACKUP -> R.string.guide_tip_backup
     GuideTip.OFFLINE_MAPS -> R.string.guide_tip_offline_maps
+    GuideTip.HEART_RATE_ZONES -> R.string.guide_tip_heart_rate_zones
 }
 
 @StringRes

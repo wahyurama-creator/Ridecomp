@@ -45,6 +45,8 @@ fun AnalysisCard(
     texts: AnalysisCardTexts,
     rows: ImmutableList<AnalysisRow>,
     modifier: Modifier = Modifier,
+    /** Below the numbers, e.g. time in zones (T11.5). */
+    footer: @Composable () -> Unit = {},
     chart: @Composable () -> Unit = {},
 ) {
     val colors = RideCompTheme.colors
@@ -95,6 +97,7 @@ fun AnalysisCard(
                 )
             }
         }
+        footer()
     }
 }
 

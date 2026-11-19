@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.viewModelScope
 import com.ridecomp.core.config.Units
 import com.ridecomp.core.model.Activity
+import com.ridecomp.core.model.GuideTip
 import com.ridecomp.core.model.Lap
 import com.ridecomp.core.model.StravaStatus
 import com.ridecomp.core.model.StravaUpload
@@ -14,10 +15,13 @@ import com.ridecomp.core.usecase.AnalysisSectionKind
 import com.ridecomp.core.usecase.AnalysisStatKind
 import com.ridecomp.core.usecase.ChartPoint
 import com.ridecomp.core.usecase.DeleteActivityUseCase
+import com.ridecomp.core.usecase.DismissTipUseCase
 import com.ridecomp.core.usecase.ExportFormat
 import com.ridecomp.core.usecase.GetLapsUseCase
+import com.ridecomp.core.usecase.HrMaxSource
 import com.ridecomp.core.usecase.LoadActivityAnalysisUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
+import com.ridecomp.core.usecase.ObserveGuideUseCase
 import com.ridecomp.core.usecase.ObserveMapTilesUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveStravaStatusUseCase
@@ -26,6 +30,7 @@ import com.ridecomp.core.usecase.QueueStravaUploadUseCase
 import com.ridecomp.core.usecase.SaveActivityFileUseCase
 import com.ridecomp.core.usecase.ShareActivityFileUseCase
 import com.ridecomp.core.usecase.SuggestExportFileNameUseCase
+import com.ridecomp.core.usecase.ZoneTimeSlice
 import com.ridecomp.core.usecase.isDuration
 import com.ridecomp.core.usecase.valueOf
 import com.ridecomp.core.util.Outcome
@@ -61,6 +66,29 @@ data class ActivityDetailUiState(
     /** Null while loading; the upload row needs a connected account (T5.3). */
     val stravaStatus: StravaStatus? = null,
     val stravaUpload: StravaUpload? = null,
+    /** Time in heart-rate zones (T11.5); null without heart rate or without a known HR max. */
+    val heartRateZones: DetailHeartRateZones? = null,
+    /** True once the sections are loaded, so a missing heart rate is not mistaken for "still loading". */
+    val isAnalysisLoaded: Boolean = false,
+    /** The rider closed the "Pasang sensor detak jantung" card for good (T11.5); hidden until known. */
+    val isHeartRateTipDismissed: Boolean = true,
+) {
+    val hasHeartRate: Boolean get() = sections.any { it.kind == AnalysisSectionKind.HEART_RATE }
+
+    /** The ride has heart rate but neither HR max nor birth year is known: ask to fill the profile. */
+    val isHrMaxMissing: Boolean get() = isAnalysisLoaded && hasHeartRate && heartRateZones == null
+
+    /** A ride without heart rate invites to pair a sensor, until the card is closed (T11.5). */
+    val isHeartRateTipShown: Boolean get() = isAnalysisLoaded && !hasHeartRate && !isHeartRateTipDismissed
+}
+
+/** Time in zones Z1..Z5 for the page; [isEstimated] when HR max is 220 − age, not from the profile. */
+@Immutable
+data class DetailHeartRateZones(
+    val hrMaxBpm: Int,
+    val isEstimated: Boolean,
+    val zones: ImmutableList<ZoneTimeSlice>,
+    val totalSeconds: Long,
 )
 
 sealed interface ActivityDetailUiEvent {
@@ -73,6 +101,9 @@ sealed interface ActivityDetailUiEvent {
 
     /** Queue (or retry) the upload to Strava. */
     data object UploadToStrava : ActivityDetailUiEvent
+
+    /** "Jangan tampilkan lagi" on the heart-rate sensor card (T11.5). */
+    data object DismissHeartRateTip : ActivityDetailUiEvent
 
     data object MessageShown : ActivityDetailUiEvent
 }
@@ -92,6 +123,8 @@ data class ActivityDetailUseCases(
     val suggestName: SuggestExportFileNameUseCase,
     val delete: DeleteActivityUseCase,
     val observeMapTiles: ObserveMapTilesUseCase,
+    val observeGuide: ObserveGuideUseCase,
+    val dismissTip: DismissTipUseCase,
 )
 
 /** Activity detail (T1.13): totals, charts, laps; export/share FIT & GPX (T1.14); delete. */
@@ -120,11 +153,17 @@ class ActivityDetailViewModel(
     private val save = useCases.save
     private val suggestName = useCases.suggestName
     private val delete = useCases.delete
+    private val dismissTip = useCases.dismissTip
 
     init {
         viewModelScope.launch {
             observeActivity(activityId).collect { activity ->
                 updateState { copy(activity = activity, isMissing = activity == null) }
+            }
+        }
+        viewModelScope.launch {
+            useCases.observeGuide().collect { guide ->
+                updateState { copy(isHeartRateTipDismissed = GuideTip.HEART_RATE_ZONES in guide.dismissed) }
             }
         }
         viewModelScope.launch {
@@ -156,6 +195,7 @@ class ActivityDetailViewModel(
             }
             ActivityDetailUiEvent.MessageShown -> updateState { copy(message = null) }
             ActivityDetailUiEvent.UploadToStrava -> viewModelScope.launch { strava.queueUpload(activityId) }
+            ActivityDetailUiEvent.DismissHeartRateTip -> viewModelScope.launch { dismissTip(GuideTip.HEART_RATE_ZONES) }
         }
     }
 
@@ -164,11 +204,22 @@ class ActivityDetailViewModel(
         // Downsampling, section numbers and conversion are CPU work: off the main thread (02-DESIGN §6).
         // The ride's own totals (moving average, max) feed the sections, so both show the same numbers.
         val totals = observeActivity(activityId).first()?.totals
-        val (sections, route) = withContext(dispatchers.default) {
+        val (analysis, sections, route) = withContext(dispatchers.default) {
             val analysis = loadAnalysis(activityId, totals)
-            analysis.toSections(unitSystem) to analysis.points.toRoute()
+            Triple(analysis, analysis.toSections(unitSystem), analysis.points.toRoute())
         }
-        updateState { copy(laps = laps, sections = sections, route = route) }
+        val zones = analysis.heartRateZones?.let {
+            DetailHeartRateZones(it.hrMaxBpm, it.source == HrMaxSource.AGE, it.zones.toImmutableList(), it.totalSeconds)
+        }
+        updateState {
+            copy(
+                laps = laps,
+                sections = sections,
+                route = route,
+                heartRateZones = zones,
+                isAnalysisLoaded = true,
+            )
+        }
     }
 
     private fun runFileAction(successMessage: FileMessage?, action: suspend () -> Outcome<*, *>) {

@@ -381,4 +381,5 @@
     <string name="welcome_footnote">Sekitar satu menit. Data pribadi boleh dilewati.</string>
     <string name="onboarding_skip">Lewati</string>
     <string name="onboarding_skip_hint">Opsional. Lewati saja, bisa diisi nanti sebelum ride atau di Setelan.</string>
+    <string name="guide_tip_heart_rate_zones">Pasang sensor detak jantung untuk melihat waktu di tiap zona di halaman ride.</string>
 </resources>

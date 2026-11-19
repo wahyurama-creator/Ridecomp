@@ -183,7 +183,7 @@ val useCaseModule = module {
     factory { RenameActivityUseCase(get()) }
     factory { DeleteActivityUseCase(get(), get()) }
     factory { LoadRideChartUseCase(get()) }
-    factory { LoadActivityAnalysisUseCase(get()) }
+    factory { LoadActivityAnalysisUseCase(get(), get(), get(), get()) }
     factory { ExportFitUseCase(get(), get(), get(), get(), get()) }
     factory { ExportGpxUseCase(get(), get(), get()) }
     factory { ObserveProfileUseCase(get()) }

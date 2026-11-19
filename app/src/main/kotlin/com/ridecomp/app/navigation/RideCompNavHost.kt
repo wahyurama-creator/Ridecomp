@@ -312,25 +312,27 @@ private fun NavGraphBuilder.historyGraph(navController: NavHostController) {
         AppRoutes.ACTIVITY_DETAIL,
         arguments = listOf(navArgument(AppRoutes.ARG_ACTIVITY_ID) { type = NavType.LongType }),
     ) { entry ->
-        ActivityDetailRoute(
-            activityId = entry.arguments?.getLong(AppRoutes.ARG_ACTIVITY_ID) ?: AppRoutes.NO_ACTIVITY,
-            onDeleted = { navController.popBackStack() },
-            onOpenStravaHelp = { navController.navigate(AppRoutes.STRAVA_HELP) },
-            onBack = { navController.popBackStack() },
-            tipContent = {
-                GuideTip(GuideTip.EXPORT, onLearnMore = { navController.navigate(AppRoutes.helpTopic(it)) })
-            },
-            onCreateSegment = {
-                val id = entry.arguments?.getLong(AppRoutes.ARG_ACTIVITY_ID) ?: AppRoutes.NO_ACTIVITY
-                navController.navigate(AppRoutes.newSegment(id))
-            },
-            onShareCard = {
-                val id = entry.arguments?.getLong(AppRoutes.ARG_ACTIVITY_ID) ?: AppRoutes.NO_ACTIVITY
-                navController.navigate(AppRoutes.shareCard(id))
-            },
-            onOpenStravaSettings = { navController.navigate(AppRoutes.STRAVA) },
-        )
+        ActivityDetail(entry.arguments?.getLong(AppRoutes.ARG_ACTIVITY_ID) ?: AppRoutes.NO_ACTIVITY, navController)
     }
+}
+
+/** Ride detail with its links: export help, segment, share card, Strava, sensors and profile (T11.5). */
+@Composable
+private fun ActivityDetail(id: Long, navController: NavHostController) {
+    ActivityDetailRoute(
+        activityId = id,
+        onDeleted = { navController.popBackStack() },
+        onOpenStravaHelp = { navController.navigate(AppRoutes.STRAVA_HELP) },
+        onOpenSensors = { navController.navigateToTopLevel(TopLevelDestination.SENSORS) },
+        onOpenProfile = { navController.navigate(AppRoutes.PROFILE) },
+        onBack = { navController.popBackStack() },
+        tipContent = {
+            GuideTip(GuideTip.EXPORT, onLearnMore = { navController.navigate(AppRoutes.helpTopic(it)) })
+        },
+        onCreateSegment = { navController.navigate(AppRoutes.newSegment(id)) },
+        onShareCard = { navController.navigate(AppRoutes.shareCard(id)) },
+        onOpenStravaSettings = { navController.navigate(AppRoutes.STRAVA) },
+    )
 }
 
 private fun openSection(section: SettingsSection, navController: NavHostController) {
