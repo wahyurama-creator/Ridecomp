@@ -28,6 +28,7 @@ import com.ridecomp.core.util.Outcome
 import com.ridecomp.core.util.downsample
 import com.ridecomp.ui.component.ChartValue
 import com.ridecomp.ui.map.MapPoint
+import com.ridecomp.ui.map.MapSource
 import com.ridecomp.ui.udf.UdfViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
@@ -156,10 +157,13 @@ class RouteDetailViewModel(
     private val useCases: RouteDetailUseCases,
     private val dispatchers: DispatcherProvider,
 ) : UdfViewModel<RouteDetailUiState, RouteDetailUiEvent, RouteDetailEffect>(RouteDetailUiState()) {
-    /** Online map tiles available now (D-90); the network is watched only while the screen is shown. */
-    val isOnlineMap: StateFlow<Boolean> = useCases.observeMapTiles()
-        .map { it.isOnline }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), false)
+    /**
+     * Online map tiles available now, from the network or the tile cache (D-90, T11.11); the network is
+     * watched only while the screen is shown.
+     */
+    val mapSource: StateFlow<MapSource> = useCases.observeMapTiles()
+        .map { MapSource(isOnline = it.isOnline, isCached = it.hasCache) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), MapSource())
 
     init {
         viewModelScope.launch {

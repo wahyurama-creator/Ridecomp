@@ -56,8 +56,9 @@ object OfflineMapZoom {
 
 /**
  * Vector map (T3.3–T3.5, D-90; 13-UI-SCREENS #7, #12): OpenFreeMap tiles over the internet when
- * [isOnline], else PMTiles regions from internal storage; route in accent, ridden part in track blue,
- * position dot, north-up (no rotation). MapLibre may use the network only while [isOnline]. The MapView
+ * [isOnline], else the tiles cached by earlier online maps when [isCached] (T11.11) and PMTiles regions from
+ * internal storage; route in accent, ridden part in track blue, position dot, north-up (no rotation).
+ * MapLibre may use the network only while [isOnline]. The MapView
  * follows the screen lifecycle and is destroyed with the composable (09 §1).
  */
 @Composable
@@ -73,16 +74,22 @@ fun RouteMap(
     onUserMoved: () -> Unit = {},
     /** A green dot, e.g. the start to ride back to (T7.2). */
     marker: MapPoint? = null,
+    isCached: Boolean = false,
 ) {
     // MapLibre is prepared off the main thread first (T11.2a); meanwhile an empty box of the same size.
     // The whole map then replaces the box in one composition: a MapView added later into an existing box
     // never started rendering on a cold start (RMX3830).
     val context = LocalContext.current
     val io = LocalMapIoContext.current
+    val cacheLimitBytes = LocalMapCacheLimitBytes.current
     val options by produceState<MapLibreMapOptions?>(null, context, io) {
         value = MapEngine.prepareView(context, io)
     }
     val ready = options
+    // MapLibre is ready once the options are: the tile cache limit from Settings (T11.11).
+    LaunchedEffect(ready != null, cacheLimitBytes) {
+        if (ready != null && cacheLimitBytes != null) MapTileCache.applyLimit(context, cacheLimitBytes)
+    }
     if (ready == null) {
         Box(modifier = modifier.semantics { contentDescription = description })
         return
@@ -90,6 +97,7 @@ fun RouteMap(
     PreparedRouteMap(
         options = ready,
         isOnline = isOnline,
+        isCached = isCached,
         regionPaths = regionPaths,
         route = route,
         description = description,
@@ -107,6 +115,7 @@ fun RouteMap(
 private fun PreparedRouteMap(
     options: MapLibreMapOptions,
     isOnline: Boolean,
+    isCached: Boolean,
     regionPaths: ImmutableList<String>,
     route: ImmutableList<MapPoint>,
     description: String,
@@ -121,7 +130,9 @@ private fun PreparedRouteMap(
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val colors = RideCompTheme.colors
-    val styleJson = remember(isOnline, regionPaths, colors) { OfflineMapStyle.json(isOnline, regionPaths, colors) }
+    val styleJson = remember(isOnline, isCached, regionPaths, colors) {
+        OfflineMapStyle.json(isOnline, isCached, regionPaths, colors)
+    }
     val currentOnUserMoved by rememberUpdatedState(onUserMoved)
     var map by remember { mutableStateOf<MapLibreMap?>(null) }
     var style by remember { mutableStateOf<Style?>(null) }
@@ -144,7 +155,7 @@ private fun PreparedRouteMap(
     }
     LaunchedEffect(map, styleJson) {
         val loaded = map ?: return@LaunchedEffect
-        // Offline: regions are local files, so no tile or telemetry request leaves the phone.
+        // Offline: cached tiles and regions are local, so no tile or telemetry request leaves the phone.
         MapLibre.setConnected(isOnline)
         style = null
         loaded.setStyle(Style.Builder().fromJson(styleJson)) { style = it }
@@ -168,7 +179,9 @@ private fun PreparedRouteMap(
     Box(modifier = modifier.semantics { contentDescription = description }) {
         AndroidView(factory = { mapView }, modifier = Modifier.matchParentSize())
         MapAttribution(
-            text = stringResource(if (isOnline) R.string.map_attribution_online else R.string.map_attribution),
+            text = stringResource(
+                if (isOnline || isCached) R.string.map_attribution_online else R.string.map_attribution,
+            ),
             modifier = Modifier.align(Alignment.BottomStart),
         )
     }

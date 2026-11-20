@@ -347,7 +347,11 @@ class RideViewModelsTest {
             assertEquals(2, map.trail.size)
             assertTrue(map.isOnline)
             network.status.value = NetworkStatus.OFFLINE
-            assertEquals(false, expectMostRecentItem().hasMap)
+            // The tiles just seen online stay on the map from the cache, without the network (T11.11).
+            val offline = expectMostRecentItem()
+            assertEquals(false, offline.isOnline)
+            assertTrue(offline.isCached)
+            assertTrue(offline.hasMap)
         }
         // Leaving the screen stops watching the network (09 §1).
         advanceTimeBy(STOP_TIMEOUT_MS + 1)

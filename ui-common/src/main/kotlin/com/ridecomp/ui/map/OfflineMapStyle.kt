@@ -28,24 +28,30 @@ internal object OfflineMapStyle {
         listOf("park", "wood", "forest", "nature_reserve", "grass", "garden", "golf_course", "cemetery")
 
     /**
-     * Online tiles when [isOnline], else one vector source per imported region file (absolute paths in
-     * internal storage); with neither only the ride layers on the background.
+     * Online tiles when [isOnline]; offline, the online tiles from the cache when [isCached] (T11.11) under one
+     * vector source per imported region file (absolute paths in internal storage). With none of them only the
+     * ride layers on the background.
      */
-    fun json(isOnline: Boolean, regionPaths: List<String>, colors: RideCompColors): String {
+    fun json(isOnline: Boolean, isCached: Boolean, regionPaths: List<String>, colors: RideCompColors): String {
         val map = colors.map
         val regions = if (isOnline) emptyList() else regionPaths
+        val usesOnlineTiles = isOnline || isCached
         val sources = buildList {
-            if (isOnline) add("\"$ONLINE_SOURCE\":{\"type\":\"vector\",\"url\":${quote(MapConfig.ONLINE_TILES_URL)}}")
+            if (usesOnlineTiles) {
+                add(
+                    "\"$ONLINE_SOURCE\":{\"type\":\"vector\",\"url\":${quote(MapConfig.ONLINE_TILES_URL)}}",
+                )
+            }
             regions.forEachIndexed { index, path ->
                 add("\"$SOURCE_PREFIX$index\":{\"type\":\"vector\",\"url\":${quote(PMTILES_SCHEME + path)}}")
             }
             addAll(geoJsonSources())
         }
         // Online tiles draw water on land; offline regions draw land (earth) on water.
-        val background = if (isOnline) map.land else map.water
+        val background = if (usesOnlineTiles) map.land else map.water
         val layers = buildList {
             add("{\"id\":\"background\",\"type\":\"background\",\"paint\":{\"background-color\":${hex(background)}}}")
-            if (isOnline) addAll(onlineLayers(colors))
+            if (usesOnlineTiles) addAll(onlineLayers(colors))
             regions.indices.forEach { index -> addAll(regionLayers("$SOURCE_PREFIX$index", colors)) }
             addAll(rideLayers(colors))
         }

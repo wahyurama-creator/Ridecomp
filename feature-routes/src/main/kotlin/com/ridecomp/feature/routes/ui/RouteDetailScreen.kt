@@ -39,6 +39,7 @@ import com.ridecomp.ui.component.RideCompCard
 import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.component.StatRow
 import com.ridecomp.ui.component.WarningCard
+import com.ridecomp.ui.map.MapSource
 import com.ridecomp.ui.map.RouteMap
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
@@ -61,7 +62,7 @@ fun RouteDetailRoute(
     viewModel: RouteDetailViewModel = koinViewModel(key = routeId.toString()) { parametersOf(routeId) },
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val isOnlineMap by viewModel.isOnlineMap.collectAsStateWithLifecycle()
+    val mapSource by viewModel.mapSource.collectAsStateWithLifecycle()
     ObserveEffects(viewModel.effects) { effect ->
         when (effect) {
             is RouteDetailEffect.Open -> onOpenRoute(effect.routeId)
@@ -75,7 +76,7 @@ fun RouteDetailRoute(
         onOpenOfflineMaps = onOpenOfflineMaps,
         onBack = onBack,
         modifier = modifier,
-        isOnlineMap = isOnlineMap,
+        mapSource = mapSource,
     )
 }
 
@@ -87,7 +88,7 @@ fun RouteDetailScreen(
     modifier: Modifier = Modifier,
     onOpenOfflineMaps: () -> Unit = {},
     onBack: () -> Unit = {},
-    isOnlineMap: Boolean = false,
+    mapSource: MapSource = MapSource(),
 ) {
     val route = state.route
     ScreenScaffold(
@@ -99,20 +100,21 @@ fun RouteDetailScreen(
     ) {
         when {
             state.isMissing -> EmptyState(message = stringResource(R.string.route_missing))
-            route != null -> RouteContent(route, state, onEvent, onRide, onOpenOfflineMaps, isOnlineMap)
+            route != null -> RouteContent(route, state, onEvent, onRide, onOpenOfflineMaps, mapSource)
         }
     }
 }
 
 /**
- * Route map (13-UI-SCREENS #12, D-90): online while there is internet, else from an offline file that
- * covers the area, else a note that the map shows with internet.
+ * Route map (13-UI-SCREENS #12, D-90): online while there is internet, else from the tile cache (T11.11) and
+ * an offline file that covers the area, else a note that the map shows with internet.
  */
 @Composable
-private fun RouteMapSection(state: RouteDetailUiState, isOnlineMap: Boolean, onOpenOfflineMaps: () -> Unit) {
-    if (isOnlineMap || state.isAreaOffline) {
+private fun RouteMapSection(state: RouteDetailUiState, mapSource: MapSource, onOpenOfflineMaps: () -> Unit) {
+    if (mapSource.hasTiles || state.isAreaOffline) {
         RouteMap(
-            isOnline = isOnlineMap,
+            isOnline = mapSource.isOnline,
+            isCached = mapSource.isCached,
             regionPaths = state.mapRegions,
             route = state.mapLine,
             description = stringResource(R.string.route_map_description),
@@ -121,7 +123,7 @@ private fun RouteMapSection(state: RouteDetailUiState, isOnlineMap: Boolean, onO
                 .height(RideCompDimens.routeMapHeight)
                 .clip(RoundedCornerShape(RideCompDimens.cornerRadiusCard)),
         )
-        if (!isOnlineMap) {
+        if (!mapSource.isOnline && state.isAreaOffline) {
             RideCompCard(tone = CardTone.OK) {
                 Text(
                     text = stringResource(R.string.route_map_offline),
@@ -147,7 +149,7 @@ private fun RouteContent(
     onEvent: (RouteDetailUiEvent) -> Unit,
     onRide: () -> Unit,
     onOpenOfflineMaps: () -> Unit,
-    isOnlineMap: Boolean,
+    mapSource: MapSource,
 ) {
     val format = remember(state.unitSystem) { UnitFormatter(state.unitSystem) }
     var name by rememberSaveable(route.id) { mutableStateOf(route.name) }
@@ -160,7 +162,7 @@ private fun RouteContent(
         Column(
             modifier = Modifier.padding(horizontal = RideCompDimens.screenPaddingHorizontal),
             verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
-        ) { RouteMapSection(state, isOnlineMap, onOpenOfflineMaps) }
+        ) { RouteMapSection(state, mapSource, onOpenOfflineMaps) }
         BigButton(
             text = stringResource(R.string.route_ride),
             onClick = onRide,

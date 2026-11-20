@@ -405,6 +405,7 @@ private fun RideMap(route: RouteView?, map: RideMapView, live: State<LiveRide>, 
     Box(modifier = modifier) {
         RouteMap(
             isOnline = map.isOnline,
+            isCached = map.isCached,
             regionPaths = map.regionPaths,
             route = line,
             ridden = ridden,

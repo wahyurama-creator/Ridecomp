@@ -1,5 +1,6 @@
 package com.ridecomp.data.mapper
 
+import com.ridecomp.core.engine.map.MapCacheLimit
 import com.ridecomp.core.engine.map.OnlineMapMode
 import com.ridecomp.core.engine.voice.VoiceSettings
 import com.ridecomp.core.model.RideSettings
@@ -27,6 +28,8 @@ internal object SettingsKeys {
     const val UNIT_SYSTEM = "app.unit_system"
     const val ONLINE_MAP_MODE = "app.online_map_mode"
     const val THEME = "app.theme"
+    const val MAP_CACHE_LIMIT = "app.map_cache_limit"
+    const val MAP_CACHE_FILLED = "map.cache_filled"
     const val VOICE_EVERY = "ride.voice_every"
     const val VOICE_LAPS = "ride.voice_laps"
     const val ONBOARDING_DONE = "app.onboarding_done"
@@ -106,6 +109,7 @@ internal fun List<SettingEntity>.toRideSettings(): RideSettings {
             ?: defaults.isVolumeButtonsEnabled,
         unitSystem = values[SettingsKeys.UNIT_SYSTEM]?.toEnumOrNull<UnitSystem>() ?: defaults.unitSystem,
         onlineMapMode = values[SettingsKeys.ONLINE_MAP_MODE]?.toEnumOrNull<OnlineMapMode>() ?: defaults.onlineMapMode,
+        mapCacheLimit = values[SettingsKeys.MAP_CACHE_LIMIT]?.toEnumOrNull<MapCacheLimit>() ?: defaults.mapCacheLimit,
         voice = VoiceSettings(
             everyUnits = values.optional(SettingsKeys.VOICE_EVERY, defaults.voice.everyUnits) { raw ->
                 raw.toIntOrNull()?.takeIf { it > 0 }
@@ -129,6 +133,7 @@ internal fun RideSettings.toEntities(): List<SettingEntity> = listOf(
     SettingEntity(SettingsKeys.VOLUME_BUTTONS_ENABLED, isVolumeButtonsEnabled.toString()),
     SettingEntity(SettingsKeys.UNIT_SYSTEM, unitSystem.toDbValue()),
     SettingEntity(SettingsKeys.ONLINE_MAP_MODE, onlineMapMode.toDbValue()),
+    SettingEntity(SettingsKeys.MAP_CACHE_LIMIT, mapCacheLimit.toDbValue()),
     SettingEntity(SettingsKeys.VOICE_EVERY, voice.everyUnits?.toString() ?: SettingsKeys.OFF),
     SettingEntity(SettingsKeys.VOICE_LAPS, voice.isLapEnabled.toString()),
 )

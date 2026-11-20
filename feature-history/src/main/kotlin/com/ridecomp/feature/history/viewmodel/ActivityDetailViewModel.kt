@@ -37,6 +37,7 @@ import com.ridecomp.core.usecase.valueOf
 import com.ridecomp.core.util.Outcome
 import com.ridecomp.ui.component.ChartValue
 import com.ridecomp.ui.map.MapPoint
+import com.ridecomp.ui.map.MapSource
 import com.ridecomp.ui.udf.UdfViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -156,10 +157,13 @@ class ActivityDetailViewModel(
     private val strava: ActivityStravaUseCases,
     private val dispatchers: DispatcherProvider,
 ) : UdfViewModel<ActivityDetailUiState, ActivityDetailUiEvent, ActivityDetailEffect>(ActivityDetailUiState()) {
-    /** The track on the online map while there is internet, else the sketch (D-90); watched only while shown. */
-    val isOnlineMap: StateFlow<Boolean> = useCases.observeMapTiles()
-        .map { it.isOnline }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(MAP_STOP_TIMEOUT_MS), false)
+    /**
+     * The track on the online map while there is internet or from the tile cache offline (D-90, T11.11), else
+     * the sketch; watched only while shown.
+     */
+    val mapSource: StateFlow<MapSource> = useCases.observeMapTiles()
+        .map { MapSource(isOnline = it.isOnline, isCached = it.hasCache) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(MAP_STOP_TIMEOUT_MS), MapSource())
 
     private val observeActivity = useCases.observeActivity
     private val getLaps = useCases.getLaps

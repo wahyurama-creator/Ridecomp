@@ -1,6 +1,7 @@
 package com.ridecomp.core.usecase
 
 import app.cash.turbine.test
+import com.ridecomp.core.engine.map.MapCacheLimit
 import com.ridecomp.core.engine.map.MapTiles
 import com.ridecomp.core.engine.map.NetworkStatus
 import com.ridecomp.core.engine.map.OnlineMapMode
@@ -8,6 +9,7 @@ import com.ridecomp.core.engine.map.RideTrail
 import com.ridecomp.core.engine.map.TrailConfig
 import com.ridecomp.core.model.RideSample
 import com.ridecomp.core.repository.NewActivity
+import com.ridecomp.core.source.MapCacheSource
 import com.ridecomp.core.testing.FakeActivityRepository
 import com.ridecomp.core.testing.FakeNetworkStatusSource
 import com.ridecomp.core.testing.FakeOfflineMapRepository
@@ -25,13 +27,55 @@ class MapUseCasesTest {
     private val tiles = ObserveMapTilesUseCase(network, settings, offline)
 
     @Test
-    fun `online on mobile data by default, offline when the network goes`() = runTest {
+    fun `online on mobile data by default, then the cache of what was seen when the network goes`() = runTest {
         tiles().test {
-            assertEquals(MapTiles(isOnline = true, regionPaths = emptyList()), awaitItem())
+            assertEquals(MapTiles(isOnline = true, regionPaths = emptyList(), hasCache = true), awaitItem())
+            assertTrue(settings.mapCacheFilled.value)
             network.status.value = NetworkStatus.OFFLINE
-            assertEquals(MapTiles.NONE, awaitItem())
+            val offline = awaitItem()
+            assertFalse(offline.isOnline)
+            assertTrue(offline.hasCache)
+            assertTrue(offline.usesOnlineTiles)
         }
         assertEquals(0, network.activeCollectors)
+    }
+
+    @Test
+    fun `without an online map ever shown there is no map offline`() = runTest {
+        network.status.value = NetworkStatus.OFFLINE
+
+        tiles().test {
+            assertEquals(MapTiles.NONE, awaitItem())
+            assertFalse(settings.mapCacheFilled.value)
+        }
+    }
+
+    @Test
+    fun `off still shows the cache, clearing it ends that`() = runTest {
+        settings.saveRideSettings(settings.getRideSettings().copy(onlineMapMode = OnlineMapMode.OFF))
+        settings.setMapCacheFilled(true)
+        val cache = object : MapCacheSource {
+            var cleared = 0
+
+            override suspend fun sizeBytes(): Long = if (cleared > 0) 0L else CACHE_BYTES
+
+            override suspend fun clear() {
+                cleared++
+            }
+        }
+
+        tiles().test {
+            assertEquals(MapTiles(isOnline = false, regionPaths = emptyList(), hasCache = true), awaitItem())
+            assertEquals(0, network.activeCollectors)
+            assertEquals(MapCacheInfo(CACHE_BYTES, MapCacheLimit.DEFAULT), GetMapCacheInfoUseCase(cache, settings)())
+
+            ClearMapCacheUseCase(cache, settings)()
+
+            assertEquals(MapTiles.NONE, awaitItem())
+            assertEquals(1, cache.cleared)
+        }
+        SetMapCacheLimitUseCase(settings)(MapCacheLimit.LARGE)
+        assertEquals(MapCacheLimit.LARGE, settings.getRideSettings().mapCacheLimit)
     }
 
     @Test
@@ -98,6 +142,7 @@ class MapUseCasesTest {
     }
 
     private companion object {
+        const val CACHE_BYTES = 42_000_000L
         const val DELTA = 1e-9
     }
 }

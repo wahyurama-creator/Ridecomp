@@ -59,6 +59,11 @@ public interface SettingsRepository {
     public fun observeTheme(): Flow<AppTheme>
 
     public suspend fun setTheme(theme: AppTheme)
+
+    /** True once an online map was shown, so its tiles may be in the cache (T11.11). */
+    public fun observeMapCacheFilled(): Flow<Boolean>
+
+    public suspend fun setMapCacheFilled(isFilled: Boolean)
 }
 
 /** Activity profiles (05-DATA-MODEL `activity_profiles`) and the last one used (`settings`). */
