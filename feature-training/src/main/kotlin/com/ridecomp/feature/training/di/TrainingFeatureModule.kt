@@ -34,5 +34,5 @@ val trainingFeatureModule = module {
     factory { ShareCardUseCases(get(), get(), get(), get(), get(), get()) }
     viewModel { params -> ShareCardViewModel(params.get(), get(), get(), get()) }
     viewModel { params -> SegmentDetailViewModel(params.get(), get(), get(), get(), get()) }
-    viewModel { params -> SegmentEditorViewModel(params.get(), get(), get(), get(), get()) }
+    viewModel { params -> SegmentEditorViewModel(params.get(), params.getOrNull(), get(), get(), get(), get()) }
 }

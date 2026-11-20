@@ -1,5 +1,6 @@
 package com.ridecomp.app.navigation
 
+import android.os.Bundle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -114,11 +115,19 @@ object AppRoutes {
 
     const val ARG_SEGMENT_ID = "segmentId"
     const val SEGMENT_DETAIL = "segment/{$ARG_SEGMENT_ID}"
-    const val NEW_SEGMENT = "segment_new/{$ARG_ACTIVITY_ID}"
+    const val ARG_START_MS = "startMs"
+    const val ARG_END_MS = "endMs"
+    const val NO_WINDOW = -1L
+    const val NEW_SEGMENT = "segment_new/{$ARG_ACTIVITY_ID}?$ARG_START_MS={$ARG_START_MS}&$ARG_END_MS={$ARG_END_MS}"
 
     fun segmentDetail(segmentId: Long): String = "segment/$segmentId"
 
-    fun newSegment(activityId: Long): String = "segment_new/$activityId"
+    /** The segment editor, on a best effort's [windowMs] when given ("mark as sprint", T11.8). */
+    fun newSegment(activityId: Long, windowMs: LongRange? = null): String = if (windowMs == null) {
+        "segment_new/$activityId"
+    } else {
+        "segment_new/$activityId?$ARG_START_MS=${windowMs.first}&$ARG_END_MS=${windowMs.last}"
+    }
 
     const val SHARE_CARD = "share/{$ARG_ACTIVITY_ID}"
 
@@ -334,11 +343,47 @@ private fun ActivityDetail(id: Long, navController: NavHostController) {
         onShareCard = { navController.navigate(AppRoutes.shareCard(id)) },
         onOpenStravaSettings = { navController.navigate(AppRoutes.STRAVA) },
         resultsContent = {
-            RideResultsCard(id, onOpenSegment = { segmentId ->
-                navController.navigate(AppRoutes.segmentDetail(segmentId))
-            })
+            RideResultsCard(
+                id,
+                onOpenSegment = { segmentId -> navController.navigate(AppRoutes.segmentDetail(segmentId)) },
+                onMakeSegment = { windowMs -> navController.navigate(AppRoutes.newSegment(id, windowMs)) },
+            )
         },
     )
+}
+
+/** The segment editor: from a ride's detail, or on a best effort's stretch (T11.8). */
+private fun NavGraphBuilder.newSegmentGraph(navController: NavHostController) {
+    composable(
+        AppRoutes.NEW_SEGMENT,
+        arguments = listOf(
+            navArgument(AppRoutes.ARG_ACTIVITY_ID) { type = NavType.LongType },
+            windowArgument(AppRoutes.ARG_START_MS),
+            windowArgument(AppRoutes.ARG_END_MS),
+        ),
+    ) { entry ->
+        SegmentEditorRoute(
+            activityId = entry.arguments?.getLong(AppRoutes.ARG_ACTIVITY_ID) ?: AppRoutes.NO_ACTIVITY,
+            windowMs = entry.arguments?.windowMs(),
+            onCreated = { id ->
+                navController.popBackStack()
+                navController.navigate(AppRoutes.segmentDetail(id))
+            },
+            onBack = { navController.popBackStack() },
+        )
+    }
+}
+
+/** An optional best effort time bound of the segment editor (T11.8). */
+private fun windowArgument(name: String) = navArgument(name) {
+    type = NavType.LongType
+    defaultValue = AppRoutes.NO_WINDOW
+}
+
+private fun Bundle.windowMs(): LongRange? {
+    val startMs = getLong(AppRoutes.ARG_START_MS, AppRoutes.NO_WINDOW)
+    val endMs = getLong(AppRoutes.ARG_END_MS, AppRoutes.NO_WINDOW)
+    return (startMs..endMs).takeIf { startMs != AppRoutes.NO_WINDOW && endMs > startMs }
 }
 
 private fun openSection(section: SettingsSection, navController: NavHostController) {
@@ -549,18 +594,6 @@ private fun NavGraphBuilder.segmentGraph(navController: NavHostController) {
             onOpenActivity = { id -> navController.navigate(AppRoutes.activityDetail(id)) },
         )
     }
-    composable(
-        AppRoutes.NEW_SEGMENT,
-        arguments = listOf(navArgument(AppRoutes.ARG_ACTIVITY_ID) { type = NavType.LongType }),
-    ) { entry ->
-        SegmentEditorRoute(
-            activityId = entry.arguments?.getLong(AppRoutes.ARG_ACTIVITY_ID) ?: AppRoutes.NO_ACTIVITY,
-            onCreated = { id ->
-                navController.popBackStack()
-                navController.navigate(AppRoutes.segmentDetail(id))
-            },
-            onBack = { navController.popBackStack() },
-        )
-    }
+    newSegmentGraph(navController)
     composable(AppRoutes.STRAVA_HELP) { StravaHelpRoute() }
 }

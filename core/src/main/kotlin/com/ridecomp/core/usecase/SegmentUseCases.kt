@@ -121,16 +121,22 @@ public class ObserveSegmentEffortsUseCase(private val segments: SegmentRepositor
 /** A downsampled point of a ride for the segment editor: position (when known), distance and altitude. */
 public data class OutlinePoint(val latDeg: Double?, val lonDeg: Double?, val distanceM: Double, val altitudeM: Double?)
 
-/** A ride's line and profile for the segment editor, at most [ActivityConfig.CHART_MAX_POINTS] points. */
+/**
+ * A ride's line and profile for the segment editor. [windowM] is the distance range of the time window asked
+ * for ("make the best effort a segment", T11.8); null when none was asked or it is not on the track.
+ */
+public data class TrackOutline(val points: List<OutlinePoint>, val windowM: ClosedFloatingPointRange<Double>?)
+
+/** A ride's outline, at most [ActivityConfig.CHART_MAX_POINTS] points, and the distances of [windowMs]. */
 public class LoadTrackOutlineUseCase(
     private val readTrack: ReadRideTrackUseCase,
     private val dispatchers: DispatcherProvider,
 ) {
-    public suspend operator fun invoke(activityId: Long): List<OutlinePoint> {
+    public suspend operator fun invoke(activityId: Long, windowMs: LongRange? = null): TrackOutline {
         val track = readTrack(activityId)
         return withContext(dispatchers.default) {
             val stride = ceil(track.size.toDouble() / ActivityConfig.CHART_MAX_POINTS).toInt().coerceAtLeast(1)
-            (0 until track.size step stride).map { i ->
+            val points = (0 until track.size step stride).map { i ->
                 val hasPosition = track.hasPosition(i)
                 OutlinePoint(
                     latDeg = track.latDeg(i).takeIf { hasPosition },
@@ -139,7 +145,15 @@ public class LoadTrackOutlineUseCase(
                     altitudeM = track.altitudeM(i).takeUnless(Double::isNaN),
                 )
             }
+            TrackOutline(points, windowMs?.let { track.distanceRange(it) })
         }
+    }
+
+    /** Distances of the first and last samples inside [windowMs]. */
+    private fun RideTrack.distanceRange(windowMs: LongRange): ClosedFloatingPointRange<Double>? {
+        val start = (0 until size).firstOrNull { timeMs(it) in windowMs } ?: return null
+        val end = (0 until size).last { timeMs(it) in windowMs }
+        return if (distanceM(end) > distanceM(start)) distanceM(start)..distanceM(end) else null
     }
 }
 

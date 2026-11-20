@@ -6,8 +6,8 @@
 - **Rilis terakhir:** **0.9.3** (beta), 2026-11-18 · [GitHub Releases](https://github.com/wahyurama-creator/Ridecomp/releases). Skema DB **v10**.
 - **Fase selesai:** 0–5, 7, 9, dan rilis beta & masukan pengguna (Fase 8/10). Ringkasan: [`planning/06-ROADMAP.md`](planning/06-ROADMAP.md).
 - **Fase berjalan:** **Fase 11 — Analisa ride, usaha terbaik, tema & peta offline.** Rencana lengkap: [`planning/14-PHASE11-PLAN.md`](planning/14-PHASE11-PLAN.md). Keputusan K1–K5 sudah dijawab (D-109…D-113).
-- **Task terakhir:** T11.7 — Bagian "Hasil" (selesai 2026-11-19, [Feature Report](reports/features/T11.7-results.md)); sebelumnya T11.6 zona power.
-- **Task berikutnya:** **T11.8 — Usaha terbaik otomatis** (rekor durasi + tandai sprint, 14-PHASE11-PLAN §5). Belum dimulai.
+- **Task terakhir:** T11.8 — Usaha terbaik otomatis (selesai 2026-11-20, [Feature Report](reports/features/T11.8-duration-efforts.md)); sebelumnya T11.7 bagian "Hasil".
+- **Task berikutnya:** **T11.9 — Pilihan tema** (Gelap · Terang · Ikuti HP, 14-PHASE11-PLAN §5). Belum dimulai.
 
 ## Daftar centang Fase 11
 Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.md` §4 setiap kali task selesai.
@@ -22,8 +22,8 @@ Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.m
 - [x] T11.5a Perbaikan tautan perkiraan HR max di Profil
 - [x] T11.6 Perkiraan zona power Z1–Z7
 - [x] T11.7 Bagian "Hasil"
-- [ ] T11.8 Usaha terbaik otomatis ← **berikutnya**
-- [ ] T11.9 Pilihan tema
+- [x] T11.8 Usaha terbaik otomatis
+- [ ] T11.9 Pilihan tema ← **berikutnya**
 - [ ] T11.10 Audit tema terang
 - [ ] T11.11 Cache peta otomatis
 - [ ] T11.13 Paket peta per provinsi

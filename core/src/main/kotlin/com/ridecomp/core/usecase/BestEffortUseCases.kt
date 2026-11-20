@@ -35,7 +35,7 @@ public class EvaluateBestEffortsUseCase(
     }
 }
 
-/** Analysis step 1 (T4.1): stores the ride's best efforts with their record flags. */
+/** Analysis step (T4.1, last since T11.8): stores the ride's best efforts with their record flags. */
 public class BestEffortsStep(
     private val efforts: BestEffortRepository,
     private val evaluate: EvaluateBestEffortsUseCase,

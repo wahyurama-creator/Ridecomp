@@ -194,7 +194,8 @@ Dihitung **setelah ride disimpan** (di background coroutine, bukan saat ride), d
 | Jenis | Durasi/jarak |
 |---|---|
 | Jarak tercepat | 1 km, 5 km, 10 km, 20 km, 40 km, 100 km (yang tercapai) |
-| Power terbaik (power meter saja) | 5 dtk, 1 mnt, 5 mnt, 20 mnt, 60 mnt |
+| Kecepatan terbaik per durasi (T11.8) | 30 dtk, 1 mnt, 3 mnt, 5 mnt, 20 mnt (jarak ÷ waktu bergerak) |
+| Power terbaik (power meter saja) | 5 dtk, 30 dtk (T11.8), 1 mnt, 3 mnt (T11.8), 5 mnt, 20 mnt, 60 mnt |
 | Lainnya | Ride terjauh, tanjakan total terbanyak, kecepatan rata-rata tertinggi (min. 20 km) |
 
 - Algoritma jendela geser (two-pointer) atas jarak kumulatif / waktu bergerak; **pause tidak dihitung** dalam jendela waktu.
@@ -211,6 +212,7 @@ Alternatif offline untuk Strava segments (segmen resmi Strava tidak tersedia unt
 ### 9.1 Membuat segmen
 - Dari **detail aktivitas**: pilih titik mulai & akhir di grafik/peta → beri nama.
 - Dari **tanjakan rute** (§6): tombol "Jadikan segmen".
+- Dari **usaha terbaik** jarak/kecepatan di kartu Hasil (T11.8): "Simpan sebagai segmen" membuka editor pada jalur usaha itu, nama awal "Sprint 20 Nov" (tanggal ride). Power dan rekor seluruh ride tidak bisa (panjang jalur tidak disimpan / tanpa jendela).
 - Panjang 200 m – 50 km. Disimpan sebagai polyline yang disederhanakan.
 
 ### 9.2 Pencocokan (setelah ride disimpan)

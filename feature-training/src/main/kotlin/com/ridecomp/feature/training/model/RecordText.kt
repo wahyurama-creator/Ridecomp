@@ -12,7 +12,7 @@ import com.ridecomp.feature.training.R
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
-/** "10 km tercepat", "Power terbaik 5 mnt", "Ride terjauh" (12-FEATURE-SPECS §8). */
+/** "10 km tercepat", "Tercepat 1 mnt", "Power terbaik 5 mnt", "Ride terjauh" (12-FEATURE-SPECS §8, T11.8). */
 @Composable
 fun BestEffortKey.label(): String = when (type) {
     // Record distances are fixed metric distances, also in imperial units (like other ride computers).
@@ -20,13 +20,15 @@ fun BestEffortKey.label(): String = when (type) {
         R.string.record_fastest_distance,
         (target / Units.METERS_PER_KM).roundToInt(),
     )
-    BestEffortType.POWER -> stringResource(R.string.record_best_power, powerWindow())
+    BestEffortType.SPEED -> stringResource(R.string.record_best_speed, window())
+    BestEffortType.POWER -> stringResource(R.string.record_best_power, window())
     BestEffortType.OTHER -> stringResource(otherLabelRes())
 }
 
-/** The record value with its unit: a time over a distance, watts, distance, elevation or speed. */
+/** The record value with its unit: a time over a distance, speed, watts, distance or elevation. */
 fun BestEffortKey.valueText(value: Double, formatter: UnitFormatter): String = when (type) {
     BestEffortType.DISTANCE -> formatter.duration((value * Units.MS_PER_SECOND).roundToLong())
+    BestEffortType.SPEED -> "${formatter.speed(value)} ${formatter.speedUnit}"
     BestEffortType.POWER -> "${value.roundToInt()} $WATT"
     BestEffortType.OTHER -> when (this) {
         BestEffortKey.LONGEST_RIDE -> "${formatter.distance(value)} ${formatter.distanceUnit}"
@@ -36,7 +38,7 @@ fun BestEffortKey.valueText(value: Double, formatter: UnitFormatter): String = w
 }
 
 @Composable
-private fun BestEffortKey.powerWindow(): String {
+private fun BestEffortKey.window(): String {
     val seconds = target.roundToLong()
     return if (seconds < Units.SECONDS_PER_MINUTE) {
         stringResource(R.string.record_window_seconds, seconds)
@@ -56,6 +58,7 @@ private fun BestEffortKey.otherLabelRes(): Int = when (this) {
 @StringRes
 fun BestEffortType.titleRes(): Int = when (this) {
     BestEffortType.DISTANCE -> R.string.records_section_distance
+    BestEffortType.SPEED -> R.string.records_section_speed
     BestEffortType.POWER -> R.string.records_section_power
     BestEffortType.OTHER -> R.string.records_section_other
 }

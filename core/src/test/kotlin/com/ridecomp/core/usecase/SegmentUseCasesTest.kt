@@ -34,7 +34,8 @@ class SegmentUseCasesTest {
     private val createFromRide = CreateSegmentFromActivityUseCase(readTrack, segments, reanalyze, FakeClock())
     private var otherStepRuns = 0
     private val otherStep = object : AnalysisStep {
-        override val version = AnalysisConfig.BEST_EFFORTS_VERSION
+        // A step before the segments: never re-run by a new segment.
+        override val version = AnalysisConfig.SEGMENTS_VERSION - 1
 
         override suspend fun analyze(activity: Activity, track: RideTrack) {
             otherStepRuns++

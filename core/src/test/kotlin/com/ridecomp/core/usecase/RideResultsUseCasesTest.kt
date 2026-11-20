@@ -18,6 +18,7 @@ import com.ridecomp.core.testing.FakeBestEffortRepository
 import com.ridecomp.core.testing.FakeSegmentRepository
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -116,6 +117,20 @@ class RideResultsUseCasesTest {
         assertEquals(listOf("Flat", "Sprint", "Climb"), results.segments.map { it.segmentName })
         assertEquals(listOf(1, 1, 4), results.segments.map { it.rank })
         assertTrue(observe(4).first().isEmpty)
+    }
+
+    @Test
+    fun `distance and speed efforts long enough can become a segment, power and whole rides cannot`() {
+        fun effort(key: BestEffortKey, value: Double, window: Boolean = true) =
+            BestEffort(key, value, if (window) 10_000L else null, if (window) 70_000L else null)
+
+        assertEquals(10_000L..70_000L, effort(BestEffortKey.FASTEST_1_KM, 100.0).segmentWindowMs)
+        // 1 min at 10 m/s = 600 m; 30 s at 6 m/s = 180 m is shorter than a segment can be.
+        assertEquals(10_000L..70_000L, effort(BestEffortKey.SPEED_1_MIN, 10.0).segmentWindowMs)
+        assertNull(effort(BestEffortKey.SPEED_30_S, 6.0).segmentWindowMs)
+        assertNull(effort(BestEffortKey.FASTEST_100_KM, 10_000.0).segmentWindowMs)
+        assertNull(effort(BestEffortKey.POWER_5_MIN, 250.0).segmentWindowMs)
+        assertNull(effort(BestEffortKey.LONGEST_RIDE, 40_000.0, window = false).segmentWindowMs)
     }
 
     private companion object {

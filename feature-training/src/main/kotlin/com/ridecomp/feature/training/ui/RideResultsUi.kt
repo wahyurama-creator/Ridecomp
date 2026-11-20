@@ -32,6 +32,7 @@ import com.ridecomp.core.engine.segments.SegmentMatch
 import com.ridecomp.core.repository.RankedEffort
 import com.ridecomp.core.repository.RankedSegmentEffort
 import com.ridecomp.core.usecase.isTopRank
+import com.ridecomp.core.usecase.segmentWindowMs
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.training.R
 import com.ridecomp.feature.training.model.WATT
@@ -56,17 +57,28 @@ import org.koin.core.parameter.parametersOf
 
 /**
  * "Results" of a ride on its detail page (T11.7, 14-PHASE11-PLAN): best efforts in the rider's top 3 at the
- * time and the segments passed; hidden when there are none. Tapping a segment opens it.
+ * time and the segments passed; hidden when there are none. Tapping a segment opens it; tapping a distance or
+ * speed effort opens the segment editor on its stretch ("mark as sprint", T11.8) with [onMakeSegment].
  */
 @Composable
-fun RideResultsCard(activityId: Long, onOpenSegment: (Long) -> Unit, modifier: Modifier = Modifier) {
+fun RideResultsCard(
+    activityId: Long,
+    onOpenSegment: (Long) -> Unit,
+    onMakeSegment: (windowMs: LongRange) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val viewModel: RideResultsViewModel = koinViewModel(key = "results$activityId") { parametersOf(activityId) }
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    RideResultsContent(state, onOpenSegment, modifier)
+    RideResultsContent(state, onOpenSegment, onMakeSegment, modifier)
 }
 
 @Composable
-fun RideResultsContent(state: RideResultsUiState, onOpenSegment: (Long) -> Unit, modifier: Modifier = Modifier) {
+fun RideResultsContent(
+    state: RideResultsUiState,
+    onOpenSegment: (Long) -> Unit,
+    onMakeSegment: (windowMs: LongRange) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     if (state.isEmpty) return
     val formatter = remember(state.unitSystem) { UnitFormatter(state.unitSystem) }
     var isExpanded by rememberSaveable { mutableStateOf(false) }
@@ -88,7 +100,7 @@ fun RideResultsContent(state: RideResultsUiState, onOpenSegment: (Long) -> Unit,
                 shown.forEach { line ->
                     HorizontalDivider(color = RideCompTheme.colors.divider, thickness = RideCompDimens.dividerThickness)
                     when (line) {
-                        is RideResultLine.Effort -> EffortLine(line.ranked, formatter)
+                        is RideResultLine.Effort -> EffortLine(line.ranked, formatter, onMakeSegment)
                         is RideResultLine.Pass -> PassLine(line.ranked, formatter) {
                             onOpenSegment(line.ranked.segmentId)
                         }
@@ -110,15 +122,17 @@ fun RideResultsContent(state: RideResultsUiState, onOpenSegment: (Long) -> Unit,
 }
 
 @Composable
-private fun EffortLine(ranked: RankedEffort, formatter: UnitFormatter) {
+private fun EffortLine(ranked: RankedEffort, formatter: UnitFormatter, onMakeSegment: (LongRange) -> Unit) {
     val key = ranked.effort.key
+    val window = ranked.effort.segmentWindowMs
     ResultLine(
         iconRes = UiR.drawable.ic_trophy,
         iconTint = if (ranked.rank == 1) RideCompTheme.colors.accent else RideCompTheme.colors.textSecondary,
         title = key.label(),
-        subtitle = null,
+        subtitle = window?.let { stringResource(R.string.results_make_segment) },
         value = key.valueText(ranked.effort.value, formatter),
         rank = ranked.rank,
+        onClick = window?.let { { onMakeSegment(it) } },
     )
 }
 
@@ -152,7 +166,7 @@ private fun ResultLine(
     onClick: (() -> Unit)? = null,
 ) {
     val colors = RideCompTheme.colors
-    // Only a segment line opens something: it gets the full touch height.
+    // A line that opens something (a segment, the segment editor) gets the full touch height.
     val clickable = onClick?.let {
         Modifier
             .heightIn(min = RideCompDimens.touchTargetMin)
@@ -211,7 +225,7 @@ private fun RideResultsPreview() {
                 effortCount = 2,
                 segmentCount = 2,
                 lines = persistentListOf(
-                    RideResultLine.Effort(RankedEffort(BestEffort(BestEffortKey.FASTEST_5_KM, 581.0, null, null), 1)),
+                    RideResultLine.Effort(RankedEffort(BestEffort(BestEffortKey.FASTEST_5_KM, 581.0, 0, 581_000), 1)),
                     RideResultLine.Effort(RankedEffort(BestEffort(BestEffortKey.POWER_5_MIN, 268.0, null, null), 2)),
                     RideResultLine.Pass(
                         RankedSegmentEffort(
@@ -234,6 +248,7 @@ private fun RideResultsPreview() {
                 ),
             ),
             onOpenSegment = {},
+            onMakeSegment = {},
         )
     }
 }

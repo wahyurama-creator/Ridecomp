@@ -3,12 +3,14 @@
     <!-- Records (T4.1, 12-FEATURE-SPECS §8) -->
     <string name="record_fastest_distance">Fastest %1$d km</string>
     <string name="record_best_power">Best %1$s power</string>
+    <string name="record_best_speed">Fastest %1$s</string>
     <string name="record_window_seconds">%1$d s</string>
     <string name="record_window_minutes">%1$d min</string>
     <string name="record_longest_ride">Longest ride</string>
     <string name="record_most_ascent">Most climbing</string>
     <string name="record_fastest_avg_speed">Fastest average (20 km+)</string>
     <string name="records_section_distance">Fastest distances</string>
+    <string name="records_section_speed">Fastest speed over a time</string>
     <string name="records_section_power">Best power (power meter)</string>
     <string name="records_section_other">Other records</string>
     <string name="records_kind">Activity profile</string>
@@ -225,7 +227,7 @@
     <string name="intensity_vo2max_how">Very hard: e.g. 5 × 3 min in zone 5 with 3 min easy in between (effort 9 of 10).</string>
     <string name="results_title">Results</string>
     <string name="results_info_label">About results</string>
-    <string name="results_info">Best efforts: distance times, power, longest ride and climbing of this ride that were among your 3 best when you rode it. Segments: every segment of yours this ride passed; tap one to see all its efforts. PR = your record at the time.</string>
+    <string name="results_info">Best efforts: distance times, top speed over 30 s to 20 min, power, longest ride and climbing of this ride that were among your 3 best when you rode it. Tap a distance or speed effort to save that stretch as a segment. Segments: every segment of yours this ride passed; tap one to see all its efforts. PR = your record at the time.</string>
     <string name="results_best_efforts">Best efforts</string>
     <string name="results_segments">Segments</string>
     <string name="results_rank_pr">PR</string>
@@ -233,4 +235,6 @@
     <string name="results_rank_third">3rd best</string>
     <string name="results_show_all">See all results (%1$d)</string>
     <string name="results_show_less">Show less</string>
+    <string name="results_make_segment">Save as segment</string>
+    <string name="segment_sprint_name">Sprint %1$s</string>
 </resources>
