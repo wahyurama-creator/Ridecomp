@@ -9,6 +9,7 @@ import com.ridecomp.core.usecase.BackupWriter
 import com.ridecomp.core.usecase.BestEffortsStep
 import com.ridecomp.core.usecase.CheckForUpdateUseCase
 import com.ridecomp.core.usecase.CheckGpsAvailabilityUseCase
+import com.ridecomp.core.usecase.ClearMapCacheUseCase
 import com.ridecomp.core.usecase.ClearShareCardsUseCase
 import com.ridecomp.core.usecase.CompleteOnboardingUseCase
 import com.ridecomp.core.usecase.CompleteStravaAuthUseCase
@@ -46,6 +47,7 @@ import com.ridecomp.core.usecase.GetFreeStorageUseCase
 import com.ridecomp.core.usecase.GetLapsUseCase
 import com.ridecomp.core.usecase.GetLiveSegmentsUseCase
 import com.ridecomp.core.usecase.GetLoadInputsUseCase
+import com.ridecomp.core.usecase.GetMapCacheInfoUseCase
 import com.ridecomp.core.usecase.GetRecoverableRideUseCase
 import com.ridecomp.core.usecase.GetRideProfileUseCase
 import com.ridecomp.core.usecase.GetRouteGuidanceUseCase
@@ -146,6 +148,7 @@ import com.ridecomp.core.usecase.SendTestSmsUseCase
 import com.ridecomp.core.usecase.SetAppLanguageUseCase
 import com.ridecomp.core.usecase.SetAppThemeUseCase
 import com.ridecomp.core.usecase.SetAutoUpdateCheckUseCase
+import com.ridecomp.core.usecase.SetMapCacheLimitUseCase
 import com.ridecomp.core.usecase.SetRiderLevelUseCase
 import com.ridecomp.core.usecase.SetSafetyEnabledUseCase
 import com.ridecomp.core.usecase.SetStravaAutoUploadUseCase
@@ -224,6 +227,9 @@ val useCaseModule = module {
     factory { GetRouteGuidanceUseCase(get(), get()) }
     factory { ObserveOfflineMapsUseCase(get()) }
     factory { ObserveMapTilesUseCase(get(), get(), get()) }
+    factory { GetMapCacheInfoUseCase(get(), get()) }
+    factory { SetMapCacheLimitUseCase(get()) }
+    factory { ClearMapCacheUseCase(get(), get()) }
     factory { LoadRideTrailUseCase(get()) }
     factory { ImportOfflineMapUseCase(get()) }
     factory { DeleteOfflineMapUseCase(get()) }

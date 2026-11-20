@@ -3,6 +3,7 @@ package com.ridecomp.core.model
 import com.ridecomp.core.config.AutoPauseConfig
 import com.ridecomp.core.config.ProfileDefaults
 import com.ridecomp.core.config.ReminderConfig
+import com.ridecomp.core.engine.map.MapCacheLimit
 import com.ridecomp.core.engine.map.OnlineMapMode
 import com.ridecomp.core.engine.voice.VoiceSettings
 import java.time.Instant
@@ -73,6 +74,8 @@ public data class RideSettings(
     val unitSystem: UnitSystem = UnitSystem.METRIC,
     /** Online map tiles: Wi‑Fi and data, Wi‑Fi only, or never (D-90). */
     val onlineMapMode: OnlineMapMode = OnlineMapMode.ALWAYS,
+    /** Space the online map's tile cache may use (T11.11). */
+    val mapCacheLimit: MapCacheLimit = MapCacheLimit.DEFAULT,
     /** Spoken distance, laps and reminders (T7.1); off by default. */
     val voice: VoiceSettings = VoiceSettings(),
 )

@@ -8,6 +8,7 @@ import com.ridecomp.core.engine.safety.IncidentAction
 import com.ridecomp.core.model.LocationFix
 import com.ridecomp.core.source.BatteryLevelSource
 import com.ridecomp.core.source.LocationSource
+import com.ridecomp.core.source.MapCacheSource
 import com.ridecomp.core.source.NetworkStatusSource
 import com.ridecomp.core.source.RideController
 import kotlinx.coroutines.flow.Flow
@@ -89,6 +90,19 @@ public class FakeNetworkStatusSource(initial: NetworkStatus = NetworkStatus(isCo
     override fun observe(): Flow<NetworkStatus> = status
         .onStart { activeCollectors++ }
         .onCompletion { activeCollectors-- }
+}
+
+/** Map tile cache of [sizeBytes]; [clear] empties it (T11.11). */
+public class FakeMapCacheSource(public var size: Long = 0L) : MapCacheSource {
+    public var clears: Int = 0
+        private set
+
+    override suspend fun sizeBytes(): Long = size
+
+    override suspend fun clear() {
+        size = 0L
+        clears++
+    }
 }
 
 public class FakeBatteryLevelSource(public var status: BatteryStatus? = BatteryStatus(80, isCharging = false)) :

@@ -67,7 +67,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`); ganti 
 - [x] T11.10 Audit tema terang
 
 **11E Peta offline**
-- [ ] T11.11 Cache peta otomatis
+- [x] T11.11 Cache peta otomatis
 - [ ] T11.13 Paket peta per provinsi (skrip pemilik)
 - [ ] T11.12 Peta wilayah otomatis
 - [ ] T11.14 Penyimpanan, baterai, keamanan
@@ -174,7 +174,7 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 ### Fase 11E — Peta offline
 
 #### T11.11 Cache peta otomatis
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-20 · Feature Report: [`T11.11-map-cache.md`](../reports/features/T11.11-map-cache.md) · D-128 (batas 50/150/300 MB pilihan pemilik; "Mati" tetap memakai cache)
 - Potongan peta online yang pernah dilihat disimpan di cache MapLibre (batas ukuran default **150 MB**, LRU), lalu dipakai saat sinyal hilang; area yang belum pernah dimuat tetap jatuh ke garis rute (D-90).
 - Ubah perilaku D-90: tanpa internet, **tampilkan peta bila ada cache/region yang menutupi area**, bukan langsung garis.
 - Tidak ada unduhan di muka (bukan *bulk download*): aman untuk OpenFreeMap.

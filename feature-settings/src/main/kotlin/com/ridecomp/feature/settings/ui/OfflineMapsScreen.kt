@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ridecomp.core.engine.map.MapCacheLimit
 import com.ridecomp.core.engine.map.MapImportError
 import com.ridecomp.core.engine.map.OfflineMap
 import com.ridecomp.core.engine.map.OnlineMapMode
@@ -127,6 +128,7 @@ fun OfflineMapsScreen(
             verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
         ) {
             OnlineMapChoice(state.onlineMapMode) { onEvent(OfflineMapsUiEvent.OnlineMode(it)) }
+            MapCacheSection(state, onEvent)
             SectionHeader(stringResource(R.string.maps_offline_header), horizontalPadding = RideCompDimens.none)
             tipContent?.invoke()
             StorageCard(state)
@@ -153,6 +155,16 @@ fun OfflineMapsScreen(
             )
             HowToCard()
         }
+    }
+    if (state.isClearCacheAsked) {
+        ConfirmDialog(
+            title = stringResource(R.string.maps_cache_clear_title),
+            message = stringResource(R.string.maps_cache_clear_message),
+            confirmLabel = stringResource(R.string.maps_cache_clear),
+            dismissLabel = stringResource(R.string.backup_cancel),
+            onConfirm = { onEvent(OfflineMapsUiEvent.ConfirmClearCache) },
+            onDismiss = { onEvent(OfflineMapsUiEvent.DismissClearCache) },
+        )
     }
     state.deleteCandidate?.let { map ->
         ConfirmDialog(
@@ -182,6 +194,42 @@ private fun OnlineMapChoice(mode: OnlineMapMode, onSelect: (OnlineMapMode) -> Un
             text = stringResource(R.string.maps_online_hint),
             style = RideCompTheme.typography.caption,
             color = RideCompTheme.colors.textSecondary,
+        )
+    }
+}
+
+/**
+ * Tile cache (T11.11): maps already seen online show again without internet. Limit 50/150/300 MB, the space
+ * used now, and "clear" with confirmation.
+ */
+@Composable
+private fun MapCacheSection(state: OfflineMapsUiState, onEvent: (OfflineMapsUiEvent) -> Unit) {
+    val context = LocalContext.current
+    Column(verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS)) {
+        ChoiceChips(
+            label = stringResource(R.string.maps_cache_label),
+            choices = MapCacheLimit.entries.map { limit ->
+                Choice(limit, Formatter.formatShortFileSize(context, limit.bytes))
+            }.toImmutableList(),
+            selected = state.cacheLimit,
+            onSelect = { onEvent(OfflineMapsUiEvent.CacheLimit(it)) },
+            horizontalPadding = RideCompDimens.none,
+            columns = MapCacheLimit.entries.size,
+        )
+        Text(
+            text = stringResource(
+                R.string.maps_cache_hint,
+                state.cacheBytes?.let { Formatter.formatShortFileSize(context, it) } ?: "–",
+            ),
+            style = RideCompTheme.typography.caption,
+            color = RideCompTheme.colors.textSecondary,
+        )
+        BigButton(
+            text = stringResource(R.string.maps_cache_clear),
+            onClick = { onEvent(OfflineMapsUiEvent.AskClearCache) },
+            isEnabled = state.hasCachedTiles && !state.isClearingCache,
+            style = BigButtonStyle.SECONDARY,
+            size = BigButtonSize.SECONDARY,
         )
     }
 }

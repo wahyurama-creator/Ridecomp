@@ -34,6 +34,7 @@ import com.ridecomp.core.source.DispatcherProvider
 import com.ridecomp.core.source.GpxDocumentSource
 import com.ridecomp.core.source.LocationSource
 import com.ridecomp.core.source.Logger
+import com.ridecomp.core.source.MapCacheSource
 import com.ridecomp.core.source.NetworkStatusSource
 import com.ridecomp.core.source.PickedContactReader
 import com.ridecomp.core.source.RideController
@@ -63,6 +64,7 @@ import com.ridecomp.core.testing.FakeGpxDocumentSource
 import com.ridecomp.core.testing.FakeGuideRepository
 import com.ridecomp.core.testing.FakeIncidentRepository
 import com.ridecomp.core.testing.FakeLocationSource
+import com.ridecomp.core.testing.FakeMapCacheSource
 import com.ridecomp.core.testing.FakeNetworkStatusSource
 import com.ridecomp.core.testing.FakeOfflineMapRepository
 import com.ridecomp.core.testing.FakePickedContactReader
@@ -170,6 +172,7 @@ class AppModulesTest {
         single<SettingsRepository> { FakeSettingsRepository() }
         single<LocationSource> { FakeLocationSource() }
         single<NetworkStatusSource> { FakeNetworkStatusSource() }
+        single<MapCacheSource> { FakeMapCacheSource() }
         single<BatteryLevelSource> { FakeBatteryLevelSource() }
         single<RideController> { FakeRideController() }
         single<ExportFileStore> { FakeExportFileStore() }

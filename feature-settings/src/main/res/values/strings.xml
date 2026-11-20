@@ -368,7 +368,12 @@
     <string name="maps_online_always">Wi‑Fi &amp; data</string>
     <string name="maps_online_wifi">Wi‑Fi only</string>
     <string name="maps_online_off">Off</string>
-    <string name="maps_online_hint">With internet, a street map shows on the ride map page, route detail and ride history. Without internet, routes and tracks still show as a line. Map: OpenFreeMap (OpenStreetMap data), a few MB per hour of riding; the map server sees the area being shown.</string>
+    <string name="maps_online_hint">With internet, a street map shows on the ride map page, route detail and ride history. Without internet, maps seen before come from the cache; elsewhere routes and tracks show as a line. Map: OpenFreeMap (OpenStreetMap data), a few MB per hour of riding; the map server sees the area being shown.</string>
+    <string name="maps_cache_label">Map cache</string>
+    <string name="maps_cache_hint">Maps you have seen online show again without internet, without using data. Using %1$s now; the oldest map pieces go first when full.</string>
+    <string name="maps_cache_clear">Clear map cache</string>
+    <string name="maps_cache_clear_title">Clear the map cache?</string>
+    <string name="maps_cache_clear_message">Maps seen before no longer show without internet until you view them online again. Rides, routes and offline map files stay.</string>
     <string name="maps_offline_header">Offline maps (optional)</string>
     <string name="settings_maps_online_value">Online: %1$s</string>
 

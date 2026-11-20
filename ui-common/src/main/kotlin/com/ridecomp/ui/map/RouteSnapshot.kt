@@ -32,7 +32,8 @@ class RouteSnapshot(val image: ImageBitmap, val line: List<Offset>)
  * Renders the map around [trail] once, off screen, at [widthPx] × [heightPx] (09 §1: the MapSnapshotter is
  * owned by this composition, started here and cancelled when it leaves or the inputs change). Null until the
  * map is ready, and when there is no map or no line. Online tiles are fetched only when [isOnline], else the
- * offline regions in [regionPaths] are used.
+ * offline regions in [regionPaths] are used; never the tile cache, which may hold only part of the area and
+ * would leave holes in a shared image (T11.11).
  */
 @Composable
 @Suppress("LongParameterList") // The map inputs of RouteMap plus the image size and theme.
@@ -62,7 +63,9 @@ fun rememberRouteSnapshot(
         val points = trail.map { LatLng(it.latDeg, it.lonDeg) }
         val margin = (minOf(widthPx, heightPx) * SNAPSHOT_MARGIN).toInt()
         val options = MapSnapshotter.Options(widthPx, heightPx)
-            .withStyleBuilder(Style.Builder().fromJson(OfflineMapStyle.json(isOnline, regionPaths, colors)))
+            .withStyleBuilder(
+                Style.Builder().fromJson(OfflineMapStyle.json(isOnline, isCached = false, regionPaths, colors)),
+            )
             .withRegion(LatLngBounds.Builder().includes(points).build())
             .withPadding(margin, margin, margin, margin)
             .withPixelRatio(1f)

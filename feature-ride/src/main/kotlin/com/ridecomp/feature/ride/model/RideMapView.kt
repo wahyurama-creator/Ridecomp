@@ -17,17 +17,19 @@ import kotlinx.collections.immutable.toImmutableList
 @Immutable
 data class RideMapView(
     val isOnline: Boolean = false,
+    /** Offline: the tiles seen online before, from the cache (T11.11). */
+    val isCached: Boolean = false,
     val regionPaths: ImmutableList<String> = persistentListOf(),
     val trail: ImmutableList<RoutePoint> = persistentListOf(),
     /** "Back to start" is on (T7.2); [backToStart] is null until there is a position. */
     val isBackToStart: Boolean = false,
     val backToStart: BackToStart? = null,
 ) {
-    val hasMap: Boolean get() = isOnline || regionPaths.isNotEmpty()
+    val hasMap: Boolean get() = isOnline || isCached || regionPaths.isNotEmpty()
 
     companion object {
         fun of(tiles: MapTiles, trail: List<TrailPoint>): RideMapView =
-            RideMapView(tiles.isOnline, tiles.regionPaths.toImmutableList(), trail.withDistances())
+            RideMapView(tiles.isOnline, tiles.hasCache, tiles.regionPaths.toImmutableList(), trail.withDistances())
 
         private fun List<TrailPoint>.withDistances(): ImmutableList<RoutePoint> {
             var cumulativeM = 0.0

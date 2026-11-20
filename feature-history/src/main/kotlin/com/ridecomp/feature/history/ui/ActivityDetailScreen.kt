@@ -88,6 +88,7 @@ import com.ridecomp.ui.component.TrackSketch
 import com.ridecomp.ui.component.ValueTone
 import com.ridecomp.ui.component.ZoneBar
 import com.ridecomp.ui.component.ZoneBars
+import com.ridecomp.ui.map.MapSource
 import com.ridecomp.ui.map.RouteMap
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
@@ -128,7 +129,7 @@ fun ActivityDetailRoute(
 ) {
     val context = LocalContext.current
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val isOnlineMap by viewModel.isOnlineMap.collectAsStateWithLifecycle()
+    val mapSource by viewModel.mapSource.collectAsStateWithLifecycle()
     ObserveEffects(viewModel.effects) { effect ->
         when (effect) {
             ActivityDetailEffect.Deleted -> onDeleted()
@@ -150,7 +151,7 @@ fun ActivityDetailRoute(
         onShareCard = onShareCard,
         tipContent = tipContent,
         onOpenStravaSettings = onOpenStravaSettings,
-        isOnlineMap = isOnlineMap,
+        mapSource = mapSource,
         onOpenSensors = onOpenSensors,
         onOpenProfile = onOpenProfile,
         resultsContent = resultsContent,
@@ -185,7 +186,7 @@ fun ActivityDetailScreen(
     onOpenStravaSettings: () -> Unit = {},
     onOpenStravaActivity: (Long) -> Unit = {},
     /** Draws the track on the online map instead of the sketch (D-90). */
-    isOnlineMap: Boolean = false,
+    mapSource: MapSource = MapSource(),
     /** Heart-rate analysis (T11.5): pair a sensor, set HR max. */
     onOpenSensors: () -> Unit = {},
     onOpenProfile: () -> Unit = {},
@@ -224,7 +225,7 @@ fun ActivityDetailScreen(
                     // inside the column they leave no gap.
                     item(key = ITEM_HEADER) {
                         Column(verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap)) {
-                            if (state.route.size >= MIN_LINE_POINTS) RouteSketch(state, isOnlineMap)
+                            if (state.route.size >= MIN_LINE_POINTS) RouteSketch(state, mapSource)
                             Totals(activity.totals, format)
                             resultsContent?.invoke()
                         }
@@ -270,14 +271,15 @@ private val START_FORMAT: DateTimeFormatter = DateTimeFormatter.ofLocalizedDateT
 )
 
 /**
- * The ride's line: on the online map while there is internet (D-90), else without tiles with start in
- * green and finish in accent; hidden without GPS.
+ * The ride's line: on the online map while there is internet or from the tile cache (D-90, T11.11), else
+ * without tiles with start in green and finish in accent; hidden without GPS.
  */
 @Composable
-private fun RouteSketch(state: ActivityDetailUiState, isOnlineMap: Boolean) {
-    if (isOnlineMap) {
+private fun RouteSketch(state: ActivityDetailUiState, mapSource: MapSource) {
+    if (mapSource.hasTiles) {
         RouteMap(
-            isOnline = true,
+            isOnline = mapSource.isOnline,
+            isCached = mapSource.isCached,
             regionPaths = persistentListOf(),
             route = state.route,
             description = stringResource(R.string.detail_route),

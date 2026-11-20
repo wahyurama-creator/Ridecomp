@@ -237,6 +237,14 @@ public class FakeSettingsRepository(initial: RideSettings = RideSettings()) : Se
     override suspend fun setTheme(theme: AppTheme) {
         this.theme.value = theme
     }
+
+    public val mapCacheFilled: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
+    override fun observeMapCacheFilled(): Flow<Boolean> = mapCacheFilled
+
+    override suspend fun setMapCacheFilled(isFilled: Boolean) {
+        mapCacheFilled.value = isFilled
+    }
 }
 
 /** Sequential ids: "id-1", "id-2"… */

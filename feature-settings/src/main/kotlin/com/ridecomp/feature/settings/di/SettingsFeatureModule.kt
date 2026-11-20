@@ -32,7 +32,7 @@ val settingsFeatureModule = module {
     viewModel { SettingsViewModel(get()) }
     viewModel { LanguageViewModel(get(), get()) }
     viewModel { DisplayViewModel(get(), get()) }
-    factory { OfflineMapsUseCases(get(), get(), get(), get(), get(), get()) }
+    factory { OfflineMapsUseCases(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { OfflineMapsViewModel(get()) }
     viewModel { RideSettingsViewModel(get(), get()) }
     viewModel { OnboardingViewModel(get(), get(), get()) }

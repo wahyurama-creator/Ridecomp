@@ -2,6 +2,7 @@ package com.ridecomp.app.di
 
 import android.content.Context
 import com.ridecomp.app.BuildConfig
+import com.ridecomp.app.map.AndroidMapCacheSource
 import com.ridecomp.app.widget.RideCompWidget
 import com.ridecomp.core.engine.backup.BackupManifestCodec
 import com.ridecomp.core.engine.recording.RecordingSession
@@ -26,6 +27,7 @@ import com.ridecomp.core.source.GpxDocumentSource
 import com.ridecomp.core.source.IdGenerator
 import com.ridecomp.core.source.LocationSource
 import com.ridecomp.core.source.Logger
+import com.ridecomp.core.source.MapCacheSource
 import com.ridecomp.core.source.NetworkStatusSource
 import com.ridecomp.core.source.PickedContactReader
 import com.ridecomp.core.source.PressureSource
@@ -107,6 +109,7 @@ val platformModule = module {
     single { TrainerControl() }
     single<OfflineMapRepository> { AndroidOfflineMapStore(androidContext(), get(), get()) }
     single<NetworkStatusSource> { AndroidNetworkStatusSource(androidContext()) }
+    single<MapCacheSource> { AndroidMapCacheSource(androidContext(), get()) }
     single<SensorConnector> { AndroidSensorConnector(androidContext(), get(), get(), get()) }
     single<SmsGateway> { AndroidSmsGateway(androidContext(), get(), get()) }
     single<SafetyMessages> { AndroidSafetyMessages(androidContext()) }

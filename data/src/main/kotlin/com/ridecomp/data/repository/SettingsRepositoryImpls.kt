@@ -64,6 +64,13 @@ class SettingsRepositoryImpl(private val dao: SettingsDao) : SettingsRepository 
         dao.upsert(SettingEntity(SettingsKeys.THEME, theme.toDbValue()))
     }
 
+    override fun observeMapCacheFilled(): Flow<Boolean> =
+        dao.observe(SettingsKeys.MAP_CACHE_FILLED).map { it.toBoolean() }.distinctUntilChanged()
+
+    override suspend fun setMapCacheFilled(isFilled: Boolean) {
+        dao.upsert(SettingEntity(SettingsKeys.MAP_CACHE_FILLED, isFilled.toString()))
+    }
+
     override suspend fun saveDataPages(layout: DataPagesLayout?) {
         if (layout == null) {
             dao.delete(SettingsKeys.DATA_PAGES)

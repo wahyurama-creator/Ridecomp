@@ -240,6 +240,7 @@ Format: **Tujuan** · **Isi (urutan atas → bawah)** · **Aksi** · **Catatan &
 #### #26 Peta offline (`OfflineMaps.dc.html`)
 - **Isi:** TopBarBack "Peta offline" → kartu **Penyimpanan HP** (tersedia, bar pemakaian oranye/abu, "Peta RideComp memakai 186 MB") → **AREA TERSIMPAN**: kartu area (ikon peta hijau, nama, ukuran · diperbarui, tombol hapus merah 44) → **UNDUH AREA BARU**: peta dengan **kotak pilihan** putus-putus oranye (sudut bisa digeser) + atribusi → toggle **Hanya lewat Wi-Fi** → **Unduh area ini · ≈ 92 MB** → "Geser sudut kotak untuk memilih area · atau impor file peta".
 - **State:** progres unduhan (bar + batal); ruang tidak cukup → tombol nonaktif + pesan. Sumber tile mengikuti keputusan T3.3.
+- **Implementasi (T11.11, D-128):** di atas daftar: pilihan **Peta online** (Wi‑Fi & data · Hanya Wi‑Fi · Mati) lalu **Cache peta** (chip 50/150/300 MB, "Terpakai X", tombol **Hapus cache peta** dengan konfirmasi). Peta yang pernah tampil online dipakai lagi tanpa internet.
 
 #### #27 Backup & restore (`Backup.dc.html`)
 - **Isi:** TopBarBack → **WarningCard** "Backup terakhir 34 hari lalu" + tanggal · jumlah aktivitas · ride baru → kartu **Termasuk** / **Tidak termasuk** → ListCard: toggle **Lindungi dengan kata sandi** ("Disarankan: berisi lokasi & data HR") + input **KATA SANDI** (tersamar) + peringatan kuning "Lupa kata sandi = backup tidak bisa dibuka" → **Buat backup** (64, ikon unggah) + "Simpan ke Google Drive, WhatsApp, atau folder HP" → **Restore dari file** (56) + "Restore mengganti semua data · backup darurat dibuat otomatis dulu".

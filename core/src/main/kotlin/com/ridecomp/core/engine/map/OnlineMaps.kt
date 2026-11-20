@@ -14,6 +14,21 @@ public enum class OnlineMapMode {
     OFF,
 }
 
+/** Most space the online map's tile cache may use; the least recently used tiles go first (T11.11, D-128). */
+public enum class MapCacheLimit(public val bytes: Long) {
+    SMALL(50L * BYTES_PER_MB),
+    MEDIUM(150L * BYTES_PER_MB),
+    LARGE(300L * BYTES_PER_MB),
+    ;
+
+    public companion object {
+        public val DEFAULT: MapCacheLimit = MEDIUM
+    }
+}
+
+/** Decimal megabytes, as Android shows file sizes (Formatter): the 150 MB choice reads "150 MB". */
+private const val BYTES_PER_MB = 1_000_000L
+
 /** The phone's default network, as far as the map cares. */
 public data class NetworkStatus(val isConnected: Boolean, val isUnmetered: Boolean) {
     public companion object {
@@ -29,11 +44,15 @@ public fun OnlineMapMode.allows(network: NetworkStatus): Boolean = when (this) {
 }
 
 /**
- * What a map can show right now (D-90): online tiles while there is internet and the setting allows it,
- * else the imported offline regions; with neither there is no map, only the line (breadcrumb).
+ * What a map can show right now (D-90, T11.11): online tiles while there is internet and the setting allows
+ * it; otherwise the tiles seen online before ([hasCache], read from the cache without any network) and the
+ * imported offline regions. With none of them there is no map, only the line (breadcrumb).
  */
-public data class MapTiles(val isOnline: Boolean, val regionPaths: List<String>) {
-    public val hasMap: Boolean get() = isOnline || regionPaths.isNotEmpty()
+public data class MapTiles(val isOnline: Boolean, val regionPaths: List<String>, val hasCache: Boolean = false) {
+    public val hasMap: Boolean get() = isOnline || hasCache || regionPaths.isNotEmpty()
+
+    /** Online tiles drawn, from the network or from the cache only. */
+    public val usesOnlineTiles: Boolean get() = isOnline || hasCache
 
     public companion object {
         public val NONE: MapTiles = MapTiles(isOnline = false, regionPaths = emptyList())
