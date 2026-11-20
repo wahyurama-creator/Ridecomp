@@ -430,4 +430,5 @@
     <string name="home_map_error_download">Unduhan terhenti. Lanjut dari bagian terakhir.</string>
     <string name="home_map_error_file">File peta rusak dan sudah dihapus. Coba lagi.</string>
     <string name="home_map_error_space">Ruang penyimpanan HP tidak cukup.</string>
+    <string name="home_map_error_limit">Batas peta offline penuh. Hapus peta lain atau naikkan batas di Setelan → Peta.</string>
 </resources>

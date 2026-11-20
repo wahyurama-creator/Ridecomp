@@ -212,8 +212,8 @@
     <string name="offline_maps_storage_title">Penyimpanan HP</string>
     <string name="offline_maps_storage">Peta RideComp memakai %1$s · tersisa %2$s</string>
     <string name="offline_maps_item">%1$s · diimpor %2$s</string>
-    <string name="offline_maps_howto_title">Dari mana file peta?</string>
-    <string name="offline_maps_howto">Peta berasal dari OpenStreetMap. Buat file wilayah (mis. Jawa Tengah) dengan perintah \"pmtiles extract\" dari build peta Protomaps di komputer, lalu salin file .pmtiles ke HP dan impor di sini. Peta dipakai tanpa internet.</string>
+    <string name="offline_maps_howto_title">File peta sendiri (opsional)</string>
+    <string name="offline_maps_howto">Peta provinsi di atas sudah cukup untuk kebanyakan ride. Untuk area lain, buat file wilayah dengan perintah \"pmtiles extract\" dari build peta Protomaps di komputer, salin file .pmtiles ke HP, lalu impor di sini.</string>
     <string name="offline_maps_error_not_pmtiles">Ini bukan file peta PMTiles.</string>
     <string name="offline_maps_error_version">Versi file PMTiles ini belum didukung (butuh v3).</string>
     <string name="offline_maps_error_not_vector">File ini berisi peta gambar; RideComp butuh peta vektor.</string>
@@ -244,7 +244,7 @@
     <string name="guide_navigation_body" formatted="false">Saat mengikuti rute, halaman Peta menunjukkan rute (oranye), bagian yang sudah dilalui (biru), dan posisimu.\n• Keluar jalur lebih dari ~50 m selama 10 detik: HP bergetar panjang dan berbunyi, muncul banner merah. Saat kembali ke rute: getar dua kali.\n• Belokan tajam: peringatan sekitar 150 m dan 30 m sebelumnya.\n• Tanjakan: peringatan 500 m sebelumnya, lalu halaman tanjakan menunjukkan sisa jarak, sisa naik, dan grade.\nGeser peta untuk melihat sekitar; tekan tombol posisi untuk kembali mengikuti.</string>
     <string name="guide_offline_maps_title">Peta</string>
     <string name="guide_offline_maps_summary">Peta jalan saat ada internet; garis saat tidak ada.</string>
-    <string name="guide_offline_maps_body" formatted="false">Saat ada internet (Wi‑Fi atau data seluler) RideComp menampilkan peta jalan di halaman Peta saat ride, di detail rute, dan di riwayat. Peta dari OpenFreeMap (data OpenStreetMap), memakai beberapa MB per jam ride.\nTanpa internet, rute dan jejakmu tetap tampil sebagai garis (breadcrumb), jadi rute tetap bisa diikuti. Mode hemat baterai juga memakai garis.\nSetelan → Peta → Peta online: Wi‑Fi &amp; data, Hanya Wi‑Fi, atau Mati.\nOpsional, untuk ride tanpa sinyal: di komputer, buat file wilayah dengan alat \"pmtiles\" dari build peta Protomaps, salin file .pmtiles ke HP, lalu impor di Setelan → Peta.</string>
+    <string name="guide_offline_maps_body" formatted="false">Saat ada internet (Wi‑Fi atau data seluler) RideComp menampilkan peta jalan di halaman Peta saat ride, detail rute, dan riwayat. Peta: OpenFreeMap (data OpenStreetMap), beberapa MB per jam ride.\nPeta yang pernah tampil disimpan di cache (Setelan → Peta, 50–300 MB) dan dipakai lagi tanpa internet.\nUntuk ride tanpa sinyal: Beranda menawarkan peta provinsi wilayahmu (dari ride terakhir), atau pilih di Setelan → Peta → Peta per provinsi. Unduhan lewat Wi‑Fi, bisa dijeda dan dilanjutkan.\nTanpa peta sama sekali, rute dan jejak tetap tampil sebagai garis.\nSetelan → Peta → Peta online: Wi‑Fi &amp; data, Hanya Wi‑Fi, atau Mati.</string>
     <string name="guide_sensors_title">Menyambungkan sensor</string>
     <string name="guide_sensors_summary">Detak jantung, cadence, kecepatan, dan power.</string>
     <string name="guide_sensors_body" formatted="false">Sensor Bluetooth menambah data yang tidak bisa diukur HP: detak jantung (sabuk dada/gelang), cadence (putaran pedal), kecepatan roda, dan power meter.\n1. Nyalakan sensor (pakai sabuk HR, putar pedal/roda agar sensor bangun).\n2. Buka tab Sensor; pencarian berjalan otomatis (tekan Scan ulang bila perlu).\n3. Pilih sensor yang muncul untuk memasangkannya. Cukup sekali.\n4. Saat ride berikutnya, sensor tersambung otomatis. Indikator HR/CAD/PWR di bagian atas layar ride berwarna hijau bila tersambung.\nSensor putus di tengah ride? Rekaman tetap jalan dan RideComp mencoba menyambung ulang.</string>
@@ -290,7 +290,7 @@
     <string name="guide_tip_sensors">Sensor detak jantung, cadence, kecepatan, dan power tersambung lewat Bluetooth. Nyalakan sensor, lalu ketuk di daftar untuk dipasangkan sekali.</string>
     <string name="guide_tip_export">Ketuk Upload ke Strava di bawah; tautkan akun sekali di Setelan → Strava. Untuk aplikasi lain, kirim file FIT.</string>
     <string name="guide_tip_backup">Ride-mu hanya tersimpan di HP ini. Sesekali buat backup ke Google Drive agar tidak pernah hilang.</string>
-    <string name="guide_tip_offline_maps">Peta bisa dipakai tanpa internet dari file wilayah (.pmtiles) yang dibuat di komputer lalu diimpor di sini.</string>
+    <string name="guide_tip_offline_maps">Peta yang pernah tampil online dipakai lagi tanpa internet. Untuk wilayah yang belum pernah dilihat, unduh peta provinsi di bawah.</string>
     <string name="settings_strava">Strava</string>
     <string name="strava_connect_title">Strava</string>
     <string name="strava_connect_subtitle">Upload ride otomatis</string>
@@ -369,6 +369,11 @@
     <string name="maps_regions_cancel">Batalkan unduhan %1$s</string>
     <string name="maps_regions_mobile_data">Unduh juga lewat data seluler</string>
     <string name="maps_regions_mobile_data_hint">Bila tidak dinyalakan, peta provinsi hanya diunduh lewat Wi‑Fi.</string>
+    <string name="offline_maps_error_limit">Batas peta offline penuh. Hapus peta lain atau naikkan batas.</string>
+    <string name="offline_maps_low_space">Sisa ruang HP kurang dari 500 MB: rekaman ride juga butuh ruang.</string>
+    <string name="offline_maps_limit_label">Batas peta offline</string>
+    <string name="offline_maps_limit_hint">Peta impor dan peta provinsi bersama-sama. Peta yang tidak muat tidak disimpan.</string>
+    <string name="maps_regions_limit">%1$s · tidak muat dalam batas peta offline</string>
     <string name="maps_offline_header">Peta offline (opsional)</string>
     <string name="settings_maps_online_value">Online: %1$s</string>
 

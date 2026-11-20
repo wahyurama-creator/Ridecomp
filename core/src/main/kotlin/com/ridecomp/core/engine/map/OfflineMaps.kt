@@ -16,7 +16,29 @@ public object OfflineMapConfig {
 
     public const val FILE_EXTENSION: String = ".pmtiles"
     public const val MAX_NAME_LENGTH: Int = 60
+
+    /** Below this free space Settings → Map warns (T11.14). */
+    public const val LOW_SPACE_WARNING_BYTES: Long = 500L * BYTES_PER_MB
 }
+
+/** Most space all offline maps together may use: imports and province maps (T11.14, D-131). */
+public enum class OfflineMapLimit(public val bytes: Long) {
+    SMALL(500L * BYTES_PER_MB),
+    MEDIUM(1_000L * BYTES_PER_MB),
+    LARGE(2_000L * BYTES_PER_MB),
+    ;
+
+    /** Space left for a map named [name] when [maps] are stored (a map of the same name is replaced). */
+    public fun roomFor(name: String, maps: List<OfflineMap>): Long =
+        (bytes - maps.filterNot { it.name == name }.sumOf { it.sizeBytes }).coerceAtLeast(0)
+
+    public companion object {
+        public val DEFAULT: OfflineMapLimit = MEDIUM
+    }
+}
+
+/** Decimal megabytes, as Android shows file sizes. */
+private const val BYTES_PER_MB = 1_000_000L
 
 /** Geographic box in degrees. */
 public data class MapBounds(val minLon: Double, val minLat: Double, val maxLon: Double, val maxLat: Double) {
@@ -38,7 +60,17 @@ public data class OfflineMap(
 )
 
 /** Why a file could not be imported. */
-public enum class MapImportError { NOT_PMTILES, UNSUPPORTED_VERSION, NOT_VECTOR, TOO_LARGE, NO_SPACE, READ_FAILED }
+public enum class MapImportError {
+    NOT_PMTILES,
+    UNSUPPORTED_VERSION,
+    NOT_VECTOR,
+    TOO_LARGE,
+    NO_SPACE,
+    READ_FAILED,
+
+    /** The offline maps would exceed the chosen total (T11.14). */
+    TOTAL_LIMIT,
+}
 
 /** The maps that cover a point, e.g. the rider's position (first match wins in the style). */
 public fun List<OfflineMap>.covering(latDeg: Double, lonDeg: Double): List<OfflineMap> =

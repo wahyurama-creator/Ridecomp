@@ -29,9 +29,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.engine.map.MapCacheLimit
 import com.ridecomp.core.engine.map.MapDownload
 import com.ridecomp.core.engine.map.MapImportError
+import com.ridecomp.core.engine.map.MapPackError
 import com.ridecomp.core.engine.map.MapRegionState
 import com.ridecomp.core.engine.map.MapRegionStatus
 import com.ridecomp.core.engine.map.OfflineMap
+import com.ridecomp.core.engine.map.OfflineMapConfig
+import com.ridecomp.core.engine.map.OfflineMapLimit
 import com.ridecomp.core.engine.map.OnlineMapMode
 import com.ridecomp.feature.settings.R
 import com.ridecomp.feature.settings.viewmodel.OfflineMapsUiEvent
@@ -136,7 +139,7 @@ fun OfflineMapsScreen(
             if (state.regions.isNotEmpty()) RegionMapsSection(state, onEvent)
             SectionHeader(stringResource(R.string.maps_offline_header), horizontalPadding = RideCompDimens.none)
             tipContent?.invoke()
-            StorageCard(state)
+            StorageCard(state, onEvent)
             val imported = state.importedMaps
             if (imported.isNotEmpty()) {
                 SectionHeader(stringResource(R.string.offline_maps_saved), horizontalPadding = RideCompDimens.none)
@@ -284,7 +287,11 @@ private fun RegionRow(state: MapRegionState, hasDivider: Boolean, onEvent: (Offl
             size,
         )
         is MapDownload.Paused -> stringResource(R.string.maps_regions_paused, size)
-        is MapDownload.Failed -> stringResource(R.string.maps_regions_failed, size)
+        is MapDownload.Failed -> if (download.error == MapPackError.TOTAL_LIMIT) {
+            stringResource(R.string.maps_regions_limit, size)
+        } else {
+            stringResource(R.string.maps_regions_failed, size)
+        }
         null -> stringResource(state.status.labelRes(), size)
     }
     ListCardRow(
@@ -327,6 +334,29 @@ private fun MapRegionStatus.labelRes(): Int = when (this) {
     MapRegionStatus.UPDATE_AVAILABLE -> R.string.maps_regions_update
 }
 
+/** Most space all offline maps may use: 500 MB, 1 GB or 2 GB (T11.14, default 1 GB). */
+@Composable
+private fun OfflineLimitChoice(state: OfflineMapsUiState, onEvent: (OfflineMapsUiEvent) -> Unit) {
+    val context = LocalContext.current
+    Column(verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingS)) {
+        ChoiceChips(
+            label = stringResource(R.string.offline_maps_limit_label),
+            choices = OfflineMapLimit.entries.map { limit ->
+                Choice(limit, Formatter.formatShortFileSize(context, limit.bytes))
+            }.toImmutableList(),
+            selected = state.offlineMapLimit,
+            onSelect = { onEvent(OfflineMapsUiEvent.OfflineLimit(it)) },
+            horizontalPadding = RideCompDimens.none,
+            columns = OfflineMapLimit.entries.size,
+        )
+        Text(
+            text = stringResource(R.string.offline_maps_limit_hint),
+            style = RideCompTheme.typography.caption,
+            color = RideCompTheme.colors.textSecondary,
+        )
+    }
+}
+
 /** Short name of an online map mode, also used in the Settings summary. */
 @StringRes
 internal fun OnlineMapMode.labelRes(): Int = when (this) {
@@ -337,7 +367,7 @@ internal fun OnlineMapMode.labelRes(): Int = when (this) {
 
 /** "Peta RideComp memakai 186 MB" with a usage bar (13-UI-SCREENS #26). */
 @Composable
-private fun StorageCard(state: OfflineMapsUiState) {
+private fun StorageCard(state: OfflineMapsUiState, onEvent: (OfflineMapsUiEvent) -> Unit) {
     val context = LocalContext.current
     val colors = RideCompTheme.colors
     val free = state.freeBytes
@@ -372,8 +402,17 @@ private fun StorageCard(state: OfflineMapsUiState) {
                 style = RideCompTheme.typography.caption,
                 color = colors.textSecondary,
             )
+            // Little space left: say so before a download or import is refused (T11.14).
+            if (free < OfflineMapConfig.LOW_SPACE_WARNING_BYTES) {
+                Text(
+                    text = stringResource(R.string.offline_maps_low_space),
+                    style = RideCompTheme.typography.caption,
+                    color = colors.warnText,
+                )
+            }
         }
     }
+    OfflineLimitChoice(state, onEvent)
 }
 
 @Composable
@@ -434,6 +473,7 @@ private fun MapImportError.messageRes(): Int = when (this) {
     MapImportError.NOT_VECTOR -> R.string.offline_maps_error_not_vector
     MapImportError.TOO_LARGE -> R.string.offline_maps_error_too_large
     MapImportError.NO_SPACE -> R.string.offline_maps_error_no_space
+    MapImportError.TOTAL_LIMIT -> R.string.offline_maps_error_limit
     MapImportError.READ_FAILED -> R.string.offline_maps_error_read
 }
 

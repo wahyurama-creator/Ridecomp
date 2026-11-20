@@ -7,8 +7,10 @@ import com.ridecomp.core.testing.FakeMapRegionIndexSource
 import com.ridecomp.core.testing.FakeNetworkStatusSource
 import com.ridecomp.core.testing.FakeOfflineMapRepository
 import com.ridecomp.core.testing.FakeRidePositionRepository
+import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.usecase.DismissMapRegionOfferUseCase
 import com.ridecomp.core.usecase.LoadMapRegionIndexUseCase
+import com.ridecomp.core.usecase.MapLimitCheck
 import com.ridecomp.core.usecase.MapPackDownloads
 import com.ridecomp.core.usecase.ObserveMapRegionOfferUseCase
 import com.ridecomp.core.usecase.ObserveMapRegionsUseCase
@@ -25,6 +27,7 @@ internal fun emptyHomeMapUseCases(controller: RideController): HomeMapUseCases {
         state,
         FakeNetworkStatusSource(),
         controller,
+        MapLimitCheck(maps, FakeSettingsRepository()),
         CoroutineScope(Dispatchers.Unconfined),
     )
     val regions = ObserveMapRegionsUseCase(

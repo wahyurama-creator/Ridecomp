@@ -86,11 +86,14 @@ class AndroidMapPackDownloader(
             val code = connection.responseCode
             // GitHub redirects to its file host; never leave HTTPS (SEC-NET-01 also forbids cleartext).
             val isHttps = connection.url.toString().startsWith(HTTPS)
-            if (code !in ACCEPTED_CODES || !isHttps) {
-                logger.info(TAG) { "Map pack replied $code" }
+            val from = if (code == HttpURLConnection.HTTP_PARTIAL) start else 0L
+            // The length the server announces must match the index before anything is written (T11.14).
+            val length = connection.contentLengthLong
+            val isExpectedLength = length < 0 || length == file.sizeBytes - from
+            if (code !in ACCEPTED_CODES || !isHttps || !isExpectedLength) {
+                logger.info(TAG) { "Map pack replied $code, length $length" }
                 MapPackError.DOWNLOAD_FAILED
             } else {
-                val from = if (code == HttpURLConnection.HTTP_PARTIAL) start else 0L
                 copy(connection, partial, from, file.sizeBytes, onProgress)
             }
         } catch (error: IOException) {

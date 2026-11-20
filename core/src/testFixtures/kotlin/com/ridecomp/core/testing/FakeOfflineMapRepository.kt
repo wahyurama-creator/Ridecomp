@@ -19,11 +19,20 @@ public class FakeOfflineMapRepository(public var freeSpace: Long = Long.MAX_VALU
 
     override fun observeAll(): Flow<List<OfflineMap>> = maps
 
-    override suspend fun import(uri: String, name: String): Outcome<OfflineMap, MapImportError> {
+    public var importSize: Long = SIZE
+    public var cleanedKeep: Set<String>? = null
+
+    override suspend fun import(uri: String, name: String, maxBytes: Long): Outcome<OfflineMap, MapImportError> {
         failure?.let { return it.asFailure() }
-        val map = OfflineMap(name, SIZE, PmTilesInfo(MapBounds(0.0, 0.0, 1.0, 1.0), 0, MAX_ZOOM), 0, "/maps/$name")
+        if (importSize > maxBytes) return MapImportError.TOTAL_LIMIT.asFailure()
+        val map =
+            OfflineMap(name, importSize, PmTilesInfo(MapBounds(0.0, 0.0, 1.0, 1.0), 0, MAX_ZOOM), 0, "/maps/$name")
         maps.value = maps.value.filterNot { it.name == name } + map
         return map.asSuccess()
+    }
+
+    override suspend fun cleanTemporary(keepDownloads: Set<String>) {
+        cleanedKeep = keepDownloads
     }
 
     /** A map added by another path than import (a downloaded pack, T11.12). */

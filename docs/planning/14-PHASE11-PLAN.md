@@ -70,7 +70,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`); ganti 
 - [x] T11.11 Cache peta otomatis
 - [x] T11.13 Paket peta per provinsi (skrip pemilik)
 - [x] T11.12 Peta wilayah otomatis
-- [ ] T11.14 Penyimpanan, baterai, keamanan
+- [x] T11.14 Penyimpanan, baterai, keamanan
 
 **Penutup fase**
 - [ ] Anggaran performa §8 terukur untuk semua task
@@ -197,7 +197,7 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 - Bila satu provinsi > 300 MB, pecah menjadi kota/kabupaten besar (indeks mendukung beberapa file per wilayah).
 
 #### T11.14 Penyimpanan, baterai, keamanan
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-20 · Feature Report: [`T11.14-map-storage.md`](../reports/features/T11.14-map-storage.md) · D-131 (batas total 500 MB/1 GB/2 GB, default 1 GB)
 - Batas total peta offline (mis. 1 GB, bisa diubah), peringatan ruang < 500 MB, validasi header PMTiles (sudah ada), HTTPS saja, ukuran unduhan dicek dulu (SEC-IN), unduhan dapat dibatalkan, file sementara dibersihkan.
 - Atribusi OpenStreetMap/Protomaps tampil di peta offline.
 

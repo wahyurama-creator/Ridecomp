@@ -7,6 +7,7 @@ import com.ridecomp.core.engine.map.MapImportError
 import com.ridecomp.core.engine.map.MapRegion
 import com.ridecomp.core.engine.map.MapRegionState
 import com.ridecomp.core.engine.map.OfflineMap
+import com.ridecomp.core.engine.map.OfflineMapLimit
 import com.ridecomp.core.engine.map.OnlineMapMode
 import com.ridecomp.core.usecase.ClearMapCacheUseCase
 import com.ridecomp.core.usecase.DeleteMapRegionUseCase
@@ -46,6 +47,8 @@ data class OfflineMapsUiState(
     /** The cache holds tiles; "clear" is offered only then. */
     val hasCachedTiles: Boolean = false,
     val cacheLimit: MapCacheLimit = MapCacheLimit.DEFAULT,
+    /** Space all offline maps may use (T11.14). */
+    val offlineMapLimit: OfflineMapLimit = OfflineMapLimit.DEFAULT,
     val isClearCacheAsked: Boolean = false,
     val isClearingCache: Boolean = false,
     /** Province maps of the index (T11.12), the rider's region first. */
@@ -79,6 +82,8 @@ sealed interface OfflineMapsUiEvent {
     data class OnlineMode(val mode: OnlineMapMode) : OfflineMapsUiEvent
 
     data class CacheLimit(val limit: MapCacheLimit) : OfflineMapsUiEvent
+
+    data class OfflineLimit(val limit: OfflineMapLimit) : OfflineMapsUiEvent
 
     data object AskClearCache : OfflineMapsUiEvent
 
@@ -133,7 +138,13 @@ class OfflineMapsViewModel(private val useCases: OfflineMapsUseCases) :
     init {
         viewModelScope.launch {
             useCases.observeSettings().collect { settings ->
-                updateState { copy(onlineMapMode = settings.onlineMapMode, cacheLimit = settings.mapCacheLimit) }
+                updateState {
+                    copy(
+                        onlineMapMode = settings.onlineMapMode,
+                        cacheLimit = settings.mapCacheLimit,
+                        offlineMapLimit = settings.offlineMapLimit,
+                    )
+                }
             }
         }
         refreshCache()
@@ -172,6 +183,9 @@ class OfflineMapsViewModel(private val useCases: OfflineMapsUseCases) :
                 useCases.saveSettings(useCases.observeSettings().first().copy(onlineMapMode = event.mode))
             }
             is OfflineMapsUiEvent.CacheLimit -> viewModelScope.launch { useCases.setCacheLimit(event.limit) }
+            is OfflineMapsUiEvent.OfflineLimit -> viewModelScope.launch {
+                useCases.saveSettings(useCases.observeSettings().first().copy(offlineMapLimit = event.limit))
+            }
             OfflineMapsUiEvent.AskClearCache -> updateState { copy(isClearCacheAsked = true) }
             OfflineMapsUiEvent.DismissClearCache -> updateState { copy(isClearCacheAsked = false) }
             OfflineMapsUiEvent.ConfirmClearCache -> clearCache()

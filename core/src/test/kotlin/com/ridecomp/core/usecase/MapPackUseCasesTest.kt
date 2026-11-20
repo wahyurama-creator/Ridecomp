@@ -17,6 +17,7 @@ import com.ridecomp.core.testing.FakeNetworkStatusSource
 import com.ridecomp.core.testing.FakeOfflineMapRepository
 import com.ridecomp.core.testing.FakeRideController
 import com.ridecomp.core.testing.FakeRidePositionRepository
+import com.ridecomp.core.testing.FakeSettingsRepository
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -33,6 +34,7 @@ import kotlinx.coroutines.test.runTest
 @OptIn(ExperimentalCoroutinesApi::class)
 class MapPackUseCasesTest {
     private val maps = FakeOfflineMapRepository()
+    private val settings = FakeSettingsRepository()
     private val state = FakeMapPackStateRepository()
     private val network = FakeNetworkStatusSource(NetworkStatus(isConnected = true, isUnmetered = true))
     private val rides = FakeRideController()
@@ -40,7 +42,8 @@ class MapPackUseCasesTest {
     private val downloader = FakeMapPackDownloader(maps)
     private val index = FakeMapRegionIndexSource(MapRegionIndex(1, VERSION, listOf(JATENG, DIY)))
 
-    private fun TestScope.downloads() = MapPackDownloads(downloader, state, network, rides, this)
+    private fun TestScope.downloads() =
+        MapPackDownloads(downloader, state, network, rides, MapLimitCheck(maps, settings), this)
 
     private fun TestScope.regions(downloads: MapPackDownloads = downloads()) =
         ObserveMapRegionsUseCase(LoadMapRegionIndexUseCase(index), maps, state, positions, downloads)
@@ -168,6 +171,20 @@ class MapPackUseCasesTest {
         downloads.start(DIY, VERSION)
         advanceUntilIdle()
         assertEquals(MapDownload.Failed(MapPackError.RIDING), downloads.downloads.value["di-yogyakarta"])
+    }
+
+    @Test
+    fun `a region that does not fit the total limit is refused, stale partial files are cleaned`() = runTest {
+        maps.importSize = 990_000_000L
+        maps.import("content://x", "jatim", Long.MAX_VALUE)
+        val downloads = downloads()
+
+        downloads.start(DIY, VERSION)
+        advanceUntilIdle()
+        assertEquals(MapDownload.Failed(MapPackError.TOTAL_LIMIT), downloads.downloads.value["di-yogyakarta"])
+
+        regions(downloads)().first()
+        assertEquals(setOf("jawa-tengah", "di-yogyakarta"), maps.cleanedKeep)
     }
 
     private companion object {

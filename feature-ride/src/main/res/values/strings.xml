@@ -437,4 +437,5 @@
     <string name="home_map_error_download">The download stopped. It continues where it stopped.</string>
     <string name="home_map_error_file">The map file was damaged and removed. Try again.</string>
     <string name="home_map_error_space">Not enough free space on the phone.</string>
+    <string name="home_map_error_limit">The offline map limit is full. Delete a map or raise the limit in Settings → Map.</string>
 </resources>
