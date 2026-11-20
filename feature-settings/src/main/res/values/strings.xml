@@ -385,7 +385,7 @@
     <string name="maps_regions_download">Download map %1$s</string>
     <string name="maps_regions_cancel">Cancel download %1$s</string>
     <string name="maps_regions_mobile_data">Also download on mobile data</string>
-    <string name="maps_regions_mobile_data_hint">Off: province maps download over Wi‑Fi only.</string>
+    <string name="maps_regions_mobile_data_hint">When off, province maps download over Wi‑Fi only.</string>
     <string name="maps_offline_header">Offline maps (optional)</string>
     <string name="settings_maps_online_value">Online: %1$s</string>
 

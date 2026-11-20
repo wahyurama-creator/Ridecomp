@@ -6,8 +6,8 @@
 - **Rilis terakhir:** **0.9.3** (beta), 2026-11-18 · [GitHub Releases](https://github.com/wahyurama-creator/Ridecomp/releases). Skema DB **v10**.
 - **Fase selesai:** 0–5, 7, 9, dan rilis beta & masukan pengguna (Fase 8/10). Ringkasan: [`planning/06-ROADMAP.md`](planning/06-ROADMAP.md).
 - **Fase berjalan:** **Fase 11 — Analisa ride, usaha terbaik, tema & peta offline.** Rencana lengkap: [`planning/14-PHASE11-PLAN.md`](planning/14-PHASE11-PLAN.md). Keputusan K1–K5 sudah dijawab (D-109…D-113).
-- **Task terakhir:** T11.13 — Paket peta per provinsi (selesai 2026-11-20, [Feature Report](reports/features/T11.13-region-packs.md); DI Yogyakarta diunggah, 37 provinsi lain via `scripts/maps/README.md`); sebelumnya T11.11 cache peta.
-- **Task berikutnya:** **T11.12 — Peta wilayah otomatis** (tawaran unduh dari indeks `assets/maps/regions.json`, 14-PHASE11-PLAN §5). Belum dimulai.
+- **Task terakhir:** T11.12 — Peta wilayah otomatis (selesai 2026-11-20, [Feature Report](reports/features/T11.12-region-maps.md)); sebelumnya T11.13 paket peta per provinsi.
+- **Task berikutnya:** **T11.14 — Penyimpanan, baterai, keamanan** (peta offline, 14-PHASE11-PLAN §5), lalu penutup Fase 11. Belum dimulai.
 
 ## Daftar centang Fase 11
 Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.md` §4 setiap kali task selesai.
@@ -27,8 +27,8 @@ Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.m
 - [x] T11.10 Audit tema terang
 - [x] T11.11 Cache peta otomatis
 - [x] T11.13 Paket peta per provinsi
-- [ ] T11.12 Peta wilayah otomatis ← **berikutnya**
-- [ ] T11.14 Penyimpanan, baterai, keamanan peta
+- [x] T11.12 Peta wilayah otomatis
+- [ ] T11.14 Penyimpanan, baterai, keamanan peta ← **berikutnya**
 
 **Setelah Fase 11 — Fase 12: Detak jantung dari smartwatch** ([`planning/15-PHASE12-PLAN.md`](planning/15-PHASE12-PLAN.md)):
 - [ ] T12.1 Uji kompatibilitas jam tangan · Huawei Watch Fit 5 Pro diuji (A1, didukung), Aolon menunggu pemilik · [Feature Report](reports/features/T12.1-smartwatch-compat.md) (menunggu review)

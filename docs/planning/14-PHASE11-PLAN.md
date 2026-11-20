@@ -69,7 +69,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`); ganti 
 **11E Peta offline**
 - [x] T11.11 Cache peta otomatis
 - [x] T11.13 Paket peta per provinsi (skrip pemilik)
-- [ ] T11.12 Peta wilayah otomatis
+- [x] T11.12 Peta wilayah otomatis
 - [ ] T11.14 Penyimpanan, baterai, keamanan
 
 **Penutup fase**
@@ -181,7 +181,7 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 - Setelan → Peta: ukuran cache + "Hapus cache peta".
 
 #### T11.12 Peta wilayah otomatis (K4, K5)
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-20 · Feature Report: [`T11.12-region-maps.md`](../reports/features/T11.12-region-maps.md) · D-130 (dijeda saat aplikasi ke latar; daftar manual di Setelan → Peta)
 - **Indeks wilayah** kecil (JSON di dalam APK, ±20 KB): nama provinsi, kotak batas (bbox), nama file, ukuran, versi, SHA-256. Dibuat oleh skrip pemilik (lihat T11.13).
 - **Deteksi wilayah:** dari lokasi terakhir yang sudah ada (titik akhir ride terakhir atau posisi di persiapan ride) dicocokkan ke bbox; **tidak ada permintaan GPS baru** (BAT-01).
 - **Tawaran:** kartu di Beranda / Setelan → Peta offline: "Unduh peta wilayahmu: Jawa Tengah · ± 120 MB · Wi‑Fi" (Unduh / Nanti); muncul lagi bila pengguna berada di wilayah lain yang belum diunduh. Tidak pernah saat ride berjalan.
