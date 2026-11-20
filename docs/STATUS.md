@@ -6,8 +6,8 @@
 - **Rilis terakhir:** **0.9.3** (beta), 2026-11-18 · [GitHub Releases](https://github.com/wahyurama-creator/Ridecomp/releases). Skema DB **v10**.
 - **Fase selesai:** 0–5, 7, 9, dan rilis beta & masukan pengguna (Fase 8/10). Ringkasan: [`planning/06-ROADMAP.md`](planning/06-ROADMAP.md).
 - **Fase berjalan:** **Fase 11 — Analisa ride, usaha terbaik, tema & peta offline.** Rencana lengkap: [`planning/14-PHASE11-PLAN.md`](planning/14-PHASE11-PLAN.md). Keputusan K1–K5 sudah dijawab (D-109…D-113).
-- **Task terakhir:** T11.9 — Pilihan tema (selesai 2026-11-20, [Feature Report](reports/features/T11.9-theme-choice.md)); sebelumnya T11.8 usaha terbaik otomatis.
-- **Task berikutnya:** **T11.10 — Audit tampilan terang** (kontras WCAG semua layar, 14-PHASE11-PLAN §5). Belum dimulai.
+- **Task terakhir:** T11.10 — Audit tampilan terang (selesai 2026-11-20, [Feature Report](reports/features/T11.10-light-audit.md)); sebelumnya T11.9 pilihan tema.
+- **Task berikutnya:** **T11.11 — Cache peta otomatis** (14-PHASE11-PLAN §5, 11E). Belum dimulai.
 
 ## Daftar centang Fase 11
 Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.md` §4 setiap kali task selesai.
@@ -24,8 +24,8 @@ Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.m
 - [x] T11.7 Bagian "Hasil"
 - [x] T11.8 Usaha terbaik otomatis
 - [x] T11.9 Pilihan tema
-- [ ] T11.10 Audit tema terang ← **berikutnya**
-- [ ] T11.11 Cache peta otomatis
+- [x] T11.10 Audit tema terang
+- [ ] T11.11 Cache peta otomatis ← **berikutnya**
 - [ ] T11.13 Paket peta per provinsi
 - [ ] T11.12 Peta wilayah otomatis
 - [ ] T11.14 Penyimpanan, baterai, keamanan peta

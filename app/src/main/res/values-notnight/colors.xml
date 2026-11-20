@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Home screen widget on a phone in light mode (T11.10): light tokens of 02-DESIGN §4.1. The app's own
+         theme is chosen in Settings; the widget follows the phone because RemoteViews cannot read it. -->
+    <color name="widget_background">#FFF2F2F2</color>
+    <color name="widget_text">#FF000000</color>
+    <color name="widget_text_secondary">#FF4A4A4A</color>
+    <color name="widget_accent">#FFB3390A</color>
+    <color name="widget_on_accent">#FFFFFFFF</color>
+</resources>

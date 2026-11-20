@@ -13,7 +13,7 @@ Kerjakan **berurutan**. **Setiap task** mengikuti alur di `10-FEATURE-CHECKLIST.
 | 6 | iOS | Port & uji di iPhone | ⬜ Belum mulai (0/6) |
 | 7, 9 | Fitur lanjutan, trainer & widget | Suara, kembali ke start, komponen sepeda, rencana latihan, smart trainer, widget | ✅ Selesai (7/7) |
 | 10 | Rilis beta & masukan pengguna | Open source, rilis 0.9.0–0.9.3, galeri share, sepeda lipat, cek pembaruan, onboarding baru | ✅ Selesai (7/7) |
-| 11 | Analisa ride, usaha terbaik, tema & peta offline | Halaman detail ala analisa (kecepatan, elevasi, HR, zona power), usaha terbaik, tema terang/gelap, peta tanpa internet (`14-PHASE11-PLAN.md`) | 🟡 Berjalan (9/14) |
+| 11 | Analisa ride, usaha terbaik, tema & peta offline | Halaman detail ala analisa (kecepatan, elevasi, HR, zona power), usaha terbaik, tema terang/gelap, peta tanpa internet (`14-PHASE11-PLAN.md`) | 🟡 Berjalan (10/14) |
 | 12 | Detak jantung dari smartwatch | Jam tangan broadcast HR, pemindaian luas, panduan per merek, Wear OS (opsional), Aolon eksperimental (`15-PHASE12-PLAN.md`) | ⬜ Belum mulai (0/7) |
 | 13 | Tampilan responsif layar kecil | Semua layar benar di 320 dp; 360 dp ke atas tidak berubah (bukti screenshot) (`16-PHASE13-PLAN.md`) | ⬜ Belum mulai (0/8) |
 
@@ -181,7 +181,7 @@ Spesifikasi, keputusan K1–K5 (dijawab 2026-11-19, D-109…D-113), urutan, risi
 
 **11D — Tema**
 - [x] T11.9 Setelan → Tema: Gelap · Terang · Ikuti HP, default Gelap (K2). (D-126)
-- [ ] T11.10 Audit & uji tampilan terang di semua layar (ride di bawah matahari, peta, grafik, share, widget).
+- [x] T11.10 Audit & uji tampilan terang di semua layar (ride di bawah matahari, peta, grafik, share, widget). (D-127)
 
 **11E — Peta offline**
 - [ ] T11.11 Cache peta otomatis (yang pernah dilihat) dipakai saat sinyal hilang; Setelan ukuran & hapus cache.

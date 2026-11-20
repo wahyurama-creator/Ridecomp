@@ -233,8 +233,14 @@ private fun ConnectWithStravaButton(isEnabled: Boolean, onClick: () -> Unit) {
 /** "Powered by Strava" (brand guidelines 1.2), apart from and smaller than RideComp's own name. */
 @Composable
 private fun PoweredByStrava() {
+    // The white logo on the dark theme, the black one on the light theme (T11.10).
+    val logo = if (RideCompTheme.colors.isDark) {
+        UiR.drawable.logo_powered_by_strava_white
+    } else {
+        UiR.drawable.logo_powered_by_strava_black
+    }
     Image(
-        painter = painterResource(UiR.drawable.logo_powered_by_strava_white),
+        painter = painterResource(logo),
         contentDescription = stringResource(R.string.strava_powered_by),
         modifier = Modifier
             .fillMaxWidth()

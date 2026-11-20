@@ -976,7 +976,7 @@ private fun MoreSection(onEvent: (ActivityDetailUiEvent) -> Unit, onCreateSegmen
                     title = stringResource(R.string.detail_create_segment),
                     subtitle = stringResource(R.string.detail_create_segment_subtitle),
                     onClick = it,
-                    leading = { IconTile(UiR.drawable.ic_trophy, tint = RideCompTheme.colors.warn) },
+                    leading = { IconTile(UiR.drawable.ic_trophy, tint = RideCompTheme.colors.warnText) },
                 )
             }
             ListCardRow(
@@ -1053,7 +1053,7 @@ private fun AnalysisSectionKind.color(): Color = when (this) {
     AnalysisSectionKind.SPEED, AnalysisSectionKind.CADENCE -> RideCompTheme.colors.accent
     AnalysisSectionKind.ELEVATION -> RideCompTheme.colors.track
     AnalysisSectionKind.HEART_RATE -> RideCompTheme.colors.danger
-    AnalysisSectionKind.POWER -> RideCompTheme.colors.warn
+    AnalysisSectionKind.POWER -> RideCompTheme.colors.warnText
 }
 
 @StringRes

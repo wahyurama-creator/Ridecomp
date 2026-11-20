@@ -64,7 +64,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`); ganti 
 
 **11D Tema**
 - [x] T11.9 Pilihan tema
-- [ ] T11.10 Audit tema terang
+- [x] T11.10 Audit tema terang
 
 **11E Peta offline**
 - [ ] T11.11 Cache peta otomatis
@@ -167,7 +167,7 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 - Pengecualian yang tetap gelap: kartu share bergaya gelap, layar hitung mundur insiden.
 
 #### T11.10 Audit tampilan terang
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-20 · Feature Report: [`T11.10-light-audit.md`](../reports/features/T11.10-light-audit.md) · D-127 (`ThemeContrastTest`, token terang pekat, widget ikut HP)
 - Semua layar diperiksa di tema terang (kontras WCAG 4.5:1 teks, 3:1 elemen besar), terutama: **layar ride di bawah matahari** (tema terang mungkin lebih terbaca), peta (gaya terang sudah ada), grafik baru, galeri share, widget (ikuti tema sistem), onboarding.
 - Uji perangkat kedua tema; screenshot sebelum/sesudah di Feature Report.
 
