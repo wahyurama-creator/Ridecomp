@@ -31,6 +31,8 @@ class UpdateUseCasesTest {
         assertEquals(version("1.0"), version("1.0.0"))
         assertEquals(version("0.9.1"), version("0.9.1-debug"))
         listOf("", "latest", "1..2", "1.2.3.4.5", "1.2;rm", "99999.1").forEach { assertNull(AppVersion.parse(it)) }
+        // Map pack releases share the repository (T11.13, D-129): never an app update.
+        assertNull(AppVersion.parse("maps-2026-11"))
     }
 
     @Test

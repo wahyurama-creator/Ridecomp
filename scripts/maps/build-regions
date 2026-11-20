@@ -1,0 +1,285 @@
+#!/usr/bin/env python3
+"""Province map packs for RideComp's offline maps (T11.13, D-112, D-113, D-129).
+
+Runs on the owner's Mac, never in the app. Cuts the daily Protomaps planet build (OpenStreetMap data,
+ODbL) into one PMTiles file per province with `pmtiles extract` (HTTP range requests: only the
+province's tiles are downloaded, never the ~140 GB planet), verifies each file, records its SHA-256
+and size, writes the region index the app ships (T11.12) and uploads the files to a GitHub Release.
+
+Commands:
+  bboxes                 refresh scripts/maps/provinces.json from Nominatim (38 requests, 1 per second)
+  extract [--only ID..]  cut the provinces into OUT/<id>.pmtiles and OUT/manifest.json
+  index --release TAG    write the app's region index from OUT/manifest.json (URLs of release TAG)
+  upload --release TAG   create/update GitHub Release TAG with the files (asks for confirmation)
+
+Standard library only; needs `pmtiles` (brew install pmtiles) and, for upload, `gh`.
+See scripts/maps/README.md.
+"""
+
+import argparse
+import hashlib
+import json
+import subprocess
+import sys
+import time
+import urllib.parse
+import urllib.request
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+PROVINCES = Path(__file__).resolve().parent / "provinces.json"
+APP_INDEX = ROOT / "app" / "src" / "main" / "assets" / "maps" / "regions.json"
+DEFAULT_OUT = Path.home() / "RideComp-maps"
+
+BUILDS_URL = "https://build-metadata.protomaps.dev/builds.json"
+BUILD_URL = "https://build.protomaps.com/{key}"
+NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
+RELEASE_URL = "https://github.com/{repo}/releases/download/{tag}/{file}"
+USER_AGENT = "RideComp-build-regions/1.0 (+https://github.com/wahyurama-creator/Ridecomp)"
+REPO = "wahyurama-creator/Ridecomp"
+
+# Zoom 0–14 like the online OpenFreeMap tiles; MapLibre overzooms above (owner's choice, D-129).
+MAX_ZOOM = 14
+# A province above this is reported: split it into cities/regencies (14-PHASE11-PLAN T11.13).
+MAX_FILE_BYTES = 300_000_000
+INDEX_SCHEMA = 1
+NOMINATIM_DELAY_S = 1.1
+# Indonesia, with a margin: a bbox outside it is a wrong Nominatim match.
+INDONESIA = (94.0, -11.5, 141.5, 6.5)
+ATTRIBUTION = "© OpenStreetMap contributors, Protomaps"
+LICENSE = "ODbL-1.0 (OpenStreetMap data)"
+
+# The 38 provinces: id (file name), name shown in the app, Nominatim query.
+PROVINCE_NAMES = [
+    ("aceh", "Aceh", "Aceh"),
+    ("sumatera-utara", "Sumatera Utara", "Sumatera Utara"),
+    ("sumatera-barat", "Sumatera Barat", "Sumatera Barat"),
+    ("riau", "Riau", "Riau"),
+    ("kepulauan-riau", "Kepulauan Riau", "Kepulauan Riau"),
+    ("jambi", "Jambi", "Jambi"),
+    ("sumatera-selatan", "Sumatera Selatan", "Sumatera Selatan"),
+    ("bangka-belitung", "Kepulauan Bangka Belitung", "Kepulauan Bangka Belitung"),
+    ("bengkulu", "Bengkulu", "Bengkulu"),
+    ("lampung", "Lampung", "Lampung"),
+    ("dki-jakarta", "DKI Jakarta", "Daerah Khusus Ibukota Jakarta"),
+    ("jawa-barat", "Jawa Barat", "Jawa Barat"),
+    ("banten", "Banten", "Banten"),
+    ("jawa-tengah", "Jawa Tengah", "Jawa Tengah"),
+    ("di-yogyakarta", "DI Yogyakarta", "Daerah Istimewa Yogyakarta"),
+    ("jawa-timur", "Jawa Timur", "Jawa Timur"),
+    ("bali", "Bali", "Bali"),
+    ("nusa-tenggara-barat", "Nusa Tenggara Barat", "Nusa Tenggara Barat"),
+    ("nusa-tenggara-timur", "Nusa Tenggara Timur", "Nusa Tenggara Timur"),
+    ("kalimantan-barat", "Kalimantan Barat", "Kalimantan Barat"),
+    ("kalimantan-tengah", "Kalimantan Tengah", "Kalimantan Tengah"),
+    ("kalimantan-selatan", "Kalimantan Selatan", "Kalimantan Selatan"),
+    ("kalimantan-timur", "Kalimantan Timur", "Kalimantan Timur"),
+    ("kalimantan-utara", "Kalimantan Utara", "Kalimantan Utara"),
+    ("sulawesi-utara", "Sulawesi Utara", "Sulawesi Utara"),
+    ("gorontalo", "Gorontalo", "Gorontalo"),
+    ("sulawesi-tengah", "Sulawesi Tengah", "Sulawesi Tengah"),
+    ("sulawesi-barat", "Sulawesi Barat", "Sulawesi Barat"),
+    ("sulawesi-selatan", "Sulawesi Selatan", "Sulawesi Selatan"),
+    ("sulawesi-tenggara", "Sulawesi Tenggara", "Sulawesi Tenggara"),
+    ("maluku", "Maluku", "Maluku"),
+    ("maluku-utara", "Maluku Utara", "Maluku Utara"),
+    ("papua", "Papua", "Papua"),
+    ("papua-barat", "Papua Barat", "Papua Barat"),
+    ("papua-barat-daya", "Papua Barat Daya", "Papua Barat Daya"),
+    ("papua-tengah", "Papua Tengah", "Papua Tengah"),
+    ("papua-pegunungan", "Papua Pegunungan", "Papua Pegunungan"),
+    ("papua-selatan", "Papua Selatan", "Papua Selatan"),
+]
+
+
+def fail(message):
+    sys.exit(f"build-regions: {message}")
+
+
+def get_json(url):
+    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    with urllib.request.urlopen(request, timeout=60) as response:
+        return json.load(response)
+
+
+def inside_indonesia(bbox):
+    min_lon, min_lat, max_lon, max_lat = bbox
+    west, south, east, north = INDONESIA
+    return west <= min_lon < max_lon <= east and south <= min_lat < max_lat <= north
+
+
+def fetch_bboxes(_args):
+    """Province bounding boxes from OpenStreetMap boundaries through Nominatim (ODbL)."""
+    provinces = []
+    for region_id, name, query in PROVINCE_NAMES:
+        params = urllib.parse.urlencode(
+            {"q": query, "countrycodes": "id", "format": "jsonv2", "limit": 1, "featureType": "state"},
+        )
+        results = get_json(f"{NOMINATIM_URL}?{params}")
+        if not results:
+            fail(f"no Nominatim result for {query}")
+        south, north, west, east = (round(float(value), 4) for value in results[0]["boundingbox"])
+        bbox = [west, south, east, north]
+        if not inside_indonesia(bbox):
+            fail(f"{query}: bbox {bbox} is outside Indonesia ({results[0].get('display_name')})")
+        provinces.append({"id": region_id, "name": name, "bbox": bbox, "osm": results[0].get("osm_id")})
+        print(f"{region_id:22} {bbox}")
+        time.sleep(NOMINATIM_DELAY_S)
+    PROVINCES.write_text(
+        json.dumps(
+            {
+                "source": "OpenStreetMap boundaries via Nominatim, © OpenStreetMap contributors (ODbL)",
+                "fetched": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+                "bboxOrder": "min_lon, min_lat, max_lon, max_lat",
+                "provinces": provinces,
+            },
+            indent=2,
+            ensure_ascii=False,
+        )
+        + "\n",
+    )
+    print(f"wrote {PROVINCES}")
+
+
+def load_provinces(only):
+    provinces = json.loads(PROVINCES.read_text())["provinces"]
+    if only:
+        unknown = set(only) - {p["id"] for p in provinces}
+        if unknown:
+            fail(f"unknown province id(s): {', '.join(sorted(unknown))}")
+        provinces = [p for p in provinces if p["id"] in only]
+    return provinces
+
+
+def latest_build():
+    return get_json(BUILDS_URL)[-1]
+
+
+def find_build(date):
+    key = f"{date}.pmtiles"
+    build = next((b for b in get_json(BUILDS_URL) if b["key"] == key), None)
+    if build is None:
+        fail(f"no Protomaps build {key} (see {BUILDS_URL})")
+    return build
+
+
+def sha256(path):
+    digest = hashlib.sha256()
+    with path.open("rb") as file:
+        for chunk in iter(lambda: file.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def extract(args):
+    out = Path(args.out).expanduser()
+    out.mkdir(parents=True, exist_ok=True)
+    build = find_build(args.build) if args.build else latest_build()
+    source = BUILD_URL.format(key=build["key"])
+    manifest_path = out / "manifest.json"
+    manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {"files": {}}
+    manifest.update({"build": build["key"], "basemapVersion": build.get("version"), "maxZoom": MAX_ZOOM})
+    for province in load_provinces(args.only):
+        target = out / f"{province['id']}.pmtiles"
+        partial = target.with_suffix(".pmtiles.part")
+        partial.unlink(missing_ok=True)
+        bbox = ",".join(str(value) for value in province["bbox"])
+        print(f"== {province['name']} ({bbox}) from {build['key']}")
+        started = time.monotonic()
+        subprocess.run(
+            ["pmtiles", "extract", source, str(partial), f"--bbox={bbox}", f"--maxzoom={MAX_ZOOM}", "--quiet"],
+            check=True,
+        )
+        subprocess.run(["pmtiles", "verify", str(partial)], check=True)
+        partial.replace(target)
+        size = target.stat().st_size
+        manifest["files"][province["id"]] = {
+            "name": province["name"],
+            "bbox": province["bbox"],
+            "file": target.name,
+            "sizeBytes": size,
+            "sha256": sha256(target),
+            "build": build["key"],
+        }
+        manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
+        note = "  ⚠ above 300 MB: split into cities/regencies" if size > MAX_FILE_BYTES else ""
+        print(f"   {size / 1e6:.1f} MB in {time.monotonic() - started:.0f} s{note}")
+
+
+def write_index(args):
+    out = Path(args.out).expanduser()
+    manifest = json.loads((out / "manifest.json").read_text())
+    regions = [
+        {
+            "id": region_id,
+            "name": entry["name"],
+            "bbox": entry["bbox"],
+            "files": [
+                {
+                    "name": entry["file"],
+                    "url": RELEASE_URL.format(repo=REPO, tag=args.release, file=entry["file"]),
+                    "sizeBytes": entry["sizeBytes"],
+                    "sha256": entry["sha256"],
+                },
+            ],
+        }
+        for region_id, entry in sorted(manifest["files"].items())
+    ]
+    index = {
+        "schema": INDEX_SCHEMA,
+        "version": args.release,
+        "build": manifest["build"],
+        "basemapVersion": manifest.get("basemapVersion"),
+        "maxZoom": manifest["maxZoom"],
+        "attribution": ATTRIBUTION,
+        "license": LICENSE,
+        "regions": regions,
+    }
+    APP_INDEX.parent.mkdir(parents=True, exist_ok=True)
+    APP_INDEX.write_text(json.dumps(index, indent=1, ensure_ascii=False) + "\n")
+    print(f"wrote {APP_INDEX} ({len(regions)} regions, {APP_INDEX.stat().st_size} bytes)")
+
+
+def upload(args):
+    out = Path(args.out).expanduser()
+    manifest = json.loads((out / "manifest.json").read_text())
+    files = [out / entry["file"] for entry in manifest["files"].values()]
+    total = sum(path.stat().st_size for path in files)
+    print(f"Release {args.release} on {REPO} (PUBLIC): {len(files)} files, {total / 1e6:.0f} MB")
+    if input("Upload? Type 'yes' to continue: ").strip() != "yes":
+        fail("upload cancelled")
+    exists = subprocess.run(["gh", "release", "view", args.release, "-R", REPO], capture_output=True).returncode == 0
+    if not exists:
+        notes = (
+            f"Offline map packs for RideComp, zoom 0–{manifest['maxZoom']}, from Protomaps build "
+            f"{manifest['build']}.\n\nMap data {ATTRIBUTION}. License: {LICENSE}."
+        )
+        subprocess.run(
+            ["gh", "release", "create", args.release, "-R", REPO, "--title", f"Map packs {args.release}",
+             "--notes", notes, "--latest=false"],
+            check=True,
+        )
+    subprocess.run(["gh", "release", "upload", args.release, "-R", REPO, "--clobber", *map(str, files)], check=True)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    commands = parser.add_subparsers(dest="command", required=True)
+    commands.add_parser("bboxes").set_defaults(run=fetch_bboxes)
+    extract_parser = commands.add_parser("extract")
+    extract_parser.add_argument("--only", nargs="*", help="province ids (default: all)")
+    extract_parser.add_argument("--build", help="Protomaps build date YYYYMMDD (default: latest)")
+    extract_parser.add_argument("--out", default=str(DEFAULT_OUT))
+    extract_parser.set_defaults(run=extract)
+    for name, run in (("index", write_index), ("upload", upload)):
+        command = commands.add_parser(name)
+        command.add_argument("--release", required=True, help="release tag, e.g. maps-2026-11")
+        command.add_argument("--out", default=str(DEFAULT_OUT))
+        command.set_defaults(run=run)
+    args = parser.parse_args()
+    args.run(args)
+
+
+if __name__ == "__main__":
+    main()

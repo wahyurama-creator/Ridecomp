@@ -68,7 +68,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`); ganti 
 
 **11E Peta offline**
 - [x] T11.11 Cache peta otomatis
-- [ ] T11.13 Paket peta per provinsi (skrip pemilik)
+- [x] T11.13 Paket peta per provinsi (skrip pemilik)
 - [ ] T11.12 Peta wilayah otomatis
 - [ ] T11.14 Penyimpanan, baterai, keamanan
 
@@ -190,7 +190,7 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 - **Pembaruan peta:** indeks berisi versi; tawaran "Perbarui peta (data OSM lebih baru)" paling cepat tiap 3 bulan, hanya lewat Wi‑Fi.
 
 #### T11.13 Paket peta per provinsi (pekerjaan pemilik + skrip)
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-20 · Feature Report: [`T11.13-region-packs.md`](../reports/features/T11.13-region-packs.md) · D-129 (zoom 0–14; DI Yogyakarta di rilis `maps-2026-11`; 37 provinsi lain dijalankan pemilik dengan skrip)
 - Skrip `scripts/maps/build-regions` (di Mac pemilik, **bukan** bagian aplikasi): memotong build Protomaps per provinsi (`pmtiles extract --bbox`/batas wilayah, zoom 0–15), menghitung SHA-256, menulis indeks JSON, mengunggah ke GitHub Release `maps-YYYY-MM`.
 - Butuh alat `pmtiles` (CLI resmi Protomaps) di Mac pemilik: unduhan alat baru → **minta izin** saat task dimulai.
 - Atribusi "© OpenStreetMap contributors, Protomaps" di peta & catatan rilis peta; lisensi ODbL dicantumkan di Lisensi open source.
