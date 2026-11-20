@@ -118,7 +118,10 @@ private fun Brand() {
             contentAlignment = Alignment.Center,
         ) {
             Image(
-                painter = painterResource(UiR.drawable.ic_ridecomp_mark),
+                // White needle on the dark theme, black on the light one (T11.10).
+                painter = painterResource(
+                    if (RideCompTheme.colors.isDark) UiR.drawable.ic_ridecomp_mark else MARK_LIGHT,
+                ),
                 contentDescription = null,
                 modifier = Modifier.size(RideCompDimens.iconTileSize),
             )
@@ -243,3 +246,5 @@ private const val SLIDE_FRACTION = 8
 private fun WelcomeStepPreview() {
     RideCompPreview { WelcomeStep(onStart = {}) }
 }
+
+private val MARK_LIGHT = UiR.drawable.ic_ridecomp_mark_light

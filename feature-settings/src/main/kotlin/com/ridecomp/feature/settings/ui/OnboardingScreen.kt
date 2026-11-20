@@ -362,7 +362,7 @@ private fun PermissionCard(card: PermissionCardSpec, isGranted: Boolean, onReque
     val tint = when (card) {
         PermissionCardSpec.LOCATION -> colors.ok
         PermissionCardSpec.NEARBY -> colors.track
-        PermissionCardSpec.NOTIFICATIONS -> colors.warn
+        PermissionCardSpec.NOTIFICATIONS -> colors.warnText
     }
     val need = stringResource(
         if (card ==

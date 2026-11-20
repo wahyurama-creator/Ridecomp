@@ -35,8 +35,10 @@ data class RideCompColors(
     val onOk: Color,
     /** Background of positive info cards (map available offline). */
     val okTint: Color,
+    /** Yellow fills (auto-pause block, warning banners) with [onWarn] text; never text or icons on the page. */
     val warn: Color,
     val onWarn: Color,
+    /** Warning text, icons and rings on the page: yellow on dark, deep amber on light. */
     val warnText: Color,
     /** Background of warning cards (1 dp [warn] border). */
     val warnTint: Color,
@@ -80,12 +82,13 @@ private object Palette {
     val TextSecondary = Color(0xFFA0A0A0)
     val TextSecondaryLight = Color(0xFF4A4A4A)
     val Accent = Color(0xFFFC6A1E)
-    val AccentLight = Color(0xFFC2410C)
+    val AccentLight = Color(0xFFB3390A)
     val Track = Color(0xFF2FA8FF)
+    val TrackLight = Color(0xFF0B6BB8)
     val Ok = Color(0xFF3DDC84)
-    val OkLight = Color(0xFF1B7A3E)
+    val OkLight = Color(0xFF17683A)
     val Warn = Color(0xFFFFC400)
-    val WarnTextLight = Color(0xFF8A6100)
+    val WarnTextLight = Color(0xFF755200)
     val Danger = Color(0xFFFF4D4D)
     val DangerLight = Color(0xFFB3261E)
     val ZoneGrey = Color(0xFF9E9E9E)
@@ -123,6 +126,20 @@ private object Palette {
     val GradeHard = Color(0xFFFFB020)
     val GradeSteep = Color(0xFFF0672A)
     val GradeExtreme = Color(0xFFA8341A)
+
+    // Light theme: the same hues, deep enough for 3:1 on white and light cards (T11.10, D-127).
+    val ZoneGreyLight = Color(0xFF757575)
+    val ZoneBlueLight = Color(0xFF1E78D2)
+    val ZoneGreenLight = Color(0xFF2E8B3E)
+    val ZoneYellowLight = Color(0xFFA87400)
+    val ZoneOrangeLight = Color(0xFFD9530F)
+    val ZoneRedLight = Color(0xFFC62828)
+    val ZonePurpleLight = Color(0xFF8E44C9)
+    val GradeEasyLight = Color(0xFF948200)
+    val GradeModerateLight = Color(0xFFC27C00)
+    val GradeHardLight = Color(0xFFD25E00)
+    val GradeSteepLight = Color(0xFFC8431A)
+    val GradeExtremeLight = Color(0xFF8C2410)
 }
 
 private val GradeBandColors = persistentListOf(
@@ -131,6 +148,14 @@ private val GradeBandColors = persistentListOf(
     Palette.GradeHard,
     Palette.GradeSteep,
     Palette.GradeExtreme,
+)
+
+private val LightGradeBandColors = persistentListOf(
+    Palette.GradeEasyLight,
+    Palette.GradeModerateLight,
+    Palette.GradeHardLight,
+    Palette.GradeSteepLight,
+    Palette.GradeExtremeLight,
 )
 
 private val DarkMapColors = MapColors(
@@ -159,6 +184,16 @@ private val ZoneColors = persistentListOf(
     Palette.Accent,
     Palette.Danger,
     Palette.ZonePurple,
+)
+
+private val LightZoneColors = persistentListOf(
+    Palette.ZoneGreyLight,
+    Palette.ZoneBlueLight,
+    Palette.ZoneGreenLight,
+    Palette.ZoneYellowLight,
+    Palette.ZoneOrangeLight,
+    Palette.ZoneRedLight,
+    Palette.ZonePurpleLight,
 )
 
 /** Default theme: pure black saves battery on AMOLED and reduces glare (02-DESIGN §1). */
@@ -195,7 +230,10 @@ val DarkRideCompColors = RideCompColors(
     isDark = true,
 )
 
-/** Optional high-contrast light theme (≥ 7:1) for LCD screens in strong sunlight. */
+/**
+ * Light theme for LCD screens in strong sunlight (T11.9): text ≥ 4.5:1 on every surface (≥ 7:1 for the
+ * ride data), lines, bars and icons ≥ 3:1; checked by `ThemeContrastTest` (T11.10, D-127).
+ */
 val LightRideCompColors = RideCompColors(
     bg = Palette.White,
     surface = Palette.SurfaceLight,
@@ -210,8 +248,8 @@ val LightRideCompColors = RideCompColors(
     accent = Palette.AccentLight,
     onAccent = Palette.White,
     accentTint = Palette.AccentTintLight,
-    track = Palette.Track,
-    onTrack = Palette.Black,
+    track = Palette.TrackLight,
+    onTrack = Palette.White,
     ok = Palette.OkLight,
     onOk = Palette.White,
     okTint = Palette.OkTintLight,
@@ -223,8 +261,8 @@ val LightRideCompColors = RideCompColors(
     onDanger = Palette.White,
     onDangerBanner = Palette.White,
     dangerDeep = Palette.DangerDeep,
-    zones = ZoneColors,
-    gradeBands = GradeBandColors,
+    zones = LightZoneColors,
+    gradeBands = LightGradeBandColors,
     map = LightMapColors,
     isDark = false,
 )

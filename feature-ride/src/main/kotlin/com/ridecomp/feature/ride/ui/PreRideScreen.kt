@@ -431,7 +431,7 @@ private fun GpsWaiting(gps: GpsStatus.Searching, onShowOptions: () -> Unit) {
             Box(
                 modifier = Modifier
                     .size(RideCompDimens.gpsWaitInner)
-                    .border(RideCompDimens.borderSelected, colors.warn, CircleShape),
+                    .border(RideCompDimens.borderSelected, colors.warnText, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(

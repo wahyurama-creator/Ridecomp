@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- RideComp mark (docs/brand/RideComp-icon.svg without its background): orange gauge, black needle for the light theme (T11.10). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M31.44,78.56 A31.9,31.9 0 1,1 76.56,78.56"
+        android:strokeWidth="10.15"
+        android:strokeColor="#FC6A1E"
+        android:strokeLineCap="round" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M54,56 L67.33,42.67"
+        android:strokeWidth="7.25"
+        android:strokeColor="#000000"
+        android:strokeLineCap="round" />
+    <path
+        android:fillColor="#000000"
+        android:pathData="M46.75,56 a7.25,7.25 0 1,0 14.5,0 a7.25,7.25 0 1,0 -14.5,0" />
+</vector>
