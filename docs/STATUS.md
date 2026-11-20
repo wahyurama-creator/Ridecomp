@@ -31,7 +31,7 @@ Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.m
 - [ ] T11.14 Penyimpanan, baterai, keamanan peta
 
 **Setelah Fase 11 — Fase 12: Detak jantung dari smartwatch** ([`planning/15-PHASE12-PLAN.md`](planning/15-PHASE12-PLAN.md)):
-- [ ] T12.1 Uji kompatibilitas jam tangan
+- [ ] T12.1 Uji kompatibilitas jam tangan · Huawei Watch Fit 5 Pro diuji (A1, didukung), Aolon menunggu pemilik · [Feature Report](reports/features/T12.1-smartwatch-compat.md) (menunggu review)
 - [ ] T12.2 Pemindaian luas
 - [ ] T12.3 UX & panduan jam tangan
 - [ ] T12.4 Aplikasi pendamping Wear OS (opsional)

@@ -1,0 +1,37 @@
+# Kompatibilitas Jam Tangan sebagai Sensor HR (T12.1)
+
+Hasil uji jam tangan sungguhan sebagai sensor detak jantung RideComp (`15-PHASE12-PLAN.md` §5 T12.1). Dipakai sebagai acuan T12.2 (pemindaian luas) dan T12.3 (panduan per merek). Tambah satu baris per model yang diuji.
+
+## Kasus
+
+| Kasus | Arti | Yang dibutuhkan |
+|---|---|---|
+| **A1** | Berbagi HR menyala, jam tangan mengiklankan Heart Rate Service `0x180D` | Sudah didukung (tanpa perubahan kode) |
+| **A2** | Berbagi HR menyala, tetapi `0x180D` baru terlihat setelah tersambung | T12.2 "Tampilkan semua perangkat Bluetooth" |
+| **B** | Jam tangan tidak berbagi HR (fitur mati / tidak ada) | Tidak bisa dipakai; panduan T12.3, jalur eksperimental T12.5 |
+
+## Tabel kompatibilitas
+
+| Jam tangan | Nama BLE | Kasus | Muncul di Pindai | Data HR | Putus-sambung | Baterai jam tangan | Tanggal · HP · build |
+|---|---|---|---|---|---|---|---|
+| Huawei Watch Fit 5 Pro | `HUAWEI WATCH HR-E57` (akhiran = 3 digit terakhir alamat BLE) | **A1** | Ya, langsung (filter `0x180D`) | 608/612 sampel 1 Hz berisi HR (4 kosong = detik pertama sebelum tersambung); 78–91 bpm duduk | 0 kali dalam 10:38 dan ±14 mnt | 53 % → 52 % dalam ±11 mnt (dibaca via Battery Service) | 2026-11-19 · Sony Xperia XZ F8331, Android 8.0, RAM 2,8 GB · debug 0.9.3 |
+| Huawei Watch Fit 5 Pro, berbagi HR **mati** | — | **B** | Tidak (pindai selesai 15 dtk, 0 hasil, pesan "Tidak ada sensor baru…") | — | — | — | sama |
+| Aolon (milik pemilik) | — | belum diuji | — | — | — | — | menunggu pemilik |
+
+## Perilaku RideComp yang teramati (Huawei Watch Fit 5 Pro)
+
+- **Sambung otomatis saat ride dimulai:** ±2,8 dtk sampai notifikasi `0x2A37` aktif.
+- **Berbagi HR dimatikan saat jam tangan tersimpan:** ride tetap merekam tanpa crash; kolom HR & ikon hati disembunyikan; percobaan sambung bertimeout 20 dtk dengan jeda 2 → 4 → 8 → 15 dtk (`SensorConnection.RECONNECT_DELAYS_MS`, `RECONNECT_STEADY_DELAY_MS`).
+- **Berbagi HR dinyalakan lagi di tengah ride:** tersambung kembali otomatis pada percobaan berikutnya, HR tampil lagi tanpa disentuh. Waktu pulih terburuk ±35 dtk (timeout 20 dtk + jeda 15 dtk).
+- **Setelah ride selesai:** GATT `disconnect` + `close()` saat **Selesai** ditekan; tidak ada foreground service, wakelock, atau permintaan GPS milik RideComp (`dumpsys activity services`, `dumpsys power`, `dumpsys location`).
+- Jam tangan juga mengirim notifikasi pada layanan **HID**; Android mengabaikannya (`bta_gattc_process_indicate, ignore HID ind/notificiation` di logcat). Tidak berdampak pada HR.
+- Nilai HR yang sama pernah bertahan sampai 27 dtk saat duduk. Karena RideComp menyimpan nilai terakhir per detik, frekuensi kirim asli jam tangan belum terukur; dipastikan di uji lapangan W2 (ride sungguhan, HR naik-turun) atau dengan nRF Connect.
+
+## Cara menguji jam tangan berikutnya
+
+1. Nyalakan berbagi/broadcast HR di jam tangan.
+2. RideComp → Sensor → Cari sensor. Tidak muncul → buka **nRF Connect** → SCAN: ada `0x180D` di iklan (A1) atau baru setelah CONNECT (A2)?
+3. Pasangkan, mulai ride, rekam ≥ 10 menit, simpan.
+4. Debug build: salin DB (`adb exec-out run-as com.ridecomp.app cat databases/ridecomp.db`) lalu hitung `track_points.hr` kosong/terisi.
+5. Matikan berbagi HR di tengah ride, lalu nyalakan lagi: rekaman jalan terus, HR pulih otomatis.
+6. Setelah selesai: perintah `dumpsys` di `field-tests.md`.

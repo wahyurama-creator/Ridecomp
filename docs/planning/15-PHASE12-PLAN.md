@@ -23,6 +23,7 @@
 | Garmin, Polar, Coros, Suunto | Ya ("Broadcast Heart Rate" / "Share HR") | Jalan dengan standar 0x180D |
 | Amazfit/Zepp, Xiaomi Smart Band 7+ | Ya pada model tertentu ("Heart rate sharing") | Kemungkinan jalan; sebagian butuh T12.2 |
 | Huawei Watch GT | Tergantung model | Diuji |
+| Huawei Watch Fit 5 Pro | Ya ("berbagi data detak jantung") | **Jalan dengan standar 0x180D** (T12.1, diuji 2026-11-19) |
 | Wear OS (Galaxy Watch, Pixel Watch) | Tidak | Butuh aplikasi pendamping (T12.4) |
 | Apple Watch | Tidak | Tidak didukung (RideComp hanya Android) |
 | **Aolon** & jam tangan terjangkau lain | **Tidak** (milik pemilik) | Protokol tertutup ke aplikasi bawaan → T12.5 eksperimental |
@@ -61,7 +62,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 ## 5. Spesifikasi per task
 
 #### T12.1 Uji kompatibilitas
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [ ] **Status:** sebagian, 2026-11-19: Huawei Watch Fit 5 Pro didukung tanpa perubahan kode (A1); Aolon belum diuji · Feature Report: [`T12.1-smartwatch-compat.md`](../reports/features/T12.1-smartwatch-compat.md) (menunggu review) · Hasil: [`testing/smartwatch-compat.md`](../testing/smartwatch-compat.md) · D-123
 - Jam tangan yang tersedia (minimal Aolon milik pemilik; Garmin/Amazfit/Xiaomi bila ada pinjaman): nyalakan broadcast bila ada, pindai di Sensor, pasangkan, ride/uji 10 menit.
 - Catat per model: muncul di pindaian? (dengan/tanpa T12.2), nama perangkat, frekuensi data, putus-sambung, baterai jam tangan.
 - Hasil di tabel kompatibilitas `docs/testing/smartwatch-compat.md` (dibuat di task ini) dan panduan T12.3.
