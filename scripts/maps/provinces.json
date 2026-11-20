@@ -1,0 +1,425 @@
+{
+  "source": "OpenStreetMap boundaries via Nominatim, © OpenStreetMap contributors (ODbL)",
+  "fetched": "2026-11-20",
+  "bboxOrder": "min_lon, min_lat, max_lon, max_lat",
+  "provinces": [
+    {
+      "id": "aceh",
+      "name": "Aceh",
+      "bbox": [
+        94.7717,
+        1.4587,
+        98.6867,
+        6.2744
+      ],
+      "osm": 2390836
+    },
+    {
+      "id": "sumatera-utara",
+      "name": "Sumatera Utara",
+      "bbox": [
+        96.7204,
+        -1.0336,
+        100.5496,
+        4.4395
+      ],
+      "osm": 2390843
+    },
+    {
+      "id": "sumatera-barat",
+      "name": "Sumatera Barat",
+      "bbox": [
+        98.2364,
+        -3.884,
+        101.8929,
+        0.9067
+      ],
+      "osm": 2390841
+    },
+    {
+      "id": "riau",
+      "name": "Riau",
+      "bbox": [
+        100.0248,
+        -1.1282,
+        103.952,
+        3.2269
+      ],
+      "osm": 2390840
+    },
+    {
+      "id": "kepulauan-riau",
+      "name": "Kepulauan Riau",
+      "bbox": [
+        103.0646,
+        -1.5138,
+        109.7135,
+        4.9966
+      ],
+      "osm": 3797244
+    },
+    {
+      "id": "jambi",
+      "name": "Jambi",
+      "bbox": [
+        101.1306,
+        -2.7701,
+        105.0122,
+        -0.6436
+      ],
+      "osm": 2390838
+    },
+    {
+      "id": "sumatera-selatan",
+      "name": "Sumatera Selatan",
+      "bbox": [
+        102.0639,
+        -4.9242,
+        106.6026,
+        -1.5138
+      ],
+      "osm": 2390842
+    },
+    {
+      "id": "bangka-belitung",
+      "name": "Kepulauan Bangka Belitung",
+      "bbox": [
+        104.9996,
+        -4.9994,
+        109.3898,
+        -0.2733
+      ],
+      "osm": 3797243
+    },
+    {
+      "id": "bengkulu",
+      "name": "Bengkulu",
+      "bbox": [
+        100.6205,
+        -5.719,
+        103.7811,
+        -2.2887
+      ],
+      "osm": 2390837
+    },
+    {
+      "id": "lampung",
+      "name": "Lampung",
+      "bbox": [
+        103.5069,
+        -6.455,
+        106.8467,
+        -3.7237
+      ],
+      "osm": 2390839
+    },
+    {
+      "id": "dki-jakarta",
+      "name": "DKI Jakarta",
+      "bbox": [
+        106.3147,
+        -6.3745,
+        106.974,
+        -4.9994
+      ],
+      "osm": 6362934
+    },
+    {
+      "id": "jawa-barat",
+      "name": "Jawa Barat",
+      "bbox": [
+        106.051,
+        -8.0207,
+        109.0698,
+        -4.0388
+      ],
+      "osm": 2388361
+    },
+    {
+      "id": "banten",
+      "name": "Banten",
+      "bbox": [
+        104.6513,
+        -7.4566,
+        106.78,
+        -5.4996
+      ],
+      "osm": 2388356
+    },
+    {
+      "id": "jawa-tengah",
+      "name": "Jawa Tengah",
+      "bbox": [
+        108.5559,
+        -8.4412,
+        111.869,
+        -4.0388
+      ],
+      "osm": 2388357
+    },
+    {
+      "id": "di-yogyakarta",
+      "name": "DI Yogyakarta",
+      "bbox": [
+        109.9018,
+        -8.4159,
+        110.8387,
+        -7.5413
+      ],
+      "osm": 5616105
+    },
+    {
+      "id": "jawa-timur",
+      "name": "Jawa Timur",
+      "bbox": [
+        110.8816,
+        -9.0301,
+        116.4842,
+        -4.8927
+      ],
+      "osm": 3438227
+    },
+    {
+      "id": "bali",
+      "name": "Bali",
+      "bbox": [
+        114.4127,
+        -9.0502,
+        115.8324,
+        -7.4628
+      ],
+      "osm": 1615621
+    },
+    {
+      "id": "nusa-tenggara-barat",
+      "name": "Nusa Tenggara Barat",
+      "bbox": [
+        115.57,
+        -9.3098,
+        119.4887,
+        -7.512
+      ],
+      "osm": 1615622
+    },
+    {
+      "id": "nusa-tenggara-timur",
+      "name": "Nusa Tenggara Timur",
+      "bbox": [
+        118.371,
+        -11.2086,
+        125.5501,
+        -6.7574
+      ],
+      "osm": 2396778
+    },
+    {
+      "id": "kalimantan-barat",
+      "name": "Kalimantan Barat",
+      "bbox": [
+        108.1387,
+        -4.7153,
+        114.2054,
+        2.3149
+      ],
+      "osm": 2388616
+    },
+    {
+      "id": "kalimantan-tengah",
+      "name": "Kalimantan Tengah",
+      "bbox": [
+        110.6795,
+        -5.1883,
+        115.8494,
+        0.791
+      ],
+      "osm": 2388613
+    },
+    {
+      "id": "kalimantan-selatan",
+      "name": "Kalimantan Selatan",
+      "bbox": [
+        113.9911,
+        -5.4139,
+        117.6466,
+        -1.3126
+      ],
+      "osm": 2388615
+    },
+    {
+      "id": "kalimantan-timur",
+      "name": "Kalimantan Timur",
+      "bbox": [
+        113.8343,
+        -2.454,
+        119.6681,
+        2.569
+      ],
+      "osm": 5449459
+    },
+    {
+      "id": "kalimantan-utara",
+      "name": "Kalimantan Utara",
+      "bbox": [
+        114.5652,
+        1.114,
+        118.7651,
+        4.4078
+      ],
+      "osm": 5449460
+    },
+    {
+      "id": "sulawesi-utara",
+      "name": "Sulawesi Utara",
+      "bbox": [
+        123.0963,
+        -0.5534,
+        127.754,
+        5.764
+      ],
+      "osm": 2388666
+    },
+    {
+      "id": "gorontalo",
+      "name": "Gorontalo",
+      "bbox": [
+        121.1612,
+        -0.0666,
+        123.5519,
+        1.3647
+      ],
+      "osm": 2388665
+    },
+    {
+      "id": "sulawesi-tengah",
+      "name": "Sulawesi Tengah",
+      "bbox": [
+        118.8772,
+        -3.6514,
+        124.9619,
+        1.5836
+      ],
+      "osm": 2388664
+    },
+    {
+      "id": "sulawesi-barat",
+      "name": "Sulawesi Barat",
+      "bbox": [
+        116.9905,
+        -3.9747,
+        119.8748,
+        -0.2275
+      ],
+      "osm": 2388669
+    },
+    {
+      "id": "sulawesi-selatan",
+      "name": "Sulawesi Selatan",
+      "bbox": [
+        116.3438,
+        -7.9722,
+        122.2749,
+        -1.8906
+      ],
+      "osm": 2388667
+    },
+    {
+      "id": "sulawesi-tenggara",
+      "name": "Sulawesi Tenggara",
+      "bbox": [
+        120.6399,
+        -6.9673,
+        125.5962,
+        -2.7733
+      ],
+      "osm": 2388668
+    },
+    {
+      "id": "maluku",
+      "name": "Maluku",
+      "bbox": [
+        124.9518,
+        -8.5523,
+        135.5899,
+        -2.2664
+      ],
+      "osm": 2396795
+    },
+    {
+      "id": "maluku-utara",
+      "name": "Maluku Utara",
+      "bbox": [
+        123.9232,
+        -2.7956,
+        130.0686,
+        3.4076
+      ],
+      "osm": 2396796
+    },
+    {
+      "id": "papua",
+      "name": "Papua",
+      "bbox": [
+        133.5218,
+        -3.9567,
+        141.013,
+        1.1369
+      ],
+      "osm": 4521144
+    },
+    {
+      "id": "papua-barat",
+      "name": "Papua Barat",
+      "bbox": [
+        131.2767,
+        -4.8517,
+        135.3342,
+        0.5605
+      ],
+      "osm": 4521145
+    },
+    {
+      "id": "papua-barat-daya",
+      "name": "Papua Barat Daya",
+      "bbox": [
+        129.0848,
+        -2.9766,
+        133.5218,
+        1.2874
+      ],
+      "osm": 14905625
+    },
+    {
+      "id": "papua-tengah",
+      "name": "Papua Tengah",
+      "bbox": [
+        134.5853,
+        -5.46,
+        138.3018,
+        -2.1825
+      ],
+      "osm": 14309178
+    },
+    {
+      "id": "papua-pegunungan",
+      "name": "Papua Pegunungan",
+      "bbox": [
+        137.827,
+        -5.2648,
+        141.0,
+        -3.107
+      ],
+      "osm": 14309176
+    },
+    {
+      "id": "papua-selatan",
+      "name": "Papua Selatan",
+      "bbox": [
+        137.4156,
+        -9.3861,
+        141.0194,
+        -4.5413
+      ],
+      "osm": 14309177
+    }
+  ]
+}

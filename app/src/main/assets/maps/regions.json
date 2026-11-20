@@ -1,0 +1,29 @@
+{
+ "schema": 1,
+ "version": "maps-2026-11",
+ "build": "20261118.pmtiles",
+ "basemapVersion": "4.15.2",
+ "maxZoom": 14,
+ "attribution": "© OpenStreetMap contributors, Protomaps",
+ "license": "ODbL-1.0 (OpenStreetMap data)",
+ "regions": [
+  {
+   "id": "di-yogyakarta",
+   "name": "DI Yogyakarta",
+   "bbox": [
+    109.9018,
+    -8.4159,
+    110.8387,
+    -7.5413
+   ],
+   "files": [
+    {
+     "name": "di-yogyakarta.pmtiles",
+     "url": "https://github.com/wahyurama-creator/Ridecomp/releases/download/maps-2026-11/di-yogyakarta.pmtiles",
+     "sizeBytes": 21295529,
+     "sha256": "6335245d4704321b434bc2043fa93be9f7085c53c091de46baf5f16a49e9774b"
+    }
+   ]
+  }
+ ]
+}

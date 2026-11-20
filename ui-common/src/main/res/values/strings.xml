@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Required on every map (04-INTEGRATIONS §D, ODbL); not translated. -->
-    <string name="map_attribution" translatable="false">© OpenStreetMap contributors</string>
+    <string name="map_attribution" translatable="false">© OpenStreetMap contributors, Protomaps</string>
     <string name="map_attribution_online" translatable="false">© OpenFreeMap © OpenMapTiles © OpenStreetMap</string>
 </resources>
