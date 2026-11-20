@@ -11,15 +11,19 @@ import com.ridecomp.core.usecase.ActivePlan
 import com.ridecomp.core.usecase.BackupReminder
 import com.ridecomp.core.usecase.CheckForUpdateUseCase
 import com.ridecomp.core.usecase.CheckGpsAvailabilityUseCase
+import com.ridecomp.core.usecase.DismissMapRegionOfferUseCase
 import com.ridecomp.core.usecase.DismissUpdateUseCase
 import com.ridecomp.core.usecase.GetRecoverableRideUseCase
 import com.ridecomp.core.usecase.GpsAvailability
 import com.ridecomp.core.usecase.HandleRecoveredRideUseCase
+import com.ridecomp.core.usecase.MapPackDownloads
+import com.ridecomp.core.usecase.MapRegionOffer
 import com.ridecomp.core.usecase.ObserveActivePlanUseCase
 import com.ridecomp.core.usecase.ObserveAvailableUpdateUseCase
 import com.ridecomp.core.usecase.ObserveBackupReminderUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
+import com.ridecomp.core.usecase.ObserveMapRegionOfferUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveSavedSensorsUseCase
 import com.ridecomp.core.usecase.ReadBatteryUseCase
@@ -52,6 +56,8 @@ data class HomeUiState(
     val plan: ActivePlan? = null,
     /** A newer RideComp release to download (T10.9); null = none or put off. */
     val update: AppRelease? = null,
+    /** "Download your region's map" (T11.12): the region of the last ride when not installed. */
+    val mapOffer: MapRegionOffer? = null,
 )
 
 sealed interface HomeUiEvent {
@@ -74,6 +80,14 @@ sealed interface HomeUiEvent {
 
     /** "Nanti": hide this version's card. */
     data object DismissUpdate : HomeUiEvent
+
+    /** Download, update or resume the offered region map (T11.12). */
+    data object DownloadMap : HomeUiEvent
+
+    data object CancelMap : HomeUiEvent
+
+    /** "Nanti": not offered again for this region and map version. */
+    data object DismissMap : HomeUiEvent
 }
 
 sealed interface HomeEffect {
@@ -99,6 +113,14 @@ data class HomeUseCases(
     val device: HomeDeviceUseCases,
     val observeActivePlan: ObserveActivePlanUseCase,
     val updates: HomeUpdateUseCases,
+    val maps: HomeMapUseCases,
+)
+
+/** The region map offer (T11.12). */
+data class HomeMapUseCases(
+    val observeOffer: ObserveMapRegionOfferUseCase,
+    val downloads: MapPackDownloads,
+    val dismiss: DismissMapRegionOfferUseCase,
 )
 
 /** The in-app update check (T10.9). */
@@ -123,6 +145,7 @@ class HomeViewModel(private val useCases: HomeUseCases) :
         // Opening the app checks for a new release at most once a day, when the rider allows it (D-103).
         viewModelScope.launch { useCases.updates.check() }
         viewModelScope.launch { useCases.updates.observe().collect { updateState { copy(update = it) } } }
+        viewModelScope.launch { useCases.maps.observeOffer().collect { updateState { copy(mapOffer = it) } } }
         viewModelScope.launch {
             useCases.observeBackupReminder().collect { updateState { copy(backupReminder = it) } }
         }
@@ -155,6 +178,18 @@ class HomeViewModel(private val useCases: HomeUseCases) :
             HomeUiEvent.DismissUpdate -> currentState.update?.let { release ->
                 viewModelScope.launch { useCases.updates.dismiss(release.version) }
             }
+            HomeUiEvent.DownloadMap, HomeUiEvent.CancelMap, HomeUiEvent.DismissMap -> onMapEvent(event)
+        }
+    }
+
+    /** The region map offer (T11.12). */
+    private fun onMapEvent(event: HomeUiEvent) {
+        val offer = currentState.mapOffer ?: return
+        when (event) {
+            HomeUiEvent.DownloadMap -> useCases.maps.downloads.start(offer.state.region, offer.version)
+            HomeUiEvent.CancelMap -> useCases.maps.downloads.cancel(offer.state.region)
+            HomeUiEvent.DismissMap -> viewModelScope.launch { useCases.maps.dismiss(offer) }
+            else -> Unit
         }
     }
 

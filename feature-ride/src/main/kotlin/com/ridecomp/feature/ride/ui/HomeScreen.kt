@@ -1,5 +1,6 @@
 package com.ridecomp.feature.ride.ui
 
+import android.text.format.Formatter
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
@@ -8,8 +9,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -26,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
@@ -41,6 +45,12 @@ import androidx.compose.ui.text.withStyle
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.config.Units
+import com.ridecomp.core.engine.map.MapBounds
+import com.ridecomp.core.engine.map.MapDownload
+import com.ridecomp.core.engine.map.MapPackError
+import com.ridecomp.core.engine.map.MapRegion
+import com.ridecomp.core.engine.map.MapRegionState
+import com.ridecomp.core.engine.map.MapRegionStatus
 import com.ridecomp.core.engine.recording.BatteryStatus
 import com.ridecomp.core.engine.sensors.SavedSensor
 import com.ridecomp.core.engine.sensors.SensorKind
@@ -50,6 +60,7 @@ import com.ridecomp.core.model.Activity
 import com.ridecomp.core.usecase.ActivePlan
 import com.ridecomp.core.usecase.BackupReminder
 import com.ridecomp.core.usecase.GpsAvailability
+import com.ridecomp.core.usecase.MapRegionOffer
 import com.ridecomp.core.usecase.RecoveryChoice
 import com.ridecomp.core.util.UnitFormatter
 import com.ridecomp.feature.ride.R
@@ -149,6 +160,7 @@ fun HomeScreen(
             state.backupReminder?.let { BackupReminderCard(it, onEvent) }
         }
         state.update?.let { UpdateCard(it, onEvent) }
+        state.mapOffer?.let { MapOfferCard(it, onEvent) }
         StatusTiles(state, onOpenSensors)
         if (state.isRideInProgress) {
             Text(
@@ -535,6 +547,146 @@ private fun UpdateCard(release: AppRelease, onEvent: (HomeUiEvent) -> Unit) {
     }
 }
 
+/**
+ * "Peta offline untuk DI Yogyakarta" (T11.12): the region of the last ride, its size, and download, resume or
+ * update; progress while downloading with "Batal"; ✕ = later. Like the update card: a link, not a button.
+ */
+@Composable
+private fun MapOfferCard(offer: MapRegionOffer, onEvent: (HomeUiEvent) -> Unit) {
+    val colors = RideCompTheme.colors
+    val context = LocalContext.current
+    val region = offer.state.region
+    val download = offer.state.download
+    val size = Formatter.formatShortFileSize(context, region.sizeBytes)
+    RideCompCard {
+        Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm)) {
+            Box(
+                modifier = Modifier
+                    .size(RideCompDimens.iconTileSize)
+                    .clip(CircleShape)
+                    .background(colors.okTint),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(UiR.drawable.ic_map),
+                    contentDescription = null,
+                    tint = colors.ok,
+                    modifier = Modifier.size(RideCompDimens.iconSize),
+                )
+            }
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingXs),
+            ) {
+                Text(
+                    text = stringResource(R.string.home_map_title, region.name),
+                    style = RideCompTheme.typography.cardTitle,
+                    color = colors.textPrimary,
+                )
+                Text(
+                    text = mapOfferBody(offer, size),
+                    style = RideCompTheme.typography.caption,
+                    color = if (download is MapDownload.Failed) colors.warnText else colors.textSecondary,
+                )
+                if (download is MapDownload.Running) DownloadBar(download.downloadedBytes, download.totalBytes)
+                LinkText(
+                    text = stringResource(mapOfferAction(offer)),
+                    onClick = {
+                        onEvent(if (download is MapDownload.Running) HomeUiEvent.CancelMap else HomeUiEvent.DownloadMap)
+                    },
+                )
+            }
+            if (download !is MapDownload.Running) {
+                val closeLabel = stringResource(R.string.home_backup_later)
+                Box(
+                    modifier = Modifier
+                        .size(RideCompDimens.touchTargetMin)
+                        .clickable(role = Role.Button) { onEvent(HomeUiEvent.DismissMap) }
+                        .semantics { contentDescription = closeLabel },
+                    contentAlignment = Alignment.TopEnd,
+                ) {
+                    Icon(
+                        painter = painterResource(UiR.drawable.ic_close),
+                        contentDescription = null,
+                        tint = colors.textSecondary,
+                        modifier = Modifier.size(RideCompDimens.iconSize),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun mapOfferBody(offer: MapRegionOffer, size: String): String {
+    val context = LocalContext.current
+    return when (val download = offer.state.download) {
+        is MapDownload.Running -> stringResource(
+            R.string.home_map_downloading,
+            Formatter.formatShortFileSize(context, download.downloadedBytes),
+            Formatter.formatShortFileSize(context, download.totalBytes),
+        )
+        is MapDownload.Paused -> stringResource(
+            R.string.home_map_paused,
+            percent(download.downloadedBytes, download.totalBytes),
+        )
+        is MapDownload.Failed -> stringResource(download.error.messageRes())
+        null -> if (offer.state.status == MapRegionStatus.UPDATE_AVAILABLE) {
+            stringResource(R.string.home_map_update_body, size)
+        } else {
+            stringResource(R.string.home_map_body, size)
+        }
+    }
+}
+
+@StringRes
+private fun mapOfferAction(offer: MapRegionOffer): Int = when (offer.state.download) {
+    is MapDownload.Running -> R.string.home_map_cancel
+    is MapDownload.Paused -> R.string.home_map_resume
+    is MapDownload.Failed -> R.string.home_map_retry
+    null -> if (offer.state.status ==
+        MapRegionStatus.UPDATE_AVAILABLE
+    ) {
+        R.string.home_map_update
+    } else {
+        R.string.home_map_download
+    }
+}
+
+@StringRes
+private fun MapPackError.messageRes(): Int = when (this) {
+    MapPackError.NO_NETWORK -> R.string.home_map_error_network
+    MapPackError.NEEDS_WIFI -> R.string.home_map_error_wifi
+    MapPackError.RIDING -> R.string.home_map_error_riding
+    MapPackError.DOWNLOAD_FAILED -> R.string.home_map_error_download
+    MapPackError.CHECKSUM, MapPackError.NOT_PMTILES -> R.string.home_map_error_file
+    MapPackError.NO_SPACE -> R.string.home_map_error_space
+}
+
+private fun percent(done: Long, total: Long): Int = (done * PERCENT / total.coerceAtLeast(1)).toInt()
+
+/** A thin progress bar like the storage bar of Settings → Map. */
+@Composable
+private fun DownloadBar(done: Long, total: Long) {
+    val colors = RideCompTheme.colors
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(RideCompDimens.storageBarHeight)
+            .clip(RoundedCornerShape(RideCompDimens.storageBarHeight))
+            .background(colors.divider),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth((done.toFloat() / total.coerceAtLeast(1)).coerceIn(0f, 1f))
+                .fillMaxHeight()
+                .background(colors.ok),
+        )
+    }
+}
+
+private const val PERCENT = 100
+
 @ThemePreviews
 @Composable
 private fun HomeScreenPreview() {
@@ -543,6 +695,15 @@ private fun HomeScreenPreview() {
             state = HomeUiState(
                 battery = BatteryStatus(86, isCharging = false),
                 update = AppRelease("0.9.3", "https://github.com/wahyurama-creator/Ridecomp/releases/tag/v0.9.3"),
+                mapOffer = MapRegionOffer(
+                    MapRegionState(
+                        MapRegion("di-yogyakarta", "DI Yogyakarta", MapBounds(109.9, -8.4, 110.8, -7.5), emptyList()),
+                        MapRegionStatus.NOT_INSTALLED,
+                        MapDownload.Running(downloadedBytes = 12_000_000, totalBytes = 21_300_000),
+                        isHere = true,
+                    ),
+                    "maps-2026-11",
+                ),
                 sensors = persistentListOf(
                     SavedSensor("A", "HRM", setOf(SensorKind.HEART_RATE), lastBatteryPercent = 82),
                     SavedSensor("B", "CSC", setOf(SensorKind.SPEED_CADENCE), lastBatteryPercent = 12),

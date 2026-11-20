@@ -4,17 +4,24 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.viewModelScope
 import com.ridecomp.core.engine.map.MapCacheLimit
 import com.ridecomp.core.engine.map.MapImportError
+import com.ridecomp.core.engine.map.MapRegion
+import com.ridecomp.core.engine.map.MapRegionState
 import com.ridecomp.core.engine.map.OfflineMap
 import com.ridecomp.core.engine.map.OnlineMapMode
 import com.ridecomp.core.usecase.ClearMapCacheUseCase
+import com.ridecomp.core.usecase.DeleteMapRegionUseCase
 import com.ridecomp.core.usecase.DeleteOfflineMapUseCase
 import com.ridecomp.core.usecase.GetFreeStorageUseCase
 import com.ridecomp.core.usecase.GetMapCacheInfoUseCase
 import com.ridecomp.core.usecase.ImportOfflineMapUseCase
+import com.ridecomp.core.usecase.MapPackDownloads
+import com.ridecomp.core.usecase.ObserveMapMobileDataUseCase
+import com.ridecomp.core.usecase.ObserveMapRegionsUseCase
 import com.ridecomp.core.usecase.ObserveOfflineMapsUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.SaveRideSettingsUseCase
 import com.ridecomp.core.usecase.SetMapCacheLimitUseCase
+import com.ridecomp.core.usecase.SetMapMobileDataUseCase
 import com.ridecomp.core.util.Outcome
 import com.ridecomp.ui.udf.NoEffect
 import com.ridecomp.ui.udf.UdfViewModel
@@ -41,8 +48,20 @@ data class OfflineMapsUiState(
     val cacheLimit: MapCacheLimit = MapCacheLimit.DEFAULT,
     val isClearCacheAsked: Boolean = false,
     val isClearingCache: Boolean = false,
+    /** Province maps of the index (T11.12), the rider's region first. */
+    val regions: ImmutableList<MapRegionState> = persistentListOf(),
+    val isMobileDataAllowed: Boolean = false,
+    val regionDeleteCandidate: MapRegion? = null,
+    val regionVersion: String = "",
 ) {
     val usedBytes: Long get() = maps.sumOf { it.sizeBytes }
+
+    /** Imported files only: downloaded province maps are listed with their region. */
+    val importedMaps: List<OfflineMap>
+        get() {
+            val packNames = regions.flatMap { state -> state.region.files.map { it.mapName } }.toSet()
+            return maps.filterNot { it.name in packNames }
+        }
 }
 
 sealed interface OfflineMapsUiEvent {
@@ -66,6 +85,19 @@ sealed interface OfflineMapsUiEvent {
     data object ConfirmClearCache : OfflineMapsUiEvent
 
     data object DismissClearCache : OfflineMapsUiEvent
+
+    /** Download, update or resume a province map (T11.12). */
+    data class DownloadRegion(val region: MapRegion) : OfflineMapsUiEvent
+
+    data class CancelRegion(val region: MapRegion) : OfflineMapsUiEvent
+
+    data class AskDeleteRegion(val region: MapRegion) : OfflineMapsUiEvent
+
+    data object ConfirmDeleteRegion : OfflineMapsUiEvent
+
+    data object DismissDeleteRegion : OfflineMapsUiEvent
+
+    data class MobileData(val isAllowed: Boolean) : OfflineMapsUiEvent
 }
 
 /** Use cases of the offline maps screen. */
@@ -79,11 +111,22 @@ data class OfflineMapsUseCases(
     val cacheInfo: GetMapCacheInfoUseCase,
     val setCacheLimit: SetMapCacheLimitUseCase,
     val clearCache: ClearMapCacheUseCase,
+    val regions: OfflineMapRegionUseCases,
+)
+
+/** Province maps (T11.12). */
+data class OfflineMapRegionUseCases(
+    val observe: ObserveMapRegionsUseCase,
+    val downloads: MapPackDownloads,
+    val delete: DeleteMapRegionUseCase,
+    val observeMobileData: ObserveMapMobileDataUseCase,
+    val setMobileData: SetMapMobileDataUseCase,
 )
 
 /**
  * Maps (T3.4, D-90; 13-UI-SCREENS #26): the online map setting, the tile cache with its limit and "clear"
- * (T11.11), and offline region files to import, list and delete with confirmation.
+ * (T11.11), province maps to download (T11.12), and offline region files to import, list and delete with
+ * confirmation.
  */
 class OfflineMapsViewModel(private val useCases: OfflineMapsUseCases) :
     UdfViewModel<OfflineMapsUiState, OfflineMapsUiEvent, NoEffect>(OfflineMapsUiState()) {
@@ -99,6 +142,18 @@ class OfflineMapsViewModel(private val useCases: OfflineMapsUseCases) :
                 updateState { copy(maps = maps.toImmutableList(), isLoaded = true) }
                 refreshFree()
             }
+        }
+        viewModelScope.launch {
+            useCases.regions.observe().collect { all ->
+                // The rider's region first, then by name.
+                val sorted = all.regions.sortedWith(
+                    compareByDescending<MapRegionState> { it.isHere }.thenBy { it.region.name },
+                )
+                updateState { copy(regions = sorted.toImmutableList(), regionVersion = all.version) }
+            }
+        }
+        viewModelScope.launch {
+            useCases.regions.observeMobileData().collect { updateState { copy(isMobileDataAllowed = it) } }
         }
     }
 
@@ -120,6 +175,27 @@ class OfflineMapsViewModel(private val useCases: OfflineMapsUseCases) :
             OfflineMapsUiEvent.AskClearCache -> updateState { copy(isClearCacheAsked = true) }
             OfflineMapsUiEvent.DismissClearCache -> updateState { copy(isClearCacheAsked = false) }
             OfflineMapsUiEvent.ConfirmClearCache -> clearCache()
+            is OfflineMapsUiEvent.DownloadRegion, is OfflineMapsUiEvent.CancelRegion,
+            is OfflineMapsUiEvent.AskDeleteRegion, OfflineMapsUiEvent.DismissDeleteRegion,
+            OfflineMapsUiEvent.ConfirmDeleteRegion, is OfflineMapsUiEvent.MobileData,
+            -> onRegionEvent(event)
+        }
+    }
+
+    /** Province maps (T11.12). */
+    private fun onRegionEvent(event: OfflineMapsUiEvent) {
+        val regions = useCases.regions
+        when (event) {
+            is OfflineMapsUiEvent.DownloadRegion -> regions.downloads.start(event.region, currentState.regionVersion)
+            is OfflineMapsUiEvent.CancelRegion -> regions.downloads.cancel(event.region)
+            is OfflineMapsUiEvent.AskDeleteRegion -> updateState { copy(regionDeleteCandidate = event.region) }
+            OfflineMapsUiEvent.DismissDeleteRegion -> updateState { copy(regionDeleteCandidate = null) }
+            OfflineMapsUiEvent.ConfirmDeleteRegion -> currentState.regionDeleteCandidate?.let { region ->
+                updateState { copy(regionDeleteCandidate = null) }
+                viewModelScope.launch { regions.delete(region) }
+            }
+            is OfflineMapsUiEvent.MobileData -> viewModelScope.launch { regions.setMobileData(event.isAllowed) }
+            else -> Unit
         }
     }
 

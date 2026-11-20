@@ -374,6 +374,18 @@
     <string name="maps_cache_clear">Clear map cache</string>
     <string name="maps_cache_clear_title">Clear the map cache?</string>
     <string name="maps_cache_clear_message">Maps seen before no longer show without internet until you view them online again. Rides, routes and offline map files stay.</string>
+    <string name="maps_regions_header">Province maps</string>
+    <string name="maps_regions_here">Your region · %1$s</string>
+    <string name="maps_regions_not_installed">%1$s · not downloaded</string>
+    <string name="maps_regions_installed">%1$s · on this phone</string>
+    <string name="maps_regions_update">%1$s · newer map data</string>
+    <string name="maps_regions_downloading">Downloading %1$s of %2$s</string>
+    <string name="maps_regions_paused">%1$s · paused, tap to continue</string>
+    <string name="maps_regions_failed">%1$s · stopped, tap to try again</string>
+    <string name="maps_regions_download">Download map %1$s</string>
+    <string name="maps_regions_cancel">Cancel download %1$s</string>
+    <string name="maps_regions_mobile_data">Also download on mobile data</string>
+    <string name="maps_regions_mobile_data_hint">Off: province maps download over Wi‑Fi only.</string>
     <string name="maps_offline_header">Offline maps (optional)</string>
     <string name="settings_maps_online_value">Online: %1$s</string>
 

@@ -26,6 +26,12 @@ public class FakeOfflineMapRepository(public var freeSpace: Long = Long.MAX_VALU
         return map.asSuccess()
     }
 
+    /** A map added by another path than import (a downloaded pack, T11.12). */
+    public fun add(name: String, sizeBytes: Long) {
+        val map = OfflineMap(name, sizeBytes, PmTilesInfo(MapBounds(0.0, 0.0, 1.0, 1.0), 0, MAX_ZOOM), 0, "/maps/$name")
+        maps.value = maps.value.filterNot { it.name == name } + map
+    }
+
     override suspend fun delete(name: String) {
         maps.value = maps.value.filterNot { it.name == name }
     }

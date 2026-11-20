@@ -9,6 +9,7 @@ import com.ridecomp.feature.settings.viewmodel.DisplayViewModel
 import com.ridecomp.feature.settings.viewmodel.GuideViewModel
 import com.ridecomp.feature.settings.viewmodel.LanguageViewModel
 import com.ridecomp.feature.settings.viewmodel.LicenseTextReader
+import com.ridecomp.feature.settings.viewmodel.OfflineMapRegionUseCases
 import com.ridecomp.feature.settings.viewmodel.OfflineMapsUseCases
 import com.ridecomp.feature.settings.viewmodel.OfflineMapsViewModel
 import com.ridecomp.feature.settings.viewmodel.OnboardingViewModel
@@ -32,7 +33,8 @@ val settingsFeatureModule = module {
     viewModel { SettingsViewModel(get()) }
     viewModel { LanguageViewModel(get(), get()) }
     viewModel { DisplayViewModel(get(), get()) }
-    factory { OfflineMapsUseCases(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    factory { OfflineMapRegionUseCases(get(), get(), get(), get(), get()) }
+    factory { OfflineMapsUseCases(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { OfflineMapsViewModel(get()) }
     viewModel { RideSettingsViewModel(get(), get()) }
     viewModel { OnboardingViewModel(get(), get(), get()) }

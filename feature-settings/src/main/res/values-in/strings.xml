@@ -357,6 +357,18 @@
     <string name="maps_cache_clear">Hapus cache peta</string>
     <string name="maps_cache_clear_title">Hapus cache peta?</string>
     <string name="maps_cache_clear_message">Peta yang pernah dilihat tidak tampil lagi tanpa internet sampai dibuka online lagi. Ride, rute, dan file peta offline tetap ada.</string>
+    <string name="maps_regions_header">Peta per provinsi</string>
+    <string name="maps_regions_here">Wilayahmu · %1$s</string>
+    <string name="maps_regions_not_installed">%1$s · belum diunduh</string>
+    <string name="maps_regions_installed">%1$s · tersimpan di HP</string>
+    <string name="maps_regions_update">%1$s · data peta lebih baru</string>
+    <string name="maps_regions_downloading">Mengunduh %1$s dari %2$s</string>
+    <string name="maps_regions_paused">%1$s · dijeda, ketuk untuk lanjut</string>
+    <string name="maps_regions_failed">%1$s · terhenti, ketuk untuk coba lagi</string>
+    <string name="maps_regions_download">Unduh peta %1$s</string>
+    <string name="maps_regions_cancel">Batalkan unduhan %1$s</string>
+    <string name="maps_regions_mobile_data">Unduh juga lewat data seluler</string>
+    <string name="maps_regions_mobile_data_hint">Mati: peta provinsi hanya diunduh lewat Wi‑Fi.</string>
     <string name="maps_offline_header">Peta offline (opsional)</string>
     <string name="settings_maps_online_value">Online: %1$s</string>
 

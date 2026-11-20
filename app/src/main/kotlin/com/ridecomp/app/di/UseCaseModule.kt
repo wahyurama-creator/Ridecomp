@@ -1,5 +1,6 @@
 package com.ridecomp.app.di
 
+import com.ridecomp.core.source.DispatcherProvider
 import com.ridecomp.core.usecase.AddEmergencyContactUseCase
 import com.ridecomp.core.usecase.AddPickedContactUseCase
 import com.ridecomp.core.usecase.AnalysisRequests
@@ -21,10 +22,12 @@ import com.ridecomp.core.usecase.DeleteActivityUseCase
 import com.ridecomp.core.usecase.DeleteBikeUseCase
 import com.ridecomp.core.usecase.DeleteComponentUseCase
 import com.ridecomp.core.usecase.DeleteCustomPlanUseCase
+import com.ridecomp.core.usecase.DeleteMapRegionUseCase
 import com.ridecomp.core.usecase.DeleteOfflineMapUseCase
 import com.ridecomp.core.usecase.DeleteRouteUseCase
 import com.ridecomp.core.usecase.DeleteSegmentUseCase
 import com.ridecomp.core.usecase.DisconnectStravaUseCase
+import com.ridecomp.core.usecase.DismissMapRegionOfferUseCase
 import com.ridecomp.core.usecase.DismissTipUseCase
 import com.ridecomp.core.usecase.DismissUpdateUseCase
 import com.ridecomp.core.usecase.DuplicateActivityProfileUseCase
@@ -60,12 +63,14 @@ import com.ridecomp.core.usecase.HasProfileUseCase
 import com.ridecomp.core.usecase.ImportGpxUseCase
 import com.ridecomp.core.usecase.ImportOfflineMapUseCase
 import com.ridecomp.core.usecase.LoadActivityAnalysisUseCase
+import com.ridecomp.core.usecase.LoadMapRegionIndexUseCase
 import com.ridecomp.core.usecase.LoadRideChartUseCase
 import com.ridecomp.core.usecase.LoadRideTrailUseCase
 import com.ridecomp.core.usecase.LoadShareCardUseCase
 import com.ridecomp.core.usecase.LoadTrackOutlineUseCase
 import com.ridecomp.core.usecase.LoadWeekZonesUseCase
 import com.ridecomp.core.usecase.LoadWidgetSummaryUseCase
+import com.ridecomp.core.usecase.MapPackDownloads
 import com.ridecomp.core.usecase.ObserveActivePlanUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfileUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
@@ -84,6 +89,9 @@ import com.ridecomp.core.usecase.ObserveHistoryCountUseCase
 import com.ridecomp.core.usecase.ObserveHistoryPageUseCase
 import com.ridecomp.core.usecase.ObserveLastBackupUseCase
 import com.ridecomp.core.usecase.ObserveLiveRideUseCase
+import com.ridecomp.core.usecase.ObserveMapMobileDataUseCase
+import com.ridecomp.core.usecase.ObserveMapRegionOfferUseCase
+import com.ridecomp.core.usecase.ObserveMapRegionsUseCase
 import com.ridecomp.core.usecase.ObserveMapTilesUseCase
 import com.ridecomp.core.usecase.ObserveMonthTotalsUseCase
 import com.ridecomp.core.usecase.ObserveOfflineMapsUseCase
@@ -149,6 +157,7 @@ import com.ridecomp.core.usecase.SetAppLanguageUseCase
 import com.ridecomp.core.usecase.SetAppThemeUseCase
 import com.ridecomp.core.usecase.SetAutoUpdateCheckUseCase
 import com.ridecomp.core.usecase.SetMapCacheLimitUseCase
+import com.ridecomp.core.usecase.SetMapMobileDataUseCase
 import com.ridecomp.core.usecase.SetRiderLevelUseCase
 import com.ridecomp.core.usecase.SetSafetyEnabledUseCase
 import com.ridecomp.core.usecase.SetStravaAutoUploadUseCase
@@ -171,6 +180,8 @@ import com.ridecomp.platform.export.AndroidExportedFileHandler
 import com.ridecomp.platform.export.AndroidShareCardFiles
 import java.security.SecureRandom
 import java.time.ZoneId
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
@@ -230,6 +241,25 @@ val useCaseModule = module {
     factory { GetMapCacheInfoUseCase(get(), get()) }
     factory { SetMapCacheLimitUseCase(get()) }
     factory { ClearMapCacheUseCase(get(), get()) }
+    // One owner of pack downloads for the whole app, with its own scope (paused when the app leaves, T11.12).
+    single {
+        MapPackDownloads(
+            get(),
+            get(),
+            get(),
+            get(),
+            CoroutineScope(
+                SupervisorJob() + get<DispatcherProvider>().default,
+            ),
+        )
+    }
+    factory { LoadMapRegionIndexUseCase(get()) }
+    factory { ObserveMapRegionsUseCase(get(), get(), get(), get(), get()) }
+    factory { ObserveMapRegionOfferUseCase(get(), get(), get()) }
+    factory { DismissMapRegionOfferUseCase(get()) }
+    factory { DeleteMapRegionUseCase(get(), get()) }
+    factory { ObserveMapMobileDataUseCase(get()) }
+    factory { SetMapMobileDataUseCase(get()) }
     factory { LoadRideTrailUseCase(get()) }
     factory { ImportOfflineMapUseCase(get()) }
     factory { DeleteOfflineMapUseCase(get()) }

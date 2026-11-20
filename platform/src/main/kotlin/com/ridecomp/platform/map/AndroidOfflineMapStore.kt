@@ -112,8 +112,30 @@ class AndroidOfflineMapStore(
 
     override suspend fun freeBytes(): Long = withContext(dispatchers.io) { allocatableBytes() }
 
-    /** Free space including cache the system can clear for us (lint UsableSpace). */
-    private fun allocatableBytes(): Long {
+    /** Where a pack download writes its partial file, next to the maps (T11.12). Call on IO. */
+    internal fun downloadFile(name: String): File = File(directory, name + DOWNLOAD_SUFFIX)
+
+    /**
+     * Adds a complete, checksum-verified pack download as map [name] (T11.12): the PMTiles header is checked
+     * like an import, then the file is renamed into place. Null when added.
+     */
+    internal suspend fun adopt(file: File, name: String): MapImportError? = withContext(dispatchers.io) {
+        val header = try {
+            file.inputStream().use { it.readNBytesCompat(PmTilesHeader.SIZE_BYTES) }
+        } catch (error: IOException) {
+            logger.warn(TAG, error) { "Downloaded map unreadable" }
+            return@withContext MapImportError.READ_FAILED
+        }
+        val error = (PmTilesHeader.parse(header) as? Outcome.Failure)?.error
+            ?: MapImportError.READ_FAILED.takeUnless {
+                file.renameTo(File(directory, name + OfflineMapConfig.FILE_EXTENSION))
+            }
+        refresh()
+        error
+    }
+
+    /** Free space including cache the system can clear for us (lint UsableSpace). Call on IO. */
+    internal fun allocatableBytes(): Long {
         val storage = context.getSystemService(StorageManager::class.java)
         return storage.getAllocatableBytes(storage.getUuidForPath(directory))
     }
@@ -160,6 +182,9 @@ class AndroidOfflineMapStore(
         const val TAG = "OfflineMaps"
         const val MAP_DIRECTORY = "maps"
         const val TEMPORARY_SUFFIX = ".part"
+
+        /** A pack download in progress; kept across app starts so it can resume (T11.12). */
+        const val DOWNLOAD_SUFFIX = ".download"
         const val COPY_BUFFER_BYTES = 64 * 1024
     }
 }

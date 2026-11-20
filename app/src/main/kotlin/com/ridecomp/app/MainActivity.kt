@@ -14,6 +14,7 @@ import com.ridecomp.app.navigation.IncomingStravaAuth
 import com.ridecomp.app.navigation.IncomingWidget
 import com.ridecomp.app.widget.RideCompWidget
 import com.ridecomp.core.source.DispatcherProvider
+import com.ridecomp.core.usecase.MapPackDownloads
 import com.ridecomp.core.usecase.ObserveAppThemeUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.platform.locale.AppLocale
@@ -29,6 +30,7 @@ class MainActivity : ComponentActivity() {
     private val dispatchers: DispatcherProvider by inject()
     private val observeTheme: ObserveAppThemeUseCase by inject()
     private val observeSettings: ObserveRideSettingsUseCase by inject()
+    private val mapPacks: MapPackDownloads by inject()
 
     /** The chosen app language on Android 8–12 (D-88). */
     override fun attachBaseContext(newBase: Context) {
@@ -68,9 +70,13 @@ class MainActivity : ComponentActivity() {
         IncomingWidget.offer(intent)
     }
 
-    /** Leaving the app: the widget shows the latest plan, ride and week (T9.2). */
+    /**
+     * Leaving the app: the widget shows the latest plan, ride and week (T9.2); a map pack download pauses
+     * (only while the app is open, BAT-05, T11.12) and resumes from its partial file when started again.
+     */
     override fun onStop() {
         super.onStop()
         RideCompWidget.refresh(this)
+        if (!isChangingConfigurations) mapPacks.pause()
     }
 }
