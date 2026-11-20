@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -30,6 +31,7 @@ import com.ridecomp.feature.training.viewmodel.SegmentDetailEffect
 import com.ridecomp.feature.training.viewmodel.SegmentDetailUiEvent
 import com.ridecomp.feature.training.viewmodel.SegmentDetailUiState
 import com.ridecomp.feature.training.viewmodel.SegmentDetailViewModel
+import com.ridecomp.feature.training.viewmodel.SegmentDraft
 import com.ridecomp.feature.training.viewmodel.SegmentEditorEffect
 import com.ridecomp.feature.training.viewmodel.SegmentEditorUiEvent
 import com.ridecomp.feature.training.viewmodel.SegmentEditorUiState
@@ -60,7 +62,11 @@ import com.ridecomp.ui.theme.RideCompDimens
 import com.ridecomp.ui.theme.RideCompTheme
 import com.ridecomp.ui.udf.ObserveEffects
 import java.text.DateFormat
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Date
+import java.util.Locale
 import kotlin.math.roundToLong
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -283,15 +289,22 @@ private fun TrendChart(efforts: List<SegmentEffortView>, formatter: UnitFormatte
     )
 }
 
-/** New segment from a ride (T4.2, D-68). */
+/**
+ * New segment from a ride (T4.2, D-68), or from a best effort's [windowMs] named "Sprint 20 Nov" after its
+ * day (T11.8).
+ */
 @Composable
 fun SegmentEditorRoute(
     activityId: Long,
+    windowMs: LongRange?,
     onCreated: (Long) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: SegmentEditorViewModel = koinViewModel(key = "segment-new-$activityId") { parametersOf(activityId) },
 ) {
+    val draft = windowMs?.let { SegmentDraft(it, sprintName(it.first)) }
+    val viewModel: SegmentEditorViewModel = koinViewModel(key = "segment-new-$activityId-${windowMs?.first}") {
+        parametersOf(activityId, draft)
+    }
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     ObserveEffects(viewModel.effects) { effect ->
         when (effect) {
@@ -300,6 +313,19 @@ fun SegmentEditorRoute(
     }
     SegmentEditorScreen(state, viewModel::onEvent, onBack, modifier)
 }
+
+/** "Sprint 20 Nov": the day the effort was ridden, in the phone's language and time zone. */
+@Composable
+private fun sprintName(startedAtMs: Long): String {
+    val locale: Locale = LocalConfiguration.current.locales[0]
+    val day = remember(startedAtMs, locale) {
+        Instant.ofEpochMilli(startedAtMs).atZone(ZoneId.systemDefault()).toLocalDate()
+            .format(DateTimeFormatter.ofPattern(SPRINT_DAY_PATTERN, locale))
+    }
+    return stringResource(R.string.segment_sprint_name, day)
+}
+
+private const val SPRINT_DAY_PATTERN = "d MMM"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -81,6 +81,44 @@ class BestEffortCalculatorTest {
     }
 
     @Test
+    fun `speed efforts find the fastest stretch over moving time`() {
+        // 8 m/s with a 14 m/s sprint between seconds 300 and 329 (30 s).
+        val speeds = List(300) { 8.0 } + List(30) { 14.0 } + List(900) { 8.0 }
+
+        val efforts = BestEffortCalculator.calculate(track(speeds), RideTotals())
+
+        val sprint = efforts.of(BestEffortKey.SPEED_30_S)
+        assertEquals(14.0, sprint?.value ?: 0.0, TOLERANCE)
+        assertEquals(299 * MS, sprint?.startMs)
+        assertEquals(329 * MS, sprint?.endMs)
+        // 1 min: the sprint plus 30 s at 8 m/s.
+        assertEquals(11.0, efforts.of(BestEffortKey.SPEED_1_MIN)?.value ?: 0.0, TOLERANCE)
+        assertEquals(8.0 + 6.0 * 30 / 1_200, efforts.of(BestEffortKey.SPEED_20_MIN)?.value ?: 0.0, TOLERANCE)
+    }
+
+    @Test
+    fun `speed efforts skip pauses and need the full duration`() {
+        // 20 s riding, a 10 min stop (no samples), 20 s riding: no 1 min window, and the stop is not 30 s.
+        val speeds = List(20) { 10.0 } + List<Double?>(600) { null } + List(20) { 10.0 }
+
+        val efforts = BestEffortCalculator.calculate(track(speeds), RideTotals())
+
+        assertEquals(10.0, efforts.of(BestEffortKey.SPEED_30_S)?.value ?: 0.0, PAUSE_TOLERANCE)
+        assertNull(efforts.of(BestEffortKey.SPEED_1_MIN))
+        assertNull(BestEffortCalculator.calculate(track(List(100) { 0.0 }), RideTotals()).of(BestEffortKey.SPEED_30_S))
+    }
+
+    @Test
+    fun `power has 30 s and 3 min efforts`() {
+        val ride = track(List(400) { 10.0 }, power = { if (it in 100..129) 500 else 200 })
+
+        val efforts = BestEffortCalculator.calculate(ride, RideTotals())
+
+        assertEquals(500.0, efforts.of(BestEffortKey.POWER_30_S)?.value ?: 0.0, TOLERANCE)
+        assertEquals((30 * 500 + 150 * 200) / 180.0, efforts.of(BestEffortKey.POWER_3_MIN)?.value ?: 0.0, TOLERANCE)
+    }
+
+    @Test
     fun `whole-ride records need data, average speed needs 20 km`() {
         val short = BestEffortCalculator.calculate(
             RideTrack(),
@@ -102,6 +140,8 @@ class BestEffortCalculatorTest {
         assertTrue(BestEffortKey.POWER_5_S.isBetter(401.0, 400.0))
         assertTrue(BestEffortKey.LONGEST_RIDE.isBetter(1.0, null))
         assertEquals(BestEffortKey.POWER_20_MIN, BestEffortKey.fromStorage("power_1200"))
+        assertTrue(BestEffortKey.SPEED_1_MIN.isBetter(10.1, 10.0))
+        assertEquals(BestEffortKey.SPEED_30_S, BestEffortKey.fromStorage("speed_30"))
     }
 
     private companion object {

@@ -24,6 +24,7 @@ import com.ridecomp.core.usecase.RequestReanalysisUseCase
 import com.ridecomp.feature.training.viewmodel.SegmentDetailEffect
 import com.ridecomp.feature.training.viewmodel.SegmentDetailUiEvent
 import com.ridecomp.feature.training.viewmodel.SegmentDetailViewModel
+import com.ridecomp.feature.training.viewmodel.SegmentDraft
 import com.ridecomp.feature.training.viewmodel.SegmentEditorEffect
 import com.ridecomp.feature.training.viewmodel.SegmentEditorUiEvent
 import com.ridecomp.feature.training.viewmodel.SegmentEditorViewModel
@@ -82,8 +83,9 @@ class SegmentViewModelsTest {
         Dispatchers.resetMain()
     }
 
-    private fun editor() = SegmentEditorViewModel(
+    private fun editor(draft: SegmentDraft? = null) = SegmentEditorViewModel(
         1,
+        draft,
         LoadTrackOutlineUseCase(readTrack, dispatchers),
         ObserveActivityUseCase(activities),
         settings,
@@ -106,6 +108,17 @@ class SegmentViewModelsTest {
         viewModel.onEvent(SegmentEditorUiEvent.RangeChanged(1_000.0, 1_100.0))
 
         assertFalse(viewModel.uiState.value.canSave)
+    }
+
+    @Test
+    fun `a best effort draft starts on its stretch with the sprint name`() {
+        // Seconds 60..120 at 10 m/s: 600 m to 1200 m.
+        val viewModel = editor(SegmentDraft(60_000L..120_000L, "Sprint 20 Nov"))
+
+        assertEquals("Sprint 20 Nov", viewModel.uiState.value.name)
+        assertEquals(600.0, viewModel.uiState.value.startM)
+        assertEquals(1_200.0, viewModel.uiState.value.endM)
+        assertTrue(viewModel.uiState.value.canSave)
     }
 
     @Test

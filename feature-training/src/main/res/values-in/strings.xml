@@ -3,12 +3,14 @@
     <!-- Rekor (T4.1) -->
     <string name="record_fastest_distance">%1$d km tercepat</string>
     <string name="record_best_power">Power terbaik %1$s</string>
+    <string name="record_best_speed">Tercepat %1$s</string>
     <string name="record_window_seconds">%1$d dtk</string>
     <string name="record_window_minutes">%1$d mnt</string>
     <string name="record_longest_ride">Ride terjauh</string>
     <string name="record_most_ascent">Tanjakan terbanyak</string>
     <string name="record_fastest_avg_speed">Rata-rata tercepat (20 km+)</string>
     <string name="records_section_distance">Jarak tercepat</string>
+    <string name="records_section_speed">Kecepatan terbaik per durasi</string>
     <string name="records_section_power">Power terbaik (power meter)</string>
     <string name="records_section_other">Rekor lain</string>
     <string name="records_kind">Profil aktivitas</string>
@@ -215,7 +217,7 @@
     <string name="intensity_vo2max_how">Sangat berat: mis. 5 × 3 menit di zona 5, 3 menit santai di antaranya (usaha 9 dari 10).</string>
     <string name="results_title">Hasil</string>
     <string name="results_info_label">Penjelasan Hasil</string>
-    <string name="results_info">Usaha terbaik: waktu jarak, power, ride terjauh, dan tanjakan ride ini yang masuk 3 terbaikmu saat ride itu. Segmen: semua segmenmu yang dilewati ride ini; ketuk untuk melihat semua usahanya. PR = rekormu saat itu.</string>
+    <string name="results_info">Usaha terbaik: waktu jarak, kecepatan tertinggi 30 dtk sampai 20 mnt, power, ride terjauh, dan tanjakan ride ini yang masuk 3 terbaikmu saat ride itu. Ketuk usaha jarak atau kecepatan untuk menyimpan jalur itu sebagai segmen. Segmen: semua segmenmu yang dilewati ride ini; ketuk untuk melihat semua usahanya. PR = rekormu saat itu.</string>
     <string name="results_best_efforts">Usaha terbaik</string>
     <string name="results_segments">Segmen</string>
     <string name="results_rank_pr">PR</string>
@@ -223,4 +225,6 @@
     <string name="results_rank_third">Terbaik ke-3</string>
     <string name="results_show_all">Lihat semua hasil (%1$d)</string>
     <string name="results_show_less">Tampilkan lebih sedikit</string>
+    <string name="results_make_segment">Simpan sebagai segmen</string>
+    <string name="segment_sprint_name">Sprint %1$s</string>
 </resources>

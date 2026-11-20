@@ -18,15 +18,18 @@ import kotlinx.coroutines.withContext
 
 /**
  * Post-ride analysis versions (Phase 4, D-67). Each step has its own version; a ride stores the highest it
- * has passed, so a new step (or a new segment, D-70) re-runs only what is missing on old rides.
+ * has passed, so a new step (or a new segment, D-70) re-runs only what is missing on old rides. A step whose
+ * results change gets the next free version: old rides then re-run that step once (D-125).
  */
 public object AnalysisConfig {
-    public const val BEST_EFFORTS_VERSION: Int = 1
     public const val SEGMENTS_VERSION: Int = 2
     public const val TRAINING_VERSION: Int = 3
 
+    /** Was 1; 4 since the speed and extra power efforts (T11.8) so old rides gain them. */
+    public const val BEST_EFFORTS_VERSION: Int = 4
+
     /** The version a fully analyzed ride has. */
-    public const val VERSION: Int = TRAINING_VERSION
+    public const val VERSION: Int = BEST_EFFORTS_VERSION
 
     /** Rides analyzed per database query. */
     public const val BATCH_SIZE: Int = 20

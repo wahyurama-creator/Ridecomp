@@ -124,8 +124,14 @@ class RecordsViewModelsTest {
 
         val viewModel = NewRecordsViewModel(1, preview, settings)
 
+        // 100 s at 10 m/s: 1 km, the 30 s and 1 min speeds (T11.8) and the distance.
         assertEquals(
-            listOf(BestEffortKey.FASTEST_1_KM, BestEffortKey.LONGEST_RIDE),
+            listOf(
+                BestEffortKey.FASTEST_1_KM,
+                BestEffortKey.SPEED_30_S,
+                BestEffortKey.SPEED_1_MIN,
+                BestEffortKey.LONGEST_RIDE,
+            ),
             viewModel.uiState.value.records.map { it.effort.key },
         )
     }

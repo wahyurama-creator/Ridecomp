@@ -22,6 +22,7 @@ public object BestEffortConfig {
 /** Group of a record (05-DATA-MODEL `best_efforts.type`). Stable strings: stored on users' phones. */
 public enum class BestEffortType(public val storageValue: String) {
     DISTANCE("distance"),
+    SPEED("speed"),
     POWER("power"),
     OTHER("other"),
 }
@@ -43,8 +44,15 @@ public enum class BestEffortKey(
     FASTEST_20_KM(BestEffortType.DISTANCE, "distance_20000", 20_000.0, false),
     FASTEST_40_KM(BestEffortType.DISTANCE, "distance_40000", 40_000.0, false),
     FASTEST_100_KM(BestEffortType.DISTANCE, "distance_100000", 100_000.0, false),
+    SPEED_30_S(BestEffortType.SPEED, "speed_30", 30.0, true),
+    SPEED_1_MIN(BestEffortType.SPEED, "speed_60", 60.0, true),
+    SPEED_3_MIN(BestEffortType.SPEED, "speed_180", 180.0, true),
+    SPEED_5_MIN(BestEffortType.SPEED, "speed_300", 300.0, true),
+    SPEED_20_MIN(BestEffortType.SPEED, "speed_1200", 1_200.0, true),
     POWER_5_S(BestEffortType.POWER, "power_5", 5.0, true),
+    POWER_30_S(BestEffortType.POWER, "power_30", 30.0, true),
     POWER_1_MIN(BestEffortType.POWER, "power_60", 60.0, true),
+    POWER_3_MIN(BestEffortType.POWER, "power_180", 180.0, true),
     POWER_5_MIN(BestEffortType.POWER, "power_300", 300.0, true),
     POWER_20_MIN(BestEffortType.POWER, "power_1200", 1_200.0, true),
     POWER_60_MIN(BestEffortType.POWER, "power_3600", 3_600.0, true),
@@ -66,8 +74,9 @@ public enum class BestEffortKey(
 }
 
 /**
- * One effort of a ride. [value] is seconds for distances, watts for power, meters for the longest ride and
- * the most ascent, m/s for the average speed. [startMs]/[endMs] mark the window (null for whole rides).
+ * One effort of a ride. [value] is seconds for distances, m/s for speeds over a duration and the average
+ * speed, watts for power, meters for the longest ride and the most ascent. [startMs]/[endMs] mark the window
+ * (null for whole rides).
  */
 public data class BestEffort(val key: BestEffortKey, val value: Double, val startMs: Long?, val endMs: Long?)
 
@@ -81,12 +90,16 @@ public object BestEffortCalculator {
         val keys = BestEffortKey.entries
         val distances = keys.filter { it.type == BestEffortType.DISTANCE }
             .mapNotNull { fastestDistance(track, moving, it) }
+        val distanceSum = DoubleArray(track.size) { track.distanceM(it) - track.distanceM(0) }
+        val speeds = keys.filter { it.type == BestEffortType.SPEED }
+            .mapNotNull { bestAverage(track, moving, distanceSum, it) }
         val powers = if (track.hasPower) {
-            keys.filter { it.type == BestEffortType.POWER }.mapNotNull { bestPower(track, moving, it) }
+            val energy = energy(track, moving)
+            keys.filter { it.type == BestEffortType.POWER }.mapNotNull { bestAverage(track, moving, energy, it) }
         } else {
             emptyList()
         }
-        return distances + powers + wholeRide(totals)
+        return distances + speeds + powers + wholeRide(totals)
     }
 
     /** Moving seconds at each sample: gaps longer than a pause threshold count as one interval. */
@@ -121,21 +134,29 @@ public object BestEffortCalculator {
         return best
     }
 
-    /** Highest average power over [key]'s moving duration; missing power-meter samples count as 0 W. */
-    private fun bestPower(track: RideTrack, moving: DoubleArray, key: BestEffortKey): BestEffort? {
+    /** Energy in joules up to each sample; missing power-meter samples count as 0 W. */
+    private fun energy(track: RideTrack, moving: DoubleArray): DoubleArray {
         val energy = DoubleArray(track.size)
         for (i in 1 until track.size) {
             energy[i] = energy[i - 1] + track.powerW(i) * (moving[i] - moving[i - 1])
         }
+        return energy
+    }
+
+    /**
+     * Highest average of a quantity over [key]'s moving duration: [sum] holds the quantity accumulated up to
+     * each sample (joules for watts, meters for m/s). Nothing when the ride is shorter or the best is 0.
+     */
+    private fun bestAverage(track: RideTrack, moving: DoubleArray, sum: DoubleArray, key: BestEffortKey): BestEffort? {
         var start = 0
         var best: BestEffort? = null
         for (end in 1 until track.size) {
             if (moving[end] < key.target) continue
             while (moving[end] - moving[start + 1] >= key.target) start++
             val seconds = moving[end] - moving[start]
-            val watts = (energy[end] - energy[start]) / seconds
-            if (key.isBetter(watts, best?.value)) {
-                best = BestEffort(key, watts, track.timeMs(start), track.timeMs(end))
+            val average = (sum[end] - sum[start]) / seconds
+            if (average > 0 && key.isBetter(average, best?.value)) {
+                best = BestEffort(key, average, track.timeMs(start), track.timeMs(end))
             }
         }
         return best

@@ -136,9 +136,16 @@ sealed interface SegmentEditorEffect {
     data class Created(val segmentId: Long) : SegmentEditorEffect
 }
 
-/** New segment from part of a ride (T4.2, D-68): two slider handles over distance, a name, save. */
+/** A best effort to start the editor on (T11.8): its time window and the default "Sprint 20 Nov" name. */
+data class SegmentDraft(val windowMs: LongRange, val name: String)
+
+/**
+ * New segment from part of a ride (T4.2, D-68): two slider handles over distance, a name, save. With a
+ * [draft] the handles start on the best effort's stretch, otherwise on the whole ride named after it.
+ */
 class SegmentEditorViewModel(
     private val activityId: Long,
+    draft: SegmentDraft?,
     loadOutline: LoadTrackOutlineUseCase,
     observeActivity: ObserveActivityUseCase,
     observeSettings: ObserveRideSettingsUseCase,
@@ -147,15 +154,16 @@ class SegmentEditorViewModel(
     init {
         viewModelScope.launch {
             // A deleted ride gives an empty editor (nothing to save) instead of waiting forever.
-            val name = observeActivity(activityId).first()?.name.orEmpty()
-            val outline = loadOutline(activityId)
-            val total = outline.lastOrNull()?.distanceM ?: 0.0
+            val rideName = observeActivity(activityId).first()?.name.orEmpty()
+            val outline = loadOutline(activityId, draft?.windowMs)
+            val total = outline.points.lastOrNull()?.distanceM ?: 0.0
+            val window = outline.windowM
             updateState {
                 copy(
-                    outline = outline.toImmutableList(),
-                    startM = 0.0,
-                    endM = minOf(total, SegmentConfig.MAX_LENGTH_M),
-                    name = name,
+                    outline = outline.points.toImmutableList(),
+                    startM = window?.start ?: 0.0,
+                    endM = window?.endInclusive ?: minOf(total, SegmentConfig.MAX_LENGTH_M),
+                    name = draft?.name ?: rideName,
                     isLoaded = true,
                 )
             }

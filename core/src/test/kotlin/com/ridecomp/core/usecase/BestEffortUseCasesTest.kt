@@ -91,6 +91,21 @@ class BestEffortUseCasesTest {
     }
 
     @Test
+    fun `rides analyzed before the speed efforts gain them, oldest first`() = runTest(dispatcher) {
+        ride(id = 1, startedAtMs = 1 * DAY_MS, speedMps = 10.0)
+        ride(id = 2, startedAtMs = 2 * DAY_MS, speedMps = 8.0)
+        // Fully analyzed by the app before T11.8 (training was the last step, D-125).
+        activities.analyzedVersions[1] = AnalysisConfig.TRAINING_VERSION
+        activities.analyzedVersions[2] = AnalysisConfig.TRAINING_VERSION
+
+        analyze()
+
+        assertEquals(true, prOf(1, BestEffortKey.SPEED_1_MIN))
+        assertEquals(false, prOf(2, BestEffortKey.SPEED_1_MIN))
+        assertEquals(AnalysisConfig.VERSION, activities.analyzedVersions[2])
+    }
+
+    @Test
     fun `indoor records are kept apart from outdoor ones`() = runTest(dispatcher) {
         ride(id = 1, startedAtMs = 1 * DAY_MS, speedMps = 10.0)
         ride(id = 2, startedAtMs = 2 * DAY_MS, speedMps = 8.0, profileId = INDOOR_ID)
