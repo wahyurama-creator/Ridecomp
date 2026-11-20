@@ -145,7 +145,7 @@ Warna zona (HR/power) 1–5/7: abu, biru, hijau, kuning, oranye, merah, ungu.
 
 Token tambahan dari desain canvas (`surfaceAlt`, `surfaceRaised`, `textTertiary`, `disabled`, `indicatorInactive`, `accentTint`, `okTint`, `warnTint`, `dangerDeep`, pita grade) ada di `13-UI-SCREENS.md` §1.2 dan `RideCompColors` (D-54).
 
-Tema terang opsional (untuk layar LCD di bawah matahari terik): kontras ≥ 7:1.
+Tema terang opsional (untuk layar LCD di bawah matahari terik): data ride ≥ 7:1, teks lain ≥ 4,5:1, garis/batang/ikon ≥ 3:1; dikunci oleh `ThemeContrastTest` (T11.10, D-127). Widget mengikuti mode HP.
 
 | Token | Gelap | Terang |
 |---|---|---|
@@ -154,10 +154,13 @@ Tema terang opsional (untuk layar LCD di bawah matahari terik): kontras ≥ 7:1.
 | `divider` | `#2A2A2A` | `#BDBDBD` |
 | `textPrimary` | `#FFFFFF` | `#000000` |
 | `textSecondary` | `#A0A0A0` | `#4A4A4A` |
-| `accent` (tombol) | `#FC6A1E` teks hitam | `#C2410C` teks putih |
-| `warn` | `#FFC400` | `#8A6100` (teks) / `#FFC400` (latar banner, teks hitam) |
+| `accent` (tombol) | `#FC6A1E` teks hitam | `#B3390A` teks putih (T11.10) |
+| `warn` | `#FFC400` | `#755200` (`warnText`: teks, ikon, cincin) / `#FFC400` (latar blok/banner, teks hitam) |
 | `danger` | `#FF4D4D` | `#B3261E` |
-| `ok` | `#3DDC84` | `#1B7A3E` |
+| `ok` | `#3DDC84` | `#17683A` |
+| `track` | `#2FA8FF` teks hitam | `#0B6BB8` teks putih (T11.10) |
+| Zona 1–7 | abu, biru, hijau, kuning, oranye, merah, ungu | sama, versi pekat ≥ 3:1 (`#757575 #1E78D2 #2E8B3E #A87400 #D9530F #C62828 #8E44C9`) |
+| Pita grade 1–5 | kuning muda → merah | `#948200 #C27C00 #D25E00 #C8431A #8C2410` |
 
 Pilihan tema: Gelap (default) / Terang / Ikuti HP, satu untuk seluruh aplikasi di Setelan → Tampilan (T11.9, D-110, D-126; bukan per profil aktivitas). Status bar & navigation bar mengikuti tema aplikasi. Tetap gelap: hitung mundur insiden; kartu share punya pilihan sendiri.
 
