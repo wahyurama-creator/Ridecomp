@@ -63,7 +63,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`); ganti 
 - [x] T11.8 Usaha terbaik otomatis (rekor durasi + tandai sprint)
 
 **11D Tema**
-- [ ] T11.9 Pilihan tema
+- [x] T11.9 Pilihan tema
 - [ ] T11.10 Audit tema terang
 
 **11E Peta offline**
@@ -161,7 +161,7 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 ### Fase 11D — Tema
 
 #### T11.9 Pilihan tema
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-20 · Feature Report: [`T11.9-theme-choice.md`](../reports/features/T11.9-theme-choice.md) · D-126 (kunci `app.theme`, salinan cepat untuk frame pertama)
 - Setelan → Tampilan → **Tema: Gelap · Terang · Ikuti HP** (default **Gelap**, K2). Disimpan di tabel `settings` (`ui.theme`).
 - Diterapkan di root (`RideCompTheme(themeMode)`), berlaku langsung tanpa restart; status bar & navigation bar ikut.
 - Pengecualian yang tetap gelap: kartu share bergaya gelap, layar hitung mundur insiden.

@@ -159,7 +159,7 @@ Tema terang opsional (untuk layar LCD di bawah matahari terik): kontras ≥ 7:1.
 | `danger` | `#FF4D4D` | `#B3261E` |
 | `ok` | `#3DDC84` | `#1B7A3E` |
 
-Pilihan tema: Gelap (default) / Terang / Otomatis (ikut sistem). Tema dapat dipilih per profil aktivitas.
+Pilihan tema: Gelap (default) / Terang / Ikuti HP, satu untuk seluruh aplikasi di Setelan → Tampilan (T11.9, D-110, D-126; bukan per profil aktivitas). Status bar & navigation bar mengikuti tema aplikasi. Tetap gelap: hitung mundur insiden; kartu share punya pilihan sendiri.
 
 ### 4.2 Tipografi
 - Font angka: font sistem dengan `fontFeatureSettings = "tnum"` (angka tabular) agar angka tidak "goyang".
