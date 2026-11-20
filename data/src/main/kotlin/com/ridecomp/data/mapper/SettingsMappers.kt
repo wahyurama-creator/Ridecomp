@@ -1,6 +1,7 @@
 package com.ridecomp.data.mapper
 
 import com.ridecomp.core.engine.map.MapCacheLimit
+import com.ridecomp.core.engine.map.OfflineMapLimit
 import com.ridecomp.core.engine.map.OnlineMapMode
 import com.ridecomp.core.engine.voice.VoiceSettings
 import com.ridecomp.core.model.RideSettings
@@ -29,6 +30,7 @@ internal object SettingsKeys {
     const val ONLINE_MAP_MODE = "app.online_map_mode"
     const val THEME = "app.theme"
     const val MAP_CACHE_LIMIT = "app.map_cache_limit"
+    const val OFFLINE_MAP_LIMIT = "app.offline_map_limit"
     const val MAP_CACHE_FILLED = "map.cache_filled"
     const val MAP_PACKS_INSTALLED = "maps.installed"
     const val MAP_PACKS_DISMISSED = "maps.dismissed"
@@ -113,6 +115,8 @@ internal fun List<SettingEntity>.toRideSettings(): RideSettings {
         unitSystem = values[SettingsKeys.UNIT_SYSTEM]?.toEnumOrNull<UnitSystem>() ?: defaults.unitSystem,
         onlineMapMode = values[SettingsKeys.ONLINE_MAP_MODE]?.toEnumOrNull<OnlineMapMode>() ?: defaults.onlineMapMode,
         mapCacheLimit = values[SettingsKeys.MAP_CACHE_LIMIT]?.toEnumOrNull<MapCacheLimit>() ?: defaults.mapCacheLimit,
+        offlineMapLimit = values[SettingsKeys.OFFLINE_MAP_LIMIT]?.toEnumOrNull<OfflineMapLimit>()
+            ?: defaults.offlineMapLimit,
         voice = VoiceSettings(
             everyUnits = values.optional(SettingsKeys.VOICE_EVERY, defaults.voice.everyUnits) { raw ->
                 raw.toIntOrNull()?.takeIf { it > 0 }
@@ -137,6 +141,7 @@ internal fun RideSettings.toEntities(): List<SettingEntity> = listOf(
     SettingEntity(SettingsKeys.UNIT_SYSTEM, unitSystem.toDbValue()),
     SettingEntity(SettingsKeys.ONLINE_MAP_MODE, onlineMapMode.toDbValue()),
     SettingEntity(SettingsKeys.MAP_CACHE_LIMIT, mapCacheLimit.toDbValue()),
+    SettingEntity(SettingsKeys.OFFLINE_MAP_LIMIT, offlineMapLimit.toDbValue()),
     SettingEntity(SettingsKeys.VOICE_EVERY, voice.everyUnits?.toString() ?: SettingsKeys.OFF),
     SettingEntity(SettingsKeys.VOICE_LAPS, voice.isLapEnabled.toString()),
 )

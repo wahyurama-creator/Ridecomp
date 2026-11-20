@@ -97,7 +97,7 @@ class MapUseCasesTest {
     @Test
     fun `off never listens to the network and keeps offline regions`() = runTest {
         settings.saveRideSettings(settings.getRideSettings().copy(onlineMapMode = OnlineMapMode.OFF))
-        offline.import("content://jateng", "jateng")
+        offline.import("content://jateng", "jateng", Long.MAX_VALUE)
 
         tiles().test {
             val current = awaitItem()

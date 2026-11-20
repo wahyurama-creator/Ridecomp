@@ -39,12 +39,16 @@ class AndroidOfflineMapStore(
     @Volatile
     private var isLoaded = false
 
+    /** An import is copying: its `.part` file is not a leftover (T11.14). */
+    @Volatile
+    private var isImporting = false
+
     // Resolved on the IO thread: `filesDir` touches the disk (STB-01).
     private val directory by lazy { File(context.filesDir, MAP_DIRECTORY).apply { mkdirs() } }
 
     override fun observeAll(): Flow<List<OfflineMap>> = maps.onStart { if (!isLoaded) refresh() }
 
-    override suspend fun import(uri: String, name: String): Outcome<OfflineMap, MapImportError> =
+    override suspend fun import(uri: String, name: String, maxBytes: Long): Outcome<OfflineMap, MapImportError> =
         withContext(dispatchers.io) {
             val parsed = uri.toUri()
             if (parsed.scheme !=
@@ -55,18 +59,31 @@ class AndroidOfflineMapStore(
             val size = documentSize(uri)
             when {
                 size != null && size > OfflineMapConfig.MAX_FILE_BYTES -> MapImportError.TOO_LARGE.asFailure()
+                size != null && size > maxBytes -> MapImportError.TOTAL_LIMIT.asFailure()
                 size != null && allocatableBytes() - size < OfflineMapConfig.MIN_FREE_AFTER_IMPORT_BYTES ->
                     MapImportError.NO_SPACE.asFailure()
-                else -> copy(uri, name)
+                else -> copy(uri, name, maxBytes)
             }.also { refresh() }
         }
 
-    private fun copy(uri: String, name: String): Outcome<OfflineMap, MapImportError> {
+    override suspend fun cleanTemporary(keepDownloads: Set<String>) {
+        withContext(dispatchers.io) {
+            directory.listFiles().orEmpty().forEach { file ->
+                val isStaleImport = file.name.endsWith(TEMPORARY_SUFFIX) && !isImporting
+                val isStaleDownload = file.name.endsWith(DOWNLOAD_SUFFIX) &&
+                    file.name.removeSuffix(DOWNLOAD_SUFFIX) !in keepDownloads
+                if (isStaleImport || isStaleDownload) file.delete()
+            }
+        }
+    }
+
+    private fun copy(uri: String, name: String, maxBytes: Long): Outcome<OfflineMap, MapImportError> {
         val target = File(directory, name + OfflineMapConfig.FILE_EXTENSION)
         val temporary = File(directory, name + TEMPORARY_SUFFIX)
+        isImporting = true
         val result = try {
             context.contentResolver.openInputStream(uri.toUri())?.use { input ->
-                copyValidated(input, temporary, target)
+                copyValidated(input, temporary, target, maxBytes)
             }
                 ?: MapImportError.READ_FAILED.asFailure()
         } catch (error: IOException) {
@@ -77,30 +94,44 @@ class AndroidOfflineMapStore(
             MapImportError.READ_FAILED.asFailure()
         }
         temporary.delete()
+        isImporting = false
         return result
     }
 
-    private fun copyValidated(input: InputStream, temporary: File, target: File): Outcome<OfflineMap, MapImportError> {
+    private fun copyValidated(
+        input: InputStream,
+        temporary: File,
+        target: File,
+        maxBytes: Long,
+    ): Outcome<OfflineMap, MapImportError> {
         val header = input.readNBytesCompat(PmTilesHeader.SIZE_BYTES)
         val error = (PmTilesHeader.parse(header) as? Outcome.Failure)?.error
-            ?: copyRest(header, input, temporary)
+            ?: copyRest(header, input, temporary, maxBytes)
             ?: MapImportError.READ_FAILED.takeUnless { temporary.renameTo(target) }
         return error?.asFailure() ?: read(target)?.asSuccess() ?: MapImportError.READ_FAILED.asFailure()
     }
 
-    /** Copies the header and the rest of the stream; stops at [OfflineMapConfig.MAX_FILE_BYTES]. */
-    private fun copyRest(header: ByteArray, input: InputStream, temporary: File): MapImportError? =
+    /**
+     * Copies the header and the rest of the stream; stops at [OfflineMapConfig.MAX_FILE_BYTES] or at
+     * [maxBytes], the room under the total limit, for documents that did not tell their size.
+     */
+    private fun copyRest(header: ByteArray, input: InputStream, temporary: File, maxBytes: Long): MapImportError? =
         temporary.outputStream().use { output ->
             output.write(header)
+            val cap = minOf(OfflineMapConfig.MAX_FILE_BYTES, maxBytes)
             var copied = header.size.toLong()
             val buffer = ByteArray(COPY_BUFFER_BYTES)
             var read = input.read(buffer)
-            while (read >= 0 && copied + read <= OfflineMapConfig.MAX_FILE_BYTES) {
+            while (read >= 0 && copied + read <= cap) {
                 output.write(buffer, 0, read)
                 copied += read
                 read = input.read(buffer)
             }
-            MapImportError.TOO_LARGE.takeIf { read >= 0 }
+            when {
+                read < 0 -> null
+                cap < OfflineMapConfig.MAX_FILE_BYTES -> MapImportError.TOTAL_LIMIT
+                else -> MapImportError.TOO_LARGE
+            }
         }
 
     override suspend fun delete(name: String) {

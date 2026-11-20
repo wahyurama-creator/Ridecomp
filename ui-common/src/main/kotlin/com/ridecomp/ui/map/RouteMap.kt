@@ -1,6 +1,7 @@
 package com.ridecomp.ui.map
 
 import android.view.View
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -179,12 +180,19 @@ private fun PreparedRouteMap(
     Box(modifier = modifier.semantics { contentDescription = description }) {
         AndroidView(factory = { mapView }, modifier = Modifier.matchParentSize())
         MapAttribution(
-            text = stringResource(
-                if (isOnline || isCached) R.string.map_attribution_online else R.string.map_attribution,
-            ),
+            text = stringResource(attributionRes(isOnline, isCached, regionPaths.isNotEmpty())),
             modifier = Modifier.align(Alignment.BottomStart),
         )
     }
+}
+
+/** Credits of what is drawn (T11.14): online/cached OpenFreeMap tiles, offline Protomaps regions, or both. */
+@StringRes
+private fun attributionRes(isOnline: Boolean, isCached: Boolean, hasRegions: Boolean): Int = when {
+    isOnline -> R.string.map_attribution_online
+    isCached && hasRegions -> R.string.map_attribution_both
+    isCached -> R.string.map_attribution_online
+    else -> R.string.map_attribution
 }
 
 /** Forwards the screen lifecycle to the MapView (09 §1). */

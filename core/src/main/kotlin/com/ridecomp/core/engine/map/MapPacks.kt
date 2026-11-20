@@ -57,7 +57,18 @@ public data class MapRegionIndex(val schema: Int, val version: String, val regio
 }
 
 /** Why a pack download stopped. */
-public enum class MapPackError { NO_NETWORK, NEEDS_WIFI, RIDING, DOWNLOAD_FAILED, CHECKSUM, NOT_PMTILES, NO_SPACE }
+public enum class MapPackError {
+    NO_NETWORK,
+    NEEDS_WIFI,
+    RIDING,
+    DOWNLOAD_FAILED,
+    CHECKSUM,
+    NOT_PMTILES,
+    NO_SPACE,
+
+    /** The offline maps would exceed the chosen total (T11.14). */
+    TOTAL_LIMIT,
+}
 
 /** Progress of one region's download. */
 public sealed interface MapDownload {

@@ -26,6 +26,7 @@ import com.ridecomp.core.usecase.GetFreeStorageUseCase
 import com.ridecomp.core.usecase.GetMapCacheInfoUseCase
 import com.ridecomp.core.usecase.ImportOfflineMapUseCase
 import com.ridecomp.core.usecase.LoadMapRegionIndexUseCase
+import com.ridecomp.core.usecase.MapLimitCheck
 import com.ridecomp.core.usecase.MapPackDownloads
 import com.ridecomp.core.usecase.ObserveMapMobileDataUseCase
 import com.ridecomp.core.usecase.ObserveMapRegionsUseCase
@@ -73,7 +74,7 @@ class OfflineMapsViewModelTest {
     private fun viewModel() = OfflineMapsViewModel(
         OfflineMapsUseCases(
             ObserveOfflineMapsUseCase(repository),
-            ImportOfflineMapUseCase(repository),
+            ImportOfflineMapUseCase(repository, settings),
             DeleteOfflineMapUseCase(repository),
             GetFreeStorageUseCase(repository),
             ObserveRideSettingsUseCase(settings),
@@ -97,6 +98,7 @@ class OfflineMapsViewModelTest {
             packState,
             FakeNetworkStatusSource(),
             rides,
+            MapLimitCheck(repository, settings),
             CoroutineScope(Dispatchers.Unconfined),
         )
         return OfflineMapRegionUseCases(

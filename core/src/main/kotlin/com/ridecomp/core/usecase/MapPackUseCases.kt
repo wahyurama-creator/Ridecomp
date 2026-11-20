@@ -12,6 +12,7 @@ import com.ridecomp.core.engine.map.NetworkStatus
 import com.ridecomp.core.repository.MapPackStateRepository
 import com.ridecomp.core.repository.OfflineMapRepository
 import com.ridecomp.core.repository.RidePositionRepository
+import com.ridecomp.core.repository.SettingsRepository
 import com.ridecomp.core.source.MapPackDownloader
 import com.ridecomp.core.source.MapRegionIndexSource
 import com.ridecomp.core.source.NetworkStatusSource
@@ -42,6 +43,7 @@ public class MapPackDownloads(
     private val state: MapPackStateRepository,
     private val network: NetworkStatusSource,
     private val rides: RideController,
+    private val limits: MapLimitCheck,
     private val scope: CoroutineScope,
 ) {
     private val progress = MutableStateFlow<Map<String, MapDownload>>(emptyMap())
@@ -95,7 +97,7 @@ public class MapPackDownloads(
     }
 
     private suspend fun download(region: MapRegion, version: String) {
-        val blocked = blockReason()
+        val blocked = blockReason() ?: MapPackError.TOTAL_LIMIT.takeUnless { limits.fits(region) }
         if (blocked != null) {
             progress.update { it + (region.id to MapDownload.Failed(blocked)) }
             return
@@ -146,6 +148,17 @@ public class MapPackDownloads(
     }
 }
 
+/** Whether a region fits the total offline map limit, counting its own files as replaced (T11.14). */
+public class MapLimitCheck(private val maps: OfflineMapRepository, private val settings: SettingsRepository) {
+    public suspend fun fits(region: MapRegion): Boolean {
+        val limit = settings.getRideSettings().offlineMapLimit
+        val stored = maps.observeAll().first()
+        val own = region.files.map { it.mapName }.toSet()
+        val others = stored.filterNot { it.name in own }.sumOf { it.sizeBytes }
+        return others + region.sizeBytes <= limit.bytes
+    }
+}
+
 /** The index, read once per collection and validated. */
 public class LoadMapRegionIndexUseCase(private val source: MapRegionIndexSource) {
     public suspend operator fun invoke(): MapRegionIndex = source.load().validated()
@@ -173,6 +186,8 @@ public class ObserveMapRegionsUseCase(
 ) {
     public operator fun invoke(): Flow<MapRegions> = flow {
         val index = loadIndex()
+        // Partial files of regions no longer offered and imports cut off by the app being killed (T11.14).
+        offlineMaps.cleanTemporary(index.regions.flatMap { region -> region.files.map { it.mapName } }.toSet())
         downloads.restorePaused(index.regions)
         emit(index)
     }.let { indexFlow ->

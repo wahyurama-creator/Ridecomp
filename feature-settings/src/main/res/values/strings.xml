@@ -386,6 +386,11 @@
     <string name="maps_regions_cancel">Cancel download %1$s</string>
     <string name="maps_regions_mobile_data">Also download on mobile data</string>
     <string name="maps_regions_mobile_data_hint">When off, province maps download over Wi‑Fi only.</string>
+    <string name="offline_maps_error_limit">The offline map limit is full. Delete a map or raise the limit.</string>
+    <string name="offline_maps_low_space">Less than 500 MB free on the phone: rides need space too.</string>
+    <string name="offline_maps_limit_label">Offline maps limit</string>
+    <string name="offline_maps_limit_hint">Imported and province maps together. A map that does not fit is not saved.</string>
+    <string name="maps_regions_limit">%1$s · does not fit the offline map limit</string>
     <string name="maps_offline_header">Offline maps (optional)</string>
     <string name="settings_maps_online_value">Online: %1$s</string>
 

@@ -661,6 +661,7 @@ private fun MapPackError.messageRes(): Int = when (this) {
     MapPackError.DOWNLOAD_FAILED -> R.string.home_map_error_download
     MapPackError.CHECKSUM, MapPackError.NOT_PMTILES -> R.string.home_map_error_file
     MapPackError.NO_SPACE -> R.string.home_map_error_space
+    MapPackError.TOTAL_LIMIT -> R.string.home_map_error_limit
 }
 
 private fun percent(done: Long, total: Long): Int = (done * PERCENT / total.coerceAtLeast(1)).toInt()

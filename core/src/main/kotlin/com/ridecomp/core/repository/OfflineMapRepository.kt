@@ -9,8 +9,17 @@ import kotlinx.coroutines.flow.Flow
 public interface OfflineMapRepository {
     public fun observeAll(): Flow<List<OfflineMap>>
 
-    /** Validates the header, checks size and free space, then copies the picked document (SAF). */
-    public suspend fun import(uri: String, name: String): Outcome<OfflineMap, MapImportError>
+    /**
+     * Validates the header, checks size and free space, then copies the picked document (SAF). At most
+     * [maxBytes]: the room left under the total offline map limit (T11.14).
+     */
+    public suspend fun import(uri: String, name: String, maxBytes: Long): Outcome<OfflineMap, MapImportError>
+
+    /**
+     * Deletes leftover temporary files (T11.14): an import cut off by the app being killed, and partial pack
+     * downloads whose file is not in [keepDownloads] (map names of the current index).
+     */
+    public suspend fun cleanTemporary(keepDownloads: Set<String>)
 
     public suspend fun delete(name: String)
 

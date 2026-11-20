@@ -70,6 +70,7 @@ import com.ridecomp.core.usecase.LoadShareCardUseCase
 import com.ridecomp.core.usecase.LoadTrackOutlineUseCase
 import com.ridecomp.core.usecase.LoadWeekZonesUseCase
 import com.ridecomp.core.usecase.LoadWidgetSummaryUseCase
+import com.ridecomp.core.usecase.MapLimitCheck
 import com.ridecomp.core.usecase.MapPackDownloads
 import com.ridecomp.core.usecase.ObserveActivePlanUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfileUseCase
@@ -242,8 +243,10 @@ val useCaseModule = module {
     factory { SetMapCacheLimitUseCase(get()) }
     factory { ClearMapCacheUseCase(get(), get()) }
     // One owner of pack downloads for the whole app, with its own scope (paused when the app leaves, T11.12).
+    factory { MapLimitCheck(get(), get()) }
     single {
         MapPackDownloads(
+            get(),
             get(),
             get(),
             get(),
@@ -261,7 +264,7 @@ val useCaseModule = module {
     factory { ObserveMapMobileDataUseCase(get()) }
     factory { SetMapMobileDataUseCase(get()) }
     factory { LoadRideTrailUseCase(get()) }
-    factory { ImportOfflineMapUseCase(get()) }
+    factory { ImportOfflineMapUseCase(get(), get()) }
     factory { DeleteOfflineMapUseCase(get()) }
     factory { GetFreeStorageUseCase(get()) }
     factory { RenameRouteUseCase(get()) }

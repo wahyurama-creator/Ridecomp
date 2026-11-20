@@ -3,4 +3,5 @@
     <!-- Required on every map (04-INTEGRATIONS §D, ODbL); not translated. -->
     <string name="map_attribution" translatable="false">© OpenStreetMap contributors, Protomaps</string>
     <string name="map_attribution_online" translatable="false">© OpenFreeMap © OpenMapTiles © OpenStreetMap</string>
+    <string name="map_attribution_both" translatable="false">© OpenFreeMap © OpenMapTiles © OpenStreetMap, Protomaps</string>
 </resources>
