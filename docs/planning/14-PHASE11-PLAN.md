@@ -60,7 +60,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`); ganti 
 
 **11C Usaha terbaik**
 - [x] T11.7 Bagian "Hasil" · [Feature Report](../reports/features/T11.7-results.md)
-- [ ] T11.8 Usaha terbaik otomatis (rekor durasi + tandai sprint)
+- [x] T11.8 Usaha terbaik otomatis (rekor durasi + tandai sprint)
 
 **11D Tema**
 - [ ] T11.9 Pilihan tema
@@ -153,7 +153,7 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 - Data sudah dihitung oleh `SegmentsStep` & best efforts: task ini terutama UI + query ringkas.
 
 #### T11.8 Usaha terbaik otomatis (bergantung K1)
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-20 · Feature Report: [`T11.8-duration-efforts.md`](../reports/features/T11.8-duration-efforts.md) · D-125 (sprint dari baris rekor, nama "Sprint 20 Nov")
 - **(a) Rekor durasi:** tambah `BestEffortKey` untuk **kecepatan terbaik 30 dtk, 1, 3, 5, 20 mnt** (dan power 30 dtk, 3 mnt bila belum ada). Algoritma jendela geser O(n) di `:core`, hanya waktu bergerak. `storageKey` baru; **re-analisa** ride lama lewat mekanisme versi analisa yang ada (`AnalysisConfig`), tanpa migrasi destruktif.
 - **(b) Tandai sprint:** di halaman detail, aksi "Tandai sebagai sprint/segmen" langsung dari grafik kecepatan (seret rentang) atau dari "Usaha terbaik" (mis. "simpan jalur 3 menit tercepat sebagai segmen"). Nama default dari nama jalan bila tersedia, jika tidak "Sprint 18 Nov". Ride berikutnya dicocokkan otomatis (sudah ada).
 - Tampil di bagian Hasil (T11.7) dan layar "Rekor baru".

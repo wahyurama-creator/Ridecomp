@@ -116,7 +116,7 @@ Tanpa perubahan tabel: migrasi 9→10 hanya menambah baris profil bawaan `FOLDIN
 `route_id, dist_m, angle_deg, direction (left|right|uturn), severity (normal|sharp|uturn), source (geometry|waypoint)`.
 
 ### `best_efforts`
-`activity_id, profile_kind, type (distance|power|other), key (mis. 10000 m / 1200 s / longest_ride), value, start_t, end_t, is_pr`. Index `(profile_kind, type, key, value)`.
+`activity_id, profile_kind, type (distance|speed|power|other), key (mis. distance_10000 / speed_60 / power_1200 / longest_ride), value, start_t, end_t, is_pr`. Index `(profile_kind, type, key, value)`. `speed` (T11.8): m/s rata-rata terbaik selama durasi `key`, lebih tinggi lebih baik. Tambahan jenis/kunci tidak butuh migrasi: langkah analisa rekor diberi versi baru (`AnalysisConfig.BEST_EFFORTS_VERSION`, kini 4) sehingga ride lama dihitung ulang sekali (D-125).
 
 ### `segments`, `segment_points`, `segment_efforts`
 - `segments`: `id, name, length_m, gain_m, avg_grade, start_lat, start_lon, end_lat, end_lon, bbox (min/max lat/lon), created_from (activity|climb), created_at`
