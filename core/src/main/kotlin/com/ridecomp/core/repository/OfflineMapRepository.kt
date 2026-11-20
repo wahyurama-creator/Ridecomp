@@ -27,5 +27,5 @@ public interface OfflineMapRepository {
     public suspend fun freeBytes(): Long
 
     /** Original document name, as a label only (SEC-IN-04). */
-    public fun displayName(uri: String): String?
+    public suspend fun displayName(uri: String): String?
 }

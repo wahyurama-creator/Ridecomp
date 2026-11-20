@@ -21,11 +21,13 @@ import kotlinx.coroutines.withContext
  * unreadable file (new phone, cleared key) counts as "not set up". Single instance; the value is cached.
  */
 class AndroidStravaAccountStore(
-    context: Context,
+    private val context: Context,
     private val dispatchers: DispatcherProvider,
     private val logger: Logger,
 ) : StravaAccountStore {
-    private val file = File(context.noBackupFilesDir, FILE_NAME)
+    // Resolved on the IO thread: `noBackupFilesDir` creates the folder, a disk access (STB-01). The store is
+    // created by Koin on the main thread at app start.
+    private val file by lazy { File(context.noBackupFilesDir, FILE_NAME) }
     private val cipher = KeystoreCipher(KEY_ALIAS)
     private val mutex = Mutex()
     private val cache = MutableStateFlow<StravaAccount?>(null)

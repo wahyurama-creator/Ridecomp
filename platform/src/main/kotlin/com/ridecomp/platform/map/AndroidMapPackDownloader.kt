@@ -9,6 +9,7 @@ import com.ridecomp.core.source.Clock
 import com.ridecomp.core.source.DispatcherProvider
 import com.ridecomp.core.source.Logger
 import com.ridecomp.core.source.MapPackDownloader
+import com.ridecomp.platform.system.TrafficTags
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -76,7 +77,7 @@ class AndroidMapPackDownloader(
         partial: File,
         onProgress: suspend (MapFileTransfer.Progress) -> Unit,
     ): MapPackError? {
-        TrafficStats.setThreadStatsTag(TRAFFIC_TAG)
+        TrafficStats.setThreadStatsTag(TrafficTags.MAP_PACKS)
         val connection = URL(file.url).openConnection() as HttpURLConnection
         return try {
             val start = partial.length()
@@ -180,8 +181,5 @@ class AndroidMapPackDownloader(
         const val BUFFER_BYTES = 64 * 1024
         const val PROGRESS_INTERVAL_MS = 1_000L
         val ACCEPTED_CODES = setOf(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_PARTIAL)
-
-        /** Traffic stats tag of map pack downloads (any stable value; untagged sockets trip StrictMode). */
-        const val TRAFFIC_TAG = 0x4D50
     }
 }

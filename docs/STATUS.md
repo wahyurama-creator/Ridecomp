@@ -6,7 +6,7 @@
 - **Rilis terakhir:** **0.9.3** (beta), 2026-11-18 · [GitHub Releases](https://github.com/wahyurama-creator/Ridecomp/releases). Skema DB **v10**.
 - **Fase selesai:** 0–5, 7, 9, dan rilis beta & masukan pengguna (Fase 8/10). Ringkasan: [`planning/06-ROADMAP.md`](planning/06-ROADMAP.md).
 - **Fase berjalan:** **Fase 11 — Analisa ride, usaha terbaik, tema & peta offline.** Rencana lengkap: [`planning/14-PHASE11-PLAN.md`](planning/14-PHASE11-PLAN.md). Keputusan K1–K5 sudah dijawab (D-109…D-113).
-- **Task terakhir:** T11.14 — Penyimpanan, baterai, keamanan peta offline (selesai 2026-11-20, [Feature Report](reports/features/T11.14-map-storage.md)); semua task Fase 11 selesai.
+- **Task terakhir:** fix temuan StrictMode Fase 11 (selesai 2026-11-20, [laporan](reports/features/FIX-strictmode-phase11.md), D-132); sebelumnya T11.14. Semua task Fase 11 selesai.
 - **Task berikutnya:** **Penutup Fase 11**: anggaran performa §8 dengan build release, uji lapangan A1–A7, scan CVE/lisensi/MobSF/threat model, rilis beta. Build release menunggu persetujuan pemilik (semua fitur selesai dulu).
 
 ## Daftar centang Fase 11

@@ -32,6 +32,7 @@ internal object MapEngine {
     suspend fun prepareView(context: Context, io: CoroutineContext): MapLibreMapOptions {
         loadLibrary(io)
         MapLibre.getInstance(context.applicationContext)
+        MapHttp.install()
         return withContext(io) { MapLibreMapOptions.createFromAttributes(context) }
     }
 }

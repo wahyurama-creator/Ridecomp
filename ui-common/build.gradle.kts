@@ -24,6 +24,8 @@ dependencies {
     api(libs.androidx.lifecycle.runtime.compose)
     // Offline map view (T3.3–T3.5, D-64); kept internal to :ui-common behind the RouteMap composable.
     implementation(libs.maplibre.android)
+    // Already in the APK through MapLibre (same version): a client whose sockets are tagged (D-132).
+    implementation(libs.okhttp)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     testImplementation(libs.kotlin.test.junit)

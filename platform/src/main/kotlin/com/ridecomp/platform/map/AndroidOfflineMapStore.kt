@@ -171,10 +171,11 @@ class AndroidOfflineMapStore(
         return storage.getAllocatableBytes(storage.getUuidForPath(directory))
     }
 
-    override fun displayName(uri: String): String? {
+    /** A content provider query: on the IO thread, never the main one (the import starts from a screen). */
+    override suspend fun displayName(uri: String): String? = withContext(dispatchers.io) {
         val parsed = uri.toUri()
-        if (parsed.scheme != ContentResolver.SCHEME_CONTENT) return null
-        return context.contentResolver.query(parsed, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
+        if (parsed.scheme != ContentResolver.SCHEME_CONTENT) return@withContext null
+        context.contentResolver.query(parsed, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
             ?.use { cursor -> if (cursor.moveToFirst()) cursor.getString(0) else null }
     }
 
