@@ -34,6 +34,11 @@ scripts/maps/build-regions index --release maps-2026-11
 - Provinsi lebih dari 300 MB ditandai ⚠ dan perlu dipecah per kota/kabupaten. Format indeks sudah mendukung
   beberapa file per wilayah.
 - File besar tidak pernah masuk git: folder keluarannya `~/RideComp-maps` (di luar repo).
+- `index` hanya menulis provinsi yang ada di `~/RideComp-maps/manifest.json`. Folder itu dihapus setelah uji pertama, jadi
+  saat menambah provinsi, jalankan `extract` untuk **semua** provinsi yang ingin ada di indeks (termasuk `di-yogyakarta`),
+  lalu `upload` (file yang sama ditimpa) dan `index`.
+- `pmtiles` dicopot dari Mac setelah T11.13 (permintaan pemilik); pasang lagi saat membuat paket, lalu copot dengan
+  `HOMEBREW_NO_AUTOREMOVE=1 brew uninstall pmtiles`.
 - Atribusi di peta dan catatan rilis: **© OpenStreetMap contributors, Protomaps** (ODbL 1.0).
 
 ## Uji pertama (2026-11-20)
