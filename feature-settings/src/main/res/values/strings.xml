@@ -10,6 +10,7 @@
     <string name="settings_safety">Safety &amp; emergency contacts</string>
     <string name="settings_offline_maps">Maps</string>
     <string name="settings_units">Units</string>
+    <string name="settings_display">Display</string>
     <string name="settings_language">Language</string>
     <string name="settings_backup">Backup &amp; export data</string>
     <string name="settings_battery_help">My phone kills the app</string>
@@ -402,4 +403,13 @@
     <string name="onboarding_skip">Skip</string>
     <string name="onboarding_skip_hint">Optional. Skip it and fill it in later before a ride or in Settings.</string>
     <string name="guide_tip_heart_rate_zones">Pair a heart rate sensor to see the time in each heart rate zone on the ride page.</string>
+    <!-- Display (T11.9) -->
+    <string name="display_title">Display</string>
+    <string name="display_theme">Theme</string>
+    <string name="display_theme_dark">Dark</string>
+    <string name="display_theme_dark_hint">Easy on the eyes and the battery at night and on AMOLED screens.</string>
+    <string name="display_theme_light">Light</string>
+    <string name="display_theme_light_hint">Often easier to read in bright sun.</string>
+    <string name="display_theme_system">Follow phone</string>
+    <string name="display_theme_system_hint">Dark or light as your phone is set.</string>
 </resources>

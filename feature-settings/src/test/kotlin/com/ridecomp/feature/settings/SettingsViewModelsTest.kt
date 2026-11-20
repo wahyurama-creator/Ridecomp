@@ -2,6 +2,7 @@ package com.ridecomp.feature.settings
 
 import app.cash.turbine.test
 import com.ridecomp.core.model.AppLanguage
+import com.ridecomp.core.model.AppTheme
 import com.ridecomp.core.model.GuidePreferences
 import com.ridecomp.core.model.GuideTip
 import com.ridecomp.core.model.RideSettings
@@ -20,6 +21,7 @@ import com.ridecomp.core.usecase.CompleteOnboardingUseCase
 import com.ridecomp.core.usecase.DismissTipUseCase
 import com.ridecomp.core.usecase.EstimateHrMaxUseCase
 import com.ridecomp.core.usecase.GetAppLanguageUseCase
+import com.ridecomp.core.usecase.ObserveAppThemeUseCase
 import com.ridecomp.core.usecase.ObserveGpsStatusUseCase
 import com.ridecomp.core.usecase.ObserveGuideUseCase
 import com.ridecomp.core.usecase.ObserveProfileUseCase
@@ -29,8 +31,10 @@ import com.ridecomp.core.usecase.ResetTipsUseCase
 import com.ridecomp.core.usecase.SaveProfileUseCase
 import com.ridecomp.core.usecase.SaveRideSettingsUseCase
 import com.ridecomp.core.usecase.SetAppLanguageUseCase
+import com.ridecomp.core.usecase.SetAppThemeUseCase
 import com.ridecomp.core.usecase.SetRiderLevelUseCase
 import com.ridecomp.feature.settings.ui.PhoneBrand
+import com.ridecomp.feature.settings.viewmodel.DisplayViewModel
 import com.ridecomp.feature.settings.viewmodel.GuideUiEvent
 import com.ridecomp.feature.settings.viewmodel.GuideViewModel
 import com.ridecomp.feature.settings.viewmodel.LanguageEffect
@@ -286,5 +290,17 @@ class SettingsViewModelsTest {
         }
         assertEquals(AppLanguage.INDONESIAN, store.language)
         assertEquals(1, store.sets)
+    }
+
+    @Test
+    fun `the theme starts dark, a choice is stored and shown`() = runTest {
+        val settings = FakeSettingsRepository()
+        val viewModel = DisplayViewModel(ObserveAppThemeUseCase(settings), SetAppThemeUseCase(settings))
+        assertEquals(AppTheme.DARK, viewModel.uiState.value)
+
+        viewModel.onEvent(AppTheme.LIGHT)
+
+        assertEquals(AppTheme.LIGHT, settings.theme.value)
+        assertEquals(AppTheme.LIGHT, viewModel.uiState.value)
     }
 }

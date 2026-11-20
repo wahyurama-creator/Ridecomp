@@ -26,6 +26,7 @@ internal object SettingsKeys {
     const val VOLUME_BUTTONS_ENABLED = "ride.volume_buttons_enabled"
     const val UNIT_SYSTEM = "app.unit_system"
     const val ONLINE_MAP_MODE = "app.online_map_mode"
+    const val THEME = "app.theme"
     const val VOICE_EVERY = "ride.voice_every"
     const val VOICE_LAPS = "ride.voice_laps"
     const val ONBOARDING_DONE = "app.onboarding_done"

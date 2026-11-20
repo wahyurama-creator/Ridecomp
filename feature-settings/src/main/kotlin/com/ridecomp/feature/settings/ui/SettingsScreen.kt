@@ -50,6 +50,7 @@ enum class SettingsSection(@param:StringRes val titleRes: Int, val taskId: Strin
     SAFETY(R.string.settings_safety),
     DATA_PAGES(R.string.settings_data_pages),
     OFFLINE_MAPS(R.string.settings_offline_maps),
+    DISPLAY(R.string.settings_display),
     LANGUAGE(R.string.settings_language),
     BACKUP(R.string.settings_backup),
     STRAVA(R.string.settings_strava),
@@ -80,6 +81,7 @@ private val APP_SECTIONS = listOf(
     SettingsSection.HELP,
     SettingsSection.DATA_PAGES,
     SettingsSection.OFFLINE_MAPS,
+    SettingsSection.DISPLAY,
     SettingsSection.LANGUAGE,
     SettingsSection.BACKUP,
     SettingsSection.STRAVA,
@@ -196,7 +198,7 @@ private fun SettingsSection.summary(state: SettingsUiState): Pair<String?, Value
             settings.eatIntervalMin?.toString() ?: stringResource(R.string.settings_none),
         ) to ValueTone.NORMAL
         SettingsSection.SAFETY -> safetySummary(state)
-        SettingsSection.LANGUAGE -> stringResource(state.language.nameRes()) to ValueTone.NORMAL
+        SettingsSection.DISPLAY, SettingsSection.LANGUAGE -> appearanceSummary(state) to ValueTone.NORMAL
         SettingsSection.BACKUP -> stringResource(R.string.settings_backup_value) to ValueTone.NORMAL
         SettingsSection.OFFLINE_MAPS -> offlineMapsSummary(state) to ValueTone.NORMAL
         SettingsSection.STRAVA -> stravaSummary(state)
@@ -206,6 +208,12 @@ private fun SettingsSection.summary(state: SettingsUiState): Pair<String?, Value
         -> null to ValueTone.NORMAL
     }
 }
+
+/** The chosen theme ("Dark") or language. */
+@Composable
+private fun SettingsSection.appearanceSummary(state: SettingsUiState): String = stringResource(
+    if (this == SettingsSection.DISPLAY) state.theme.nameRes() else state.language.nameRes(),
+)
 
 /** "2 bikes", "5 profiles · data pages". */
 @Composable

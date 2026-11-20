@@ -7,6 +7,7 @@ import com.ridecomp.core.engine.route.RoutePoint
 import com.ridecomp.core.engine.route.RouteTurn
 import com.ridecomp.core.model.ActivePlanState
 import com.ridecomp.core.model.ActivityProfile
+import com.ridecomp.core.model.AppTheme
 import com.ridecomp.core.model.Bike
 import com.ridecomp.core.model.BikeComponent
 import com.ridecomp.core.model.ComponentWear
@@ -53,6 +54,11 @@ public interface SettingsRepository {
 
     /** Saves custom pages; null restores the defaults. */
     public suspend fun saveDataPages(layout: DataPagesLayout?)
+
+    /** The chosen app theme (T11.9); [AppTheme.DEFAULT] until one is chosen. */
+    public fun observeTheme(): Flow<AppTheme>
+
+    public suspend fun setTheme(theme: AppTheme)
 }
 
 /** Activity profiles (05-DATA-MODEL `activity_profiles`) and the last one used (`settings`). */

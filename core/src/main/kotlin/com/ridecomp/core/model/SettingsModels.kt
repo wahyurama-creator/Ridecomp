@@ -10,6 +10,18 @@ import java.time.ZoneOffset
 
 public enum class Sex { MALE, FEMALE }
 
+/** App colors (T11.9, D-110): dark, light, or following the phone. Dark by default so nothing changes. */
+public enum class AppTheme {
+    DARK,
+    LIGHT,
+    SYSTEM,
+    ;
+
+    public companion object {
+        public val DEFAULT: AppTheme = DARK
+    }
+}
+
 /** Riding position → CdA for estimated power (05-DATA-MODEL §3.7). */
 public enum class RidingPosition { TOPS, HOODS, DROPS }
 

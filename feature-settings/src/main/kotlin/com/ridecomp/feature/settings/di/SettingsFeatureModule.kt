@@ -5,6 +5,7 @@ import com.ridecomp.feature.settings.viewmodel.AppUpdateUseCases
 import com.ridecomp.feature.settings.viewmodel.AppUpdateViewModel
 import com.ridecomp.feature.settings.viewmodel.BackupUseCases
 import com.ridecomp.feature.settings.viewmodel.BackupViewModel
+import com.ridecomp.feature.settings.viewmodel.DisplayViewModel
 import com.ridecomp.feature.settings.viewmodel.GuideViewModel
 import com.ridecomp.feature.settings.viewmodel.LanguageViewModel
 import com.ridecomp.feature.settings.viewmodel.LicenseTextReader
@@ -27,9 +28,10 @@ import org.koin.dsl.module
 /** ViewModels of the settings feature; use cases come from the app graph. */
 val settingsFeatureModule = module {
     viewModel { ProfileViewModel(get(), get(), get()) }
-    factory { SettingsUseCases(get(), get(), get(), get(), get(), get(), get(), get()) }
+    factory { SettingsUseCases(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { SettingsViewModel(get()) }
     viewModel { LanguageViewModel(get(), get()) }
+    viewModel { DisplayViewModel(get(), get()) }
     factory { OfflineMapsUseCases(get(), get(), get(), get(), get(), get()) }
     viewModel { OfflineMapsViewModel(get()) }
     viewModel { RideSettingsViewModel(get(), get()) }
