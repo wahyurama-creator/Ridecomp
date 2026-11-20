@@ -9,6 +9,7 @@ import com.ridecomp.feature.ride.viewmodel.ComponentEditorUseCases
 import com.ridecomp.feature.ride.viewmodel.ComponentEditorViewModel
 import com.ridecomp.feature.ride.viewmodel.DataPagesEditorViewModel
 import com.ridecomp.feature.ride.viewmodel.HomeDeviceUseCases
+import com.ridecomp.feature.ride.viewmodel.HomeMapUseCases
 import com.ridecomp.feature.ride.viewmodel.HomeUpdateUseCases
 import com.ridecomp.feature.ride.viewmodel.HomeUseCases
 import com.ridecomp.feature.ride.viewmodel.HomeViewModel
@@ -28,7 +29,8 @@ import org.koin.dsl.module
 val rideFeatureModule = module {
     factory { HomeDeviceUseCases(get(), get(), get()) }
     factory { HomeUpdateUseCases(get(), get(), get()) }
-    factory { HomeUseCases(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    factory { HomeMapUseCases(get(), get(), get()) }
+    factory { HomeUseCases(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { HomeViewModel(get()) }
     factory { PreRideOptionUseCases(get(), get(), get(), get(), get()) }
     factory { PreRideBikeUseCases(get(), get(), get(), get()) }

@@ -16,8 +16,10 @@ import com.ridecomp.core.repository.BikeComponentRepository
 import com.ridecomp.core.repository.BikeRepository
 import com.ridecomp.core.repository.GuideRepository
 import com.ridecomp.core.repository.IncidentRepository
+import com.ridecomp.core.repository.MapPackStateRepository
 import com.ridecomp.core.repository.OfflineMapRepository
 import com.ridecomp.core.repository.ProfileRepository
+import com.ridecomp.core.repository.RidePositionRepository
 import com.ridecomp.core.repository.RouteRepository
 import com.ridecomp.core.repository.SafetyRepository
 import com.ridecomp.core.repository.SegmentRepository
@@ -35,6 +37,8 @@ import com.ridecomp.core.source.GpxDocumentSource
 import com.ridecomp.core.source.LocationSource
 import com.ridecomp.core.source.Logger
 import com.ridecomp.core.source.MapCacheSource
+import com.ridecomp.core.source.MapPackDownloader
+import com.ridecomp.core.source.MapRegionIndexSource
 import com.ridecomp.core.source.NetworkStatusSource
 import com.ridecomp.core.source.PickedContactReader
 import com.ridecomp.core.source.RideController
@@ -65,12 +69,16 @@ import com.ridecomp.core.testing.FakeGuideRepository
 import com.ridecomp.core.testing.FakeIncidentRepository
 import com.ridecomp.core.testing.FakeLocationSource
 import com.ridecomp.core.testing.FakeMapCacheSource
+import com.ridecomp.core.testing.FakeMapPackDownloader
+import com.ridecomp.core.testing.FakeMapPackStateRepository
+import com.ridecomp.core.testing.FakeMapRegionIndexSource
 import com.ridecomp.core.testing.FakeNetworkStatusSource
 import com.ridecomp.core.testing.FakeOfflineMapRepository
 import com.ridecomp.core.testing.FakePickedContactReader
 import com.ridecomp.core.testing.FakeProfileRepository
 import com.ridecomp.core.testing.FakeReleaseSource
 import com.ridecomp.core.testing.FakeRideController
+import com.ridecomp.core.testing.FakeRidePositionRepository
 import com.ridecomp.core.testing.FakeRouteRepository
 import com.ridecomp.core.testing.FakeSafetyMessages
 import com.ridecomp.core.testing.FakeSafetyRepository
@@ -196,7 +204,12 @@ class AppModulesTest {
         single<AppRestarter> { FakeAppRestarter() }
         single<RouteRepository> { FakeRouteRepository() }
         single<GpxDocumentSource> { FakeGpxDocumentSource() }
-        single<OfflineMapRepository> { FakeOfflineMapRepository() }
+        single { FakeOfflineMapRepository() }
+        single<OfflineMapRepository> { get<FakeOfflineMapRepository>() }
+        single<MapPackDownloader> { FakeMapPackDownloader(get()) }
+        single<MapRegionIndexSource> { FakeMapRegionIndexSource() }
+        single<MapPackStateRepository> { FakeMapPackStateRepository() }
+        single<RidePositionRepository> { FakeRidePositionRepository() }
         single<BestEffortRepository> { FakeBestEffortRepository(get()) }
         single<SegmentRepository> { FakeSegmentRepository(get()) }
         single<TrainingRepository> { FakeTrainingRepository(FakeActivityRepository()) }

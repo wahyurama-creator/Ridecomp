@@ -27,7 +27,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.engine.map.MapCacheLimit
+import com.ridecomp.core.engine.map.MapDownload
 import com.ridecomp.core.engine.map.MapImportError
+import com.ridecomp.core.engine.map.MapRegionState
+import com.ridecomp.core.engine.map.MapRegionStatus
 import com.ridecomp.core.engine.map.OfflineMap
 import com.ridecomp.core.engine.map.OnlineMapMode
 import com.ridecomp.feature.settings.R
@@ -50,6 +53,7 @@ import com.ridecomp.ui.component.ListCardRow
 import com.ridecomp.ui.component.RideCompCard
 import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.component.SectionHeader
+import com.ridecomp.ui.component.SwitchRow
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
 import com.ridecomp.ui.theme.RideCompDimens
@@ -129,14 +133,16 @@ fun OfflineMapsScreen(
         ) {
             OnlineMapChoice(state.onlineMapMode) { onEvent(OfflineMapsUiEvent.OnlineMode(it)) }
             MapCacheSection(state, onEvent)
+            if (state.regions.isNotEmpty()) RegionMapsSection(state, onEvent)
             SectionHeader(stringResource(R.string.maps_offline_header), horizontalPadding = RideCompDimens.none)
             tipContent?.invoke()
             StorageCard(state)
-            if (state.maps.isNotEmpty()) {
+            val imported = state.importedMaps
+            if (imported.isNotEmpty()) {
                 SectionHeader(stringResource(R.string.offline_maps_saved), horizontalPadding = RideCompDimens.none)
                 ListCard {
-                    state.maps.forEachIndexed { index, map ->
-                        MapRow(map, hasDivider = index < state.maps.lastIndex) {
+                    imported.forEachIndexed { index, map ->
+                        MapRow(map, hasDivider = index < imported.lastIndex) {
                             onEvent(OfflineMapsUiEvent.AskDelete(map))
                         }
                     }
@@ -155,6 +161,16 @@ fun OfflineMapsScreen(
             )
             HowToCard()
         }
+    }
+    state.regionDeleteCandidate?.let { region ->
+        ConfirmDialog(
+            title = stringResource(R.string.offline_maps_delete_title, region.name),
+            message = stringResource(R.string.offline_maps_delete_message),
+            confirmLabel = stringResource(R.string.offline_maps_delete),
+            dismissLabel = stringResource(R.string.backup_cancel),
+            onConfirm = { onEvent(OfflineMapsUiEvent.ConfirmDeleteRegion) },
+            onDismiss = { onEvent(OfflineMapsUiEvent.DismissDeleteRegion) },
+        )
     }
     if (state.isClearCacheAsked) {
         ConfirmDialog(
@@ -232,6 +248,83 @@ private fun MapCacheSection(state: OfflineMapsUiState, onEvent: (OfflineMapsUiEv
             size = BigButtonSize.SECONDARY,
         )
     }
+}
+
+/**
+ * Province maps (T11.12): the rider's region first, size and state, and download/resume, cancel, update or
+ * delete; Wi‑Fi only unless mobile data is allowed.
+ */
+@Composable
+private fun RegionMapsSection(state: OfflineMapsUiState, onEvent: (OfflineMapsUiEvent) -> Unit) {
+    SectionHeader(stringResource(R.string.maps_regions_header), horizontalPadding = RideCompDimens.none)
+    ListCard {
+        state.regions.forEachIndexed { index, region ->
+            RegionRow(region, hasDivider = index < state.regions.lastIndex, onEvent)
+        }
+        SwitchRow(
+            label = stringResource(R.string.maps_regions_mobile_data),
+            description = stringResource(R.string.maps_regions_mobile_data_hint),
+            isChecked = state.isMobileDataAllowed,
+            onCheckedChange = { onEvent(OfflineMapsUiEvent.MobileData(it)) },
+        )
+    }
+}
+
+@Composable
+private fun RegionRow(state: MapRegionState, hasDivider: Boolean, onEvent: (OfflineMapsUiEvent) -> Unit) {
+    val context = LocalContext.current
+    val colors = RideCompTheme.colors
+    val region = state.region
+    val size = Formatter.formatShortFileSize(context, region.sizeBytes)
+    val download = state.download
+    val detail = when (download) {
+        is MapDownload.Running -> stringResource(
+            R.string.maps_regions_downloading,
+            Formatter.formatShortFileSize(context, download.downloadedBytes),
+            size,
+        )
+        is MapDownload.Paused -> stringResource(R.string.maps_regions_paused, size)
+        is MapDownload.Failed -> stringResource(R.string.maps_regions_failed, size)
+        null -> stringResource(state.status.labelRes(), size)
+    }
+    ListCardRow(
+        title = region.name,
+        subtitle = if (state.isHere) stringResource(R.string.maps_regions_here, detail) else detail,
+        hasDivider = hasDivider,
+        hasChevron = false,
+        leading = {
+            val tint = if (state.status == MapRegionStatus.INSTALLED) colors.ok else colors.textSecondary
+            Icon(painterResource(UiR.drawable.ic_map), contentDescription = null, tint = tint)
+        },
+        trailing = {
+            when {
+                download is MapDownload.Running -> IconSquareButton(
+                    iconRes = UiR.drawable.ic_close,
+                    contentDescription = stringResource(R.string.maps_regions_cancel, region.name),
+                    onClick = { onEvent(OfflineMapsUiEvent.CancelRegion(region)) },
+                )
+                state.status == MapRegionStatus.INSTALLED -> IconSquareButton(
+                    iconRes = UiR.drawable.ic_trash,
+                    contentDescription = stringResource(R.string.offline_maps_delete_label, region.name),
+                    onClick = { onEvent(OfflineMapsUiEvent.AskDeleteRegion(region)) },
+                    tint = colors.danger,
+                )
+                else -> IconSquareButton(
+                    iconRes = UiR.drawable.ic_download,
+                    contentDescription = stringResource(R.string.maps_regions_download, region.name),
+                    onClick = { onEvent(OfflineMapsUiEvent.DownloadRegion(region)) },
+                    tint = colors.accent,
+                )
+            }
+        },
+    )
+}
+
+@StringRes
+private fun MapRegionStatus.labelRes(): Int = when (this) {
+    MapRegionStatus.NOT_INSTALLED -> R.string.maps_regions_not_installed
+    MapRegionStatus.INSTALLED -> R.string.maps_regions_installed
+    MapRegionStatus.UPDATE_AVAILABLE -> R.string.maps_regions_update
 }
 
 /** Short name of an online map mode, also used in the Settings summary. */

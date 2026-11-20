@@ -9,7 +9,9 @@ import com.ridecomp.core.repository.BikeComponentRepository
 import com.ridecomp.core.repository.BikeRepository
 import com.ridecomp.core.repository.GuideRepository
 import com.ridecomp.core.repository.IncidentRepository
+import com.ridecomp.core.repository.MapPackStateRepository
 import com.ridecomp.core.repository.ProfileRepository
+import com.ridecomp.core.repository.RidePositionRepository
 import com.ridecomp.core.repository.RouteRepository
 import com.ridecomp.core.repository.SafetyRepository
 import com.ridecomp.core.repository.SegmentRepository
@@ -31,7 +33,9 @@ import com.ridecomp.data.repository.BikeComponentRepositoryImpl
 import com.ridecomp.data.repository.BikeRepositoryImpl
 import com.ridecomp.data.repository.GuideRepositoryImpl
 import com.ridecomp.data.repository.IncidentRepositoryImpl
+import com.ridecomp.data.repository.MapPackStateRepositoryImpl
 import com.ridecomp.data.repository.ProfileRepositoryImpl
+import com.ridecomp.data.repository.RidePositionRepositoryImpl
 import com.ridecomp.data.repository.RouteRepositoryImpl
 import com.ridecomp.data.repository.SafetyRepositoryImpl
 import com.ridecomp.data.repository.SegmentRepositoryImpl
@@ -67,6 +71,8 @@ val dataModule = module {
     single<ActivityRepository> { ActivityRepositoryImpl(get(), get(), get(), get(), get()) }
     single<ProfileRepository> { ProfileRepositoryImpl(get()) }
     single<SettingsRepository> { SettingsRepositoryImpl(get()) }
+    single<MapPackStateRepository> { MapPackStateRepositoryImpl(get()) }
+    single<RidePositionRepository> { RidePositionRepositoryImpl(get()) }
     single<SensorRepository> { SensorRepositoryImpl(get()) }
     single<ActivityProfileRepository> { ActivityProfileRepositoryImpl(get(), get()) }
     single<BikeRepository> { BikeRepositoryImpl(get(), get()) }

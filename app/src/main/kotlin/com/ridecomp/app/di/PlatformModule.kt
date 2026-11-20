@@ -28,6 +28,8 @@ import com.ridecomp.core.source.IdGenerator
 import com.ridecomp.core.source.LocationSource
 import com.ridecomp.core.source.Logger
 import com.ridecomp.core.source.MapCacheSource
+import com.ridecomp.core.source.MapPackDownloader
+import com.ridecomp.core.source.MapRegionIndexSource
 import com.ridecomp.core.source.NetworkStatusSource
 import com.ridecomp.core.source.PickedContactReader
 import com.ridecomp.core.source.PressureSource
@@ -60,6 +62,8 @@ import com.ridecomp.platform.device.UuidIdGenerator
 import com.ridecomp.platform.locale.AndroidAppLanguageStore
 import com.ridecomp.platform.location.AndroidLocationSource
 import com.ridecomp.platform.location.AndroidPressureSource
+import com.ridecomp.platform.map.AndroidMapPackDownloader
+import com.ridecomp.platform.map.AndroidMapRegionIndexSource
 import com.ridecomp.platform.map.AndroidNetworkStatusSource
 import com.ridecomp.platform.map.AndroidOfflineMapStore
 import com.ridecomp.platform.route.AndroidGpxDocumentSource
@@ -107,7 +111,10 @@ val platformModule = module {
     single { RideStateHolder() }
     single<BleScanner> { AndroidBleScanner(androidContext()) }
     single { TrainerControl() }
-    single<OfflineMapRepository> { AndroidOfflineMapStore(androidContext(), get(), get()) }
+    single { AndroidOfflineMapStore(androidContext(), get(), get()) }
+    single<OfflineMapRepository> { get<AndroidOfflineMapStore>() }
+    single<MapPackDownloader> { AndroidMapPackDownloader(get(), get(), get(), get()) }
+    single<MapRegionIndexSource> { AndroidMapRegionIndexSource(androidContext(), get(), get()) }
     single<NetworkStatusSource> { AndroidNetworkStatusSource(androidContext()) }
     single<MapCacheSource> { AndroidMapCacheSource(androidContext(), get()) }
     single<SensorConnector> { AndroidSensorConnector(androidContext(), get(), get(), get()) }

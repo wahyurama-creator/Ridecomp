@@ -176,6 +176,7 @@ class RideViewModelsTest {
                 ObserveAvailableUpdateUseCase(updates, FakeAppInfoSource("0.9.1")),
                 DismissUpdateUseCase(updates),
             ),
+            emptyHomeMapUseCases(controller),
         ),
     )
 

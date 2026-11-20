@@ -413,4 +413,21 @@
     <string name="pre_ride_profile_text">Berat badan, HR max, dan FTP bikin kalori, zona, dan estimasi power akurat. Sementara ini dipakai nilai bawaan.</string>
     <string name="pre_ride_profile_fill">Isi sekarang</string>
     <string name="pre_ride_profile_later">Tutup</string>
+    <!-- Tawaran peta wilayah (T11.12) -->
+    <string name="home_map_title">Peta offline %1$s</string>
+    <string name="home_map_body">%1$s · lewat Wi‑Fi. Peta tetap tampil saat sinyal hilang.</string>
+    <string name="home_map_update_body">Data peta lebih baru · %1$s lewat Wi‑Fi.</string>
+    <string name="home_map_downloading">Mengunduh %1$s dari %2$s</string>
+    <string name="home_map_paused">Dijeda di %1$d%%. Lanjut dari bagian terakhir.</string>
+    <string name="home_map_download">Unduh peta</string>
+    <string name="home_map_update">Perbarui peta</string>
+    <string name="home_map_resume">Lanjutkan unduhan</string>
+    <string name="home_map_retry">Coba lagi</string>
+    <string name="home_map_cancel">Batal</string>
+    <string name="home_map_error_network">Tidak ada internet. Coba lagi saat tersambung.</string>
+    <string name="home_map_error_wifi">Sambungkan ke Wi‑Fi, atau izinkan data seluler di Setelan → Peta.</string>
+    <string name="home_map_error_riding">Tidak saat ride. Unduh setelah selesai.</string>
+    <string name="home_map_error_download">Unduhan terhenti. Lanjut dari bagian terakhir.</string>
+    <string name="home_map_error_file">File peta rusak dan sudah dihapus. Coba lagi.</string>
+    <string name="home_map_error_space">Ruang penyimpanan HP tidak cukup.</string>
 </resources>
