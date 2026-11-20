@@ -3,11 +3,13 @@ package com.ridecomp.feature.settings.viewmodel
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.viewModelScope
 import com.ridecomp.core.model.AppLanguage
+import com.ridecomp.core.model.AppTheme
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RiderProfile
 import com.ridecomp.core.model.StravaStatus
 import com.ridecomp.core.usecase.GetAppLanguageUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
+import com.ridecomp.core.usecase.ObserveAppThemeUseCase
 import com.ridecomp.core.usecase.ObserveBikeChoiceUseCase
 import com.ridecomp.core.usecase.ObserveOfflineMapsUseCase
 import com.ridecomp.core.usecase.ObserveProfileUseCase
@@ -32,6 +34,7 @@ data class SettingsUiState(
     val offlineMapBytes: Long = 0,
     val isStravaConnected: Boolean = false,
     val language: AppLanguage = AppLanguage.SYSTEM,
+    val theme: AppTheme = AppTheme.DEFAULT,
 )
 
 /** Sources of the settings summaries, grouped to keep the constructor short (KT-05). */
@@ -44,6 +47,7 @@ data class SettingsUseCases(
     val observeStrava: ObserveStravaStatusUseCase,
     val getLanguage: GetAppLanguageUseCase,
     val observeBikes: ObserveBikeChoiceUseCase,
+    val observeTheme: ObserveAppThemeUseCase,
 )
 
 /** Settings overview: read-only summaries; every change happens on the section's own screen. */
@@ -70,6 +74,7 @@ class SettingsViewModel(private val useCases: SettingsUseCases) :
                         offlineMapBytes = offlineMapBytes,
                         isStravaConnected = isStravaConnected,
                         bikeCount = bikeCount,
+                        theme = theme,
                         language = useCases.getLanguage(),
                     )
                 }
@@ -79,6 +84,9 @@ class SettingsViewModel(private val useCases: SettingsUseCases) :
             useCases.observeOfflineMaps().collect { maps ->
                 updateState { copy(offlineMapCount = maps.size, offlineMapBytes = maps.sumOf { it.sizeBytes }) }
             }
+        }
+        viewModelScope.launch {
+            useCases.observeTheme().collect { theme -> updateState { copy(theme = theme) } }
         }
         viewModelScope.launch {
             useCases.observeBikes().collect { choice -> updateState { copy(bikeCount = choice.bikes.size) } }

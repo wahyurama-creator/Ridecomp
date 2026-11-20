@@ -86,7 +86,7 @@ PK komposit `(activity_id, t)`. Insert batch tiap 5 detik.
 - `route_points`: `route_id, seq, lat, lon, ele?, cum_dist_m` (index `route_id, seq`)
 
 ### `settings` (key-value)
-Satuan, bahasa, sumber cadence prioritas, ambang mode baterai (§BM), setting keselamatan (aktif, nama pengendara), profil aktivitas terakhir, dll. Setting yang bisa berbeda per jenis ride disimpan di `activity_profiles`.
+Satuan, bahasa, sumber cadence prioritas, ambang mode baterai (§BM), setting keselamatan (aktif, nama pengendara), profil aktivitas terakhir, tema aplikasi (`app.theme`: dark|light|system, default dark, T11.9; salinan cepat di SharedPreferences `ridecomp_theme` untuk frame pertama, D-126), dll. Setting yang bisa berbeda per jenis ride disimpan di `activity_profiles`.
 
 ### `strava_uploads` (Fase 5)
 `activity_id, upload_id, status, error, created_at, updated_at`.

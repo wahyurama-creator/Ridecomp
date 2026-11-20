@@ -68,6 +68,7 @@ import com.ridecomp.core.usecase.ObserveActivePlanUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfileUseCase
 import com.ridecomp.core.usecase.ObserveActivityProfilesUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
+import com.ridecomp.core.usecase.ObserveAppThemeUseCase
 import com.ridecomp.core.usecase.ObserveAvailableUpdateUseCase
 import com.ridecomp.core.usecase.ObserveBackupReminderUseCase
 import com.ridecomp.core.usecase.ObserveBikeChoiceUseCase
@@ -143,6 +144,7 @@ import com.ridecomp.core.usecase.SelectActivityProfileUseCase
 import com.ridecomp.core.usecase.SelectBikeUseCase
 import com.ridecomp.core.usecase.SendTestSmsUseCase
 import com.ridecomp.core.usecase.SetAppLanguageUseCase
+import com.ridecomp.core.usecase.SetAppThemeUseCase
 import com.ridecomp.core.usecase.SetAutoUpdateCheckUseCase
 import com.ridecomp.core.usecase.SetRiderLevelUseCase
 import com.ridecomp.core.usecase.SetSafetyEnabledUseCase
@@ -332,6 +334,8 @@ val useCaseModule = module {
     factory { ObserveStravaStatusUseCase(get(), get()) }
     factory { GetAppLanguageUseCase(get()) }
     factory { SetAppLanguageUseCase(get()) }
+    factory { ObserveAppThemeUseCase(get()) }
+    factory { SetAppThemeUseCase(get()) }
     factory { StartStravaAuthUseCase(get(), get(), SecureRandom()) }
     factory { CompleteStravaAuthUseCase(get(), get()) }
     factory { DisconnectStravaUseCase(get(), get()) }

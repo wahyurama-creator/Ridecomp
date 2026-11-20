@@ -185,8 +185,8 @@ Format: **Tujuan** · **Isi (urutan atas → bawah)** · **Aksi** · **Catatan &
 - **State:** peta belum offline → info kuning + aksi "Unduh peta area ini" (→ #26); GPX tanpa elevasi → profil diganti teks "Rute ini tidak punya data elevasi".
 
 #### #13 Pengaturan (`Settings.dc.html`)
-- **Isi:** judul → **WarningCard** "HP saya mematikan app" (panduan merek terdeteksi, chevron) → ListCard 1: Profil pengendara (ringkasan) · **Profil aktivitas** ("5 profil · halaman data") · Layar & baterai · **Jeda & lanjut otomatis** ("Aktif · diam 5 dtk", hijau) · **Pengingat minum & makan** ("20 / 45 mnt") · **Keselamatan & kontak darurat** ("Aktif · 2 kontak", hijau) → ListCard 2: Peta offline ("1 area · 186 MB") · Satuan & bahasa · Upload otomatis Strava ("Opsional · nonaktif") · **Backup & export data** → footer "RideComp · data tersimpan lokal, tanpa iklan & tracking".
-- **Catatan:** setting per profil (auto-lap, tombol volume, halaman data, auto-pause, pengingat, tema) diakses di dalam **Profil aktivitas**.
+- **Isi:** judul → **WarningCard** "HP saya mematikan app" (panduan merek terdeteksi, chevron) → ListCard 1: Profil pengendara (ringkasan) · **Profil aktivitas** ("5 profil · halaman data") · Layar & baterai · **Jeda & lanjut otomatis** ("Aktif · diam 5 dtk", hijau) · **Pengingat minum & makan** ("20 / 45 mnt") · **Keselamatan & kontak darurat** ("Aktif · 2 kontak", hijau) → ListCard 2: Peta offline ("1 area · 186 MB") · **Tampilan** ("Gelap", T11.9: Tema Gelap · Terang · Ikuti HP) · Satuan & bahasa · Upload otomatis Strava ("Opsional · nonaktif") · **Backup & export data** → footer "RideComp · data tersimpan lokal, tanpa iklan & tracking".
+- **Catatan:** setting per profil (auto-lap, tombol volume, halaman data, auto-pause, pengingat) diakses di dalam **Profil aktivitas**.
 
 ### Baris 4 — Fitur tambahan
 

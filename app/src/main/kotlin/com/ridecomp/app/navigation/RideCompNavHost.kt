@@ -38,6 +38,7 @@ import com.ridecomp.feature.sensors.ui.SensorsRoute
 import com.ridecomp.feature.settings.ui.AppUpdateRoute
 import com.ridecomp.feature.settings.ui.BackupRoute
 import com.ridecomp.feature.settings.ui.BatteryHelpRoute
+import com.ridecomp.feature.settings.ui.DisplayRoute
 import com.ridecomp.feature.settings.ui.GuideTip
 import com.ridecomp.feature.settings.ui.HelpRoute
 import com.ridecomp.feature.settings.ui.HelpTopicScreen
@@ -87,6 +88,7 @@ object AppRoutes {
     const val APP_UPDATE = "app_update"
     const val STRAVA = "strava"
     const val LANGUAGE = "language"
+    const val DISPLAY = "display"
     const val HELP = "help"
     const val ARG_TOPIC = "topic"
     const val HELP_TOPIC = "help/{$ARG_TOPIC}"
@@ -224,6 +226,7 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
         composable(AppRoutes.LICENSES) { OssLicensesRoute(onBack = { navController.popBackStack() }) }
         composable(AppRoutes.APP_UPDATE) { AppUpdateRoute(onBack = { navController.popBackStack() }) }
         composable(AppRoutes.LANGUAGE) { LanguageRoute(onBack = { navController.popBackStack() }) }
+        composable(AppRoutes.DISPLAY) { DisplayRoute(onBack = { navController.popBackStack() }) }
         composable(AppRoutes.STRAVA) {
             val redirect by IncomingStravaAuth.redirect.collectAsStateWithLifecycle()
             StravaRoute(
@@ -398,14 +401,20 @@ private fun SettingsSection.route(): String = when (this) {
         AppRoutes.RIDE_SETTINGS
     SettingsSection.BATTERY_HELP -> AppRoutes.BATTERY_HELP
     SettingsSection.DEVELOPER -> AppRoutes.DEVELOPER
-    SettingsSection.LANGUAGE -> AppRoutes.LANGUAGE
+    SettingsSection.DISPLAY, SettingsSection.LANGUAGE, SettingsSection.BACKUP, SettingsSection.STRAVA -> appRoute()
     SettingsSection.SAFETY -> AppRoutes.SAFETY
-    SettingsSection.BACKUP -> AppRoutes.BACKUP
-    SettingsSection.STRAVA -> AppRoutes.STRAVA
     SettingsSection.OFFLINE_MAPS -> AppRoutes.OFFLINE_MAPS
     SettingsSection.OPEN_SOURCE_LICENSES -> AppRoutes.LICENSES
     SettingsSection.APP_UPDATE -> AppRoutes.APP_UPDATE
     SettingsSection.HELP -> AppRoutes.HELP
+}
+
+/** Display, language, backup and Strava: app-wide screens. */
+private fun SettingsSection.appRoute(): String = when {
+    this == SettingsSection.DISPLAY -> AppRoutes.DISPLAY
+    this == SettingsSection.LANGUAGE -> AppRoutes.LANGUAGE
+    this == SettingsSection.BACKUP -> AppRoutes.BACKUP
+    else -> AppRoutes.STRAVA
 }
 
 /** Bikes, activity profiles and data pages: setup screens of the ride feature. */

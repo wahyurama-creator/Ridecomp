@@ -1,5 +1,6 @@
 package com.ridecomp.data.repository
 
+import com.ridecomp.core.model.AppTheme
 import com.ridecomp.core.model.DataPagesLayout
 import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RiderProfile
@@ -10,9 +11,11 @@ import com.ridecomp.data.db.dao.SettingsDao
 import com.ridecomp.data.db.entity.SettingEntity
 import com.ridecomp.data.json.DataPagesJson
 import com.ridecomp.data.mapper.SettingsKeys
+import com.ridecomp.data.mapper.toDbValue
 import com.ridecomp.data.mapper.toDomain
 import com.ridecomp.data.mapper.toEntities
 import com.ridecomp.data.mapper.toEntity
+import com.ridecomp.data.mapper.toEnumOrNull
 import com.ridecomp.data.mapper.toRideSettings
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -53,6 +56,13 @@ class SettingsRepositoryImpl(private val dao: SettingsDao) : SettingsRepository 
 
     override fun observeDataPages(): Flow<DataPagesLayout?> =
         dao.observe(SettingsKeys.DATA_PAGES).map { json -> json?.let(DataPagesJson::decode) }.distinctUntilChanged()
+
+    override fun observeTheme(): Flow<AppTheme> =
+        dao.observe(SettingsKeys.THEME).map { it?.toEnumOrNull<AppTheme>() ?: AppTheme.DEFAULT }.distinctUntilChanged()
+
+    override suspend fun setTheme(theme: AppTheme) {
+        dao.upsert(SettingEntity(SettingsKeys.THEME, theme.toDbValue()))
+    }
 
     override suspend fun saveDataPages(layout: DataPagesLayout?) {
         if (layout == null) {

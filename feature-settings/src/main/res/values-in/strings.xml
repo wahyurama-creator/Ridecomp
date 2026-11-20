@@ -10,6 +10,7 @@
     <string name="settings_safety">Keselamatan &amp; kontak darurat</string>
     <string name="settings_offline_maps">Peta</string>
     <string name="settings_units">Satuan</string>
+    <string name="settings_display">Tampilan</string>
     <string name="settings_language">Bahasa</string>
     <string name="settings_backup">Backup &amp; export data</string>
     <string name="settings_battery_help">HP saya mematikan app</string>
@@ -383,4 +384,13 @@
     <string name="onboarding_skip">Lewati</string>
     <string name="onboarding_skip_hint">Opsional. Lewati saja, bisa diisi nanti sebelum ride atau di Setelan.</string>
     <string name="guide_tip_heart_rate_zones">Pasang sensor detak jantung untuk melihat waktu di tiap zona di halaman ride.</string>
+    <!-- Tampilan (T11.9) -->
+    <string name="display_title">Tampilan</string>
+    <string name="display_theme">Tema</string>
+    <string name="display_theme_dark">Gelap</string>
+    <string name="display_theme_dark_hint">Nyaman di mata dan hemat baterai di malam hari dan layar AMOLED.</string>
+    <string name="display_theme_light">Terang</string>
+    <string name="display_theme_light_hint">Sering lebih mudah dibaca di bawah terik matahari.</string>
+    <string name="display_theme_system">Ikuti HP</string>
+    <string name="display_theme_system_hint">Gelap atau terang mengikuti setelan HP-mu.</string>
 </resources>

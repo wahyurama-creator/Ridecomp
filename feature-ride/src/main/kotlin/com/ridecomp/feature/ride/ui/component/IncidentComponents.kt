@@ -50,6 +50,7 @@ import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
 import com.ridecomp.ui.theme.RideCompDimens
 import com.ridecomp.ui.theme.RideCompTheme
+import com.ridecomp.ui.theme.ThemeMode
 import com.ridecomp.ui.util.holdToConfirm
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -59,7 +60,8 @@ private const val SOS_HOLD_MS = 3_000L
 
 /**
  * Full-screen countdown (12-FEATURE-SPECS §5.3 step 1, 13-UI-SCREENS #18): deep red, the seconds in a
- * white ring, who gets the SMS, a 120 dp "I AM OK" and "SEND NOW". The alarm comes from the service.
+ * white ring, who gets the SMS, a 120 dp "I AM OK" and "SEND NOW". The alarm comes from the service. Always
+ * dark, whatever the app theme (T11.9): the same urgent look in every case.
  */
 @Composable
 fun IncidentCountdown(
@@ -68,6 +70,19 @@ fun IncidentCountdown(
     contactNames: ImmutableList<String>,
     onIncident: (IncidentAction) -> Unit,
     modifier: Modifier = Modifier,
+) {
+    RideCompTheme(themeMode = ThemeMode.DARK) {
+        IncidentCountdownContent(state, nowMs, contactNames, onIncident, modifier)
+    }
+}
+
+@Composable
+private fun IncidentCountdownContent(
+    state: IncidentState.Countdown,
+    nowMs: Long,
+    contactNames: ImmutableList<String>,
+    onIncident: (IncidentAction) -> Unit,
+    modifier: Modifier,
 ) {
     val colors = RideCompTheme.colors
     val secondsLeft = ((state.deadlineMs - nowMs + Units.MS_PER_SECOND - 1) / Units.MS_PER_SECOND).coerceAtLeast(0)
