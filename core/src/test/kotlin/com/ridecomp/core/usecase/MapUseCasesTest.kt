@@ -67,13 +67,18 @@ class MapUseCasesTest {
         tiles().test {
             assertEquals(MapTiles(isOnline = false, regionPaths = emptyList(), hasCache = true), awaitItem())
             assertEquals(0, network.activeCollectors)
-            assertEquals(MapCacheInfo(CACHE_BYTES, MapCacheLimit.DEFAULT), GetMapCacheInfoUseCase(cache, settings)())
+            assertEquals(
+                MapCacheInfo(CACHE_BYTES, MapCacheLimit.DEFAULT, hasTiles = true),
+                GetMapCacheInfoUseCase(cache, settings)(),
+            )
 
             ClearMapCacheUseCase(cache, settings)()
 
             assertEquals(MapTiles.NONE, awaitItem())
             assertEquals(1, cache.cleared)
         }
+        assertFalse(GetMapCacheInfoUseCase(cache, settings)().hasTiles)
+        assertEquals(150_000_000L, MapCacheLimit.MEDIUM.bytes)
         SetMapCacheLimitUseCase(settings)(MapCacheLimit.LARGE)
         assertEquals(MapCacheLimit.LARGE, settings.getRideSettings().mapCacheLimit)
     }

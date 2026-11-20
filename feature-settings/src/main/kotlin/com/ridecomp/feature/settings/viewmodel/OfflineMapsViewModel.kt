@@ -36,6 +36,8 @@ data class OfflineMapsUiState(
     val onlineMapMode: OnlineMapMode = OnlineMapMode.ALWAYS,
     /** Space the tile cache uses now (T11.11); null until read. */
     val cacheBytes: Long? = null,
+    /** The cache holds tiles; "clear" is offered only then. */
+    val hasCachedTiles: Boolean = false,
     val cacheLimit: MapCacheLimit = MapCacheLimit.DEFAULT,
     val isClearCacheAsked: Boolean = false,
     val isClearingCache: Boolean = false,
@@ -133,7 +135,7 @@ class OfflineMapsViewModel(private val useCases: OfflineMapsUseCases) :
     private fun refreshCache() {
         viewModelScope.launch {
             val info = useCases.cacheInfo()
-            updateState { copy(cacheBytes = info.sizeBytes) }
+            updateState { copy(cacheBytes = info.sizeBytes, hasCachedTiles = info.hasTiles) }
         }
     }
 

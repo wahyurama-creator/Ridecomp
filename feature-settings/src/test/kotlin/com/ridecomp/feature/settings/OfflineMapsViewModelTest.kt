@@ -68,6 +68,7 @@ class OfflineMapsViewModelTest {
         settings.setMapCacheFilled(true)
         val viewModel = viewModel()
         assertEquals(CACHE_BYTES, viewModel.uiState.value.cacheBytes)
+        assertTrue(viewModel.uiState.value.hasCachedTiles)
         assertEquals(MapCacheLimit.MEDIUM, viewModel.uiState.value.cacheLimit)
 
         viewModel.onEvent(OfflineMapsUiEvent.CacheLimit(MapCacheLimit.SMALL))
@@ -81,6 +82,7 @@ class OfflineMapsViewModelTest {
 
         assertEquals(1, cache.clears)
         assertEquals(0L, viewModel.uiState.value.cacheBytes)
+        assertFalse(viewModel.uiState.value.hasCachedTiles)
         assertFalse(settings.mapCacheFilled.value)
     }
 

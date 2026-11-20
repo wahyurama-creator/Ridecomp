@@ -26,7 +26,8 @@ public enum class MapCacheLimit(public val bytes: Long) {
     }
 }
 
-private const val BYTES_PER_MB = 1_048_576L
+/** Decimal megabytes, as Android shows file sizes (Formatter): the 150 MB choice reads "150 MB". */
+private const val BYTES_PER_MB = 1_000_000L
 
 /** The phone's default network, as far as the map cares. */
 public data class NetworkStatus(val isConnected: Boolean, val isUnmetered: Boolean) {

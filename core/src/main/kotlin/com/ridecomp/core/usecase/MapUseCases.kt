@@ -15,6 +15,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -46,12 +47,18 @@ public class ObserveMapTilesUseCase(
     }
 }
 
-/** Settings → Map (T11.11): the space the tile cache uses now and its limit. */
-public data class MapCacheInfo(val sizeBytes: Long, val limit: MapCacheLimit)
+/**
+ * Settings → Map (T11.11): the space the tile cache uses now, its limit, and whether it holds tiles (an empty
+ * MapLibre database still takes some kB, so the size alone cannot tell).
+ */
+public data class MapCacheInfo(val sizeBytes: Long, val limit: MapCacheLimit, val hasTiles: Boolean)
 
 public class GetMapCacheInfoUseCase(private val cache: MapCacheSource, private val settings: SettingsRepository) {
-    public suspend operator fun invoke(): MapCacheInfo =
-        MapCacheInfo(cache.sizeBytes(), settings.getRideSettings().mapCacheLimit)
+    public suspend operator fun invoke(): MapCacheInfo = MapCacheInfo(
+        sizeBytes = cache.sizeBytes(),
+        limit = settings.getRideSettings().mapCacheLimit,
+        hasTiles = settings.observeMapCacheFilled().first(),
+    )
 }
 
 /** Settings → Map: the new limit applies the next time a map is shown (old tiles go first). */

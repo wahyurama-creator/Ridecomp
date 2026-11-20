@@ -227,7 +227,7 @@ private fun MapCacheSection(state: OfflineMapsUiState, onEvent: (OfflineMapsUiEv
         BigButton(
             text = stringResource(R.string.maps_cache_clear),
             onClick = { onEvent(OfflineMapsUiEvent.AskClearCache) },
-            isEnabled = (state.cacheBytes ?: 0L) > 0L && !state.isClearingCache,
+            isEnabled = state.hasCachedTiles && !state.isClearingCache,
             style = BigButtonStyle.SECONDARY,
             size = BigButtonSize.SECONDARY,
         )
