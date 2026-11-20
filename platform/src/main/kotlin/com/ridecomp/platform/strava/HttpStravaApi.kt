@@ -13,6 +13,8 @@ import com.ridecomp.core.source.StravaUploadRequest
 import com.ridecomp.core.util.Outcome
 import com.ridecomp.core.util.asFailure
 import com.ridecomp.core.util.asSuccess
+import com.ridecomp.platform.system.TrafficTags
+import com.ridecomp.platform.system.withTrafficTag
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
@@ -133,13 +135,17 @@ class HttpStravaApi(
 
     /** Sends [request] and returns the reply text of a 2xx answer. */
     internal suspend fun send(request: HttpRequest): Outcome<String, StravaError> = withContext(dispatchers.io) {
+        withTrafficTag(TrafficTags.STRAVA) { sendNow(request) }
+    }
+
+    private fun sendNow(request: HttpRequest): Outcome<String, StravaError> {
         val connection = try {
             URL(request.url).openConnection() as? HttpsURLConnection
         } catch (error: IOException) {
             logger.warn(TAG, error) { "Could not open a connection" }
             null
-        } ?: return@withContext StravaError.OFFLINE.asFailure()
-        try {
+        } ?: return StravaError.OFFLINE.asFailure()
+        return try {
             connection.apply {
                 requestMethod = request.method
                 connectTimeout = StravaConfig.CONNECT_TIMEOUT_MS
@@ -157,11 +163,12 @@ class HttpStravaApi(
                 connection.outputStream.use(write)
             }
             val status = connection.responseCode
-            if (status !in HTTP_OK_RANGE) {
+            if (status in HTTP_OK_RANGE) {
+                connection.inputStream.readLimited()?.asSuccess() ?: StravaError.BAD_RESPONSE.asFailure()
+            } else {
                 logger.info(TAG) { "Strava replied $status" }
-                return@withContext status.toError().asFailure()
+                status.toError().asFailure()
             }
-            connection.inputStream.readLimited()?.asSuccess() ?: StravaError.BAD_RESPONSE.asFailure()
         } catch (error: IOException) {
             logger.warn(TAG, error) { "Strava request failed" }
             StravaError.OFFLINE.asFailure()

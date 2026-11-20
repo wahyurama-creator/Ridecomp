@@ -36,9 +36,12 @@ dependencyCheck = "13.0.0"
 licenseReport = "3.1.5"
 # Offline vector map (T3.3, D-64): OpenGL ES build so phones without Vulkan can install the app.
 maplibre = "13.7.1"
+# The OkHttp MapLibre already ships; declared to give it a client with tagged sockets (D-132). Keep equal.
+okhttp = "4.12.0"
 
 [libraries]
 maplibre-android = { group = "org.maplibre.gl", name = "android-sdk-opengl", version.ref = "maplibre" }
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 # AndroidX
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }

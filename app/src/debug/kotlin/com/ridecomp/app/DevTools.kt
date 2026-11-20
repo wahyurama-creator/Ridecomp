@@ -1,7 +1,10 @@
 package com.ridecomp.app
 
 import android.content.Context
+import android.os.Build
 import android.os.StrictMode
+import android.os.strictmode.Violation
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -15,6 +18,7 @@ import com.ridecomp.core.source.LocationSource
 import com.ridecomp.platform.ble.AndroidBleScanner
 import com.ridecomp.platform.ble.AndroidSensorConnector
 import com.ridecomp.platform.location.AndroidLocationSource
+import com.ridecomp.platform.system.AndroidLogger
 import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.component.SwitchRow
 import java.util.concurrent.Executors
@@ -40,16 +44,18 @@ object DevTools {
     internal const val KEY_SIMULATE_SENSORS = "simulate_sensors"
 
     fun install() {
+        // Android 9+: our listener logs each violation with its stack; older phones keep the plain log.
+        val hasListener = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
         StrictMode.setThreadPolicy(
             StrictMode.ThreadPolicy.Builder()
                 .detectAll()
-                .penaltyLog()
+                .apply { if (hasListener) penaltyListener(executor, ::report) else penaltyLog() }
                 .build(),
         )
         StrictMode.setVmPolicy(
             StrictMode.VmPolicy.Builder()
                 .detectAll()
-                .penaltyLog()
+                .apply { if (hasListener) penaltyListener(executor, ::report) else penaltyLog() }
                 .build(),
         )
         // RULE-EXCEPTION: OEM framework leak, not app code. realme/OPPO ColorOS adds a static
@@ -64,6 +70,32 @@ object DevTools {
         )
     }
 
+    /** One thread for StrictMode reports, off the thread that broke the policy. */
+    private val executor = Executors.newSingleThreadExecutor()
+
+    /**
+     * Every violation with its type and full stack under one tag: some OEM logcats (ColorOS) drop the stack
+     * lines that `penaltyLog` writes, which hid the cause of earlier findings.
+     */
+    @RequiresApi(Build.VERSION_CODES.P)
+    private fun report(violation: Violation) {
+        // RULE-EXCEPTION: violations raised inside a system service during a Binder call (realme/ColorOS
+        // CabcService writes a backlight node whenever an activity resumes) are reported to the calling app
+        // but are not app code; they are logged quietly so app findings stay visible (D-132).
+        if (violation.stackTrace.any { it.className.startsWith(SYSTEM_SERVER_PACKAGE) }) {
+            logger.debug(STRICT_MODE_TAG) { "System service, not app code: ${violation.javaClass.simpleName}" }
+        } else {
+            logger.warn(STRICT_MODE_TAG, violation) { violation.javaClass.simpleName }
+        }
+    }
+
+    private const val SYSTEM_SERVER_PACKAGE = "com.android.server."
+
+    /** Logcat tag `RideComp/StrictMode` (the app logger adds the prefix). */
+    private const val STRICT_MODE_TAG = "StrictMode"
+
+    /** Debug build: stacks included. */
+    private val logger = AndroidLogger(isDebugEnabled = true)
     private const val OEM_GESTURE_DETECTOR = "android.gesture.UniGestureDetector"
     private const val OEM_GESTURE_DETECTOR_FIELD = "mUniGestureDetector"
 

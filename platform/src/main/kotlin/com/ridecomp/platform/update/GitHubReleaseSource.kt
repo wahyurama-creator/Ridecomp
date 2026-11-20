@@ -8,6 +8,8 @@ import com.ridecomp.core.source.DispatcherProvider
 import com.ridecomp.core.source.Logger
 import com.ridecomp.core.usecase.AppInfoSource
 import com.ridecomp.core.usecase.ReleaseSource
+import com.ridecomp.platform.system.TrafficTags
+import com.ridecomp.platform.system.withTrafficTag
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -26,19 +28,24 @@ import org.json.JSONException
  */
 class GitHubReleaseSource(private val dispatchers: DispatcherProvider, private val logger: Logger) : ReleaseSource {
     override suspend fun latest(): AppRelease? = withContext(dispatchers.io) {
+        withTrafficTag(TrafficTags.UPDATE_CHECK) { fetch() }
+    }
+
+    private fun fetch(): AppRelease? {
         val connection = URL(UpdateConfig.RELEASES_API_URL).openConnection() as HttpsURLConnection
-        try {
+        return try {
             connection.apply {
                 connectTimeout = UpdateConfig.CONNECT_TIMEOUT_MS
                 readTimeout = UpdateConfig.READ_TIMEOUT_MS
                 instanceFollowRedirects = false
                 setRequestProperty(ACCEPT, GITHUB_JSON)
             }
-            if (connection.responseCode != HttpURLConnection.HTTP_OK) {
+            if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                connection.inputStream.readLimited()?.let(::newest)
+            } else {
                 logger.info(TAG) { "Releases replied ${connection.responseCode}" }
-                return@withContext null
+                null
             }
-            connection.inputStream.readLimited()?.let(::newest)
         } catch (error: IOException) {
             logger.warn(TAG, error) { "Release check failed" }
             null

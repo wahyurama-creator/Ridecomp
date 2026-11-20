@@ -303,28 +303,44 @@ private fun RegionRow(state: MapRegionState, hasDivider: Boolean, onEvent: (Offl
             val tint = if (state.status == MapRegionStatus.INSTALLED) colors.ok else colors.textSecondary
             Icon(painterResource(UiR.drawable.ic_map), contentDescription = null, tint = tint)
         },
-        trailing = {
-            when {
-                download is MapDownload.Running -> IconSquareButton(
-                    iconRes = UiR.drawable.ic_close,
-                    contentDescription = stringResource(R.string.maps_regions_cancel, region.name),
-                    onClick = { onEvent(OfflineMapsUiEvent.CancelRegion(region)) },
-                )
-                state.status == MapRegionStatus.INSTALLED -> IconSquareButton(
-                    iconRes = UiR.drawable.ic_trash,
-                    contentDescription = stringResource(R.string.offline_maps_delete_label, region.name),
-                    onClick = { onEvent(OfflineMapsUiEvent.AskDeleteRegion(region)) },
-                    tint = colors.danger,
-                )
-                else -> IconSquareButton(
-                    iconRes = UiR.drawable.ic_download,
-                    contentDescription = stringResource(R.string.maps_regions_download, region.name),
-                    onClick = { onEvent(OfflineMapsUiEvent.DownloadRegion(region)) },
-                    tint = colors.accent,
-                )
-            }
-        },
+        trailing = { RegionActions(state, onEvent) },
     )
+}
+
+/**
+ * Cancel while downloading; otherwise download when the map is missing or outdated, and delete whenever its
+ * files are on the phone (also an outdated or same-named imported file, which must stay deletable).
+ */
+@Composable
+private fun RegionActions(state: MapRegionState, onEvent: (OfflineMapsUiEvent) -> Unit) {
+    val region = state.region
+    val colors = RideCompTheme.colors
+    if (state.download is MapDownload.Running) {
+        IconSquareButton(
+            iconRes = UiR.drawable.ic_close,
+            contentDescription = stringResource(R.string.maps_regions_cancel, region.name),
+            onClick = { onEvent(OfflineMapsUiEvent.CancelRegion(region)) },
+        )
+        return
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingXs)) {
+        if (state.status != MapRegionStatus.INSTALLED) {
+            IconSquareButton(
+                iconRes = UiR.drawable.ic_download,
+                contentDescription = stringResource(R.string.maps_regions_download, region.name),
+                onClick = { onEvent(OfflineMapsUiEvent.DownloadRegion(region)) },
+                tint = colors.accent,
+            )
+        }
+        if (state.status != MapRegionStatus.NOT_INSTALLED) {
+            IconSquareButton(
+                iconRes = UiR.drawable.ic_trash,
+                contentDescription = stringResource(R.string.offline_maps_delete_label, region.name),
+                onClick = { onEvent(OfflineMapsUiEvent.AskDeleteRegion(region)) },
+                tint = colors.danger,
+            )
+        }
+    }
 }
 
 @StringRes

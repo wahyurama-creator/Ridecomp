@@ -78,7 +78,7 @@ Setiap resource berat **harus** memiliki satu pemilik, titik akuisisi, dan titik
 
 | ID | Aturan | Verifikasi |
 |---|---|---|
-| STB-01 | **StrictMode** aktif di build debug: `ThreadPolicy.detectAll()` dan `VmPolicy.detectAll()` dengan `penaltyLog()`; pelanggaran = bug yang harus diperbaiki. | Logcat bersih selama alur uji |
+| STB-01 | **StrictMode** aktif di build debug: `ThreadPolicy.detectAll()` dan `VmPolicy.detectAll()`; Android 9+ dicatat oleh listener dengan stack lengkap (tag `RideComp/StrictMode`, karena logcat sebagian OEM membuang stack `penaltyLog`), Android 8 dengan `penaltyLog()`. Pelanggaran = bug yang harus diperbaiki; pengecualian hanya pelanggaran di dalam layanan sistem (`com.android.server.*` lewat Binder, D-132). Socket jaringan aplikasi selalu diberi tag `TrafficStats`. | `adb logcat -s RideComp/StrictMode:W` kosong selama alur uji |
 | STB-02 | Tidak ada I/O, parsing GPX/FIT, atau kalkulasi berat di main thread. | StrictMode |
 | STB-03 | `RecordingService.onStartCommand` memanggil `startForeground()` segera (sebelum kerja lain) untuk menghindari crash `ForegroundServiceDidNotStartInTimeException`. | Instrumented test + uji Android 12+ |
 | STB-04 | Izin dicek **setiap kali** sebelum memakai GPS/BLE (pengguna bisa mencabut izin kapan saja); jika dicabut di tengah ride → simpan data, tampilkan peringatan, jangan crash. | Uji manual: cabut izin saat ride simulasi |

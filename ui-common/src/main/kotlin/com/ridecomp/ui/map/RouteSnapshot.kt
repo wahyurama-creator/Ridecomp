@@ -58,6 +58,7 @@ fun rememberRouteSnapshot(
         val hasMap = trail.size >= 2 && (isOnline || regionPaths.isNotEmpty())
         if (!isLibraryReady || !hasMap) return@DisposableEffect onDispose { }
         MapLibre.getInstance(context.applicationContext)
+        MapHttp.install()
         MapLibre.setConnected(isOnline)
         val colors = if (isDark) DarkRideCompColors else LightRideCompColors
         val points = trail.map { LatLng(it.latDeg, it.lonDeg) }

@@ -15,7 +15,7 @@
 | Lokasi | `LocationManager` (GPS_PROVIDER) | Tidak bergantung Google Play Services (beberapa HP tidak punya GMS); 1 Hz langsung dari GPS |
 | Foreground service | `LifecycleService` + `foregroundServiceType="location|connectedDevice"` | Kontrol penuh, tanpa plugin pihak ketiga |
 | BLE | Nordic Android BLE Library (atau `BluetoothGatt` langsung) | Antrian operasi GATT & reconnect yang matang. **Ajukan pilihan ke pemilik** |
-| Peta | MapLibre Native Android | Vector tiles OSM, offline; di Compose via `AndroidView` |
+| Peta | MapLibre Native Android (+ OkHttp 4.12.0 yang dibawanya, dideklarasikan untuk client ber-tag socket, D-132) | Vector tiles OSM, offline; di Compose via `AndroidView` |
 | FIT | Garmin FIT SDK (Java) di balik interface, atau encoder Kotlin murni | **Ajukan pilihan**: SDK resmi = cepat & benar (JVM-only, cek lisensi); encoder sendiri = KMP-ready |
 | GPX | `XmlPullParser` (bawaan Android) di balik interface `GpxReader` | Tanpa dependency tambahan |
 | Grafik | Compose `Canvas` buatan sendiri | Tanpa library chart (hemat ukuran & RAM) |

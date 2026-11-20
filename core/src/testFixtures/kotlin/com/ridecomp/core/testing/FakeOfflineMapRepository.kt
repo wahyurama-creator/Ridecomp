@@ -47,7 +47,7 @@ public class FakeOfflineMapRepository(public var freeSpace: Long = Long.MAX_VALU
 
     override suspend fun freeBytes(): Long = freeSpace
 
-    override fun displayName(uri: String): String? = names[uri]
+    override suspend fun displayName(uri: String): String? = names[uri]
 
     private companion object {
         const val SIZE = 1_000L
