@@ -1,7 +1,7 @@
 package com.ridecomp.core.engine.sensors
 
 /**
- * Bluetooth names that mark a watch or fitness band (T12.3, D-135). Matched case-insensitively as parts
+ * Bluetooth names that mark a watch or fitness band (T12.3, D-136). Matched case-insensitively as parts
  * of the advertised name. The brands also sell chest straps and sensors, so only watch model names are
  * listed for them, and [NOT_A_WATCH] wins over a match.
  */

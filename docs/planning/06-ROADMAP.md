@@ -204,7 +204,7 @@ Rencana, keputusan S1–S4, risiko, dan DoD: **`15-PHASE12-PLAN.md`** (D-114).
 - [ ] T12.4 Aplikasi pendamping Wear OS (butuh persetujuan dependency).
 
 **12C — Jam tangan tanpa broadcast (eksperimental, Aolon milik pemilik)**
-- [ ] T12.5a Identifikasi protokol Aolon (go/no-go: HR real-time ≥ 1 nilai per 1–2 dtk).
+- [x] T12.5a Identifikasi protokol Aolon (go/no-go: HR real-time ≥ 1 nilai per 1–2 dtk). Lolos bersyarat (D-135)
 - [ ] T12.5b Implementasi sensor "Jam tangan (eksperimental)" (hanya bila T12.5a lolos).
 - [ ] T12.5c Uji ride sungguhan ±30 menit.
 

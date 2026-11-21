@@ -50,7 +50,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 - [ ] T12.4 Aplikasi pendamping Wear OS (butuh persetujuan dependency, S4)
 
 **12C — Jam tangan tanpa broadcast (eksperimental, Aolon)**
-- [ ] T12.5a Identifikasi protokol Aolon (go/no-go)
+- [x] T12.5a Identifikasi protokol Aolon (go/no-go)
 - [ ] T12.5b Implementasi sensor "Jam tangan (eksperimental)" — hanya bila T12.5a lolos
 - [ ] T12.5c Uji ride sungguhan ±30 menit
 
@@ -75,7 +75,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 - Tanpa izin baru (memakai izin Nearby devices yang ada); tetap `neverForLocation`.
 
 #### T12.3 UX jam tangan
-- [x] **Status:** selesai 2026-11-21 · Feature Report: [`T12.3-watch-guide.md`](../reports/features/T12.3-watch-guide.md) · D-135
+- [x] **Status:** selesai 2026-11-21 · Feature Report: [`T12.3-watch-guide.md`](../reports/features/T12.3-watch-guide.md) · D-136
 - Sensor HR yang terdeteksi sebagai jam tangan (nama/appearance BLE) diberi label & ikon "Jam tangan".
 - Panduan **"Cara menyalakan broadcast HR"** per merek di Bantuan (topik baru) dan di pesan "tidak ditemukan" saat pindai (TS.3): Garmin, Polar, Coros, Suunto, Amazfit/Zepp, Xiaomi, Huawei; catatan bahwa jam tangan tanpa fitur ini tidak bisa dipakai kecuali yang didukung T12.5.
 - Teks en/id.
@@ -87,7 +87,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 - Distribusi: APK Wear OS terpisah di GitHub Release.
 
 #### T12.5a Identifikasi protokol Aolon (titik go/no-go)
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-21, **lolos bersyarat** (GTR 3 / GloryFit) · Feature Report: [`T12.5a-aolon-protocol.md`](../reports/features/T12.5a-aolon-protocol.md) · Protokol: `04-INTEGRATIONS.md` §A.5a · D-135
 - Data yang dibutuhkan dari pemilik: **model persis** jam tangan dan **nama aplikasi pendampingnya** (mis. Da Fit, FitCloudPro, GloryFit, Hryfine).
 - Cek apakah protokolnya sudah didokumentasikan publik (mis. dukungan Gadgetbridge untuk keluarga aplikasi tersebut) — **hanya sebagai pengetahuan** (S3).
 - Rekam lalu lintas BLE milik sendiri dengan **Bluetooth HCI snoop log** (opsi pengembang Android) saat aplikasi bawaan menampilkan HR langsung; analisis dengan Wireshark di Mac.
@@ -110,7 +110,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 | Risiko | Mitigasi |
 |---|---|
 | Firmware/aplikasi Aolon berubah → protokol rusak | Label eksperimental, deteksi gagal yang jelas, tidak memengaruhi sensor lain |
-| HR jam tangan tidak real-time | Kriteria go/no-go T12.5a (≥ 1 nilai per 1–2 dtk) |
+| HR jam tangan tidak real-time | Kriteria go/no-go T12.5a, diubah D-135: setiap perubahan HR terkirim dalam beberapa detik + aliran ≥ 10 mnt (dibuktikan dengan sambung ulang di T12.5c) |
 | Satu koneksi BLE per jam tangan | Pesan untuk memutus aplikasi bawaan; dokumentasi |
 | Lisensi | Clean-room, tanpa menyalin kode AGPL |
 | Baterai jam tangan | Perintah HR hanya selama ride; berhenti saat ride selesai |
