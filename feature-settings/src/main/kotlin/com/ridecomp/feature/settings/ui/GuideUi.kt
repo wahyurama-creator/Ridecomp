@@ -249,6 +249,7 @@ private fun GuideTopic.titleRes(): Int = when (this) {
     GuideTopic.NAVIGATION -> R.string.guide_navigation_title
     GuideTopic.OFFLINE_MAPS -> R.string.guide_offline_maps_title
     GuideTopic.SENSORS -> R.string.guide_sensors_title
+    GuideTopic.WATCHES -> R.string.guide_watches_title
     GuideTopic.EXPORT_STRAVA -> R.string.guide_export_strava_title
     GuideTopic.BACKUP -> R.string.guide_backup_title
     GuideTopic.RECORDS_SEGMENTS -> R.string.guide_records_segments_title
@@ -265,6 +266,7 @@ private fun GuideTopic.summaryRes(): Int = when (this) {
     GuideTopic.NAVIGATION -> R.string.guide_navigation_summary
     GuideTopic.OFFLINE_MAPS -> R.string.guide_offline_maps_summary
     GuideTopic.SENSORS -> R.string.guide_sensors_summary
+    GuideTopic.WATCHES -> R.string.guide_watches_summary
     GuideTopic.EXPORT_STRAVA -> R.string.guide_export_strava_summary
     GuideTopic.BACKUP -> R.string.guide_backup_summary
     GuideTopic.RECORDS_SEGMENTS -> R.string.guide_records_segments_summary
@@ -281,6 +283,7 @@ private fun GuideTopic.bodyRes(): Int = when (this) {
     GuideTopic.NAVIGATION -> R.string.guide_navigation_body
     GuideTopic.OFFLINE_MAPS -> R.string.guide_offline_maps_body
     GuideTopic.SENSORS -> R.string.guide_sensors_body
+    GuideTopic.WATCHES -> R.string.guide_watches_body
     GuideTopic.EXPORT_STRAVA -> R.string.guide_export_strava_body
     GuideTopic.BACKUP -> R.string.guide_backup_body
     GuideTopic.RECORDS_SEGMENTS -> R.string.guide_records_segments_body
