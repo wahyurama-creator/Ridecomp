@@ -67,7 +67,7 @@
                 <data
                     android:host="localhost"
                     android:path="/strava-auth"
-                    android:scheme="ridecomp" />
+                    android:scheme="${stravaRedirectScheme}" />
             </intent-filter>
         </activity>
         <!-- SEC-PLT-04: FileProvider for exported FIT/GPX files; not exported, temporary grants only. -->

@@ -4,7 +4,7 @@ import android.content.Intent
 
 /**
  * Opens one screen directly for the comparison screenshots (T13.2, `scripts/screens/`):
- * `adb shell am start -n com.ridecomp.app/.MainActivity --es com.ridecomp.debug.SCREEN settings`.
+ * `adb shell am start -n com.ridecomp.app.debug/com.ridecomp.app.MainActivity --es com.ridecomp.debug.SCREEN settings`.
  * Debug source set only (SEC-BLD-04): the release [DevTools] ignores the extra.
  */
 object DebugScreenRoute {

@@ -12,8 +12,8 @@
 # Language and theme are not changed: set them in the app first and use them in the label (base-id-dark).
 set -euo pipefail
 
-readonly PACKAGE="com.ridecomp.app"
-readonly ACTIVITY="$PACKAGE/.MainActivity"
+readonly PACKAGE="com.ridecomp.app.debug"   # debug build, installed next to the release app (D-144)
+readonly ACTIVITY="$PACKAGE/com.ridecomp.app.MainActivity"
 readonly EXTRA_SCREEN="com.ridecomp.debug.SCREEN"
 readonly DP_PER_INCH=160
 readonly DEFAULT_WIDTHS=(412 390 360)

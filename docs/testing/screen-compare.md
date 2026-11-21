@@ -4,7 +4,7 @@ Alat untuk membuktikan bahwa perubahan Fase 13 **tidak mengubah tampilan di 412,
 
 ## Syarat
 
-- **HP uji atau emulator dengan build debug.** Build debug dan release memakai `applicationId` yang sama, jadi build debug **tidak bisa** dipasang di HP yang berisi build release tanpa uninstall (data ride hilang). Jangan jalankan di HP pribadi pemilik.
+- **Build debug** (`com.ridecomp.app.debug`, "RideComp debug"). Sejak D-144 build debug terpasang **di samping** build release, jadi HP dengan data ride asli bisa dipakai tanpa uninstall; data kedua app terpisah. Build debug tidak menerima tautan balik login Strava (hanya release). HP biasa cukup: lebar 320 dp disimulasikan dengan `wm density`.
 - Onboarding sudah selesai dan data uji tetap (sepeda, ride contoh dari menu Developer) agar layar sama antar pengambilan.
 - Bahasa dan tema diatur di app sebelum mulai; tuliskan di label (mis. `base-id-dark`).
 
