@@ -6,8 +6,8 @@
 - **Rilis terakhir:** **0.9.3** (beta), 2026-11-18 · [GitHub Releases](https://github.com/wahyurama-creator/Ridecomp/releases). Skema DB **v10**.
 - **Fase selesai:** 0–5, 7, 9, dan rilis beta & masukan pengguna (Fase 8/10). Ringkasan: [`planning/06-ROADMAP.md`](planning/06-ROADMAP.md).
 - **Fase berjalan:** **Fase 11 — Analisa ride, usaha terbaik, tema & peta offline.** Rencana lengkap: [`planning/14-PHASE11-PLAN.md`](planning/14-PHASE11-PLAN.md). Keputusan K1–K5 sudah dijawab (D-109…D-113).
-- **Task terakhir:** T12.5a — Identifikasi protokol Aolon GTR 3 / GloryFit: **lolos bersyarat** (selesai 2026-11-21, [Feature Report](reports/features/T12.5a-aolon-protocol.md)); sebelumnya T12.2 pemindaian luas.
-- **Task berikutnya:** **T12.5b** sensor "Jam tangan (eksperimental)" untuk GTR 3 (didahulukan atas izin pemilik, S1), lalu T12.5c, T12.3, T12.4 (opsional).
+- **Task terakhir:** T12.5b — Sensor "Jam tangan (eksperimental)" untuk Aolon GTR 3 (selesai 2026-11-21, [Feature Report](reports/features/T12.5b-gloryfit-watch.md)); HR tampil di ride 10,5 mnt tanpa putus.
+- **Task berikutnya:** **T12.3** UX & panduan jam tangan; **T12.5c** ride sungguhan ±30 mnt dengan GTR 3 menunggu pemilik sehat; T12.4 (opsional).
 
 ## Daftar centang Fase 11
 Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.md` §4 setiap kali task selesai.
@@ -37,7 +37,7 @@ Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.m
 - [ ] T12.3 UX & panduan jam tangan
 - [ ] T12.4 Aplikasi pendamping Wear OS (opsional)
 - [x] T12.5a Identifikasi protokol Aolon (go/no-go) — GTR 3 / GloryFit, lolos bersyarat · [Feature Report](reports/features/T12.5a-aolon-protocol.md)
-- [ ] T12.5b Sensor "Jam tangan (eksperimental)"
+- [x] T12.5b Sensor "Jam tangan (eksperimental)" · [Feature Report](reports/features/T12.5b-gloryfit-watch.md)
 - [ ] T12.5c Uji ride sungguhan
 
 **Setelah Fase 12 — Fase 13: Tampilan responsif layar kecil** ([`planning/16-PHASE13-PLAN.md`](planning/16-PHASE13-PLAN.md), D-124):
