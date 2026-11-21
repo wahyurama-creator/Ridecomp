@@ -51,6 +51,7 @@ import com.ridecomp.feature.training.viewmodel.ShareCardUiState
 import com.ridecomp.ui.theme.RideCompTheme
 import com.ridecomp.ui.theme.ShareCardColors
 import com.ridecomp.ui.theme.ThemeMode
+import com.ridecomp.ui.theme.WindowWidthClass
 import java.text.DateFormat
 import java.util.Date
 import kotlin.math.roundToLong
@@ -77,6 +78,8 @@ fun ShareCard(state: ShareCardUiState, modifier: Modifier = Modifier, maps: Shar
     }
     RideCompTheme(
         themeMode = if (state.isDark || state.template != ShareTemplate.CLASSIC) ThemeMode.DARK else ThemeMode.LIGHT,
+        // The exported image must be the same on every phone (16-PHASE13-PLAN T13.6).
+        widthClass = WindowWidthClass.REGULAR,
     ) {
         val colors = RideCompTheme.colors
         val ink = when (state.template) {

@@ -14,6 +14,14 @@ import com.ridecomp.ui.theme.ThemeMode
 @Preview(name = "Light", uiMode = Configuration.UI_MODE_NIGHT_NO)
 annotation class ThemePreviews
 
+/** Multi-preview at 320 dp, the smallest supported width (Phase 13): shows the compact sizes, both themes. */
+@Preview(name = "320 dp Dark", widthDp = SMALL_SCREEN_WIDTH_DP, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "320 dp Light", widthDp = SMALL_SCREEN_WIDTH_DP, uiMode = Configuration.UI_MODE_NIGHT_NO)
+annotation class SmallScreenPreviews
+
+/** Width of [SmallScreenPreviews] (16-PHASE13-PLAN R1). */
+const val SMALL_SCREEN_WIDTH_DP = 320
+
 /** Wraps preview content in the RideComp theme (following the preview's night mode) and background. */
 @Composable
 fun RideCompPreview(content: @Composable () -> Unit) {

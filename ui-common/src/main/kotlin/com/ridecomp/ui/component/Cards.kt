@@ -68,6 +68,7 @@ fun RideCompCard(
     val colors = RideCompTheme.colors
     val shape = RoundedCornerShape(RideCompDimens.cornerRadiusCard)
     val (background, border) = tone.look(colors)
+    val cardPadding = RideCompTheme.dimens.cardPaddingHorizontal
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -76,10 +77,7 @@ fun RideCompCard(
             .then(if (border != null) Modifier.border(border, shape) else Modifier)
             .thenIf(onClick != null) { clickable(role = Role.Button) { onClick?.invoke() } }
             .thenIf(contentPadding) {
-                padding(
-                    horizontal = RideCompDimens.cardPaddingHorizontal,
-                    vertical = RideCompDimens.cardPaddingVertical,
-                )
+                padding(horizontal = cardPadding, vertical = RideCompDimens.cardPaddingVertical)
             },
         verticalArrangement = Arrangement.spacedBy(RideCompDimens.cardGap),
         content = content,
