@@ -44,7 +44,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 **12A — Jam tangan dengan broadcast HR standar**
 - [x] T12.1 Uji kompatibilitas dengan jam tangan sungguhan & catat hasilnya
 - [x] T12.2 Pemindaian luas: "Tampilkan semua perangkat Bluetooth"
-- [ ] T12.3 UX jam tangan: label/ikon "Jam tangan" & panduan menyalakan broadcast per merek
+- [x] T12.3 UX jam tangan: label/ikon "Jam tangan" & panduan menyalakan broadcast per merek
 
 **12B — Wear OS (opsional)**
 - [ ] T12.4 Aplikasi pendamping Wear OS (butuh persetujuan dependency, S4)
@@ -75,7 +75,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 - Tanpa izin baru (memakai izin Nearby devices yang ada); tetap `neverForLocation`.
 
 #### T12.3 UX jam tangan
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-21 · Feature Report: [`T12.3-watch-guide.md`](../reports/features/T12.3-watch-guide.md) · D-135
 - Sensor HR yang terdeteksi sebagai jam tangan (nama/appearance BLE) diberi label & ikon "Jam tangan".
 - Panduan **"Cara menyalakan broadcast HR"** per merek di Bantuan (topik baru) dan di pesan "tidak ditemukan" saat pindai (TS.3): Garmin, Polar, Coros, Suunto, Amazfit/Zepp, Xiaomi, Huawei; catatan bahwa jam tangan tanpa fitur ini tidak bisa dipakai kecuali yang didukung T12.5.
 - Teks en/id.

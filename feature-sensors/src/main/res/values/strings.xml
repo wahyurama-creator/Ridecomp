@@ -39,5 +39,7 @@
     <string name="sensors_kind_unchecked">Not checked yet</string>
     <string name="sensors_checking">Checking…</string>
     <string name="sensors_probe_none">%1$s does not share heart rate or bike data over standard Bluetooth. It may only work with its own app.</string>
+    <string name="sensors_kind_watch">Watch</string>
+    <string name="sensors_watch_guide_action">Using a watch? How to share heart rate</string>
     <string name="sensors_probe_unreachable">%1$s could not be reached. Bring it closer, close its own app, then try again.</string>
 </resources>

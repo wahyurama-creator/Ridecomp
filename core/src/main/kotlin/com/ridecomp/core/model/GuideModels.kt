@@ -27,6 +27,9 @@ public enum class GuideTopic {
     NAVIGATION,
     OFFLINE_MAPS,
     SENSORS,
+
+    /** Heart rate from a watch: turning on HR broadcast per brand (T12.3). */
+    WATCHES,
     EXPORT_STRAVA,
     BACKUP,
     RECORDS_SEGMENTS,

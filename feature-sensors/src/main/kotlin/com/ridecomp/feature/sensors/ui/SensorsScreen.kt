@@ -41,6 +41,7 @@ import com.ridecomp.core.engine.sensors.DiscoveredSensor
 import com.ridecomp.core.engine.sensors.SavedSensor
 import com.ridecomp.core.engine.sensors.SensorKind
 import com.ridecomp.core.engine.sensors.isBatteryLow
+import com.ridecomp.core.engine.sensors.isLikelyWatch
 import com.ridecomp.core.usecase.ScanBlocker
 import com.ridecomp.feature.sensors.R
 import com.ridecomp.feature.sensors.viewmodel.SensorsUiEvent
@@ -78,6 +79,7 @@ private fun blePermissions(): Array<String> = if (Build.VERSION.SDK_INT >= Build
 /** Sensors entry point (UI-01, T2.1). The scan stops when the screen is no longer visible (BAT-04). */
 @Composable
 fun SensorsRoute(
+    onOpenWatchGuide: () -> Unit,
     modifier: Modifier = Modifier,
     tipContent: (@Composable () -> Unit)? = null,
     viewModel: SensorsViewModel = koinViewModel(),
@@ -102,6 +104,7 @@ fun SensorsRoute(
                 ScanBlocker.BLUETOOTH_OFF -> enableLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
             }
         },
+        onOpenWatchGuide = onOpenWatchGuide,
         modifier = modifier,
         tipContent = tipContent,
     )
@@ -114,13 +117,14 @@ fun SensorsScreen(
     onEvent: (SensorsUiEvent) -> Unit,
     onPair: (DiscoveredSensor) -> Unit,
     onFixBlocker: (ScanBlocker) -> Unit,
+    onOpenWatchGuide: () -> Unit,
     modifier: Modifier = Modifier,
     tipContent: (@Composable () -> Unit)? = null,
 ) {
     ScreenScaffold(
         modifier = modifier,
         title = stringResource(R.string.sensors_title),
-        banner = { SensorsBanner(state, onFixBlocker) },
+        banner = { SensorsBanner(state, onFixBlocker, onOpenWatchGuide) },
     ) {
         val isEmpty = state.saved.isEmpty() && state.discovered.isEmpty() && !state.isScanning
         LazyColumn(
@@ -166,8 +170,10 @@ fun SensorsScreen(
 }
 
 @Composable
-private fun SensorsBanner(state: SensorsUiState, onFixBlocker: (ScanBlocker) -> Unit) {
+private fun SensorsBanner(state: SensorsUiState, onFixBlocker: (ScanBlocker) -> Unit, onOpenWatchGuide: () -> Unit) {
     val blocker = state.blocker
+    // Nothing found, or a watch that does not share heart rate: point to the per-brand guide (T12.3).
+    val watchGuide = listOf(BannerAction(stringResource(R.string.sensors_watch_guide_action), onOpenWatchGuide))
     when {
         blocker != null -> AlertBanner(
             message = stringResource(blocker.messageRes()),
@@ -186,6 +192,7 @@ private fun SensorsBanner(state: SensorsUiState, onFixBlocker: (ScanBlocker) -> 
             ),
             severity = AlertSeverity.WARN,
             iconRes = UiR.drawable.ic_info,
+            actions = if (state.probeFailure.isUnreachable) emptyList() else watchGuide,
         )
         state.hasScanFailed -> AlertBanner(
             message = stringResource(R.string.sensors_scan_failed),
@@ -195,6 +202,7 @@ private fun SensorsBanner(state: SensorsUiState, onFixBlocker: (ScanBlocker) -> 
             message = stringResource(R.string.sensors_none_found),
             severity = AlertSeverity.INFO,
             iconRes = UiR.drawable.ic_info,
+            actions = watchGuide,
         )
     }
 }
@@ -208,6 +216,7 @@ private fun LazyListScope.savedSection(state: SensorsUiState, onForget: (SavedSe
     items(state.saved, key = { SAVED_KEY_PREFIX + it.address }) { sensor ->
         SensorCard(
             iconKind = sensor.kinds.firstOrNull(),
+            isWatch = isLikelyWatch(sensor.name),
             title = sensor.name,
             subtitle = savedSubtitle(sensor),
             isOutlined = false,
@@ -255,6 +264,7 @@ private const val STRONG_SIGNAL_DBM = -70
 @Composable
 private fun SensorCard(
     iconKind: SensorKind?,
+    isWatch: Boolean,
     title: String,
     subtitle: String,
     isOutlined: Boolean,
@@ -273,7 +283,8 @@ private fun SensorCard(
         horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm),
     ) {
         Icon(
-            painterResource(iconKind.iconRes()),
+            // A watch keeps the colour of what it measures, with a watch shape (T12.3).
+            painterResource(if (isWatch) UiR.drawable.ic_watch else iconKind.iconRes()),
             contentDescription = null,
             tint = iconKind.tint(),
             modifier = Modifier.size(RideCompDimens.iconSize),
@@ -322,7 +333,7 @@ private fun SensorKind?.tint(): Color = when (this) {
 
 @Composable
 private fun savedSubtitle(sensor: SavedSensor): String {
-    val kinds = kindsLabel(sensor.kinds, sensor.isTrainer)
+    val kinds = watchLabel(isLikelyWatch(sensor.name), kindsLabel(sensor.kinds, sensor.isTrainer))
     val battery = sensor.lastBatteryPercent ?: return kinds
     val batteryRes = if (sensor.isBatteryLow) R.string.sensors_battery_low else R.string.sensors_battery
     return stringResource(R.string.sensors_subtitle, kinds, stringResource(batteryRes, battery))
@@ -337,19 +348,31 @@ private fun kindsLabel(kinds: Set<SensorKind>, isTrainer: Boolean = false): Stri
         .joinToString(separator = stringResource(R.string.sensors_kind_separator))
 }
 
+/** "Watch · Heart rate" for a watch or band (T12.3), otherwise [kinds] unchanged. */
+@Composable
+private fun watchLabel(isWatch: Boolean, kinds: String): String = if (isWatch) {
+    val separator = stringResource(R.string.sensors_kind_separator)
+    stringResource(R.string.sensors_kind_watch) + separator + kinds
+} else {
+    kinds
+}
+
 /** A found device with "Pasangkan", or "Periksa" for one from the wide scan that is checked first (T12.2). */
 @Composable
 private fun FoundSensorCard(sensor: DiscoveredSensor, probingAddress: String?, onPair: (DiscoveredSensor) -> Unit) {
     val isStrong = sensor.rssiDbm >= STRONG_SIGNAL_DBM
     // A device from the wide scan does not say what it is: it is checked before it is saved (T12.2).
     val needsCheck = sensor.kinds.isEmpty()
-    val kinds = if (needsCheck) {
+    val isWatch = isLikelyWatch(sensor.name)
+    val detected = if (needsCheck) {
         stringResource(R.string.sensors_kind_unchecked)
     } else {
         kindsLabel(sensor.kinds, sensor.isTrainer)
     }
+    val kinds = watchLabel(isWatch, detected)
     SensorCard(
         iconKind = sensor.kinds.firstOrNull(),
+        isWatch = isWatch,
         title = sensor.name ?: stringResource(
             if (needsCheck) R.string.sensors_unnamed_device else R.string.sensors_unnamed,
         ),
@@ -440,6 +463,7 @@ private fun SensorsScreenPreview() {
             onEvent = {},
             onPair = {},
             onFixBlocker = {},
+            onOpenWatchGuide = {},
         )
     }
 }
@@ -453,6 +477,7 @@ private fun SensorsBlockedPreview() {
             onEvent = {},
             onPair = {},
             onFixBlocker = {},
+            onOpenWatchGuide = {},
         )
     }
 }
