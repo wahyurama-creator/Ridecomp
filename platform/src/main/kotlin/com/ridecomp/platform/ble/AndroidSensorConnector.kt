@@ -1,5 +1,6 @@
 package com.ridecomp.platform.ble
 
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import com.ridecomp.core.engine.sensors.BatteryLevelParser
@@ -56,6 +57,12 @@ class AndroidSensorConnector(
     }
 
     private suspend fun ProducerScope<SensorReading>.keepConnected(sensor: SavedSensor) {
+        // A stored address that is not a Bluetooth address (e.g. a debug simulated sensor restored into a
+        // release build) would throw in getRemoteDevice and end every sensor's flow: skip it (ERR-04).
+        if (!BluetoothAdapter.checkBluetoothAddress(sensor.address)) {
+            logger.warn(TAG) { "Sensor ${sensor.name} has no valid Bluetooth address, skipped" }
+            return
+        }
         val backoff = ReconnectBackoff()
         while (isActive) {
             val device = adapter?.takeIf { it.isEnabled && context.hasBlePermission() }?.getRemoteDevice(sensor.address)
