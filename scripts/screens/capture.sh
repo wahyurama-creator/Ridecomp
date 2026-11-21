@@ -61,9 +61,11 @@ demo battery -e level 100 -e plugged false
 demo network -e wifi show -e level 4 -e mobile hide
 demo notifications -e visible false
 
-# Screens: "<name> <route>" lines, comments and blank lines skipped.
+# Screens: "<name> <route>" lines, comments and blank lines skipped. SCREENS_ONLY=<file> replaces the list
+# (to retake a few screens), SCREENS_FILE=<file> adds to it.
 screens() {
-    { cat "$screens_file"; [[ -n "${SCREENS_FILE:-}" ]] && cat "$SCREENS_FILE"; true; } | grep -v '^\s*#' | grep -v '^\s*$'
+    local base="${SCREENS_ONLY:-$screens_file}"
+    { cat "$base"; [[ -n "${SCREENS_FILE:-}" ]] && cat "$SCREENS_FILE"; true; } | grep -v '^\s*#' | grep -v '^\s*$'
 }
 
 # Takes screenshots until two in a row are identical: a screen that keeps changing is reported, not compared.
@@ -86,9 +88,12 @@ for width_dp in "${widths[@]}"; do
     dir="$out/${width_dp}dp"
     mkdir -p "$dir"
     adb shell wm density "$density"
-    printf 'width_dp=%s\ndensity=%s\nwidth_px=%s\n' "$width_dp" "$density" "$width_px" >"$dir/device.txt"
-    echo "== $width_dp dp (density $density)"
     sleep "$SETTLE_S"
+    # Some ROMs (realme ColorOS) ignore demo mode: compare.py then skips the status bar rows.
+    status_bar_px="$(adb shell dumpsys window | sed -n 's/.*type=statusBars frame=\[0,0\]\[[0-9]*,\([0-9]*\)\].*/\1/p' | head -1 | tr -d '\r')"
+    printf 'width_dp=%s\ndensity=%s\nwidth_px=%s\nstatus_bar_px=%s\n' \
+        "$width_dp" "$density" "$width_px" "${status_bar_px:-0}" >"$dir/device.txt"
+    echo "== $width_dp dp (density $density, status bar ${status_bar_px:-?} px)"
     while read -r name route; do
         # adb reads stdin: </dev/null keeps the screen list for the loop.
         adb shell am start -W -n "$ACTIVITY" --es "$EXTRA_SCREEN" "$route" </dev/null >/dev/null

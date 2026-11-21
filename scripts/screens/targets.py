@@ -21,19 +21,30 @@ def density_of(folder):
     return int(values["density"])
 
 
+def bounds_of(node):
+    return tuple(map(int, BOUNDS.match(node.get("bounds")).groups()))
+
+
 def small_targets(dump, density):
     tree = ElementTree.parse(dump)  # our own uiautomator dump: no DOCTYPE or entities
-    root_bounds = BOUNDS.match(tree.getroot().find("node").get("bounds"))
-    screen_bottom = int(root_bounds.group(4))
-    for node in tree.iter("node"):
-        if node.get("clickable") != "true" and node.get("checkable") != "true":
-            continue
-        x1, y1, x2, y2 = map(int, BOUNDS.match(node.get("bounds")).groups())
+
+    def walk(node, viewport):
+        if node.get("scrollable") == "true":
+            viewport = bounds_of(node)
+        if node.get("clickable") == "true" or node.get("checkable") == "true":
+            yield node, viewport
+        for child in node.findall("node"):
+            yield from walk(child, viewport)
+
+    root = tree.getroot().find("node")
+    for node, viewport in walk(root, bounds_of(root)):
+        x1, y1, x2, y2 = bounds_of(node)
         width_dp, height_dp = (x2 - x1) * DP_PER_INCH / density, (y2 - y1) * DP_PER_INCH / density
         if min(width_dp, height_dp) >= MIN_TARGET_DP:
             continue
         label = node.get("content-desc") or node.get("text") or node.get("resource-id") or node.get("class")
-        edge = " edge" if y1 <= 0 or y2 >= screen_bottom else ""
+        # Cut by the edge of the screen or of the scrolling list it sits in: only partly visible.
+        edge = " edge" if y1 <= viewport[1] or y2 >= viewport[3] else ""
         yield f"{width_dp:.0f} x {height_dp:.0f} dp  {label!r} at {node.get('bounds')}{edge}"
 
 

@@ -6,8 +6,8 @@
 - **Rilis terakhir:** **0.9.3** (beta), 2026-11-18 · [GitHub Releases](https://github.com/wahyurama-creator/Ridecomp/releases). Skema DB **v10**.
 - **Fase selesai:** 0–5, 7, 9, dan rilis beta & masukan pengguna (Fase 8/10). Ringkasan: [`planning/06-ROADMAP.md`](planning/06-ROADMAP.md).
 - **Fase berjalan:** **Fase 13 — Tampilan responsif layar kecil.** Rencana lengkap: [`planning/16-PHASE13-PLAN.md`](planning/16-PHASE13-PLAN.md). Fase 12 ditutup 2026-11-21 (5/7; T12.4 & T12.5c ditunda, D-139).
-- **Task terakhir:** T13.3 (kode) — fondasi `WindowWidthClass` + `AdaptiveDimens` (`Regular` = nilai lama, `Compact` < 360 dp), `@SmallScreenPreviews`, `MessageState` bisa di-scroll ([Feature Report](reports/features/T13.3-size-foundation.md), D-143); sebelumnya T13.2 alat screenshot pembanding (D-142). **T13.2 baseline dan bukti compare T13.3 menunggu HP uji/emulator dengan build debug.**
-- **Task berikutnya:** sambungkan HP uji/emulator → baseline dari `49f9141`, compare T13.3, cek visual 320 dp; lalu **T13.4** layar ride & persiapan ride. Ditunda: T12.5c (ride sungguhan Aolon, saat pemilik sehat), T12.4 Wear OS (saat ada jam Wear OS). Rilis gabungan Fase 11–13 + MobSF setelah Fase 13.
+- **Task terakhir:** T13.2 + T13.3 diverifikasi di HP pemilik (realme RMX3830, app "RideComp debug" terpisah, D-144): baseline 25 layar dari `49f9141`; setelah T13.3 **412/390/360 dp identik**, 320 dp berubah sesuai rencana ([T13.2](reports/features/T13.2-screen-compare.md), [T13.3](reports/features/T13.3-size-foundation.md)).
+- **Task berikutnya:** **T13.4** layar ride & persiapan ride (`planning/16-PHASE13-PLAN.md`); uji di 320 dp juga dengan tinggi layar Sony (`wm size`, karena HP realme lebih tinggi). Ditunda: T12.5c (ride sungguhan Aolon, saat pemilik sehat), T12.4 Wear OS (saat ada jam Wear OS). Rilis gabungan Fase 11–13 + MobSF setelah Fase 13.
 
 ## Daftar centang Fase 11
 Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.md` §4 setiap kali task selesai.
@@ -42,8 +42,8 @@ Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.m
 
 **Setelah Fase 12 — Fase 13: Tampilan responsif layar kecil** ([`planning/16-PHASE13-PLAN.md`](planning/16-PHASE13-PLAN.md), D-124):
 - [x] T13.1 Audit layar kecil · [Audit](testing/small-screen-audit.md) · [Feature Report](reports/features/T13.1-small-screen-audit.md)
-- [ ] T13.2 Skrip screenshot pembanding — alat selesai, baseline menunggu perangkat · [Feature Report](reports/features/T13.2-screen-compare.md)
-- [ ] T13.3 Fondasi ukuran `Regular`/`Compact` — kode selesai, compare menunggu perangkat · [Feature Report](reports/features/T13.3-size-foundation.md)
+- [x] T13.2 Skrip screenshot pembanding · [Feature Report](reports/features/T13.2-screen-compare.md)
+- [x] T13.3 Fondasi ukuran `Regular`/`Compact` · [Feature Report](reports/features/T13.3-size-foundation.md)
 - [ ] T13.4 Layar ride & persiapan ride
 - [ ] T13.5 Beranda, onboarding & sambutan
 - [ ] T13.6 Riwayat & detail ride
