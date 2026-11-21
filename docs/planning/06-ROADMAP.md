@@ -13,7 +13,7 @@ Kerjakan **berurutan**. **Setiap task** mengikuti alur di `10-FEATURE-CHECKLIST.
 | 6 | iOS | Port & uji di iPhone | ⬜ Belum mulai (0/6) |
 | 7, 9 | Fitur lanjutan, trainer & widget | Suara, kembali ke start, komponen sepeda, rencana latihan, smart trainer, widget | ✅ Selesai (7/7) |
 | 10 | Rilis beta & masukan pengguna | Open source, rilis 0.9.0–0.9.3, galeri share, sepeda lipat, cek pembaruan, onboarding baru | ✅ Selesai (7/7) |
-| 11 | Analisa ride, usaha terbaik, tema & peta offline | Halaman detail ala analisa (kecepatan, elevasi, HR, zona power), usaha terbaik, tema terang/gelap, peta tanpa internet (`14-PHASE11-PLAN.md`) | ✅ Selesai (14/14; rilis beta & MobSF digabung dengan Fase 12–13) |
+| 11 | Analisa ride, usaha terbaik, tema & peta offline | Halaman detail ala analisa (kecepatan, elevasi, HR, zona power), usaha terbaik, tema terang/gelap, peta tanpa internet (`14-PHASE11-PLAN.md`) | ✅ Selesai (15/15; rilis beta & MobSF digabung dengan Fase 12–13) |
 | 12 | Detak jantung dari smartwatch | Jam tangan broadcast HR, pemindaian luas, panduan per merek, Wear OS (opsional), Aolon eksperimental (`15-PHASE12-PLAN.md`) | ⬜ Belum mulai (0/7) |
 | 13 | Tampilan responsif layar kecil | Semua layar benar di 320 dp; 360 dp ke atas tidak berubah (bukti screenshot) (`16-PHASE13-PLAN.md`) | ⬜ Belum mulai (0/8) |
 
@@ -188,6 +188,7 @@ Spesifikasi, keputusan K1–K5 (dijawab 2026-11-19, D-109…D-113), urutan, risi
 - [x] T11.13 Paket peta per provinsi dari data Protomaps/OSM, di-hosting di GitHub Release proyek (skrip pemilik) (K4). (D-129; skrip + DI Yogyakarta di `maps-2026-11`, 37 provinsi oleh pemilik)
 - [x] T11.12 Peta wilayah otomatis: deteksi wilayah dari lokasi terakhir, tawaran unduh lewat Wi‑Fi, verifikasi, dipakai otomatis saat offline (K5). (D-130)
 - [x] T11.14 Batas penyimpanan, keamanan unduhan, atribusi. (D-131)
+- [x] T11.15 Redesign halaman Segmen baru: 3 langkah, peta, pintasan, −/+ 50 m, statistik bagian terpilih (permintaan pemilik, D-133).
 
 **DoD:** lihat `14-PHASE11-PLAN.md` §9.
 

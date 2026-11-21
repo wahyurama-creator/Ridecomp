@@ -8,9 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.RangeSlider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,7 +19,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ridecomp.core.config.Units
 import com.ridecomp.core.engine.segments.SegmentError
-import com.ridecomp.core.model.UnitSystem
 import com.ridecomp.core.repository.SegmentEffortView
 import com.ridecomp.core.repository.SegmentSummary
 import com.ridecomp.core.util.UnitFormatter
@@ -33,13 +29,10 @@ import com.ridecomp.feature.training.viewmodel.SegmentDetailUiState
 import com.ridecomp.feature.training.viewmodel.SegmentDetailViewModel
 import com.ridecomp.feature.training.viewmodel.SegmentDraft
 import com.ridecomp.feature.training.viewmodel.SegmentEditorEffect
-import com.ridecomp.feature.training.viewmodel.SegmentEditorUiEvent
-import com.ridecomp.feature.training.viewmodel.SegmentEditorUiState
 import com.ridecomp.feature.training.viewmodel.SegmentEditorViewModel
 import com.ridecomp.feature.training.viewmodel.SegmentsUiState
 import com.ridecomp.feature.training.viewmodel.SegmentsViewModel
 import com.ridecomp.ui.component.BigButton
-import com.ridecomp.ui.component.BigButtonSize
 import com.ridecomp.ui.component.BigButtonStyle
 import com.ridecomp.ui.component.CardTone
 import com.ridecomp.ui.component.ChartValue
@@ -49,13 +42,10 @@ import com.ridecomp.ui.component.LineChart
 import com.ridecomp.ui.component.ListCard
 import com.ridecomp.ui.component.ListCardRow
 import com.ridecomp.ui.component.RideCompCard
-import com.ridecomp.ui.component.RideCompTextField
 import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.component.SectionHeader
 import com.ridecomp.ui.component.StatGrid
 import com.ridecomp.ui.component.StatItem
-import com.ridecomp.ui.component.TrackSketch
-import com.ridecomp.ui.map.MapPoint
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
 import com.ridecomp.ui.theme.RideCompDimens
@@ -327,108 +317,8 @@ private fun sprintName(startedAtMs: Long): String {
 
 private const val SPRINT_DAY_PATTERN = "d MMM"
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SegmentEditorScreen(
-    state: SegmentEditorUiState,
-    onEvent: (SegmentEditorUiEvent) -> Unit,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val formatter = remember(state.unitSystem) { UnitFormatter(state.unitSystem) }
-    val divisor = if (state.unitSystem == UnitSystem.METRIC) Units.METERS_PER_KM else Units.METERS_PER_MILE
-    ScreenScaffold(
-        modifier = modifier,
-        title = stringResource(R.string.segment_new_title),
-        onBack = onBack,
-        backLabel = stringResource(R.string.segment_back),
-    ) {
-        Column(
-            modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                .padding(
-                    start = RideCompDimens.screenPaddingHorizontal,
-                    end = RideCompDimens.screenPaddingHorizontal,
-                    bottom = RideCompDimens.screenPaddingBottom,
-                ),
-            verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap),
-        ) {
-            Text(
-                text = stringResource(R.string.segment_new_hint),
-                style = RideCompTheme.typography.caption,
-                color = RideCompTheme.colors.textSecondary,
-            )
-            val line = remember(state.outline) {
-                state.outline.mapNotNull { p -> p.latDeg?.let { lat -> p.lonDeg?.let { MapPoint(lat, it) } } }
-                    .toImmutableList()
-            }
-            val positioned = remember(state.outline) { state.outline.filter { it.latDeg != null } }
-            val highlight = positioned.indexOfFirst { it.distanceM >= state.startM }..positioned.indexOfLast {
-                it.distanceM <= state.endM
-            }
-            TrackSketch(points = line, description = stringResource(R.string.segment_track), highlight = highlight)
-            val profile = remember(state.outline, divisor) {
-                state.outline.map { ChartValue(it.distanceM / divisor, it.altitudeM) }.toImmutableList()
-            }
-            LineChart(
-                title = stringResource(R.string.segment_profile),
-                values = profile,
-                color = RideCompTheme.colors.track,
-                rangeX = (state.startM / divisor)..(state.endM / divisor),
-            )
-            if (state.totalM > 0) {
-                RangeSlider(
-                    value = state.startM.toFloat()..state.endM.toFloat(),
-                    onValueChange = { range ->
-                        onEvent(
-                            SegmentEditorUiEvent.RangeChanged(range.start.toDouble(), range.endInclusive.toDouble()),
-                        )
-                    },
-                    valueRange = 0f..state.totalM.toFloat(),
-                    colors = SliderDefaults.colors(
-                        thumbColor = RideCompTheme.colors.accent,
-                        activeTrackColor = RideCompTheme.colors.accent,
-                        inactiveTrackColor = RideCompTheme.colors.divider,
-                    ),
-                )
-            }
-            Text(
-                text = stringResource(
-                    R.string.segment_range,
-                    formatter.distance(state.startM),
-                    formatter.distance(state.endM),
-                    "${formatter.distance(state.lengthM)} ${formatter.distanceUnit}",
-                ),
-                style = RideCompTheme.typography.body,
-                color = RideCompTheme.colors.textPrimary,
-            )
-            val problem =
-                state.error?.messageRes()
-                    ?: if (state.isLoaded && !state.isLengthValid) R.string.segment_error_length else null
-            problem?.let {
-                Text(
-                    text = stringResource(it),
-                    style = RideCompTheme.typography.caption,
-                    color = RideCompTheme.colors.warnText,
-                )
-            }
-            RideCompTextField(
-                label = stringResource(R.string.segment_name),
-                value = state.name,
-                onValueChange = { onEvent(SegmentEditorUiEvent.NameChanged(it)) },
-            )
-            BigButton(
-                text = stringResource(R.string.segment_save),
-                onClick = { onEvent(SegmentEditorUiEvent.Save) },
-                isEnabled = state.canSave,
-                size = BigButtonSize.SECONDARY,
-            )
-        }
-    }
-}
-
 @StringRes
-private fun SegmentError.messageRes(): Int = when (this) {
+internal fun SegmentError.messageRes(): Int = when (this) {
     SegmentError.TOO_SHORT, SegmentError.TOO_LONG -> R.string.segment_error_length
     SegmentError.NO_POSITION -> R.string.segment_error_position
 }

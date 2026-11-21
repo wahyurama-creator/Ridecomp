@@ -71,6 +71,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`); ganti 
 - [x] T11.13 Paket peta per provinsi (skrip pemilik)
 - [x] T11.12 Peta wilayah otomatis
 - [x] T11.14 Penyimpanan, baterai, keamanan
+- [x] T11.15 Redesign halaman Segmen baru (tambahan, permintaan pemilik)
 
 **Penutup fase**
 - [x] Anggaran performa §8 terukur (release, 2026-11-21, [hasil](../reports/security/phase11-release-measure.md); memori detail +19 MB pas di batas)
@@ -201,6 +202,10 @@ Satu task per branch (`feature/T11.x-…`). Uji perangkat oleh subagent Sonnet; 
 - Batas total peta offline (mis. 1 GB, bisa diubah), peringatan ruang < 500 MB, validasi header PMTiles (sudah ada), HTTPS saja, ukuran unduhan dicek dulu (SEC-IN), unduhan dapat dibatalkan, file sementara dibersihkan.
 - Atribusi OpenStreetMap/Protomaps tampil di peta offline.
 
+
+#### T11.15 Redesign halaman Segmen baru (tambahan, permintaan pemilik)
+- [x] **Status:** selesai 2026-11-21 · Feature Report: [`T11.15-segment-editor.md`](../reports/features/T11.15-segment-editor.md) · D-133
+- Tiga langkah: ① pilih bagian (peta, pintasan Seluruh ride/tanjakan, grafik + slider, −/+ 50 m), ② periksa (panjang, kenaikan, kemiringan, waktu, kecepatan, elevasi), ③ beri nama & simpan.
 ---
 
 ## 6. Data & skema

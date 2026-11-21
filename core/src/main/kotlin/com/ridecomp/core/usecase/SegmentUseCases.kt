@@ -1,6 +1,7 @@
 package com.ridecomp.core.usecase
 
 import com.ridecomp.core.config.ActivityConfig
+import com.ridecomp.core.engine.route.ClimbDetector
 import com.ridecomp.core.engine.route.RouteClimb
 import com.ridecomp.core.engine.route.RoutePoint
 import com.ridecomp.core.engine.segments.LiveSegment
@@ -9,6 +10,7 @@ import com.ridecomp.core.engine.segments.SegmentBuilder
 import com.ridecomp.core.engine.segments.SegmentError
 import com.ridecomp.core.engine.segments.SegmentMatcher
 import com.ridecomp.core.engine.segments.SegmentSource
+import com.ridecomp.core.engine.segments.TrackProfile
 import com.ridecomp.core.engine.track.RideTrack
 import com.ridecomp.core.model.Activity
 import com.ridecomp.core.repository.RouteRepository
@@ -125,7 +127,14 @@ public data class OutlinePoint(val latDeg: Double?, val lonDeg: Double?, val dis
  * A ride's line and profile for the segment editor. [windowM] is the distance range of the time window asked
  * for ("make the best effort a segment", T11.8); null when none was asked or it is not on the track.
  */
-public data class TrackOutline(val points: List<OutlinePoint>, val windowM: ClosedFloatingPointRange<Double>?)
+public data class TrackOutline(
+    val points: List<OutlinePoint>,
+    val windowM: ClosedFloatingPointRange<Double>?,
+    /** Full-resolution figures for the chosen part (T11.15). */
+    val profile: TrackProfile = TrackProfile(DoubleArray(0), LongArray(0), DoubleArray(0)),
+    /** Climbs of the ride, offered as quick picks (T11.15); empty without altitude. */
+    val climbs: List<RouteClimb> = emptyList(),
+)
 
 /** A ride's outline, at most [ActivityConfig.CHART_MAX_POINTS] points, and the distances of [windowMs]. */
 public class LoadTrackOutlineUseCase(
@@ -145,9 +154,22 @@ public class LoadTrackOutlineUseCase(
                     altitudeM = track.altitudeM(i).takeUnless(Double::isNaN),
                 )
             }
-            TrackOutline(points, windowMs?.let { track.distanceRange(it) })
+            TrackOutline(points, windowMs?.let { track.distanceRange(it) }, track.profile(), track.climbs())
         }
     }
+
+    private fun RideTrack.profile() = TrackProfile(
+        DoubleArray(size) { distanceM(it) },
+        LongArray(size) { timeMs(it) },
+        DoubleArray(size) { altitudeM(it) },
+    )
+
+    /** The route climb detector over the positioned samples (same thresholds as routes, D-52). */
+    private fun RideTrack.climbs(): List<RouteClimb> = ClimbDetector.detect(
+        (0 until size).filter { hasPosition(it) }.map { i ->
+            RoutePoint(latDeg(i), lonDeg(i), altitudeM(i).takeUnless(Double::isNaN), distanceM(i))
+        },
+    )
 
     /** Distances of the first and last samples inside [windowMs]. */
     private fun RideTrack.distanceRange(windowMs: LongRange): ClosedFloatingPointRange<Double>? {
