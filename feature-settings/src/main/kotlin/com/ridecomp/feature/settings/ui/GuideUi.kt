@@ -190,6 +190,9 @@ fun HelpScreen(
     }
 }
 
+/** Lines of a guide body that start with this are sub-points. */
+private const val GUIDE_BULLET = "•"
+
 /** One guide in plain words, step by step (TG.2). */
 @Composable
 fun HelpTopicScreen(topic: GuideTopic, onBack: () -> Unit, modifier: Modifier = Modifier) {
@@ -211,7 +214,15 @@ fun HelpTopicScreen(topic: GuideTopic, onBack: () -> Unit, modifier: Modifier = 
             verticalArrangement = Arrangement.spacedBy(RideCompDimens.cardGap),
         ) {
             stringResource(topic.bodyRes()).lines().filter { it.isNotBlank() }.forEach { line ->
-                Text(text = line, style = RideCompTheme.typography.body, color = RideCompTheme.colors.textPrimary)
+                // "•" lines belong to the numbered step above them: indented under it (T12.3).
+                Text(
+                    text = line,
+                    style = RideCompTheme.typography.body,
+                    color = RideCompTheme.colors.textPrimary,
+                    modifier = Modifier.padding(
+                        start = if (line.startsWith(GUIDE_BULLET)) RideCompDimens.spacingL else RideCompDimens.none,
+                    ),
+                )
             }
         }
     }
