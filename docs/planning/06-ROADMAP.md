@@ -214,7 +214,7 @@ Rencana, keputusan S1–S4, risiko, dan DoD: **`15-PHASE12-PLAN.md`** (D-114).
 Rencana, keputusan R1–R4, prinsip teknis, risiko, dan DoD: **`16-PHASE13-PLAN.md`** (D-124).
 
 **13A — Fondasi & audit**
-- [ ] T13.1 Audit layar kecil (320 dp & 360 dp) + daftar masalah per layar.
+- [x] T13.1 Audit layar kecil (320 dp & 360 dp) + daftar masalah per layar. 0 P1, 4 P2, 11 P3 · [Audit](../testing/small-screen-audit.md) · [Feature Report](../reports/features/T13.1-small-screen-audit.md)
 - [ ] T13.2 Skrip screenshot pembanding + baseline 412/390/360 dp.
 - [ ] T13.3 Fondasi: `WindowWidthClass`, token `Regular`/`Compact`, preview layar kecil.
 

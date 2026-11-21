@@ -1,6 +1,6 @@
 # 16 — Rencana Fase 13: Tampilan Responsif untuk Layar Kecil
 
-**Status:** rencana (belum dikerjakan). Disusun 2026-11-19 atas permintaan kolaborator (pembagian tugas dengan pemilik); **disetujui pemilik 2026-11-20**. Dikerjakan **setelah Fase 11 dan 12** (D-124).
+**Status:** berjalan (T13.1 selesai 2026-11-21). Disusun 2026-11-19 atas permintaan kolaborator (pembagian tugas dengan pemilik); **disetujui pemilik 2026-11-20**. Dikerjakan **setelah Fase 11 dan 12** (D-124).
 **Acuan:** `13-UI-SCREENS.md` (frame acuan 390 dp; wajib benar di 360 dp dan ≥ 412 dp), `02-DESIGN.md`, `08-CODING-RULES.md` §6 (UI-01…UI-09), `10-FEATURE-CHECKLIST.md`, `14-PHASE11-PLAN.md` §8 (anggaran performa).
 
 ---
@@ -41,7 +41,7 @@
 Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 
 **13A — Fondasi & audit**
-- [ ] T13.1 Audit layar kecil: screenshot semua layar di 320 dp & 360 dp, daftar masalah per layar
+- [x] T13.1 Audit layar kecil: screenshot semua layar di 320 dp & 360 dp, daftar masalah per layar
 - [ ] T13.2 Skrip screenshot pembanding (`scripts/screens/`) + baseline 412/390/360 dp
 - [ ] T13.3 Fondasi: `WindowWidthClass`, token `Regular`/`Compact`, `@SmallScreenPreviews`
 
@@ -62,7 +62,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 ## 6. Spesifikasi per task
 
 #### T13.1 Audit layar kecil
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-21 (0 P1, 4 P2, 11 P3; R4 tidak dibuka, D-140) · Hasil: [`small-screen-audit.md`](../testing/small-screen-audit.md) · Feature Report: [`T13.1-small-screen-audit.md`](../reports/features/T13.1-small-screen-audit.md)
 - HP uji 360 dp: `adb shell wm density 540` (Sony XZ, 1080 px → 320 dp); kembalikan dengan `wm density reset`. HP lain: `wm density <px_lebar × 160 / 320>`.
 - Setiap layar (25 `*Screen.kt` + dialog/kartu penting): screenshot 320 dp & 360 dp, tema gelap (dan terang bila T11.9 sudah ada), bahasa `id` & `en` (teks Inggris/Indonesia beda panjang).
 - Catat per layar: teks terpotong/tumpang tindih, elemen keluar layar, tombol tak terjangkau, target sentuh < 56 dp, scroll yang hilang, angka ride yang terlalu besar.
