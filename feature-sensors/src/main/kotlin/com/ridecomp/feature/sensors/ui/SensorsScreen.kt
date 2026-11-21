@@ -41,7 +41,6 @@ import com.ridecomp.core.engine.sensors.DiscoveredSensor
 import com.ridecomp.core.engine.sensors.SavedSensor
 import com.ridecomp.core.engine.sensors.SensorKind
 import com.ridecomp.core.engine.sensors.isBatteryLow
-import com.ridecomp.core.engine.sensors.isWatch
 import com.ridecomp.core.usecase.ScanBlocker
 import com.ridecomp.feature.sensors.R
 import com.ridecomp.feature.sensors.viewmodel.SensorsUiEvent
@@ -58,7 +57,6 @@ import com.ridecomp.ui.component.ConfirmDialog
 import com.ridecomp.ui.component.EmptyState
 import com.ridecomp.ui.component.IconSquareButton
 import com.ridecomp.ui.component.ListCard
-import com.ridecomp.ui.component.ListCardRow
 import com.ridecomp.ui.component.RideCompCard
 import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.component.SectionHeader
@@ -82,8 +80,6 @@ private fun blePermissions(): Array<String> = if (Build.VERSION.SDK_INT >= Build
 fun SensorsRoute(
     modifier: Modifier = Modifier,
     tipContent: (@Composable () -> Unit)? = null,
-    /** Opens Help → heart rate sources (T12.3). */
-    onOpenHeartRateGuide: () -> Unit = {},
     viewModel: SensorsViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -108,7 +104,6 @@ fun SensorsRoute(
         },
         modifier = modifier,
         tipContent = tipContent,
-        onOpenHeartRateGuide = onOpenHeartRateGuide,
     )
 }
 
@@ -121,12 +116,11 @@ fun SensorsScreen(
     onFixBlocker: (ScanBlocker) -> Unit,
     modifier: Modifier = Modifier,
     tipContent: (@Composable () -> Unit)? = null,
-    onOpenHeartRateGuide: () -> Unit = {},
 ) {
     ScreenScaffold(
         modifier = modifier,
         title = stringResource(R.string.sensors_title),
-        banner = { SensorsBanner(state, onFixBlocker, onOpenHeartRateGuide) },
+        banner = { SensorsBanner(state, onFixBlocker) },
     ) {
         val isEmpty = state.saved.isEmpty() && state.discovered.isEmpty() && !state.isScanning
         LazyColumn(
@@ -139,9 +133,7 @@ fun SensorsScreen(
                 item(key = EMPTY_KEY) { EmptyState(message = stringResource(R.string.sensors_empty)) }
             }
             savedSection(state, onForget = { onEvent(SensorsUiEvent.AskForget(it)) })
-            item(key = WIDE_SCAN_KEY) {
-                WideScanSwitch(state.isWideScan, onOpenHeartRateGuide) { onEvent(SensorsUiEvent.WideScan(it)) }
-            }
+            item(key = WIDE_SCAN_KEY) { WideScanSwitch(state.isWideScan) { onEvent(SensorsUiEvent.WideScan(it)) } }
             discoveredSection(state, onPair)
             item(key = INFO_KEY) { BleInfo() }
         }
@@ -174,11 +166,7 @@ fun SensorsScreen(
 }
 
 @Composable
-private fun SensorsBanner(
-    state: SensorsUiState,
-    onFixBlocker: (ScanBlocker) -> Unit,
-    onOpenHeartRateGuide: () -> Unit,
-) {
+private fun SensorsBanner(state: SensorsUiState, onFixBlocker: (ScanBlocker) -> Unit) {
     val blocker = state.blocker
     when {
         blocker != null -> AlertBanner(
@@ -207,8 +195,6 @@ private fun SensorsBanner(
             message = stringResource(R.string.sensors_none_found),
             severity = AlertSeverity.INFO,
             iconRes = UiR.drawable.ic_info,
-            // The moment a watch owner is stuck: their watch may need sharing turned on (T12.3).
-            actions = listOf(BannerAction(stringResource(R.string.sensors_hr_guide_action), onOpenHeartRateGuide)),
         )
     }
 }
@@ -222,7 +208,6 @@ private fun LazyListScope.savedSection(state: SensorsUiState, onForget: (SavedSe
     items(state.saved, key = { SAVED_KEY_PREFIX + it.address }) { sensor ->
         SensorCard(
             iconKind = sensor.kinds.firstOrNull(),
-            iconRes = if (sensor.isWatch) UiR.drawable.ic_watch else sensor.kinds.firstOrNull().iconRes(),
             title = sensor.name,
             subtitle = savedSubtitle(sensor),
             isOutlined = false,
@@ -273,8 +258,6 @@ private fun SensorCard(
     title: String,
     subtitle: String,
     isOutlined: Boolean,
-    /** A watch shows a watch, tinted like its heart rate (T12.3). */
-    iconRes: Int = iconKind.iconRes(),
     trailing: @Composable () -> Unit,
 ) {
     val colors = RideCompTheme.colors
@@ -290,7 +273,7 @@ private fun SensorCard(
         horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm),
     ) {
         Icon(
-            painterResource(iconRes),
+            painterResource(iconKind.iconRes()),
             contentDescription = null,
             tint = iconKind.tint(),
             modifier = Modifier.size(RideCompDimens.iconSize),
@@ -339,9 +322,7 @@ private fun SensorKind?.tint(): Color = when (this) {
 
 @Composable
 private fun savedSubtitle(sensor: SavedSensor): String {
-    val kinds = kindsLabel(sensor.kinds, sensor.isTrainer).let {
-        if (sensor.isWatch) stringResource(R.string.sensors_kind_watch, it) else it
-    }
+    val kinds = kindsLabel(sensor.kinds, sensor.isTrainer)
     val battery = sensor.lastBatteryPercent
     return when {
         // The watch is held by its own app unless that app is closed (one connection only, T12.5b).
@@ -410,28 +391,13 @@ private fun FoundSensorCard(sensor: DiscoveredSensor, probingAddress: String?, o
 
 /** "Show all Bluetooth devices" (T12.2): for watches that share heart rate without advertising it. */
 @Composable
-private fun WideScanSwitch(isOn: Boolean, onOpenHeartRateGuide: () -> Unit, onChange: (Boolean) -> Unit) {
+private fun WideScanSwitch(isOn: Boolean, onChange: (Boolean) -> Unit) {
     ListCard {
         SwitchRow(
             label = stringResource(R.string.sensors_wide_scan),
             description = stringResource(R.string.sensors_wide_scan_hint),
             isChecked = isOn,
             onCheckedChange = onChange,
-        )
-        // Always here, at every rider level: which heart rate source works and how (T12.3).
-        ListCardRow(
-            title = stringResource(R.string.sensors_hr_guide),
-            subtitle = stringResource(R.string.sensors_hr_guide_hint),
-            onClick = onOpenHeartRateGuide,
-            hasDivider = false,
-            leading = {
-                Icon(
-                    painterResource(UiR.drawable.ic_help),
-                    contentDescription = null,
-                    tint = RideCompTheme.colors.textSecondary,
-                    modifier = Modifier.size(RideCompDimens.iconSize),
-                )
-            },
         )
     }
 }

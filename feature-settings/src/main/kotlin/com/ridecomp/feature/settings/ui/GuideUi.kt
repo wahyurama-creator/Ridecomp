@@ -190,9 +190,6 @@ fun HelpScreen(
     }
 }
 
-/** Lines of a guide body that start with this are sub-points. */
-private const val GUIDE_BULLET = "•"
-
 /** One guide in plain words, step by step (TG.2). */
 @Composable
 fun HelpTopicScreen(topic: GuideTopic, onBack: () -> Unit, modifier: Modifier = Modifier) {
@@ -214,15 +211,7 @@ fun HelpTopicScreen(topic: GuideTopic, onBack: () -> Unit, modifier: Modifier = 
             verticalArrangement = Arrangement.spacedBy(RideCompDimens.cardGap),
         ) {
             stringResource(topic.bodyRes()).lines().filter { it.isNotBlank() }.forEach { line ->
-                // "•" lines belong to the numbered step above them: indented under it (T12.3).
-                Text(
-                    text = line,
-                    style = RideCompTheme.typography.body,
-                    color = RideCompTheme.colors.textPrimary,
-                    modifier = Modifier.padding(
-                        start = if (line.startsWith(GUIDE_BULLET)) RideCompDimens.spacingL else RideCompDimens.none,
-                    ),
-                )
+                Text(text = line, style = RideCompTheme.typography.body, color = RideCompTheme.colors.textPrimary)
             }
         }
     }
@@ -260,7 +249,6 @@ private fun GuideTopic.titleRes(): Int = when (this) {
     GuideTopic.NAVIGATION -> R.string.guide_navigation_title
     GuideTopic.OFFLINE_MAPS -> R.string.guide_offline_maps_title
     GuideTopic.SENSORS -> R.string.guide_sensors_title
-    GuideTopic.HEART_RATE -> R.string.guide_heart_rate_title
     GuideTopic.EXPORT_STRAVA -> R.string.guide_export_strava_title
     GuideTopic.BACKUP -> R.string.guide_backup_title
     GuideTopic.RECORDS_SEGMENTS -> R.string.guide_records_segments_title
@@ -277,7 +265,6 @@ private fun GuideTopic.summaryRes(): Int = when (this) {
     GuideTopic.NAVIGATION -> R.string.guide_navigation_summary
     GuideTopic.OFFLINE_MAPS -> R.string.guide_offline_maps_summary
     GuideTopic.SENSORS -> R.string.guide_sensors_summary
-    GuideTopic.HEART_RATE -> R.string.guide_heart_rate_summary
     GuideTopic.EXPORT_STRAVA -> R.string.guide_export_strava_summary
     GuideTopic.BACKUP -> R.string.guide_backup_summary
     GuideTopic.RECORDS_SEGMENTS -> R.string.guide_records_segments_summary
@@ -294,7 +281,6 @@ private fun GuideTopic.bodyRes(): Int = when (this) {
     GuideTopic.NAVIGATION -> R.string.guide_navigation_body
     GuideTopic.OFFLINE_MAPS -> R.string.guide_offline_maps_body
     GuideTopic.SENSORS -> R.string.guide_sensors_body
-    GuideTopic.HEART_RATE -> R.string.guide_heart_rate_body
     GuideTopic.EXPORT_STRAVA -> R.string.guide_export_strava_body
     GuideTopic.BACKUP -> R.string.guide_backup_body
     GuideTopic.RECORDS_SEGMENTS -> R.string.guide_records_segments_body

@@ -27,9 +27,6 @@ public enum class GuideTopic {
     NAVIGATION,
     OFFLINE_MAPS,
     SENSORS,
-
-    /** Heart rate sources: strap, watch that shares heart rate, supported watches without it (T12.3). */
-    HEART_RATE,
     EXPORT_STRAVA,
     BACKUP,
     RECORDS_SEGMENTS,

@@ -6,8 +6,8 @@
 - **Rilis terakhir:** **0.9.3** (beta), 2026-11-18 · [GitHub Releases](https://github.com/wahyurama-creator/Ridecomp/releases). Skema DB **v10**.
 - **Fase selesai:** 0–5, 7, 9, dan rilis beta & masukan pengguna (Fase 8/10). Ringkasan: [`planning/06-ROADMAP.md`](planning/06-ROADMAP.md).
 - **Fase berjalan:** **Fase 11 — Analisa ride, usaha terbaik, tema & peta offline.** Rencana lengkap: [`planning/14-PHASE11-PLAN.md`](planning/14-PHASE11-PLAN.md). Keputusan K1–K5 sudah dijawab (D-109…D-113).
-- **Task terakhir:** T12.3 — Panduan "Sumber detak jantung", tautan di Sensor & label jam tangan (selesai 2026-11-21, [Feature Report](reports/features/T12.3-heart-rate-guide.md)).
-- **Task berikutnya:** **T12.5c** ride sungguhan ±30 mnt dengan Aolon GTR 3 (menunggu pemilik sehat); **T12.4** Wear OS opsional (butuh persetujuan dependency, S4) atau dihentikan dengan alasan tercatat; lalu Fase 13.
+- **Task terakhir:** T12.5b — Sensor "Jam tangan (eksperimental)" untuk Aolon GTR 3 (selesai 2026-11-21, [Feature Report](reports/features/T12.5b-gloryfit-watch.md)); HR tampil di ride 10,5 mnt tanpa putus.
+- **Task berikutnya:** **T12.3** UX & panduan jam tangan; **T12.5c** ride sungguhan ±30 mnt dengan GTR 3 menunggu pemilik sehat; T12.4 (opsional).
 
 ## Daftar centang Fase 11
 Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.md` §4 setiap kali task selesai.
@@ -34,7 +34,7 @@ Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.m
 **Setelah Fase 11 — Fase 12: Detak jantung dari smartwatch** ([`planning/15-PHASE12-PLAN.md`](planning/15-PHASE12-PLAN.md)):
 - [x] T12.1 Uji kompatibilitas jam tangan · Huawei Watch Fit 5 Pro (A1, didukung), Aolon GTR 3 (B, tidak didukung lewat standar) · [Feature Report](reports/features/T12.1-smartwatch-compat.md)
 - [x] T12.2 Pemindaian luas · [Feature Report](reports/features/T12.2-wide-scan.md)
-- [x] T12.3 UX & panduan jam tangan · [Feature Report](reports/features/T12.3-heart-rate-guide.md)
+- [ ] T12.3 UX & panduan jam tangan
 - [ ] T12.4 Aplikasi pendamping Wear OS (opsional)
 - [x] T12.5a Identifikasi protokol Aolon (go/no-go) — GTR 3 / GloryFit, lolos bersyarat · [Feature Report](reports/features/T12.5a-aolon-protocol.md)
 - [x] T12.5b Sensor "Jam tangan (eksperimental)" · [Feature Report](reports/features/T12.5b-gloryfit-watch.md)

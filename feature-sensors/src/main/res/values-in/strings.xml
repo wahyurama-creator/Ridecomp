@@ -30,10 +30,6 @@
     <string name="sensors_signal_strong">sinyal kuat</string>
     <string name="sensors_signal_weak">sinyal lemah</string>
     <string name="sensors_ble_info">Hanya sensor Bluetooth (BLE). Sensor ANT+ saja tidak didukung oleh kebanyakan HP. Kalibrasi power meter dilakukan lewat app pabrikannya.</string>
-    <string name="sensors_kind_watch">Jam tangan · %1$s</string>
-    <string name="sensors_hr_guide">Cara menyambungkan detak jantung</string>
-    <string name="sensors_hr_guide_hint">Sensor HR, jam tangan yang berbagi detak jantung, atau jam tangan tertentu</string>
-    <string name="sensors_hr_guide_action">Pakai jam tangan? Lihat caranya</string>
     <string name="sensors_kind_trainer">Smart trainer (ERG)</string>
     <string name="sensors_kind_gloryfit_watch">Detak jantung · Jam tangan (eksperimental) · tutup GloryFit sebelum ride</string>
     <string name="sensors_none_found">Tidak ada sensor baru. Bangunkan sensornya (putar pedal/roda, basahi strap detak jantung), dekatkan ke HP, lalu cari lagi.</string>
