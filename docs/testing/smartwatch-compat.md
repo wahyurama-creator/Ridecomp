@@ -33,6 +33,7 @@ Hasil uji jam tangan sungguhan sebagai sensor detak jantung RideComp (`15-PHASE1
 - Pindai luas: jam baru terlihat saat Bluetooth jam aktif dan tidak sedang dipegang GloryFit; pada percobaan sebelumnya (94–127 iklan mentah per pindai) jam tidak termasuk.
 - **Periksa:** sambung → discover services ±0,6 dtk → `close()` + `GATT_Disconnect` → pesan "Aolon GTR3(ID-A05B) tidak membagikan detak jantung…". Tidak dipasangkan (bonding) dan tidak disimpan.
 - Kesimpulan: GTR 3 tidak bisa dipakai sebagai sensor HR standar; satu-satunya jalur adalah protokol vendor GloryFit (T12.5a, go/no-go).
+- **T12.5a (2026-11-21): lolos bersyarat.** Perintah `FD 11 02 01` ke `0x33F1` memulai HR real-time di `0x33F2` tanpa GloryFit, tanpa bonding/kunci (format di `04-INTEGRATIONS.md` §A.5a). Uji 4 mnt stabil; uji 10 mnt putus sendiri (Connection Timeout) di menit ke-7,5 → ditangani sambung ulang dan diuji di T12.5c.
 
 ## Cara menguji jam tangan berikutnya
 

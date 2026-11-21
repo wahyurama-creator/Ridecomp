@@ -77,6 +77,24 @@ Battery Level `0x2A19` (Read/Notify), uint8 0–100%. Baca saat connect dan tiap
 - Satu perangkat bisa menyediakan beberapa service (mis. power meter + CSC); daftarkan semua yang relevan.
 - Tidak ada ANT+.
 
+### A.5a Jam tangan tanpa standar — Aolon GTR 3 / GloryFit (T12.5a, eksperimental)
+Hasil pengamatan lalu lintas BLE jam tangan milik pemilik (HCI snoop log + uji nRF Connect, 2026-11-21, D-135). Clean-room: hanya dari rekaman perangkat sendiri, tanpa kode pihak ketiga. Bisa berubah dengan pembaruan firmware/aplikasi.
+
+| Item | Nilai |
+|---|---|
+| Iklan | Nama `Aolon GTR3(ID-XXXX)`, tanpa UUID layanan standar |
+| Layanan | `0x55FF` (perintah), juga `0x56FF` & `0xFF12` (tidak dipakai) |
+| Karakteristik | `0x33F1` READ/WRITE (perintah, write dengan respons) · `0x33F2` NOTIFY (jawaban & data) |
+| Keamanan | Tanpa bonding, tanpa kunci/akun; perintah pembuka aplikasi bawaan **tidak** diperlukan |
+| Mulai olahraga | `FD 11 02 01` → dibalas gema `FD 11 02 01` lalu `E5 11` |
+| Detak jantung | Notifikasi `FD 02 <bpm> 00×11` (14 byte); `bpm` uint8. Nilai pertama `0` (pemanasan sensor, ±15 dtk) → dibuang |
+| Frekuensi | **Hanya saat nilai berubah**: median 2,7–4,2 dtk, terlama 19,8 dtk saat HR stabil |
+| Penghitung waktu (aplikasi bawaan, tiap 1 dtk) | `FD 44 02 01 <jam> <menit> <detik> 00×6` (13 byte); tidak wajib (aliran HR tetap jalan 4 menit tanpanya) |
+| Berhenti | `FD 00 02 01` → `E5 00 00 <bpm rata-rata>` dan rekaman `F7 03 …` |
+| Lain | Hanya satu koneksi: aplikasi bawaan (GloryFit) harus terputus. Uji 7,5 menit berakhir dengan **Connection Timeout (0x08)** 5 dtk setelah paket HR terakhir |
+
+Konsekuensi untuk RideComp (T12.5b): nilai HR terakhir ditahan dan dikirim ulang tiap detik selama paket terakhir masih baru (karena sampel dianggap usang setelah 3 dtk); penghitung waktu dikirim tiap detik seperti aplikasi bawaan; sambung ulang mengirim `FD 11` lagi; `FD 00` saat ride selesai.
+
 ### A.6 Unit test wajib
 Siapkan byte array contoh untuk: HR uint8, HR uint16 + RR; CSC wheel-only, crank-only, keduanya; rollover uint16 crank time & uint32 wheel revs; CP power-only, CP dengan pedal balance + crank data, CP dengan wheel (1/2048) + crank.
 
