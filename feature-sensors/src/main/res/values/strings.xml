@@ -32,4 +32,11 @@
     <string name="sensors_ble_info">Bluetooth (BLE) sensors only. ANT+-only sensors are not supported by most phones. Calibrate a power meter with its maker\'s app.</string>
     <string name="sensors_kind_trainer">Smart trainer (ERG)</string>
     <string name="sensors_none_found">No new sensors found. Wake them up (spin the pedals or wheel, wet the heart rate strap), keep them close to the phone and search again.</string>
+    <string name="sensors_wide_scan">Show all Bluetooth devices</string>
+    <string name="sensors_wide_scan_hint">For smartwatches and devices that do not announce a sensor. Each device is checked before it is saved.</string>
+    <string name="sensors_check">Check</string>
+    <string name="sensors_kind_unchecked">Not checked yet</string>
+    <string name="sensors_checking">Checking…</string>
+    <string name="sensors_probe_none">%1$s does not share heart rate or bike data over standard Bluetooth. It may only work with its own app.</string>
+    <string name="sensors_probe_unreachable">%1$s could not be reached. Bring it closer, close its own app, then try again.</string>
 </resources>

@@ -9,6 +9,7 @@ import com.ridecomp.core.engine.recording.RecordingSession
 import com.ridecomp.core.engine.safety.IncidentManager
 import com.ridecomp.core.engine.sensors.BleScanner
 import com.ridecomp.core.engine.sensors.SensorConnector
+import com.ridecomp.core.engine.sensors.SensorProbe
 import com.ridecomp.core.engine.sensors.SensorRepository
 import com.ridecomp.core.engine.sensors.TrainerControl
 import com.ridecomp.core.model.StravaSetup
@@ -53,6 +54,7 @@ import com.ridecomp.platform.backup.AndroidBackupFiles
 import com.ridecomp.platform.backup.JsonBackupManifestCodec
 import com.ridecomp.platform.ble.AndroidBleScanner
 import com.ridecomp.platform.ble.AndroidSensorConnector
+import com.ridecomp.platform.ble.AndroidSensorProbe
 import com.ridecomp.platform.crash.CrashLogConfig
 import com.ridecomp.platform.crash.CrashLogStore
 import com.ridecomp.platform.device.AlertPlayer
@@ -110,6 +112,7 @@ val platformModule = module {
     single { AlertPlayer(androidContext()) }
     single { RideStateHolder() }
     single<BleScanner> { AndroidBleScanner(androidContext()) }
+    single<SensorProbe> { AndroidSensorProbe(androidContext(), get(), get()) }
     single { TrainerControl() }
     single { AndroidOfflineMapStore(androidContext(), get(), get()) }
     single<OfflineMapRepository> { get<AndroidOfflineMapStore>() }

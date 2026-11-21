@@ -6,5 +6,5 @@ import org.koin.dsl.module
 
 /** ViewModels of the sensors feature; use cases come from the app graph. */
 val sensorsFeatureModule = module {
-    viewModel { SensorsViewModel(get(), get(), get(), get()) }
+    viewModel { SensorsViewModel(get(), get(), get(), get(), get()) }
 }

@@ -12,6 +12,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.ParcelUuid
 import androidx.core.content.ContextCompat
+import com.ridecomp.core.engine.sensors.BleConfig
 import com.ridecomp.core.engine.sensors.BleScanner
 import com.ridecomp.core.engine.sensors.DiscoveredSensor
 import com.ridecomp.core.engine.sensors.SensorKind
@@ -33,7 +34,8 @@ internal fun Context.hasBlePermission(): Boolean {
 }
 
 /**
- * BLE scan filtered on HR / CSC / CP services (04-INTEGRATIONS §A.5). The scan stops after [timeoutMs] or
+ * BLE scan filtered on HR / CSC / CP services (04-INTEGRATIONS §A.5), or without a filter for "show all
+ * Bluetooth devices" (T12.2: named devices with a usable signal only). The scan stops after [timeoutMs] or
  * when the collector stops (`stopScan` in `awaitClose`, BAT-04, resource table 09 §1).
  */
 class AndroidBleScanner(private val context: Context) : BleScanner {
@@ -45,20 +47,28 @@ class AndroidBleScanner(private val context: Context) : BleScanner {
 
     // Permission is checked through hasPermission() before scanning (ScanSensorsUseCase.blocker).
     @SuppressLint("MissingPermission")
-    override fun scan(timeoutMs: Long): Flow<DiscoveredSensor> = callbackFlow {
+    override fun scan(timeoutMs: Long, isWide: Boolean): Flow<DiscoveredSensor> = callbackFlow {
         val scanner = requireNotNull(bluetooth?.bluetoothLeScanner) { "Bluetooth is off" }
         if (!hasPermission()) throw SecurityException("Bluetooth permission not granted")
         val callback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
-                trySend(result.toDiscovered())
+                val sensor = result.toDiscovered()
+                val isUsable =
+                    !isWide || (!sensor.name.isNullOrBlank() && sensor.rssiDbm >= BleConfig.WIDE_SCAN_MIN_RSSI_DBM)
+                if (isUsable) trySend(sensor)
             }
 
             override fun onScanFailed(errorCode: Int) {
                 close(IllegalStateException("BLE scan failed: $errorCode"))
             }
         }
-        val filters = (BleUuids.SERVICE_BY_KIND.values + BleUuids.FITNESS_MACHINE_SERVICE).map {
-            ScanFilter.Builder().setServiceUuid(ParcelUuid(it)).build()
+        // No filter for the wide scan: watches often share heart rate without advertising the service.
+        val filters = if (isWide) {
+            emptyList()
+        } else {
+            (BleUuids.SERVICE_BY_KIND.values + BleUuids.FITNESS_MACHINE_SERVICE).map {
+                ScanFilter.Builder().setServiceUuid(ParcelUuid(it)).build()
+            }
         }
         val settings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
         scanner.startScan(filters, settings, callback)

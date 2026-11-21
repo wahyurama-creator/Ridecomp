@@ -3,6 +3,8 @@ package com.ridecomp.core.usecase
 import com.ridecomp.core.engine.sensors.BleScanner
 import com.ridecomp.core.engine.sensors.DiscoveredSensor
 import com.ridecomp.core.engine.sensors.SavedSensor
+import com.ridecomp.core.engine.sensors.SensorProbe
+import com.ridecomp.core.engine.sensors.SensorProbeResult
 import com.ridecomp.core.engine.sensors.SensorRepository
 import com.ridecomp.core.engine.sensors.TrainerControl
 import com.ridecomp.core.engine.sensors.TrainerState
@@ -27,8 +29,19 @@ public class ScanSensorsUseCase(private val scanner: BleScanner) {
         else -> null
     }
 
-    /** Raw results (the same device repeats with new RSSI); the caller keeps one entry per address. */
-    public operator fun invoke(): Flow<DiscoveredSensor> = scanner.scan()
+    /**
+     * Raw results (the same device repeats with new RSSI); the caller keeps one entry per address. [isWide]
+     * lists every named device in reach (T12.2).
+     */
+    public operator fun invoke(isWide: Boolean = false): Flow<DiscoveredSensor> = scanner.scan(isWide = isWide)
+}
+
+/**
+ * Checks what a device found by the wide scan offers before it is paired (T12.2): with a supported
+ * service it becomes a normal sensor of those kinds; otherwise it is not saved.
+ */
+public class ProbeSensorUseCase(private val probe: SensorProbe) {
+    public suspend operator fun invoke(sensor: DiscoveredSensor): SensorProbeResult = probe.probe(sensor.address)
 }
 
 /** Pairs = saves a discovered sensor with auto-connect on (§A.5). */
