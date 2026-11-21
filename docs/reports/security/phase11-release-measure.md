@@ -9,9 +9,13 @@
 | Layar ride tidak berubah, tanpa kerja latar/GPS baru | Tidak ada WorkManager/alarm/service baru; unduhan peta hanya saat aplikasi terbuka (kode + uji T11.12) | ✅ |
 | Buka aplikasi (indikasi umum) | Cold start 5×: 300/279/284/278/283 ms, rata-rata **285 ms** | ✅ (tidak ada batas khusus) |
 | Kelancaran scroll (≥ 90% frame < 16 ms) | Setelan, Peta, dan tab Riwayat/Latihan/Rute: 1.170 frame, janky 2,74%, persentil 50/90/95/99 = 11/16/21/36 ms (sekitar 90% < 16 ms, batas pas) | ✅ dengan catatan |
-| Memori | Beranda setelah onboarding PSS 57,7 MB; setelah membuka layar-layar lalu kembali 84,6 MB (Java 15,7 / Native 26,6 / Graphics 14,6 MB, tanpa GC paksa) | ⏳ pembanding "detail terbuka vs sebelum Fase 11" belum bisa diukur |
-| Buka detail ride 1 jam < 1 dtk; memori saat detail terbuka naik < 20 MB; rekor durasi < 300 ms untuk ride 3 jam | Belum ada ride di HP (release tanpa GPS simulasi) | ⏳ diukur setelah uji lapangan A1–A7 pemilik |
+| Memori | Beranda setelah onboarding PSS 57,7 MB; setelah membuka layar-layar lalu kembali 84,6 MB | ℹ️ |
+| Buka detail ride < 1 dtk (ride simulasi 34 mnt, 11,7 km; jumlah titik grafik dibatasi ±300 sehingga ride 1 jam setara) | Rekaman layar release: konten tampil ±0,2 dtk setelah ketuk, peta lengkap ±0,5 dtk | ✅ |
+| Tidak ada frame > 700 ms; scroll detail ≥ 90% frame < 16 ms | 1.842 frame (buka detail + 3× scroll penuh): janky 2,33%, persentil 50/90/95/99 = 11/16/18/26 ms, frame terburuk **53 ms** | ✅ |
+| Memori saat detail terbuka naik < 20 MB | Daftar Riwayat 85,6 MB → detail terbuka (semua bagian sudah di-scroll) 104,7 MB = **+19,1 MB**; kembali ke daftar setelah 10 dtk 95,7 MB (±10 MB tertahan, terutama native/grafik: cache peta & gambar) | ⚠️ pas di batas; diukur terhadap layar daftar karena belum ada angka "sebelum Fase 11" di release |
+| Rekor durasi < 300 ms untuk ride 3 jam | JVM (laptop) median **3,8 ms** untuk 10.800 sampel (semua jendela jarak/kecepatan/power); perkiraan di HP low-end 10–30× lebih lambat ≈ 40–110 ms | ✅ (indikasi) |
 | Tanpa crash | Tidak ada FATAL | ✅ |
 
 **MobSF:** ditunda ke APK rilis gabungan Fase 11–13 (pilihan pemilik; butuh Docker).
-**Catatan:** HP kini memakai build release. Data debug lama tidak dikembalikan, dan bisa dikembalikan dari salinan bila build debug dipasang lagi untuk pengujian.
+**Uji lapangan disimulasikan** (pemilik sakit, atas permintaannya): lihat [`phase11-field-sim.md`](phase11-field-sim.md). Data ride dipindahkan ke release lewat fitur Backup/Restore aplikasi; data uji dihapus setelahnya.
+**Keadaan HP akhir:** build release 0.9.3 dengan dua ride asli pemilik (Gowes Pagi, Gowes Siang), sensor tersimpan, dan profil hasil restore; tanpa data uji. Salinan mentah data debug lama tetap ada di `~/RideComp-phone-backup-2026-11-21/`.

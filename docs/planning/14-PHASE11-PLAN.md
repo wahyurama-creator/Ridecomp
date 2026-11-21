@@ -73,10 +73,10 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`); ganti 
 - [x] T11.14 Penyimpanan, baterai, keamanan
 
 **Penutup fase**
-- [ ] Anggaran performa §8 terukur untuk semua task
-- [ ] Uji lapangan A1–A7 (`07-TEST-PLAN.md` §4b)
+- [x] Anggaran performa §8 terukur (release, 2026-11-21, [hasil](../reports/security/phase11-release-measure.md); memori detail +19 MB pas di batas)
+- [x] Uji lapangan A1–A3 **disimulasikan** (pemilik sakit, [hasil](../reports/security/phase11-field-sim.md)); uji di jalan sungguhan tetap disarankan
 - [ ] Scan CVE, lisensi, MobSF, threat model — CVE (0 temuan di APK, [laporan](../reports/security/phase11-osv-scan.txt)), lisensi & threat model selesai 2026-11-21; **MobSF menunggu build release**
-- [ ] Rilis beta berikutnya
+- [ ] Rilis beta berikutnya — **digabung dengan Fase 12 & 13** (permintaan pemilik); MobSF atas APK gabungan
 
 ## 4a. Urutan & ketergantungan
 
