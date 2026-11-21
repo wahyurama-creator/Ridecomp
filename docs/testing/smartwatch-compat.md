@@ -16,7 +16,7 @@ Hasil uji jam tangan sungguhan sebagai sensor detak jantung RideComp (`15-PHASE1
 |---|---|---|---|---|---|---|---|
 | Huawei Watch Fit 5 Pro | `HUAWEI WATCH HR-E57` (akhiran = 3 digit terakhir alamat BLE) | **A1** | Ya, langsung (filter `0x180D`) | 608/612 sampel 1 Hz berisi HR (4 kosong = detik pertama sebelum tersambung); 78–91 bpm duduk | 0 kali dalam 10:38 dan ±14 mnt | 53 % → 52 % dalam ±11 mnt (dibaca via Battery Service) | 2026-11-19 · Sony Xperia XZ F8331, Android 8.0, RAM 2,8 GB · debug 0.9.3 |
 | Huawei Watch Fit 5 Pro, berbagi HR **mati** | — | **B** | Tidak (pindai selesai 15 dtk, 0 hasil, pesan "Tidak ada sensor baru…") | — | — | — | sama |
-| Aolon (milik pemilik) | — | belum diuji | — | — | — | — | menunggu pemilik |
+| Aolon GTR 3 (aplikasi GloryFit) | `Aolon GTR3(ID-A05B)` (akhiran = 4 digit terakhir alamat BLE) | **B** | Tidak di pindai biasa (tidak mengiklankan `0x180D`); muncul di **Tampilkan semua perangkat Bluetooth** (T12.2) dengan sinyal kuat, hanya saat Bluetooth jam aktif & GloryFit ditutup | Tidak ada: setelah tersambung tidak ada Heart Rate Service (hanya layanan bawaan + layanan vendor GloryFit); RideComp menampilkan "tidak membagikan detak jantung" dan memutus | — | — | 2026-11-21 · realme RMX3830, Android 15 · release lokal 0.9.3 (T12.2) |
 
 ## Perilaku RideComp yang teramati (Huawei Watch Fit 5 Pro)
 
@@ -27,10 +27,17 @@ Hasil uji jam tangan sungguhan sebagai sensor detak jantung RideComp (`15-PHASE1
 - Jam tangan juga mengirim notifikasi pada layanan **HID**; Android mengabaikannya (`bta_gattc_process_indicate, ignore HID ind/notificiation` di logcat). Tidak berdampak pada HR.
 - Nilai HR yang sama pernah bertahan sampai 27 dtk saat duduk. Karena RideComp menyimpan nilai terakhir per detik, frekuensi kirim asli jam tangan belum terukur; dipastikan di uji lapangan W2 (ride sungguhan, HR naik-turun) atau dengan nRF Connect.
 
+## Perilaku RideComp yang teramati (Aolon GTR 3)
+
+- Pindai biasa (filter HR/CSC/CP/FTMS): 0 hasil, juga setelah GloryFit dihentikan paksa.
+- Pindai luas: jam baru terlihat saat Bluetooth jam aktif dan tidak sedang dipegang GloryFit; pada percobaan sebelumnya (94–127 iklan mentah per pindai) jam tidak termasuk.
+- **Periksa:** sambung → discover services ±0,6 dtk → `close()` + `GATT_Disconnect` → pesan "Aolon GTR3(ID-A05B) tidak membagikan detak jantung…". Tidak dipasangkan (bonding) dan tidak disimpan.
+- Kesimpulan: GTR 3 tidak bisa dipakai sebagai sensor HR standar; satu-satunya jalur adalah protokol vendor GloryFit (T12.5a, go/no-go).
+
 ## Cara menguji jam tangan berikutnya
 
 1. Nyalakan berbagi/broadcast HR di jam tangan.
-2. RideComp → Sensor → Cari sensor. Tidak muncul → buka **nRF Connect** → SCAN: ada `0x180D` di iklan (A1) atau baru setelah CONNECT (A2)?
+2. RideComp → Sensor → Cari sensor. Tidak muncul → nyalakan **Tampilkan semua perangkat Bluetooth**, cari lagi, lalu **Periksa** jam tangan (T12.2); atau **nRF Connect** → SCAN: ada `0x180D` di iklan (A1) atau baru setelah CONNECT (A2)?
 3. Pasangkan, mulai ride, rekam ≥ 10 menit, simpan.
 4. Debug build: salin DB (`adb exec-out run-as com.ridecomp.app cat databases/ridecomp.db`) lalu hitung `track_points.hr` kosong/terisi.
 5. Matikan berbagi HR di tengah ride, lalu nyalakan lagi: rekaman jalan terus, HR pulih otomatis.
