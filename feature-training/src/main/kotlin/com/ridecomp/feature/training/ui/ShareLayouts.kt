@@ -57,6 +57,7 @@ import com.ridecomp.ui.map.RouteSnapshot
 import com.ridecomp.ui.theme.RideCompTheme
 import com.ridecomp.ui.theme.ShareCardColors
 import com.ridecomp.ui.theme.ThemeMode
+import com.ridecomp.ui.theme.WindowWidthClass
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -113,7 +114,7 @@ internal fun ReferenceCard(state: ShareCardUiState, maps: ShareMaps, modifier: M
     val totals = state.data?.activity?.totals ?: return
     val formatter = remember(state.unitSystem) { UnitFormatter(state.unitSystem) }
     val stats = state.stats.map { CardStat(stringResource(it.labelRes()), it.value(totals, formatter)) }
-    RideCompTheme(themeMode = ThemeMode.DARK) {
+    RideCompTheme(themeMode = ThemeMode.DARK, widthClass = WindowWidthClass.REGULAR) {
         val ink = stickerInk(RideCompTheme.colors.accent)
         BoxWithConstraints(modifier = modifier) {
             val parts = CardParts(state, stats, ink, maxWidth / CARD_UNITS, maps)

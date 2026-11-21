@@ -77,7 +77,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 - Tanpa dependency Gradle baru (R2). Bila otomatisasi penuh di CI diinginkan nanti → ajukan Roborazzi/Paparazzi terpisah (DEP-02).
 
 #### T13.3 Fondasi
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [ ] **Status:** kode selesai 2026-11-21 (`WindowWidthClass`, `AdaptiveDimens`, `@SmallScreenPreviews`, `MessageState` bisa di-scroll; D-143); **bukti compare 412/390/360 dp menunggu perangkat uji** (baseline dari `49f9141`) · Feature Report: [`T13.3-size-foundation.md`](../reports/features/T13.3-size-foundation.md)
 - `WindowWidthClass` + `COMPACT_MAX_WIDTH_DP = 360` di `:ui-common` (konstanta di satu tempat); `LocalWindowWidthClass` diisi di `RideCompTheme`.
 - `RideCompDimens` → `data class` + `Regular` (nilai sekarang, **disalin tanpa perubahan**) + `Compact`; `RideCompTheme.dimens`. Migrasi pemakaian `RideCompDimens.x` → `RideCompTheme.dimens.x` bertahap; selama migrasi keduanya menunjuk nilai `Regular` yang sama.
 - Layar yang sekarang membaca `LocalConfiguration`/`BoxWithConstraints` untuk lebar dialihkan ke `LocalWindowWidthClass` (perilaku `REGULAR` tetap).

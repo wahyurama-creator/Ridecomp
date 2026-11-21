@@ -11,14 +11,14 @@ Alat untuk membuktikan bahwa perubahan Fase 13 **tidak mengubah tampilan di 412,
 ## Langkah
 
 ```bash
-# 1. Baseline: build dari commit SEBELUM perubahan (untuk Fase 13: merge T13.2, sebelum T13.3)
+# 1. Baseline: build dari commit SEBELUM perubahan (untuk Fase 13: 49f9141 = merge T13.2, sebelum T13.3)
 git checkout <commit-baseline> && ./gradlew :app:assembleDebug
-adb install -r app/build/outputs/apk/debug/app-debug.apk
+adb install -r app/build/outputs/apk/debug/app-arm64-v8a-debug.apk   # sesuai ABI HP (armeabi-v7a untuk HP 32-bit)
 scripts/screens/capture.sh base-id-dark            # 412, 390, 360 dp
 
 # 2. Hasil: build task yang diuji
 git checkout <branch-task> && ./gradlew :app:assembleDebug
-adb install -r app/build/outputs/apk/debug/app-debug.apk
+adb install -r app/build/outputs/apk/debug/app-arm64-v8a-debug.apk
 scripts/screens/capture.sh t13x-id-dark
 
 # 3. Bandingkan: harus "All screens identical"
