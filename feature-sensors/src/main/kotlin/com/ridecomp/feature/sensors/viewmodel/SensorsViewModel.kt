@@ -14,6 +14,7 @@ import com.ridecomp.core.usecase.ScanBlocker
 import com.ridecomp.core.usecase.ScanSensorsUseCase
 import com.ridecomp.ui.udf.NoEffect
 import com.ridecomp.ui.udf.UdfViewModel
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -151,7 +152,9 @@ class SensorsViewModel(
             scanSensors(isWide = currentState.isWideScan)
                 .catch { updateState { copy(hasScanFailed = true) } }
                 .onCompletion { cause ->
-                    // Stopped by the rider (cancelled) or failed: no "nothing found" note.
+                    // Cancelled scans are settled by stopScan: a late completion must not end a newer scan.
+                    if (cause is CancellationException) return@onCompletion
+                    // Failed: no "nothing found" note.
                     updateState { copy(isScanning = false, hasFoundNothing = cause == null && discovered.isEmpty()) }
                 }
                 .collect { result ->
@@ -166,6 +169,7 @@ class SensorsViewModel(
     private fun stopScan() {
         scanJob?.cancel()
         scanJob = null
+        updateState { copy(isScanning = false) }
     }
 
     private fun confirmForget() {

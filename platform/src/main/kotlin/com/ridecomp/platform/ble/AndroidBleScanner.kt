@@ -12,10 +12,10 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.ParcelUuid
 import androidx.core.content.ContextCompat
-import com.ridecomp.core.engine.sensors.BleConfig
 import com.ridecomp.core.engine.sensors.BleScanner
 import com.ridecomp.core.engine.sensors.DiscoveredSensor
 import com.ridecomp.core.engine.sensors.SensorKind
+import com.ridecomp.core.engine.sensors.isWideScanCandidate
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -35,8 +35,8 @@ internal fun Context.hasBlePermission(): Boolean {
 
 /**
  * BLE scan filtered on HR / CSC / CP services (04-INTEGRATIONS §A.5), or without a filter for "show all
- * Bluetooth devices" (T12.2: named devices with a usable signal only). The scan stops after [timeoutMs] or
- * when the collector stops (`stopScan` in `awaitClose`, BAT-04, resource table 09 §1).
+ * Bluetooth devices" (T12.2: named devices in reach, nameless ones only right next to the phone). The scan
+ * stops after [timeoutMs] or when the collector stops (`stopScan` in `awaitClose`, BAT-04, resource table 09 §1).
  */
 class AndroidBleScanner(private val context: Context) : BleScanner {
     private val bluetooth = context.getSystemService(BluetoothManager::class.java)?.adapter
@@ -53,9 +53,7 @@ class AndroidBleScanner(private val context: Context) : BleScanner {
         val callback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 val sensor = result.toDiscovered()
-                val isUsable =
-                    !isWide || (!sensor.name.isNullOrBlank() && sensor.rssiDbm >= BleConfig.WIDE_SCAN_MIN_RSSI_DBM)
-                if (isUsable) trySend(sensor)
+                if (!isWide || isWideScanCandidate(sensor)) trySend(sensor)
             }
 
             override fun onScanFailed(errorCode: Int) {

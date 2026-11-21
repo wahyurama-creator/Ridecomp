@@ -35,6 +35,7 @@
     <string name="sensors_wide_scan">Show all Bluetooth devices</string>
     <string name="sensors_wide_scan_hint">For smartwatches and devices that do not announce a sensor. Each device is checked before it is saved.</string>
     <string name="sensors_check">Check</string>
+    <string name="sensors_unnamed_device">Unnamed device (very close)</string>
     <string name="sensors_kind_unchecked">Not checked yet</string>
     <string name="sensors_checking">Checking…</string>
     <string name="sensors_probe_none">%1$s does not share heart rate or bike data over standard Bluetooth. It may only work with its own app.</string>

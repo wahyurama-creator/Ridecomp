@@ -350,7 +350,9 @@ private fun FoundSensorCard(sensor: DiscoveredSensor, probingAddress: String?, o
     }
     SensorCard(
         iconKind = sensor.kinds.firstOrNull(),
-        title = sensor.name ?: stringResource(R.string.sensors_unnamed),
+        title = sensor.name ?: stringResource(
+            if (needsCheck) R.string.sensors_unnamed_device else R.string.sensors_unnamed,
+        ),
         subtitle = stringResource(
             R.string.sensors_subtitle,
             kinds,

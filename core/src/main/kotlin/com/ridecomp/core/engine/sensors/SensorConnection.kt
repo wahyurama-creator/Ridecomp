@@ -29,6 +29,19 @@ public object BleConfig {
      * rider's own watch or sensor.
      */
     public const val WIDE_SCAN_MIN_RSSI_DBM: Int = -90
+
+    /**
+     * A device without a name is still listed when it is this close (practically touching the phone, like a
+     * watch on the wrist holding it): many watches advertise without a name (device test of T12.2).
+     */
+    public const val WIDE_SCAN_NAMELESS_MIN_RSSI_DBM: Int = -60
+}
+
+/** Whether the wide scan lists [sensor] (T12.2): named and in reach, or nameless but right next to the phone. */
+public fun isWideScanCandidate(sensor: DiscoveredSensor): Boolean = if (sensor.name.isNullOrBlank()) {
+    sensor.rssiDbm >= BleConfig.WIDE_SCAN_NAMELESS_MIN_RSSI_DBM
+} else {
+    sensor.rssiDbm >= BleConfig.WIDE_SCAN_MIN_RSSI_DBM
 }
 
 /** Reconnect backoff for one sensor: never gives up during a ride, never retries faster than this. */

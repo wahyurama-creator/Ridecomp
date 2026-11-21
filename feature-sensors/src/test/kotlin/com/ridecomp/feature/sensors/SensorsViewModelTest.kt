@@ -116,6 +116,21 @@ class SensorsViewModelTest {
     }
 
     @Test
+    fun `switching to all devices during a scan restarts it, stopping ends it`() {
+        scanner.isEndless = true
+        val viewModel = viewModel()
+
+        viewModel.onEvent(SensorsUiEvent.StartScan)
+        viewModel.onEvent(SensorsUiEvent.WideScan(isOn = true))
+        assertTrue(viewModel.uiState.value.isScanning)
+        assertTrue(viewModel.uiState.value.isWideScan)
+
+        viewModel.onEvent(SensorsUiEvent.StopScan)
+        assertFalse(viewModel.uiState.value.isScanning)
+        assertFalse(viewModel.uiState.value.hasFoundNothing)
+    }
+
+    @Test
     fun `missing permission or bluetooth off blocks the scan`() {
         scanner.isPermitted = false
         val viewModel = viewModel()
