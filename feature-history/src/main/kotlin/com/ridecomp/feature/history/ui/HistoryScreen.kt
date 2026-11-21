@@ -184,7 +184,8 @@ private fun ActivitiesTab(
 @Composable
 private fun MonthCard(month: PeriodTotals, format: UnitFormatter) {
     RideCompCard {
-        Row {
+        // Below 360 dp a gap keeps "1.234,5 km" off the next column (audit T13.1 #2); none above (R1).
+        Row(horizontalArrangement = Arrangement.spacedBy(RideCompTheme.dimens.statColumnGap)) {
             MonthStat(
                 stringResource(R.string.history_month),
                 "${format.distance(month.distanceM)} ${format.distanceUnit}",

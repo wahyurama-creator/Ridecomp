@@ -48,6 +48,7 @@ import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
 import com.ridecomp.ui.theme.RideCompDimens
 import com.ridecomp.ui.theme.RideCompTheme
+import com.ridecomp.ui.theme.WindowWidthClass
 
 /**
  * First screen of onboarding (T10.12, D-105): the mark, a short promise, a sample of the ride screen and
@@ -78,7 +79,8 @@ fun WelcomeStep(onStart: () -> Unit) {
                 Column(verticalArrangement = Arrangement.spacedBy(RideCompDimens.blockGap)) {
                     Brand()
                     Headline()
-                    SampleRideCard()
+                    // The sample card is only a picture: below 360 dp it gives way to the button (T13.5).
+                    if (RideCompTheme.widthClass == WindowWidthClass.REGULAR) SampleRideCard()
                     Column(verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm)) {
                         WELCOME_FEATURES.forEach { Feature(it) }
                     }
@@ -147,7 +149,10 @@ private fun Headline() {
                 append(" ")
                 withStyle(SpanStyle(color = colors.accent)) { append(accent) }
             },
-            style = RideCompTheme.typography.display,
+            style = RideCompTheme.typography.display.copy(
+                fontSize = RideCompTheme.dimens.displaySize,
+                lineHeight = RideCompTheme.dimens.displayLineHeight,
+            ),
             color = colors.textPrimary,
             modifier = Modifier.semantics { heading() },
         )

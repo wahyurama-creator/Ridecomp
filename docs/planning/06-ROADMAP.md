@@ -220,12 +220,12 @@ Rencana, keputusan R1–R4, prinsip teknis, risiko, dan DoD: **`16-PHASE13-PLAN.
 
 **13B — Layar prioritas**
 - [x] T13.4 Layar ride & persiapan ride. · [Feature Report](../reports/features/T13.4-ride-screens.md)
-- [ ] T13.5 Beranda, onboarding & sambutan.
+- [x] T13.5 Beranda, onboarding & sambutan. · [Feature Report](../reports/features/T13.5-T13.8-audit-fixes.md)
 
 **13C — Layar lain**
-- [ ] T13.6 Riwayat & detail ride.
-- [ ] T13.7 Rute, sensor, latihan.
-- [ ] T13.8 Setelan & sub-layar.
+- [x] T13.6 Riwayat & detail ride. · [Feature Report](../reports/features/T13.5-T13.8-audit-fixes.md)
+- [x] T13.7 Rute, sensor, latihan. · [Feature Report](../reports/features/T13.5-T13.8-audit-fixes.md)
+- [x] T13.8 Setelan & sub-layar. · [Feature Report](../reports/features/T13.5-T13.8-audit-fixes.md)
 
 ## Ide lanjutan (bank ide, belum dijadwalkan)
 Ide yang sudah terwujud dicentang beserta task-nya; sisanya dipindah ke fase bila dipilih pemilik.
