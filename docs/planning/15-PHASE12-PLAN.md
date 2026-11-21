@@ -1,6 +1,6 @@
 # 15 — Rencana Fase 12: Detak Jantung dari Smartwatch
 
-**Status:** rencana (belum dikerjakan). Disusun 2026-11-19 atas permintaan pemilik. Dikerjakan **setelah Fase 11** (`14-PHASE11-PLAN.md`), kecuali pemilik mendahulukan T12.1–T12.3 yang kecil.
+**Status:** ✅ ditutup 2026-11-21: 5/7 selesai, T12.4 & T12.5c ditunda (D-139). Disusun 2026-11-19 atas permintaan pemilik. Dikerjakan **setelah Fase 11** (`14-PHASE11-PLAN.md`), kecuali pemilik mendahulukan T12.1–T12.3 yang kecil.
 **Acuan:** `06-ROADMAP.md`, `04-INTEGRATIONS.md` §A (BLE), `11-SECURITY-RULES.md` (input BLE), `09-RELIABILITY-RULES.md` §1 (BLE GATT), `10-FEATURE-CHECKLIST.md`.
 
 ---
@@ -47,12 +47,12 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 - [x] T12.3 UX jam tangan: label/ikon "Jam tangan" & panduan menyalakan broadcast per merek
 
 **12B — Wear OS (opsional)**
-- [ ] T12.4 Aplikasi pendamping Wear OS (butuh persetujuan dependency, S4)
+- [ ] ⏸ T12.4 Aplikasi pendamping Wear OS (butuh persetujuan dependency, S4)
 
 **12C — Jam tangan tanpa broadcast (eksperimental, Aolon)**
 - [x] T12.5a Identifikasi protokol Aolon (go/no-go)
 - [x] T12.5b Implementasi sensor "Jam tangan (eksperimental)" — hanya bila T12.5a lolos
-- [ ] T12.5c Uji ride sungguhan ±30 menit
+- [ ] ⏸ T12.5c Uji ride sungguhan ±30 menit
 
 **Penutup fase**
 - [ ] Threat model diperbarui (input BLE baru, protokol tidak resmi)
@@ -81,7 +81,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 - Teks en/id.
 
 #### T12.4 Aplikasi pendamping Wear OS (opsional)
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [ ] **Status:** ⏸ **ditunda** 2026-11-21 atas keputusan pemilik (D-139): butuh dependency baru dan jam Wear OS untuk uji, yang belum ada. Dibuka lagi bila ada jam Wear OS · Feature Report: —
 - Modul baru `:wear` (aplikasi kecil di jam tangan) membaca HR lewat Health Services dan mengirim ke HP; RideComp menerima sebagai sumber HR.
 - **Butuh persetujuan** dependency (Wear Compose, Health Services, Wearable Data Layer yang memerlukan Google Play Services) dan jam tangan Wear OS untuk uji. Alternatif tanpa dependency HP: aplikasi jam tangan menjadi periferal BLE 0x180D sendiri (perlu dicek dukungan peripheral mode di jam tangan).
 - Distribusi: APK Wear OS terpisah di GitHub Release.
@@ -102,7 +102,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 - Tanpa dependency baru; parser diuji unit dengan rekaman paket asli.
 
 #### T12.5c Uji ride sungguhan
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [ ] **Status:** ⏸ **ditunda** 2026-11-21 atas keputusan pemilik (D-139): pemilik sedang sakit. Fitur tetap berlabel eksperimental sampai uji ini selesai; uji dalam ruangan 10,5 mnt sudah lolos (T12.5b) · Feature Report: —
 - Ride ±30 menit: bandingkan dengan sabuk HR (bila ada), catat jeda data, putus-sambung, baterai jam tangan & HP, zona HR & analisa T11.5 tetap benar.
 
 ## 6. Risiko

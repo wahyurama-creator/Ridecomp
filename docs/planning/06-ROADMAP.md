@@ -14,7 +14,7 @@ Kerjakan **berurutan**. **Setiap task** mengikuti alur di `10-FEATURE-CHECKLIST.
 | 7, 9 | Fitur lanjutan, trainer & widget | Suara, kembali ke start, komponen sepeda, rencana latihan, smart trainer, widget | ✅ Selesai (7/7) |
 | 10 | Rilis beta & masukan pengguna | Open source, rilis 0.9.0–0.9.3, galeri share, sepeda lipat, cek pembaruan, onboarding baru | ✅ Selesai (7/7) |
 | 11 | Analisa ride, usaha terbaik, tema & peta offline | Halaman detail ala analisa (kecepatan, elevasi, HR, zona power), usaha terbaik, tema terang/gelap, peta tanpa internet (`14-PHASE11-PLAN.md`) | ✅ Selesai (15/15; rilis beta & MobSF digabung dengan Fase 12–13) |
-| 12 | Detak jantung dari smartwatch | Jam tangan broadcast HR, pemindaian luas, panduan per merek, Wear OS (opsional), Aolon eksperimental (`15-PHASE12-PLAN.md`) | 🟡 Berjalan (5/7) |
+| 12 | Detak jantung dari smartwatch | Jam tangan broadcast HR, pemindaian luas, panduan per merek, Wear OS (opsional), Aolon eksperimental (`15-PHASE12-PLAN.md`) | ✅ Selesai (5/7; T12.4 & T12.5c ditunda, D-139; rilis beta & MobSF digabung dengan Fase 13) |
 | 13 | Tampilan responsif layar kecil | Semua layar benar di 320 dp; 360 dp ke atas tidak berubah (bukti screenshot) (`16-PHASE13-PLAN.md`) | ⬜ Belum mulai (0/8) |
 
 Spesifikasi detail fitur tambahan: `12-FEATURE-SPECS.md`.
@@ -201,12 +201,12 @@ Rencana, keputusan S1–S4, risiko, dan DoD: **`15-PHASE12-PLAN.md`** (D-114).
 - [x] T12.3 UX jam tangan: label/ikon & panduan menyalakan broadcast HR per merek. · [Feature Report](../reports/features/T12.3-watch-guide.md)
 
 **12B — Wear OS (opsional)**
-- [ ] T12.4 Aplikasi pendamping Wear OS (butuh persetujuan dependency).
+- [ ] ⏸ T12.4 Aplikasi pendamping Wear OS (butuh persetujuan dependency). Ditunda (D-139)
 
 **12C — Jam tangan tanpa broadcast (eksperimental, Aolon milik pemilik)**
 - [x] T12.5a Identifikasi protokol Aolon (go/no-go: HR real-time ≥ 1 nilai per 1–2 dtk). Lolos bersyarat (D-135)
 - [x] T12.5b Implementasi sensor "Jam tangan (eksperimental)" (hanya bila T12.5a lolos). (D-136)
-- [ ] T12.5c Uji ride sungguhan ±30 menit.
+- [ ] ⏸ T12.5c Uji ride sungguhan ±30 menit. Ditunda sampai pemilik sehat (D-139)
 
 **DoD:** lihat `15-PHASE12-PLAN.md` §8.
 
