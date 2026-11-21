@@ -1,6 +1,6 @@
 # 16 — Rencana Fase 13: Tampilan Responsif untuk Layar Kecil
 
-**Status:** berjalan (T13.1–T13.3 selesai 2026-11-21). Disusun 2026-11-19 atas permintaan kolaborator (pembagian tugas dengan pemilik); **disetujui pemilik 2026-11-20**. Dikerjakan **setelah Fase 11 dan 12** (D-124).
+**Status:** berjalan (T13.1–T13.4 selesai 2026-11-21). Disusun 2026-11-19 atas permintaan kolaborator (pembagian tugas dengan pemilik); **disetujui pemilik 2026-11-20**. Dikerjakan **setelah Fase 11 dan 12** (D-124).
 **Acuan:** `13-UI-SCREENS.md` (frame acuan 390 dp; wajib benar di 360 dp dan ≥ 412 dp), `02-DESIGN.md`, `08-CODING-RULES.md` §6 (UI-01…UI-09), `10-FEATURE-CHECKLIST.md`, `14-PHASE11-PLAN.md` §8 (anggaran performa).
 
 ---
@@ -46,7 +46,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 - [x] T13.3 Fondasi: `WindowWidthClass`, token `Regular`/`Compact`, `@SmallScreenPreviews`
 
 **13B — Layar prioritas**
-- [ ] T13.4 Layar ride & persiapan ride (`RideScreen`, `PreRideScreen`, `SummaryScreen`, insiden)
+- [x] T13.4 Layar ride & persiapan ride (`RideScreen`, `PreRideScreen`, `SummaryScreen`, insiden)
 - [ ] T13.5 Beranda, onboarding & sambutan (`HomeScreen`, `OnboardingScreen`)
 
 **13C — Layar lain**
@@ -86,7 +86,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 - Bukti: compare T13.2 identik di 412/390/360 dp.
 
 #### T13.4 Layar ride & persiapan ride (prioritas tertinggi)
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-21 (D-145): SELESAI di layar jeda terlihat penuh di 320 × 569 dp; cincin GPS & hitung mundur lebih kecil di `COMPACT` · Feature Report: [`T13.4-ride-screens.md`](../reports/features/T13.4-ride-screens.md)
 - Angka utama (`dataValueMaxSize`) diskalakan agar muat 320 dp tanpa terpotong (mis. "188,8" km), label tetap terbaca; grid data tetap 2 kolom bila muat, jika tidak tinggi baris dikurangi, bukan teks.
 - Bar PAUSE/LAP tetap ≥ 72 dp tinggi; lebar LAP dikecilkan di `COMPACT` bila perlu.
 - Banner peringatan (GPS hilang, dll.) membungkus 2 baris tanpa menutupi angka utama.

@@ -219,7 +219,7 @@ Rencana, keputusan R1–R4, prinsip teknis, risiko, dan DoD: **`16-PHASE13-PLAN.
 - [x] T13.3 Fondasi: `WindowWidthClass`, token `Regular`/`Compact`, preview layar kecil. 412/390/360 dp identik (D-143) · [Feature Report](../reports/features/T13.3-size-foundation.md)
 
 **13B — Layar prioritas**
-- [ ] T13.4 Layar ride & persiapan ride.
+- [x] T13.4 Layar ride & persiapan ride. · [Feature Report](../reports/features/T13.4-ride-screens.md)
 - [ ] T13.5 Beranda, onboarding & sambutan.
 
 **13C — Layar lain**
