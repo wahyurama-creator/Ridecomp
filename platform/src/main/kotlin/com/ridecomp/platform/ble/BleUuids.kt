@@ -24,6 +24,14 @@ object BleUuids {
     val BATTERY_SERVICE: UUID = of(0x180F)
     val BATTERY_LEVEL: UUID = of(0x2A19)
 
+    /**
+     * GloryFit watch protocol (Aolon GTR 3, T12.5b, 04-INTEGRATIONS §A.5a): vendor UUIDs on the same base,
+     * commands to 0x33F1, heart rate notified on 0x33F2.
+     */
+    val GLORYFIT_SERVICE: UUID = of(0x55FF)
+    val GLORYFIT_COMMAND: UUID = of(0x33F1)
+    val GLORYFIT_DATA: UUID = of(0x33F2)
+
     /** Client Characteristic Configuration descriptor, written to enable notifications. */
     val CCCD: UUID = of(0x2902)
 

@@ -54,6 +54,7 @@ public class PairSensorUseCase(private val repository: SensorRepository, private
                 kinds = sensor.kinds,
                 createdAtMs = clock.nowMs(),
                 isTrainer = sensor.isTrainer,
+                isGloryFitWatch = sensor.isGloryFitWatch,
             ),
         )
     }

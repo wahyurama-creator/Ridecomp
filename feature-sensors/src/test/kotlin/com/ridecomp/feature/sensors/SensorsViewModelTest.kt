@@ -91,6 +91,23 @@ class SensorsViewModelTest {
     }
 
     @Test
+    fun `a GloryFit watch found by checking is saved as an experimental heart rate sensor`() = runTest {
+        scanner.wideResults = listOf(gtr3)
+        probe.results[gtr3.address] =
+            SensorProbeResult.Supported(setOf(SensorKind.HEART_RATE), isTrainer = false, isGloryFitWatch = true)
+        val viewModel = viewModel()
+        viewModel.onEvent(SensorsUiEvent.WideScan(isOn = true))
+        viewModel.onEvent(SensorsUiEvent.StartScan)
+
+        viewModel.onEvent(SensorsUiEvent.Pair(viewModel.uiState.value.discovered.single(), fallbackName = "Sensor"))
+
+        val saved = repository.getAutoConnect().single()
+        assertEquals(setOf(SensorKind.HEART_RATE), saved.kinds)
+        assertTrue(saved.isGloryFitWatch)
+        assertNull(viewModel.uiState.value.probeFailure)
+    }
+
+    @Test
     fun `scan lists found sensors strongest first and ends by itself`() {
         scanner.results = listOf(hrm, powerMeter, hrm)
         val viewModel = viewModel()

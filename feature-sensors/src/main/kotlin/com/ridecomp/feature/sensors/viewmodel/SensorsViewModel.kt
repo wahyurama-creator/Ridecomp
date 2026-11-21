@@ -122,7 +122,14 @@ class SensorsViewModel(
             val name = sensor.name ?: fallbackName
             when (val result = probeSensor(sensor)) {
                 is SensorProbeResult.Supported -> {
-                    pairSensor(sensor.copy(kinds = result.kinds, isTrainer = result.isTrainer), fallbackName)
+                    pairSensor(
+                        sensor.copy(
+                            kinds = result.kinds,
+                            isTrainer = result.isTrainer,
+                            isGloryFitWatch = result.isGloryFitWatch,
+                        ),
+                        fallbackName,
+                    )
                     updateState { copy(probingAddress = null) }
                 }
                 SensorProbeResult.NoSupportedService ->

@@ -70,6 +70,8 @@ public data class SavedSensor(
     val createdAtMs: Long = 0,
     /** A smart trainer (FTMS): power/cadence/speed and ERG control (T9.1). */
     val isTrainer: Boolean = false,
+    /** A GloryFit watch (Aolon GTR 3): heart rate through its own protocol, experimental (T12.5b). */
+    val isGloryFitWatch: Boolean = false,
 )
 
 /** True when the last known battery level is below the warning threshold (§A.4). */
@@ -84,6 +86,8 @@ public data class DiscoveredSensor(
     val rssiDbm: Int,
     /** Advertises the Fitness Machine service (T9.1). */
     val isTrainer: Boolean = false,
+    /** Turned out to be a GloryFit watch when checked (T12.5b). */
+    val isGloryFitWatch: Boolean = false,
 )
 
 /**
@@ -116,8 +120,15 @@ public interface BleScanner {
 
 /** What a device turned out to offer once connected (T12.2). */
 public sealed interface SensorProbeResult {
-    /** At least one service RideComp reads (heart rate, speed/cadence, power, smart trainer). */
-    public data class Supported(val kinds: Set<SensorKind>, val isTrainer: Boolean) : SensorProbeResult
+    /**
+     * At least one service RideComp reads (heart rate, speed/cadence, power, smart trainer), or the heart rate
+     * of a GloryFit watch (T12.5b).
+     */
+    public data class Supported(
+        val kinds: Set<SensorKind>,
+        val isTrainer: Boolean,
+        val isGloryFitWatch: Boolean = false,
+    ) : SensorProbeResult
 
     /** Connected, but none of those services: e.g. a watch that keeps its heart rate to its own app. */
     public data object NoSupportedService : SensorProbeResult

@@ -28,6 +28,16 @@ class SensorMapperTest {
     }
 
     @Test
+    fun `a GloryFit watch is stored as heart rate with its own flag, older versions read it as heart rate`() {
+        val watch = SavedSensor("78:02", "Aolon GTR3", setOf(SensorKind.HEART_RATE), isGloryFitWatch = true)
+
+        val entity = watch.toEntity()
+
+        assertEquals("hr,gloryfit", entity.services)
+        assertEquals(watch, entity.toDomain())
+    }
+
+    @Test
     fun `unknown service names are skipped`() {
         assertEquals(setOf(SensorKind.HEART_RATE), "hr, future,".toSensorKinds())
     }

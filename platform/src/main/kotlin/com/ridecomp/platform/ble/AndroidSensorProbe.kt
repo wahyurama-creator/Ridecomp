@@ -11,8 +11,9 @@ import kotlinx.coroutines.withContext
 
 /**
  * Lists the services of a device found by the wide scan (T12.2): connect, discover, check for heart rate,
- * speed/cadence, power and the Fitness Machine service, then always `disconnect()` + `close()` so the device
- * is free again (resource table 09 §1). Bounded by the connect and GATT operation timeouts of [GattClient].
+ * speed/cadence, power, the Fitness Machine service and a GloryFit watch (T12.5b), then always
+ * `disconnect()` + `close()` so the device is free again (resource table 09 §1). Bounded by the connect and
+ * GATT operation timeouts of [GattClient].
  */
 class AndroidSensorProbe(
     private val context: Context,
@@ -33,10 +34,16 @@ class AndroidSensorProbe(
                 val isTrainer = client.hasService(BleUuids.FITNESS_MACHINE_SERVICE)
                 // A smart trainer gives power, cadence and speed through the Fitness Machine service (T9.1).
                 val allKinds = kinds + if (isTrainer) setOf(SensorKind.POWER, SensorKind.SPEED_CADENCE) else emptySet()
-                if (allKinds.isEmpty()) {
-                    SensorProbeResult.NoSupportedService
-                } else {
-                    SensorProbeResult.Supported(allKinds, isTrainer)
+                when {
+                    allKinds.isNotEmpty() -> SensorProbeResult.Supported(allKinds, isTrainer)
+                    // Standard heart rate wins; otherwise a GloryFit watch shares it its own way (T12.5b).
+                    client.hasService(BleUuids.GLORYFIT_SERVICE) ->
+                        SensorProbeResult.Supported(
+                            setOf(SensorKind.HEART_RATE),
+                            isTrainer = false,
+                            isGloryFitWatch = true,
+                        )
+                    else -> SensorProbeResult.NoSupportedService
                 }
             }
         } finally {
