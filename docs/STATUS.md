@@ -7,7 +7,7 @@
 - **Fase selesai:** 0–5, 7, 9, dan rilis beta & masukan pengguna (Fase 8/10). Ringkasan: [`planning/06-ROADMAP.md`](planning/06-ROADMAP.md).
 - **Fase berjalan:** **Fase 11 — Analisa ride, usaha terbaik, tema & peta offline.** Rencana lengkap: [`planning/14-PHASE11-PLAN.md`](planning/14-PHASE11-PLAN.md). Keputusan K1–K5 sudah dijawab (D-109…D-113).
 - **Task terakhir:** fix temuan StrictMode Fase 11 (selesai 2026-11-20, [laporan](reports/features/FIX-strictmode-phase11.md), D-132); sebelumnya T11.14. Semua task Fase 11 selesai.
-- **Task berikutnya:** **Penutup Fase 11**: anggaran performa §8 dengan build release, uji lapangan A1–A7, scan CVE/lisensi/MobSF/threat model, rilis beta. Build release menunggu persetujuan pemilik (semua fitur selesai dulu).
+- **Task berikutnya:** Fase 11 selesai kecuali rilis beta & MobSF (digabung dengan Fase 12–13). Tertunda atas permintaan pemilik: **redesign halaman Segmen baru**. Lalu Fase 12.
 
 ## Daftar centang Fase 11
 Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.md` §4 setiap kali task selesai.
