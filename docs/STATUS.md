@@ -6,8 +6,8 @@
 - **Rilis terakhir:** **0.9.3** (beta), 2026-11-18 · [GitHub Releases](https://github.com/wahyurama-creator/Ridecomp/releases). Skema DB **v10**.
 - **Fase selesai:** 0–5, 7, 9, dan rilis beta & masukan pengguna (Fase 8/10). Ringkasan: [`planning/06-ROADMAP.md`](planning/06-ROADMAP.md).
 - **Fase berjalan:** **Fase 13 — Tampilan responsif layar kecil.** Rencana lengkap: [`planning/16-PHASE13-PLAN.md`](planning/16-PHASE13-PLAN.md). Fase 12 ditutup 2026-11-21 (5/7; T12.4 & T12.5c ditunda, D-139).
-- **Task terakhir:** T12.3 — UX & panduan jam tangan dari PR #3 (YahyaWildan): label/ikon "Jam tangan", topik Bantuan per merek, tautan dari pesan pindai ([Feature Report](reports/features/T12.3-watch-guide.md), D-137); sebelumnya T12.5b sensor jam GloryFit ([Feature Report](reports/features/T12.5b-gloryfit-watch.md)).
-- **Task berikutnya:** **T13.1** Audit layar kecil (`planning/16-PHASE13-PLAN.md`). Ditunda: T12.5c (ride sungguhan Aolon, saat pemilik sehat), T12.4 Wear OS (saat ada jam Wear OS). Rilis gabungan Fase 11–13 + MobSF setelah Fase 13.
+- **Task terakhir:** T13.1 — Audit layar kecil di 320 dp & 360 dp (id/en, gelap/terang, Sony XZ): 0 P1, 4 P2 (Rute kosong, ringkasan bulan Riwayat, tombol SELESAI layar jeda, tombol Sambutan), 11 P3 ([Audit](testing/small-screen-audit.md), [Feature Report](reports/features/T13.1-small-screen-audit.md), D-140); sebelumnya penutupan Fase 12 (D-139).
+- **Task berikutnya:** **T13.2** Skrip screenshot pembanding + baseline 412/390/360 dp (`planning/16-PHASE13-PLAN.md`), lalu T13.3 fondasi `Regular`/`Compact`. Ditunda: T12.5c (ride sungguhan Aolon, saat pemilik sehat), T12.4 Wear OS (saat ada jam Wear OS). Rilis gabungan Fase 11–13 + MobSF setelah Fase 13.
 
 ## Daftar centang Fase 11
 Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.md` §4 setiap kali task selesai.
@@ -41,7 +41,7 @@ Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.m
 - [ ] ⏸ T12.5c Uji ride sungguhan — ditunda sampai pemilik sehat, D-139
 
 **Setelah Fase 12 — Fase 13: Tampilan responsif layar kecil** ([`planning/16-PHASE13-PLAN.md`](planning/16-PHASE13-PLAN.md), D-124):
-- [ ] T13.1 Audit layar kecil
+- [x] T13.1 Audit layar kecil · [Audit](testing/small-screen-audit.md) · [Feature Report](reports/features/T13.1-small-screen-audit.md)
 - [ ] T13.2 Skrip screenshot pembanding
 - [ ] T13.3 Fondasi ukuran `Regular`/`Compact`
 - [ ] T13.4 Layar ride & persiapan ride
