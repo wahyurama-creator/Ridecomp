@@ -7,7 +7,7 @@
 - **Fase selesai:** 0–5, 7, 9, dan rilis beta & masukan pengguna (Fase 8/10). Ringkasan: [`planning/06-ROADMAP.md`](planning/06-ROADMAP.md).
 - **Fase berjalan:** **Fase 13 — Tampilan responsif layar kecil.** Rencana lengkap: [`planning/16-PHASE13-PLAN.md`](planning/16-PHASE13-PLAN.md). Fase 12 ditutup 2026-11-21 (5/7; T12.4 & T12.5c ditunda, D-139).
 - **Task terakhir:** T13.5–T13.8 perbaikan audit layar kecil: Sambutan (tombol Mulai tanpa scroll), kartu bulan Riwayat, kolom kontak Keselamatan; 412/390/360 dp identik ([Feature Report](reports/features/T13.5-T13.8-audit-fixes.md), D-146).
-- **Task berikutnya:** **T13.5** Beranda, onboarding & sambutan (`planning/16-PHASE13-PLAN.md`); compare hanya layar yang diubah (`SCREENS_ONLY`). Ditunda: T12.5c, T12.4 Wear OS. Rilis gabungan Fase 11–13 + MobSF setelah Fase 13.
+- **Task berikutnya:** publikasi **0.10.0** (APK release sudah dibangun & ditandatangani, catatan [`releases/RELEASE-NOTES-0.10.0.md`](releases/RELEASE-NOTES-0.10.0.md), D-147) setelah konfirmasi pemilik; MobSF belum dijalankan. Ditunda: T12.5c, T12.4 Wear OS.
 
 ## Daftar centang Fase 11
 Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.md` §4 setiap kali task selesai.
