@@ -5,9 +5,9 @@
 ## Posisi saat ini
 - **Rilis terakhir:** **0.9.3** (beta), 2026-11-18 · [GitHub Releases](https://github.com/wahyurama-creator/Ridecomp/releases). Skema DB **v10**.
 - **Fase selesai:** 0–5, 7, 9, dan rilis beta & masukan pengguna (Fase 8/10). Ringkasan: [`planning/06-ROADMAP.md`](planning/06-ROADMAP.md).
-- **Fase berjalan:** **Fase 12 — Detak jantung dari smartwatch.** Rencana lengkap: [`planning/15-PHASE12-PLAN.md`](planning/15-PHASE12-PLAN.md). Fase 11 selesai ([`planning/14-PHASE11-PLAN.md`](planning/14-PHASE11-PLAN.md)).
+- **Fase berjalan:** **Fase 13 — Tampilan responsif layar kecil.** Rencana lengkap: [`planning/16-PHASE13-PLAN.md`](planning/16-PHASE13-PLAN.md). Fase 12 ditutup 2026-11-21 (5/7; T12.4 & T12.5c ditunda, D-139).
 - **Task terakhir:** T12.3 — UX & panduan jam tangan dari PR #3 (YahyaWildan): label/ikon "Jam tangan", topik Bantuan per merek, tautan dari pesan pindai ([Feature Report](reports/features/T12.3-watch-guide.md), D-137); sebelumnya T12.5b sensor jam GloryFit ([Feature Report](reports/features/T12.5b-gloryfit-watch.md)).
-- **Task berikutnya:** **T12.5c** ride sungguhan ±30 mnt dengan Aolon GTR 3 (menunggu pemilik sehat); **T12.4** Wear OS opsional (butuh persetujuan dependency, S4) atau dihentikan dengan alasan tercatat; lalu Fase 13.
+- **Task berikutnya:** **T13.1** Audit layar kecil (`planning/16-PHASE13-PLAN.md`). Ditunda: T12.5c (ride sungguhan Aolon, saat pemilik sehat), T12.4 Wear OS (saat ada jam Wear OS). Rilis gabungan Fase 11–13 + MobSF setelah Fase 13.
 
 ## Daftar centang Fase 11
 Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.md` §4 setiap kali task selesai.
@@ -35,10 +35,10 @@ Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.m
 - [x] T12.1 Uji kompatibilitas jam tangan · Huawei Watch Fit 5 Pro (A1, didukung), Aolon GTR 3 (B, tidak didukung lewat standar) · [Feature Report](reports/features/T12.1-smartwatch-compat.md)
 - [x] T12.2 Pemindaian luas · [Feature Report](reports/features/T12.2-wide-scan.md)
 - [x] T12.3 UX & panduan jam tangan · [Feature Report](reports/features/T12.3-watch-guide.md)
-- [ ] T12.4 Aplikasi pendamping Wear OS (opsional)
+- [ ] ⏸ T12.4 Aplikasi pendamping Wear OS (opsional) — ditunda, D-139
 - [x] T12.5a Identifikasi protokol Aolon (go/no-go) — GTR 3 / GloryFit, lolos bersyarat · [Feature Report](reports/features/T12.5a-aolon-protocol.md)
 - [x] T12.5b Sensor "Jam tangan (eksperimental)" · [Feature Report](reports/features/T12.5b-gloryfit-watch.md)
-- [ ] T12.5c Uji ride sungguhan
+- [ ] ⏸ T12.5c Uji ride sungguhan — ditunda sampai pemilik sehat, D-139
 
 **Setelah Fase 12 — Fase 13: Tampilan responsif layar kecil** ([`planning/16-PHASE13-PLAN.md`](planning/16-PHASE13-PLAN.md), D-124):
 - [ ] T13.1 Audit layar kecil
