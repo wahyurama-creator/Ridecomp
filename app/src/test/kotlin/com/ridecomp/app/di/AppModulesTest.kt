@@ -4,6 +4,7 @@ import com.ridecomp.app.AppViewModel
 import com.ridecomp.core.engine.backup.BackupManifestCodec
 import com.ridecomp.core.engine.safety.IncidentManager
 import com.ridecomp.core.engine.sensors.BleScanner
+import com.ridecomp.core.engine.sensors.SensorProbe
 import com.ridecomp.core.engine.sensors.SensorRepository
 import com.ridecomp.core.model.AppLanguage
 import com.ridecomp.core.model.BuiltInPlan
@@ -83,6 +84,7 @@ import com.ridecomp.core.testing.FakeRouteRepository
 import com.ridecomp.core.testing.FakeSafetyMessages
 import com.ridecomp.core.testing.FakeSafetyRepository
 import com.ridecomp.core.testing.FakeSegmentRepository
+import com.ridecomp.core.testing.FakeSensorProbe
 import com.ridecomp.core.testing.FakeSensorRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.testing.FakeShareCardFiles
@@ -187,6 +189,7 @@ class AppModulesTest {
         single<ExportedFileHandler> { FakeExportedFileHandler() }
         single<SensorRepository> { FakeSensorRepository() }
         single<BleScanner> { FakeBleScanner() }
+        single<SensorProbe> { FakeSensorProbe() }
         single<ActivityProfileRepository> { FakeActivityProfileRepository() }
         single<BikeRepository> { FakeBikeRepository() }
         single<BikeComponentRepository> { FakeBikeComponentRepository() }

@@ -121,6 +121,7 @@ import com.ridecomp.core.usecase.PairSensorUseCase
 import com.ridecomp.core.usecase.PerformIncidentActionUseCase
 import com.ridecomp.core.usecase.PerformRideActionUseCase
 import com.ridecomp.core.usecase.PreviewNewRecordsUseCase
+import com.ridecomp.core.usecase.ProbeSensorUseCase
 import com.ridecomp.core.usecase.ProcessStravaUploadsUseCase
 import com.ridecomp.core.usecase.QueueNewRidesForStravaUseCase
 import com.ridecomp.core.usecase.QueueStravaUploadUseCase
@@ -276,6 +277,7 @@ val useCaseModule = module {
     factory { SuggestExportFileNameUseCase(get(), get()) }
     factory { ObserveSavedSensorsUseCase(get()) }
     factory { ScanSensorsUseCase(get()) }
+    factory { ProbeSensorUseCase(get()) }
     factory { PairSensorUseCase(get(), get()) }
     factory { ForgetSensorUseCase(get()) }
     factory { ObserveDataPagesUseCase(get(), get()) }

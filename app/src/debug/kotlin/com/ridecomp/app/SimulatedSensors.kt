@@ -85,7 +85,7 @@ class DebugBleScanner(private val real: BleScanner, private val settings: Develo
 
     override fun hasPermission(): Boolean = settings.isSimulatingSensors || real.hasPermission()
 
-    override fun scan(timeoutMs: Long): Flow<DiscoveredSensor> = if (settings.isSimulatingSensors) {
+    override fun scan(timeoutMs: Long, isWide: Boolean): Flow<DiscoveredSensor> = if (settings.isSimulatingSensors) {
         flow {
             SimulatedSensors.ALL.forEach { sensor ->
                 delay(SimulatedSensors.FOUND_EVERY_MS)
@@ -93,7 +93,7 @@ class DebugBleScanner(private val real: BleScanner, private val settings: Develo
             }
         }
     } else {
-        real.scan(timeoutMs)
+        real.scan(timeoutMs, isWide)
     }
 }
 

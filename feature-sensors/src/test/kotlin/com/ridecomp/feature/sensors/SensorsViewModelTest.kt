@@ -2,14 +2,18 @@ package com.ridecomp.feature.sensors
 
 import com.ridecomp.core.engine.sensors.DiscoveredSensor
 import com.ridecomp.core.engine.sensors.SensorKind
+import com.ridecomp.core.engine.sensors.SensorProbeResult
 import com.ridecomp.core.testing.FakeBleScanner
 import com.ridecomp.core.testing.FakeClock
+import com.ridecomp.core.testing.FakeSensorProbe
 import com.ridecomp.core.testing.FakeSensorRepository
 import com.ridecomp.core.usecase.ForgetSensorUseCase
 import com.ridecomp.core.usecase.ObserveSavedSensorsUseCase
 import com.ridecomp.core.usecase.PairSensorUseCase
+import com.ridecomp.core.usecase.ProbeSensorUseCase
 import com.ridecomp.core.usecase.ScanBlocker
 import com.ridecomp.core.usecase.ScanSensorsUseCase
+import com.ridecomp.feature.sensors.viewmodel.ProbeFailure
 import com.ridecomp.feature.sensors.viewmodel.SensorsUiEvent
 import com.ridecomp.feature.sensors.viewmodel.SensorsViewModel
 import kotlin.test.AfterTest
@@ -30,6 +34,9 @@ import kotlinx.coroutines.test.setMain
 class SensorsViewModelTest {
     private val repository = FakeSensorRepository()
     private val scanner = FakeBleScanner()
+    private val probe = FakeSensorProbe()
+    private val watch = DiscoveredSensor("EE:FF", "Watch HR", emptySet(), -60)
+    private val gtr3 = DiscoveredSensor("11:22", "GTR 3", emptySet(), -55)
     private val hrm = DiscoveredSensor("AA:BB", "HRM-Dual", setOf(SensorKind.HEART_RATE), -70)
     private val powerMeter = DiscoveredSensor("CC:DD", null, setOf(SensorKind.POWER), -50)
 
@@ -48,7 +55,40 @@ class SensorsViewModelTest {
         ScanSensorsUseCase(scanner),
         PairSensorUseCase(repository, FakeClock()),
         ForgetSensorUseCase(repository),
+        ProbeSensorUseCase(probe),
     )
+
+    @Test
+    fun `show all devices finds watches, a watch with heart rate is checked then saved as an HR sensor`() = runTest {
+        scanner.results = listOf(hrm)
+        scanner.wideResults = listOf(watch, gtr3)
+        probe.results[watch.address] = SensorProbeResult.Supported(setOf(SensorKind.HEART_RATE), isTrainer = false)
+        probe.results[gtr3.address] = SensorProbeResult.NoSupportedService
+        val viewModel = viewModel()
+
+        viewModel.onEvent(SensorsUiEvent.StartScan)
+        assertEquals(listOf("AA:BB"), viewModel.uiState.value.discovered.map { it.address })
+        viewModel.onEvent(SensorsUiEvent.WideScan(isOn = true))
+        viewModel.onEvent(SensorsUiEvent.StartScan)
+        assertEquals(setOf("AA:BB", "EE:FF", "11:22"), viewModel.uiState.value.discovered.map { it.address }.toSet())
+
+        viewModel.onEvent(SensorsUiEvent.Pair(watch, fallbackName = "Unnamed"))
+        val saved = viewModel.uiState.value.saved.single()
+        assertEquals("Watch HR", saved.name)
+        assertEquals(setOf(SensorKind.HEART_RATE), saved.kinds)
+        assertNull(viewModel.uiState.value.probingAddress)
+
+        // A watch that keeps its heart rate to its own app is not saved, and the rider is told why.
+        viewModel.onEvent(SensorsUiEvent.Pair(gtr3, fallbackName = "Unnamed"))
+        assertEquals(1, viewModel.uiState.value.saved.size)
+        assertEquals(ProbeFailure("GTR 3", isUnreachable = false), viewModel.uiState.value.probeFailure)
+        assertEquals(listOf("EE:FF", "11:22"), probe.probed)
+
+        // A sensor that advertised its kind is paired without a check.
+        viewModel.onEvent(SensorsUiEvent.Pair(hrm, fallbackName = "Unnamed"))
+        assertEquals(listOf("EE:FF", "11:22"), probe.probed)
+        assertEquals(2, viewModel.uiState.value.saved.size)
+    }
 
     @Test
     fun `scan lists found sensors strongest first and ends by itself`() {
@@ -72,6 +112,21 @@ class SensorsViewModelTest {
 
         scanner.results = listOf(hrm)
         viewModel.onEvent(SensorsUiEvent.StartScan)
+        assertFalse(viewModel.uiState.value.hasFoundNothing)
+    }
+
+    @Test
+    fun `switching to all devices during a scan restarts it, stopping ends it`() {
+        scanner.isEndless = true
+        val viewModel = viewModel()
+
+        viewModel.onEvent(SensorsUiEvent.StartScan)
+        viewModel.onEvent(SensorsUiEvent.WideScan(isOn = true))
+        assertTrue(viewModel.uiState.value.isScanning)
+        assertTrue(viewModel.uiState.value.isWideScan)
+
+        viewModel.onEvent(SensorsUiEvent.StopScan)
+        assertFalse(viewModel.uiState.value.isScanning)
         assertFalse(viewModel.uiState.value.hasFoundNothing)
     }
 

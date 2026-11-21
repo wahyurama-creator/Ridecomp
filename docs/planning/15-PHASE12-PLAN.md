@@ -26,7 +26,7 @@
 | Huawei Watch Fit 5 Pro | Ya ("berbagi data detak jantung") | **Jalan dengan standar 0x180D** (T12.1, diuji 2026-11-19) |
 | Wear OS (Galaxy Watch, Pixel Watch) | Tidak | Butuh aplikasi pendamping (T12.4) |
 | Apple Watch | Tidak | Tidak didukung (RideComp hanya Android) |
-| **Aolon** & jam tangan terjangkau lain | **Tidak** (milik pemilik) | Protokol tertutup ke aplikasi bawaan → T12.5 eksperimental |
+| **Aolon** & jam tangan terjangkau lain | **Tidak** (milik pemilik) | **GTR 3: tidak ada `0x180D` setelah tersambung** (T12.1/T12.2, diuji 2026-11-21); protokol GloryFit → T12.5 eksperimental |
 
 ## 3. Keputusan
 
@@ -42,8 +42,8 @@
 Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 
 **12A — Jam tangan dengan broadcast HR standar**
-- [ ] T12.1 Uji kompatibilitas dengan jam tangan sungguhan & catat hasilnya
-- [ ] T12.2 Pemindaian luas: "Tampilkan semua perangkat Bluetooth"
+- [x] T12.1 Uji kompatibilitas dengan jam tangan sungguhan & catat hasilnya
+- [x] T12.2 Pemindaian luas: "Tampilkan semua perangkat Bluetooth"
 - [ ] T12.3 UX jam tangan: label/ikon "Jam tangan" & panduan menyalakan broadcast per merek
 
 **12B — Wear OS (opsional)**
@@ -62,14 +62,14 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 ## 5. Spesifikasi per task
 
 #### T12.1 Uji kompatibilitas
-- [ ] **Status:** sebagian, 2026-11-19: Huawei Watch Fit 5 Pro didukung tanpa perubahan kode (A1); Aolon belum diuji · Feature Report: [`T12.1-smartwatch-compat.md`](../reports/features/T12.1-smartwatch-compat.md) (menunggu review) · Hasil: [`testing/smartwatch-compat.md`](../testing/smartwatch-compat.md) · D-123
+- [x] **Status:** selesai 2026-11-21: Huawei Watch Fit 5 Pro didukung tanpa perubahan kode (A1); Aolon GTR 3 tidak membagikan HR standar (B, diuji dengan T12.2) · Feature Report: [`T12.1-smartwatch-compat.md`](../reports/features/T12.1-smartwatch-compat.md) · Hasil: [`testing/smartwatch-compat.md`](../testing/smartwatch-compat.md) · D-123
 - Jam tangan yang tersedia (minimal Aolon milik pemilik; Garmin/Amazfit/Xiaomi bila ada pinjaman): nyalakan broadcast bila ada, pindai di Sensor, pasangkan, ride/uji 10 menit.
 - Catat per model: muncul di pindaian? (dengan/tanpa T12.2), nama perangkat, frekuensi data, putus-sambung, baterai jam tangan.
 - Hasil di tabel kompatibilitas `docs/testing/smartwatch-compat.md` (dibuat di task ini) dan panduan T12.3.
 - Alat bantu pemeriksaan: aplikasi **nRF Connect** (lihat layanan GATT setelah tersambung).
 
 #### T12.2 Pemindaian luas
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-21 · Feature Report: [`T12.2-wide-scan.md`](../reports/features/T12.2-wide-scan.md) · D-134
 - Di layar Sensor, opsi **"Tampilkan semua perangkat Bluetooth"** (default mati): pindai tanpa filter UUID, tetap **bertimeout** (aturan 09), daftar disaring nama kosong/sinyal lemah.
 - Saat pengguna memilih perangkat yang tidak mengiklankan 0x180D: sambung → **discover services** → bila ada Heart Rate Service, simpan sebagai sensor HR biasa; bila tidak ada, tampilkan "Perangkat ini tidak membagikan detak jantung" dan putuskan (`disconnect()` + `close()`).
 - Tanpa izin baru (memakai izin Nearby devices yang ada); tetap `neverForLocation`.

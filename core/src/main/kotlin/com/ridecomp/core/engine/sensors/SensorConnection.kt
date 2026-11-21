@@ -23,6 +23,25 @@ public object BleConfig {
 
     /** At most this many scan results are kept (bounded memory, MEM-02); the strongest signals win. */
     public const val MAX_SCAN_RESULTS: Int = 20
+
+    /**
+     * "Show all Bluetooth devices" (T12.2) leaves out devices weaker than this: too far away to be the
+     * rider's own watch or sensor.
+     */
+    public const val WIDE_SCAN_MIN_RSSI_DBM: Int = -90
+
+    /**
+     * A device without a name is still listed when it is this close (practically touching the phone, like a
+     * watch on the wrist holding it): many watches advertise without a name (device test of T12.2).
+     */
+    public const val WIDE_SCAN_NAMELESS_MIN_RSSI_DBM: Int = -60
+}
+
+/** Whether the wide scan lists [sensor] (T12.2): named and in reach, or nameless but right next to the phone. */
+public fun isWideScanCandidate(sensor: DiscoveredSensor): Boolean = if (sensor.name.isNullOrBlank()) {
+    sensor.rssiDbm >= BleConfig.WIDE_SCAN_NAMELESS_MIN_RSSI_DBM
+} else {
+    sensor.rssiDbm >= BleConfig.WIDE_SCAN_MIN_RSSI_DBM
 }
 
 /** Reconnect backoff for one sensor: never gives up during a ride, never retries faster than this. */
@@ -88,7 +107,31 @@ public interface BleScanner {
 
     public fun hasPermission(): Boolean
 
-    public fun scan(timeoutMs: Long = BleConfig.SCAN_TIMEOUT_MS): Flow<DiscoveredSensor>
+    /**
+     * HR / CSC / CP / FTMS devices; with [isWide] every named device in reach (T12.2), whose kinds are
+     * unknown until [SensorProbe] checks it. Always ends after [timeoutMs].
+     */
+    public fun scan(timeoutMs: Long = BleConfig.SCAN_TIMEOUT_MS, isWide: Boolean = false): Flow<DiscoveredSensor>
+}
+
+/** What a device turned out to offer once connected (T12.2). */
+public sealed interface SensorProbeResult {
+    /** At least one service RideComp reads (heart rate, speed/cadence, power, smart trainer). */
+    public data class Supported(val kinds: Set<SensorKind>, val isTrainer: Boolean) : SensorProbeResult
+
+    /** Connected, but none of those services: e.g. a watch that keeps its heart rate to its own app. */
+    public data object NoSupportedService : SensorProbeResult
+
+    /** Could not connect or list its services in time. */
+    public data object Unreachable : SensorProbeResult
+}
+
+/**
+ * Connects to a device that did not advertise its services, lists them, and always disconnects and closes
+ * the GATT afterwards (resource table 09 §1), bounded by the connect and operation timeouts.
+ */
+public interface SensorProbe {
+    public suspend fun probe(address: String): SensorProbeResult
 }
 
 /**

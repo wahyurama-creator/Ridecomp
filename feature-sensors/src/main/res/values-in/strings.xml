@@ -32,4 +32,12 @@
     <string name="sensors_ble_info">Hanya sensor Bluetooth (BLE). Sensor ANT+ saja tidak didukung oleh kebanyakan HP. Kalibrasi power meter dilakukan lewat app pabrikannya.</string>
     <string name="sensors_kind_trainer">Smart trainer (ERG)</string>
     <string name="sensors_none_found">Tidak ada sensor baru. Bangunkan sensornya (putar pedal/roda, basahi strap detak jantung), dekatkan ke HP, lalu cari lagi.</string>
+    <string name="sensors_wide_scan">Tampilkan semua perangkat Bluetooth</string>
+    <string name="sensors_wide_scan_hint">Untuk jam tangan dan perangkat yang tidak menyebut sensornya. Setiap perangkat diperiksa dulu sebelum disimpan.</string>
+    <string name="sensors_check">Periksa</string>
+    <string name="sensors_unnamed_device">Perangkat tanpa nama (sangat dekat)</string>
+    <string name="sensors_kind_unchecked">Belum diperiksa</string>
+    <string name="sensors_checking">Memeriksa…</string>
+    <string name="sensors_probe_none">%1$s tidak membagikan detak jantung atau data sepeda lewat Bluetooth standar. Mungkin hanya bisa dipakai dengan aplikasinya sendiri.</string>
+    <string name="sensors_probe_unreachable">%1$s tidak bisa dihubungi. Dekatkan, tutup aplikasi bawaannya, lalu coba lagi.</string>
 </resources>

@@ -56,9 +56,11 @@ import com.ridecomp.ui.component.BigButtonStyle
 import com.ridecomp.ui.component.ConfirmDialog
 import com.ridecomp.ui.component.EmptyState
 import com.ridecomp.ui.component.IconSquareButton
+import com.ridecomp.ui.component.ListCard
 import com.ridecomp.ui.component.RideCompCard
 import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.component.SectionHeader
+import com.ridecomp.ui.component.SwitchRow
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
 import com.ridecomp.ui.theme.RideCompDimens
@@ -131,6 +133,7 @@ fun SensorsScreen(
                 item(key = EMPTY_KEY) { EmptyState(message = stringResource(R.string.sensors_empty)) }
             }
             savedSection(state, onForget = { onEvent(SensorsUiEvent.AskForget(it)) })
+            item(key = WIDE_SCAN_KEY) { WideScanSwitch(state.isWideScan) { onEvent(SensorsUiEvent.WideScan(it)) } }
             discoveredSection(state, onPair)
             item(key = INFO_KEY) { BleInfo() }
         }
@@ -172,6 +175,18 @@ private fun SensorsBanner(state: SensorsUiState, onFixBlocker: (ScanBlocker) -> 
             iconRes = UiR.drawable.ic_bluetooth_off,
             actions = listOf(BannerAction(stringResource(blocker.actionRes())) { onFixBlocker(blocker) }),
         )
+        state.probeFailure != null -> AlertBanner(
+            message = stringResource(
+                if (state.probeFailure.isUnreachable) {
+                    R.string.sensors_probe_unreachable
+                } else {
+                    R.string.sensors_probe_none
+                },
+                state.probeFailure.name,
+            ),
+            severity = AlertSeverity.WARN,
+            iconRes = UiR.drawable.ic_info,
+        )
         state.hasScanFailed -> AlertBanner(
             message = stringResource(R.string.sensors_scan_failed),
             severity = AlertSeverity.WARN,
@@ -211,30 +226,7 @@ private fun LazyListScope.discoveredSection(state: SensorsUiState, onPair: (Disc
     if (found.isEmpty() && !state.isScanning) return
     item(key = FOUND_HEADER_KEY) { FoundHeader(state.isScanning) }
     items(found, key = { FOUND_KEY_PREFIX + it.address }) { sensor ->
-        val isStrong = sensor.rssiDbm >= STRONG_SIGNAL_DBM
-        SensorCard(
-            iconKind = sensor.kinds.firstOrNull(),
-            title = sensor.name ?: stringResource(R.string.sensors_unnamed),
-            subtitle = stringResource(
-                R.string.sensors_subtitle,
-                kindsLabel(sensor.kinds, sensor.isTrainer),
-                stringResource(if (isStrong) R.string.sensors_signal_strong else R.string.sensors_signal_weak),
-            ),
-            isOutlined = true,
-        ) {
-            BigButton(
-                text = stringResource(R.string.sensors_pair),
-                onClick = { onPair(sensor) },
-                // A strong signal is the likely sensor on your bike: filled button (13-UI-SCREENS #4).
-                style = if (isStrong) BigButtonStyle.PRIMARY else BigButtonStyle.OUTLINE,
-                size = BigButtonSize.TERTIARY,
-                // As wide as its label ("Pasangkan" must not break mid-word), never tiny. BigButton fills
-                // the width it gets, so the width is fixed to the label's here (device test of TS.1).
-                modifier = Modifier
-                    .widthIn(min = RideCompDimens.actionButtonMinWidth)
-                    .width(IntrinsicSize.Max),
-            )
-        }
+        FoundSensorCard(sensor, probingAddress = state.probingAddress, onPair = onPair)
     }
 }
 
@@ -345,6 +337,64 @@ private fun kindsLabel(kinds: Set<SensorKind>, isTrainer: Boolean = false): Stri
         .joinToString(separator = stringResource(R.string.sensors_kind_separator))
 }
 
+/** A found device with "Pasangkan", or "Periksa" for one from the wide scan that is checked first (T12.2). */
+@Composable
+private fun FoundSensorCard(sensor: DiscoveredSensor, probingAddress: String?, onPair: (DiscoveredSensor) -> Unit) {
+    val isStrong = sensor.rssiDbm >= STRONG_SIGNAL_DBM
+    // A device from the wide scan does not say what it is: it is checked before it is saved (T12.2).
+    val needsCheck = sensor.kinds.isEmpty()
+    val kinds = if (needsCheck) {
+        stringResource(R.string.sensors_kind_unchecked)
+    } else {
+        kindsLabel(sensor.kinds, sensor.isTrainer)
+    }
+    SensorCard(
+        iconKind = sensor.kinds.firstOrNull(),
+        title = sensor.name ?: stringResource(
+            if (needsCheck) R.string.sensors_unnamed_device else R.string.sensors_unnamed,
+        ),
+        subtitle = stringResource(
+            R.string.sensors_subtitle,
+            kinds,
+            stringResource(if (isStrong) R.string.sensors_signal_strong else R.string.sensors_signal_weak),
+        ),
+        isOutlined = true,
+    ) {
+        BigButton(
+            text = stringResource(
+                when {
+                    probingAddress == sensor.address -> R.string.sensors_checking
+                    needsCheck -> R.string.sensors_check
+                    else -> R.string.sensors_pair
+                },
+            ),
+            onClick = { onPair(sensor) },
+            isEnabled = probingAddress == null,
+            // A strong signal is the likely sensor on your bike: filled button (13-UI-SCREENS #4).
+            style = if (isStrong) BigButtonStyle.PRIMARY else BigButtonStyle.OUTLINE,
+            size = BigButtonSize.TERTIARY,
+            // As wide as its label ("Pasangkan" must not break mid-word), never tiny. BigButton fills
+            // the width it gets, so the width is fixed to the label's here (device test of TS.1).
+            modifier = Modifier
+                .widthIn(min = RideCompDimens.actionButtonMinWidth)
+                .width(IntrinsicSize.Max),
+        )
+    }
+}
+
+/** "Show all Bluetooth devices" (T12.2): for watches that share heart rate without advertising it. */
+@Composable
+private fun WideScanSwitch(isOn: Boolean, onChange: (Boolean) -> Unit) {
+    ListCard {
+        SwitchRow(
+            label = stringResource(R.string.sensors_wide_scan),
+            description = stringResource(R.string.sensors_wide_scan_hint),
+            isChecked = isOn,
+            onCheckedChange = onChange,
+        )
+    }
+}
+
 @StringRes
 private fun SensorKind.labelRes(): Int = when (this) {
     SensorKind.HEART_RATE -> R.string.sensors_kind_hr
@@ -368,6 +418,7 @@ private const val SAVED_HEADER_KEY = "saved_header"
 private const val EMPTY_KEY = "empty"
 private const val TIP_KEY = "tip"
 private const val INFO_KEY = "info"
+private const val WIDE_SCAN_KEY = "wide_scan"
 private const val FOUND_HEADER_KEY = "found_header"
 private const val SAVED_KEY_PREFIX = "saved_"
 private const val FOUND_KEY_PREFIX = "found_"

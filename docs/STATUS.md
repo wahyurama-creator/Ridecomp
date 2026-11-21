@@ -6,8 +6,8 @@
 - **Rilis terakhir:** **0.9.3** (beta), 2026-11-18 · [GitHub Releases](https://github.com/wahyurama-creator/Ridecomp/releases). Skema DB **v10**.
 - **Fase selesai:** 0–5, 7, 9, dan rilis beta & masukan pengguna (Fase 8/10). Ringkasan: [`planning/06-ROADMAP.md`](planning/06-ROADMAP.md).
 - **Fase berjalan:** **Fase 11 — Analisa ride, usaha terbaik, tema & peta offline.** Rencana lengkap: [`planning/14-PHASE11-PLAN.md`](planning/14-PHASE11-PLAN.md). Keputusan K1–K5 sudah dijawab (D-109…D-113).
-- **Task terakhir:** T11.15 — Redesign halaman Segmen baru (selesai 2026-11-21, [Feature Report](reports/features/T11.15-segment-editor.md)); sebelumnya uji lapangan simulasi Fase 11.
-- **Task berikutnya:** **Fase 12** (smartwatch, `planning/15-PHASE12-PLAN.md`): T12.1 menunggu uji jam Aolon oleh pemilik; T12.2 berikutnya. Fase 11 selesai; rilis beta & MobSF digabung dengan Fase 12–13.
+- **Task terakhir:** T12.2 — Pemindaian luas "Tampilkan semua perangkat Bluetooth" + Periksa (selesai 2026-11-21, [Feature Report](reports/features/T12.2-wide-scan.md)); T12.1 ditutup dengan hasil Aolon GTR 3 (kasus B, tidak membagikan HR standar).
+- **Task berikutnya:** **T12.3** UX & panduan jam tangan (`planning/15-PHASE12-PLAN.md`); lalu T12.4 (opsional) dan T12.5a protokol GloryFit untuk Aolon GTR 3. Fase 11 selesai; rilis beta & MobSF digabung dengan Fase 12–13.
 
 ## Daftar centang Fase 11
 Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.md` §4 setiap kali task selesai.
@@ -32,11 +32,11 @@ Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.m
 - [x] T11.15 Redesign halaman Segmen baru
 
 **Setelah Fase 11 — Fase 12: Detak jantung dari smartwatch** ([`planning/15-PHASE12-PLAN.md`](planning/15-PHASE12-PLAN.md)):
-- [ ] T12.1 Uji kompatibilitas jam tangan · Huawei Watch Fit 5 Pro diuji (A1, didukung), Aolon menunggu pemilik · [Feature Report](reports/features/T12.1-smartwatch-compat.md) (menunggu review)
-- [ ] T12.2 Pemindaian luas
+- [x] T12.1 Uji kompatibilitas jam tangan · Huawei Watch Fit 5 Pro (A1, didukung), Aolon GTR 3 (B, tidak didukung lewat standar) · [Feature Report](reports/features/T12.1-smartwatch-compat.md)
+- [x] T12.2 Pemindaian luas · [Feature Report](reports/features/T12.2-wide-scan.md)
 - [ ] T12.3 UX & panduan jam tangan
 - [ ] T12.4 Aplikasi pendamping Wear OS (opsional)
-- [ ] T12.5a Identifikasi protokol Aolon (go/no-go) — butuh model & nama aplikasi pendamping dari pemilik
+- [ ] T12.5a Identifikasi protokol Aolon (go/no-go) — model GTR 3, aplikasi GloryFit (`com.yc.gloryfit`)
 - [ ] T12.5b Sensor "Jam tangan (eksperimental)"
 - [ ] T12.5c Uji ride sungguhan
 
