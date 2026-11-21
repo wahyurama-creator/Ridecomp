@@ -15,17 +15,20 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.ridecomp.app.navigation.AppRoutes
+import com.ridecomp.app.navigation.IncomingDebugScreen
 import com.ridecomp.app.navigation.IncomingGpx
 import com.ridecomp.app.navigation.IncomingStravaAuth
 import com.ridecomp.app.navigation.IncomingWidget
 import com.ridecomp.app.navigation.RideCompNavHost
 import com.ridecomp.app.navigation.TopLevelDestination
 import com.ridecomp.app.navigation.navigateToTopLevel
+import com.ridecomp.core.source.Logger
 import com.ridecomp.ui.component.BottomNavItem
 import com.ridecomp.ui.component.RideCompBottomNav
 import com.ridecomp.ui.theme.RideCompTheme
 import kotlinx.collections.immutable.toImmutableList
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 
 /** Root composable: bottom navigation + navigation graph; first launch starts with onboarding. */
 @Composable
@@ -62,6 +65,7 @@ fun RideCompApp(modifier: Modifier = Modifier, viewModel: AppViewModel = koinVie
         navController.navigate(destination) { launchSingleTop = true }
         IncomingWidget.consumed()
     }
+    DebugScreenEffect(navController, isOnboardingDone = done)
     Scaffold(
         modifier = modifier,
         containerColor = RideCompTheme.colors.bg,
@@ -74,6 +78,28 @@ fun RideCompApp(modifier: Modifier = Modifier, viewModel: AppViewModel = koinVie
         )
     }
 }
+
+/** Debug builds only: the comparison screenshot script opens one screen on top of the start screen (T13.2). */
+@Composable
+private fun DebugScreenEffect(navController: NavHostController, isOnboardingDone: Boolean) {
+    val debugScreen by IncomingDebugScreen.route.collectAsStateWithLifecycle()
+    val logger = koinInject<Logger>()
+    LaunchedEffect(debugScreen, isOnboardingDone) {
+        val screen = debugScreen ?: return@LaunchedEffect
+        if (!isOnboardingDone) return@LaunchedEffect
+        try {
+            navController.navigate(screen) {
+                popUpTo(navController.graph.startDestinationId)
+                launchSingleTop = true
+            }
+        } catch (e: IllegalArgumentException) {
+            logger.warn(DEBUG_SCREEN_TAG, e) { "No screen $screen" }
+        }
+        IncomingDebugScreen.consumed()
+    }
+}
+
+private const val DEBUG_SCREEN_TAG = "DebugScreen"
 
 @Composable
 private fun RideCompBottomBar(navController: NavHostController, route: String?) {
