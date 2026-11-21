@@ -424,13 +424,13 @@ private fun GpsWaiting(gps: GpsStatus.Searching, onShowOptions: () -> Unit) {
         Box(
             modifier = Modifier
                 .padding(top = RideCompDimens.spacingL)
-                .size(RideCompDimens.gpsWaitOuter)
+                .size(RideCompTheme.dimens.gpsWaitOuter)
                 .border(RideCompDimens.borderSelected, colors.indicatorInactive, CircleShape),
             contentAlignment = Alignment.Center,
         ) {
             Box(
                 modifier = Modifier
-                    .size(RideCompDimens.gpsWaitInner)
+                    .size(RideCompTheme.dimens.gpsWaitInner)
                     .border(RideCompDimens.borderSelected, colors.warnText, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {

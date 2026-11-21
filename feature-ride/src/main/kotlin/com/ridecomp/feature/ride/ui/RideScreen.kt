@@ -99,6 +99,7 @@ import com.ridecomp.ui.map.MapPoint
 import com.ridecomp.ui.map.RouteMap
 import com.ridecomp.ui.theme.RideCompDimens
 import com.ridecomp.ui.theme.RideCompTheme
+import com.ridecomp.ui.theme.WindowWidthClass
 import com.ridecomp.ui.udf.ObserveEffects
 import com.ridecomp.ui.util.volumeKeys
 import kotlinx.collections.immutable.ImmutableList
@@ -726,7 +727,7 @@ private fun PauseSummary(live: LiveRide, formatter: UnitFormatter, labels: Metri
             )
             Text(
                 text = formatter.duration(live.movingMs),
-                style = RideCompTheme.typography.hugeNumber.copy(fontSize = RideCompDimens.pauseTimeSize),
+                style = RideCompTheme.typography.hugeNumber.copy(fontSize = RideCompTheme.dimens.pauseTimeSize),
                 color = colors.textPrimary,
             )
             Text(
@@ -760,7 +761,11 @@ private fun PauseActions(onAction: (RideAction) -> Unit, onDiscard: () -> Unit, 
         BigButton(
             text = stringResource(R.string.ride_resume),
             onClick = { onAction(RideAction.RESUME) },
-            size = BigButtonSize.HERO,
+            // Below 360 dp the primary height (still ≥ 72 dp, §4.4) keeps FINISH on screen (T13.4).
+            size = when (RideCompTheme.widthClass) {
+                WindowWidthClass.COMPACT -> BigButtonSize.PRIMARY
+                WindowWidthClass.REGULAR -> BigButtonSize.HERO
+            },
             iconRes = UiR.drawable.ic_play,
         )
         BigButton(

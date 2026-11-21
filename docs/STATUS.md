@@ -6,8 +6,8 @@
 - **Rilis terakhir:** **0.9.3** (beta), 2026-11-18 · [GitHub Releases](https://github.com/wahyurama-creator/Ridecomp/releases). Skema DB **v10**.
 - **Fase selesai:** 0–5, 7, 9, dan rilis beta & masukan pengguna (Fase 8/10). Ringkasan: [`planning/06-ROADMAP.md`](planning/06-ROADMAP.md).
 - **Fase berjalan:** **Fase 13 — Tampilan responsif layar kecil.** Rencana lengkap: [`planning/16-PHASE13-PLAN.md`](planning/16-PHASE13-PLAN.md). Fase 12 ditutup 2026-11-21 (5/7; T12.4 & T12.5c ditunda, D-139).
-- **Task terakhir:** T13.2 + T13.3 diverifikasi di HP pemilik (realme RMX3830, app "RideComp debug" terpisah, D-144): baseline 25 layar dari `49f9141`; setelah T13.3 **412/390/360 dp identik**, 320 dp berubah sesuai rencana ([T13.2](reports/features/T13.2-screen-compare.md), [T13.3](reports/features/T13.3-size-foundation.md)).
-- **Task berikutnya:** **T13.4** layar ride & persiapan ride (`planning/16-PHASE13-PLAN.md`); uji di 320 dp juga dengan tinggi layar Sony (`wm size`, karena HP realme lebih tinggi). Ditunda: T12.5c (ride sungguhan Aolon, saat pemilik sehat), T12.4 Wear OS (saat ada jam Wear OS). Rilis gabungan Fase 11–13 + MobSF setelah Fase 13.
+- **Task terakhir:** T13.4 layar ride & persiapan ride: di < 360 dp waktu jeda 48 sp + LANJUTKAN 72 dp (SELESAI tidak terpotong, audit P2 #3), cincin GPS 152/104 dp, cincin hitung mundur 168 dp; 412/390/360 dp identik ([Feature Report](reports/features/T13.4-ride-screens.md), D-145).
+- **Task berikutnya:** **T13.5** Beranda, onboarding & sambutan (`planning/16-PHASE13-PLAN.md`); compare hanya layar yang diubah (`SCREENS_ONLY`). Ditunda: T12.5c, T12.4 Wear OS. Rilis gabungan Fase 11–13 + MobSF setelah Fase 13.
 
 ## Daftar centang Fase 11
 Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.md` §4 setiap kali task selesai.
@@ -44,7 +44,7 @@ Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.m
 - [x] T13.1 Audit layar kecil · [Audit](testing/small-screen-audit.md) · [Feature Report](reports/features/T13.1-small-screen-audit.md)
 - [x] T13.2 Skrip screenshot pembanding · [Feature Report](reports/features/T13.2-screen-compare.md)
 - [x] T13.3 Fondasi ukuran `Regular`/`Compact` · [Feature Report](reports/features/T13.3-size-foundation.md)
-- [ ] T13.4 Layar ride & persiapan ride
+- [x] T13.4 Layar ride & persiapan ride · [Feature Report](reports/features/T13.4-ride-screens.md)
 - [ ] T13.5 Beranda, onboarding & sambutan
 - [ ] T13.6 Riwayat & detail ride
 - [ ] T13.7 Rute, sensor, latihan

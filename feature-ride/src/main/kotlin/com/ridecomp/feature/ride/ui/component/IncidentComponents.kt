@@ -161,7 +161,7 @@ private fun CountdownRing(secondsLeft: Long) {
     val colors = RideCompTheme.colors
     Column(
         modifier = Modifier
-            .size(RideCompDimens.countdownRing)
+            .size(RideCompTheme.dimens.countdownRing)
             .border(RideCompDimens.countdownRingStroke, colors.onDanger, CircleShape)
             .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
         horizontalAlignment = Alignment.CenterHorizontally,

@@ -1,5 +1,6 @@
 package com.ridecomp.ui.theme
 
+import androidx.compose.ui.unit.dp
 import java.lang.reflect.Modifier
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -18,6 +19,10 @@ class WindowWidthClassTest {
         val regular = WindowWidthClass.REGULAR.dimens
         assertEquals(RideCompDimens.cardPaddingHorizontal, regular.cardPaddingHorizontal)
         assertEquals(RideCompDimens.titleSize, regular.messageTitleSize)
+        assertEquals(RideCompDimens.pauseTimeSize, regular.pauseTimeSize)
+        assertEquals(RideCompDimens.gpsWaitOuter, regular.gpsWaitOuter)
+        assertEquals(RideCompDimens.gpsWaitInner, regular.gpsWaitInner)
+        assertEquals(RideCompDimens.countdownRing, regular.countdownRing)
     }
 
     @Test
@@ -28,6 +33,11 @@ class WindowWidthClassTest {
         assertTrue(compact.cardPaddingHorizontal >= RideCompDimens.spacingS)
         assertTrue(compact.messageTitleSize.value < regular.messageTitleSize.value)
         assertTrue(compact.messageTitleSize.value >= RideCompDimens.captionSize.value)
+        assertTrue(compact.pauseTimeSize.value < regular.pauseTimeSize.value)
+        assertTrue(compact.gpsWaitOuter < regular.gpsWaitOuter && compact.gpsWaitInner < compact.gpsWaitOuter)
+        assertTrue(compact.gpsWaitInner > RideCompDimens.iconSizeLarge)
+        // The countdown (96 sp) and "seconds" still fit inside the ring.
+        assertTrue(compact.countdownRing < regular.countdownRing && compact.countdownRing >= COUNTDOWN_RING_MIN)
     }
 
     @Test
@@ -38,6 +48,7 @@ class WindowWidthClassTest {
     }
 
     private companion object {
-        const val TOKEN_COUNT = 2
+        const val TOKEN_COUNT = 6
+        val COUNTDOWN_RING_MIN = 160.dp
     }
 }
