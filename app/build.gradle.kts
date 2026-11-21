@@ -15,6 +15,8 @@ android {
         versionName = "0.9.3"
         // Strava (D-82): RideComp's public Client ID and its token server. Not secret (the Client ID is in
         // every authorize URL); the client secret lives only on the token server. Empty = Strava hidden.
+        // The Strava redirect (SEC-AUTH-03) is claimed by the release app only, see the debug build type.
+        manifestPlaceholders["stravaRedirectScheme"] = "ridecomp"
         buildConfigField(
             "String",
             "STRAVA_CLIENT_ID",
@@ -46,6 +48,13 @@ android {
     }
 
     buildTypes {
+        // T13.2 (D-144): the debug app installs next to the release app, so a phone with real rides can run
+        // the comparison screenshots without uninstalling. It does not claim the Strava redirect, else the
+        // release app's login would ask which app to open; Strava login is tested with the release build.
+        debug {
+            applicationIdSuffix = ".debug"
+            manifestPlaceholders["stravaRedirectScheme"] = "ridecomp-debug-unused"
+        }
         release {
             signingConfig = signingConfigs.findByName("release")
             // R8 minify + resource shrinking (DEP-04, SEC-BLD-01).

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Debug-only developer menu (not translated, never in release). -->
 <resources>
+    <!-- Shown next to the release app on the same phone (D-144). -->
+    <string name="app_name" translatable="false">RideComp debug</string>
     <string name="developer_title" translatable="false">Developer</string>
     <string name="developer_simulate_gps" translatable="false">Simulated GPS</string>
     <string name="developer_simulate_gps_description" translatable="false">Replays a 3 km loop with stops instead of the real GPS (07-TEST-PLAN §2). Restart the ride after switching.</string>
