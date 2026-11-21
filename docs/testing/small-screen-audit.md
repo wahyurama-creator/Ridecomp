@@ -14,7 +14,7 @@ Hasil audit tampilan RideComp di lebar **320 dp** (target terkecil, R1) dibandin
 | Kombinasi | 320 dp: id-gelap, en-gelap, id-terang · 360 dp: id-gelap, en-gelap |
 | Layar ride | Ride simulasi (Developer → Simulated GPS), dijeda lalu dibuang; tidak ada ride tersimpan baru |
 | Onboarding | Emulator Pixel 9a bersih, `wm density 540` (320 dp): Sambutan, langkah 1–2. Langkah 3–6 diperiksa dari kode (emulator dihentikan atas permintaan pemilik karena laptop melambat) |
-| Alat | `adb` + `uiautomator dump` + skrip analisa lokal (elemen keluar layar, teks bertumpuk/menempel < 3 dp, target sentuh < 48 dp), lalu tiap screenshot diperiksa visual. Skrip & PNG tidak di-commit (bahan T13.2) |
+| Alat | `adb` + `uiautomator dump` + skrip analisa lokal (elemen keluar layar, teks bertumpuk/menempel < 3 dp, target sentuh < 48 dp), lalu tiap screenshot diperiksa visual. Skrip & PNG tidak di-commit (bahan T13.2). **Koreksi review:** batas 48 dp lebih longgar dari UI-07 (56 dp); target 48–55 dp tidak tersaring, jadi ditambah cek statis di kode (§3a). Skrip T13.2 memakai 56 dp |
 | Total | ±230 screenshot, 22 dari 25 `*Screen.kt` + onboarding + dialog buang ride |
 
 Prioritas: **P1** rusak/tidak bisa dipakai · **P2** jelek tapi bisa dipakai (teks terpotong tanpa jalan keluar, aksi utama tersembunyi) · **P3** kosmetik.
@@ -32,23 +32,36 @@ Prioritas: **P1** rusak/tidak bisa dipakai · **P2** jelek tapi bisa dipakai (te
 
 | # | Layar (file) | Temuan | Prio | Task |
 |---|---|---|---|---|
-| 1 | Rute, kosong (`RoutesScreen`) | Teks "Belum ada rute. Import file GPX untuk ride mengikuti **rute.**" terpotong oleh tombol Import GPX dan **tidak bisa di-scroll**. Versi Inggris (lebih pendek) muat | **P2** | T13.7 |
+| 1 | Rute, kosong (`RoutesScreen`) | Teks "Belum ada rute. Import file GPX untuk ride mengikuti **rute.**" terpotong oleh tombol Import GPX dan **tidak bisa di-scroll**. Versi Inggris (lebih pendek) muat | **P2** | T13.3 (perbaikan di `MessageState`), dicek ulang di T13.7 |
 | 2 | Riwayat › Aktivitas (`HistoryScreen` `MonthCard`) | Nilai "0,00 km" menempel ke kolom RIDE ("0,00 km1", jarak < 3 dp). `Row` 3 kolom `weight(1f)` tanpa jarak; jarak bulanan 4 digit kemungkinan bertumpuk | **P2** | T13.6 |
 | 3 | Layar jeda (`RideScreen`) | Tombol **SELESAI** terpotong di tepi bawah; "Buang ride" hanya terlihat setelah scroll. Aksi utama saat berhenti di jalan | **P2** | T13.4 |
 | 4 | Sambutan onboarding (`OnboardingScreen` `WelcomeStep`) | Tombol **Get started / Mulai** baru terlihat setelah 2× scroll; judul besar + kartu contoh memakan layar (sesuai cek awal 2026-11-19) | **P2** | T13.5 |
 | 5 | Riwayat › Latihan, kosong | Teks "…power meter dengan FTP." terpotong di awal; **bisa di-scroll** | P3 | T13.6 |
 | 6 | Persiapan ride (`PreRideScreen`) | "Butuh akurasi ≤ 30 m" dan kartu "Biar lebih cepat" baru terlihat setelah scroll (cincin GPS besar). Tombol "Mulai tanpa menunggu" tetap terlihat | P3 | T13.4 |
 | 7 | Ringkasan ride (`SummaryScreen`) | "max 31,8 km/h" pecah menjadi "km/" + "h"; "W · estimasi dari kecepatan" 3 baris di kolom sempit | P3 | T13.4 |
-| 8 | Ringkasan ride | Saat dibuka, kolom Nama aktivitas fokus dan keyboard muncul, menutupi angka (terlihat di 360 dp juga). Perlu dipastikan disengaja atau tidak | P3 | T13.4 (cek) |
+| 8 | Ringkasan ride | Saat dibuka, kolom Nama aktivitas fokus dan keyboard muncul, menutupi angka (terlihat di 360 dp juga). **Tidak disengaja**: `SummaryScreen` tidak meminta fokus; dugaan fokus tertahan saat activity dibuat ulang (density diubah) | P3 | T13.4 (cek) |
 | 9 | Sensor (`SensorsScreen`) | Area daftar sempit (±920 px); catatan ANT+ dan tautan "Cara menyambungkan detak jantung" baru terlihat setelah scroll di dalam daftar. Nama jam turun 2 baris (tombol hapus tetap ≥ 56 dp) | P3 | T13.7 |
 | 10 | Setelan (`SettingsScreen`) | "Profil aktivitas", "Backup & export data", "Jeda & lanjut otomatis", "Keselamatan & kontak darurat" turun 2 baris karena nilai di kanan | P3 | T13.8 |
 | 11 | HP saya mematikan app (`BatteryHelpScreen`) | Tombol "BANTUAN LAIN UNTUK HP KAMU" 2 baris | P3 | T13.8 |
 | 12 | Kartu tips (Backup, Rute, Detail ride) | Kolom teks sempit karena ikon + tombol tutup; judul turun 2 baris | P3 | T13.3/T13.8 |
 | 13 | Keselamatan (`SafetyScreen`) | Kolom "Nama kontak" dan "Nomor HP" berdampingan, sempit | P3 | T13.8 |
 | 14 | Profil (`ProfileScreen`) | Label "TAHUN LAHIR (OPSIONAL)" / "HR ISTIRAHAT (OPSIONAL)" turun 2 baris; masih rapi | P3 | T13.8 |
-| 15 | Detail ride, kartu tips | Tombol tutup tips 56 × 34 dp (< 48 dp). **Sama di semua lebar**, bukan masalah layar kecil; dicatat untuk UI-07 | P3 | T13.3 |
+| 15 | Detail ride, kartu tips | `uiautomator` melaporkan tombol tutup tips 56 × 34 dp. **Koreksi review:** di kode tombol ini 56 × 56 dp (`TipCard.kt:70`, `touchTargetMin`); 34 dp kemungkinan hanya bagian yang terlihat dari kartu yang terpotong tepi scroll (`uiautomator` melaporkan batas yang terlihat). Dicek ulang dengan skrip T13.2 | P3 (cek) | T13.2 |
 
 **Tanpa masalah di 320 dp:** Beranda (4 kartu status, MULAI RIDE ≥ 88 dp), layar ride (4 halaman data, angka utama muat, PAUSE/LAP ≥ 72 dp), Riwayat › Rekor/Segmen kosong, Detail ride (statistik 3 kolom, grafik, ekspor), Sepeda saya, Profil aktivitas, Ride/layar & baterai, Halaman data, Peta, Tampilan, Bahasa, Backup & restore, Strava, Pembaruan aplikasi, Lisensi, Bantuan & panduan (+ topik), dialog "Buang ride ini?", navigasi bawah (5 label muat), onboarding langkah 1 (bahasa) & 2 (izin).
+
+## 3a. Cek statis target sentuh < 56 dp (tambahan review, 2026-11-21)
+
+Elemen yang bisa diketuk dengan ukuran tetap di bawah UI-07, dicari di kode `src/main`. Semuanya **sama di semua lebar** (bukan masalah layar kecil) dan sudah ada sebelum Fase 13, jadi tidak diubah di fase ini (tampilan ≥ 360 dp harus tetap, R1); dicatat sebagai utang UI-07.
+
+| Elemen | Lokasi | Ukuran | Status |
+|---|---|---|---|
+| Swatch palet Poster di layar share | `ShareCardUi.kt:307` (`swatchSize`) | 32 dp | Pelanggaran UI-07 lama; di luar Fase 13 (galeri share belum diaudit, §7) |
+| Tab segmen (Riwayat, Latihan, dll.) | `Navigation.kt:150` (`chipHeight`) | tinggi 48 dp | Lama, lebar penuh; di luar Fase 13 |
+| `BigButtonStyle.COMPACT` | `BigButton.kt:82` | tinggi 48 dp | Disengaja: hanya aksi halaman share, di luar layar ride |
+| Tombol "Connect with Strava" | `StravaScreen.kt:227` | tinggi 48 dp | Disengaja: pedoman brand Strava (D-85) |
+
+Toggle 56 × 34 dp tidak termasuk: seluruh baris `SwitchRow` yang bisa diketuk.
 
 ## 4. Catatan di 360 dp (tidak diubah, R1)
 
@@ -66,6 +79,8 @@ Prioritas: **P1** rusak/tidak bisa dipakai · **P2** jelek tapi bisa dipakai (te
 
 1. **Format angka sesaat memakai titik.** Setelah density diubah di tengah rekaman (activity dibuat ulang), satu screenshot layar ride menampilkan "0.57" dan "25.5"; ±1 detik kemudian kembali "0,58" dan "25,4". Dugaan: satu frame memakai locale sistem (en-US) sebelum locale aplikasi (id) diterapkan. Perlu verifikasi (P3).
 2. **Tab Setelan dari sub-layar.** Mengetuk "Setelan" di navigasi bawah saat berada di sub-layar (mis. Tampilan) tidak kembali ke daftar Setelan; tab juga tidak tersorot di sub-layar. Perilaku navigasi, bukan ukuran (P3).
+
+Keduanya **tidak dikerjakan di Fase 13** (bukan ukuran layar, CLAUDE.md prinsip 3); dicatat sebagai bug terpisah untuk fase berikutnya (D-141).
 
 Tidak ada crash, StrictMode, atau leak selama audit; mengubah density 320 ↔ 360 dp saat merekam tidak menghentikan rekaman. Tidak ada GPS/foreground service tersisa setelah ride simulasi dibuang.
 
@@ -85,5 +100,5 @@ Tidak ada crash, StrictMode, atau leak selama audit; mengubah density 320 ↔ 36
 - **T13.4:** layar jeda: tombol SELESAI terlihat penuh di 320 dp; Persiapan ride: cincin GPS lebih kecil di `COMPACT`; Ringkasan: satuan tidak terpecah.
 - **T13.5:** Sambutan: tombol Mulai terlihat tanpa scroll jauh.
 - **T13.6:** `MonthCard` diberi jarak antar kolom + angka tidak bertabrakan.
-- **T13.7:** Rute kosong (otomatis beres lewat T13.3); area daftar Sensor.
+- **T13.7:** cek ulang Rute kosong (diperbaiki di T13.3); area daftar Sensor.
 - **T13.8:** baris Setelan dengan nilai panjang; kolom kontak Keselamatan.
