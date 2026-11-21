@@ -1,6 +1,6 @@
 # 16 — Rencana Fase 13: Tampilan Responsif untuk Layar Kecil
 
-**Status:** berjalan (T13.1–T13.4 selesai 2026-11-21). Disusun 2026-11-19 atas permintaan kolaborator (pembagian tugas dengan pemilik); **disetujui pemilik 2026-11-20**. Dikerjakan **setelah Fase 11 dan 12** (D-124).
+**Status:** T13.1–T13.8 selesai 2026-11-21; penutup fase: rilis beta. Disusun 2026-11-19 atas permintaan kolaborator (pembagian tugas dengan pemilik); **disetujui pemilik 2026-11-20**. Dikerjakan **setelah Fase 11 dan 12** (D-124).
 **Acuan:** `13-UI-SCREENS.md` (frame acuan 390 dp; wajib benar di 360 dp dan ≥ 412 dp), `02-DESIGN.md`, `08-CODING-RULES.md` §6 (UI-01…UI-09), `10-FEATURE-CHECKLIST.md`, `14-PHASE11-PLAN.md` §8 (anggaran performa).
 
 ---
@@ -47,16 +47,16 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 
 **13B — Layar prioritas**
 - [x] T13.4 Layar ride & persiapan ride (`RideScreen`, `PreRideScreen`, `SummaryScreen`, insiden)
-- [ ] T13.5 Beranda, onboarding & sambutan (`HomeScreen`, `OnboardingScreen`)
+- [x] T13.5 Beranda, onboarding & sambutan (`HomeScreen`, `OnboardingScreen`)
 
 **13C — Layar lain**
-- [ ] T13.6 Riwayat & detail ride (`HistoryScreen`, `ActivityDetailScreen`, grafik, zona)
-- [ ] T13.7 Rute, sensor, latihan (`Routes*`, `SensorsScreen`, layar `feature-training`)
-- [ ] T13.8 Setelan & sub-layarnya (`SettingsScreen`, Profil, Keselamatan, Peta offline, Backup, Strava, dll.)
+- [x] T13.6 Riwayat & detail ride (`HistoryScreen`, `ActivityDetailScreen`, grafik, zona)
+- [x] T13.7 Rute, sensor, latihan (`Routes*`, `SensorsScreen`, layar `feature-training`)
+- [x] T13.8 Setelan & sub-layarnya (`SettingsScreen`, Profil, Keselamatan, Peta offline, Backup, Strava, dll.)
 
 **Penutup fase**
-- [ ] Screenshot pembanding 412/390/360 dp identik dengan baseline untuk semua layar
-- [ ] Uji perangkat 320 dp (HP kecil asli bila ada, selain `wm density`)
+- [x] Screenshot pembanding 412/390/360 dp identik dengan baseline untuk semua layar (per task, Feature Report T13.3–T13.8)
+- [x] Uji perangkat 320 dp lewat `wm density`/`wm size` di realme RMX3830 (HP kecil asli tidak ada)
 - [ ] Rilis beta berikutnya
 
 ## 6. Spesifikasi per task
@@ -94,21 +94,21 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 - Tidak ada perhitungan tambahan saat merekam (anggaran performa).
 
 #### T13.5 Beranda, onboarding & sambutan
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-21 (D-146): Sambutan di `COMPACT` judul 30 sp + kartu contoh disembunyikan → tombol Mulai terlihat tanpa scroll di 320 × 569 dp; Beranda tidak perlu diubah (audit) · Feature Report: [`T13.5-T13.8-audit-fixes.md`](../reports/features/T13.5-T13.8-audit-fixes.md)
 - Sambutan: judul besar lebih kecil di `COMPACT` sehingga tombol **Mulai** terlihat tanpa scroll jauh (temuan cek awal §2).
 - Beranda: kartu status (GPS/HR/Cadence/Power) 4 kolom → tetap muat atau 2×2 di `COMPACT`; tombol MULAI RIDE tetap ≥ 88 dp.
 
 #### T13.6 Riwayat & detail ride
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-21 (D-146): jarak antar kolom kartu bulan di `COMPACT`; Detail ride tanpa masalah di audit; galeri share/editor segmen belum diaudit (Feature Report §9) · Feature Report: [`T13.5-T13.8-audit-fixes.md`](../reports/features/T13.5-T13.8-audit-fixes.md)
 - Kotak statistik 3 kolom → 2 kolom di `COMPACT`; label sumbu `RideChart` tidak bertabrakan (gutter minimum D-115 tetap untuk `REGULAR`); kolom angka zona (`zonePercentWidth`, `zoneDurationWidth`) muat.
 - Galeri share 2 kolom tetap; ukuran gambar kartu share **tidak berubah** (gambar ekspor harus sama di semua HP).
 
 #### T13.7 Rute, sensor, latihan
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-21 (D-146): Rute kosong diperbaiki di T13.3; Sensor/Latihan bisa di-scroll (P3, tidak diubah); Detail rute belum diaudit (Feature Report §9) · Feature Report: [`T13.5-T13.8-audit-fixes.md`](../reports/features/T13.5-T13.8-audit-fixes.md)
 - Baris daftar (nama panjang rute/sensor) dipotong dengan elipsis; tombol aksi tetap ≥ 56 dp; editor halaman data dan rencana latihan muat 320 dp.
 
 #### T13.8 Setelan & sub-layar
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-21 (D-146): kolom kontak Keselamatan bertumpuk di `COMPACT`; baris Setelan membaik sejak T13.3 · Feature Report: [`T13.5-T13.8-audit-fixes.md`](../reports/features/T13.5-T13.8-audit-fixes.md)
 - Baris setelan dengan nilai di kanan → nilai pindah ke bawah label di `COMPACT` bila tidak muat; formulir Profil/Keselamatan muat tanpa scroll horizontal; dialog tidak lebih lebar dari layar.
 
 ---

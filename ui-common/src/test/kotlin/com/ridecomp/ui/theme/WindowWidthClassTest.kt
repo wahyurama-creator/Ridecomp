@@ -23,6 +23,9 @@ class WindowWidthClassTest {
         assertEquals(RideCompDimens.gpsWaitOuter, regular.gpsWaitOuter)
         assertEquals(RideCompDimens.gpsWaitInner, regular.gpsWaitInner)
         assertEquals(RideCompDimens.countdownRing, regular.countdownRing)
+        assertEquals(RideCompDimens.displaySize, regular.displaySize)
+        assertEquals(RideCompDimens.displayLineHeight, regular.displayLineHeight)
+        assertEquals(RideCompDimens.none, regular.statColumnGap)
     }
 
     @Test
@@ -38,6 +41,9 @@ class WindowWidthClassTest {
         assertTrue(compact.gpsWaitInner > RideCompDimens.iconSizeLarge)
         // The countdown (96 sp) and "seconds" still fit inside the ring.
         assertTrue(compact.countdownRing < regular.countdownRing && compact.countdownRing >= COUNTDOWN_RING_MIN)
+        assertTrue(compact.displaySize.value < regular.displaySize.value)
+        assertTrue(compact.displayLineHeight.value >= compact.displaySize.value)
+        assertTrue(compact.statColumnGap > regular.statColumnGap)
     }
 
     @Test
@@ -48,7 +54,7 @@ class WindowWidthClassTest {
     }
 
     private companion object {
-        const val TOKEN_COUNT = 6
+        const val TOKEN_COUNT = 9
         val COUNTDOWN_RING_MIN = 160.dp
     }
 }

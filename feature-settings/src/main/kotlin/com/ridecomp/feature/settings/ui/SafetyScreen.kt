@@ -55,6 +55,7 @@ import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
 import com.ridecomp.ui.theme.RideCompDimens
 import com.ridecomp.ui.theme.RideCompTheme
+import com.ridecomp.ui.theme.WindowWidthClass
 import com.ridecomp.ui.udf.ObserveEffects
 import kotlinx.collections.immutable.persistentListOf
 import org.koin.androidx.compose.koinViewModel
@@ -162,20 +163,36 @@ private fun Contacts(state: SafetyUiState, onEvent: (SafetyUiEvent) -> Unit, onP
     }
     if (!state.canAddContact) return
     // Typing a number is the fallback when the contact is not in the phone book.
-    Row(horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm), verticalAlignment = Alignment.Bottom) {
+    val name: @Composable (Modifier) -> Unit = { fieldModifier ->
         RideCompTextField(
             label = stringResource(R.string.safety_contact_name),
             value = state.newName,
             onValueChange = { onEvent(SafetyUiEvent.NewName(it)) },
-            modifier = Modifier.weight(1f),
+            modifier = fieldModifier,
         )
+    }
+    val phone: @Composable (Modifier) -> Unit = { fieldModifier ->
         RideCompTextField(
             label = stringResource(R.string.safety_contact_phone),
             value = state.newPhone,
             onValueChange = { onEvent(SafetyUiEvent.NewPhone(it)) },
             keyboardType = KeyboardType.Phone,
-            modifier = Modifier.weight(1f),
+            modifier = fieldModifier,
         )
+    }
+    when (RideCompTheme.widthClass) {
+        // Side by side the fields are too narrow below 360 dp (audit T13.1 #13): one under the other.
+        WindowWidthClass.COMPACT -> Column(verticalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm)) {
+            name(Modifier.fillMaxWidth())
+            phone(Modifier.fillMaxWidth())
+        }
+        WindowWidthClass.REGULAR -> Row(
+            horizontalArrangement = Arrangement.spacedBy(RideCompDimens.spacingSm),
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            name(Modifier.weight(1f))
+            phone(Modifier.weight(1f))
+        }
     }
     BigButton(
         text = stringResource(R.string.safety_add_contact),

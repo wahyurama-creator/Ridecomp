@@ -12,7 +12,7 @@
 ## 1. Konvensi global
 
 ### 1.1 Frame & tata letak
-- Frame acuan: ponsel **390 × 844 dp**, potret. Layout harus tetap benar di layar 360 dp (HP low-end umum) dan ≥ 412 dp.
+- Frame acuan: ponsel **390 × 844 dp**, potret. Layout harus benar di 320 dp; 360 dp ke atas memakai ukuran normal (Fase 13, D-124). Ukuran yang berbeda di bawah 360 dp ada di `AdaptiveDimens` (`RideCompTheme.dimens`).
 - Padding layar non-ride: atas 48–56, kiri/kanan 20–24, bawah 24–32.
 - Layar ride memakai lebar penuh (grid data menempel ke tepi), padding hanya pada strip status dan bar kontrol.
 - Jarak antar blok: 14–20; antar elemen dalam kartu: 8–12.

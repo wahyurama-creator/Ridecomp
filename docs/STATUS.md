@@ -6,7 +6,7 @@
 - **Rilis terakhir:** **0.9.3** (beta), 2026-11-18 · [GitHub Releases](https://github.com/wahyurama-creator/Ridecomp/releases). Skema DB **v10**.
 - **Fase selesai:** 0–5, 7, 9, dan rilis beta & masukan pengguna (Fase 8/10). Ringkasan: [`planning/06-ROADMAP.md`](planning/06-ROADMAP.md).
 - **Fase berjalan:** **Fase 13 — Tampilan responsif layar kecil.** Rencana lengkap: [`planning/16-PHASE13-PLAN.md`](planning/16-PHASE13-PLAN.md). Fase 12 ditutup 2026-11-21 (5/7; T12.4 & T12.5c ditunda, D-139).
-- **Task terakhir:** T13.4 layar ride & persiapan ride: di < 360 dp waktu jeda 48 sp + LANJUTKAN 72 dp (SELESAI tidak terpotong, audit P2 #3), cincin GPS 152/104 dp, cincin hitung mundur 168 dp; 412/390/360 dp identik ([Feature Report](reports/features/T13.4-ride-screens.md), D-145).
+- **Task terakhir:** T13.5–T13.8 perbaikan audit layar kecil: Sambutan (tombol Mulai tanpa scroll), kartu bulan Riwayat, kolom kontak Keselamatan; 412/390/360 dp identik ([Feature Report](reports/features/T13.5-T13.8-audit-fixes.md), D-146).
 - **Task berikutnya:** **T13.5** Beranda, onboarding & sambutan (`planning/16-PHASE13-PLAN.md`); compare hanya layar yang diubah (`SCREENS_ONLY`). Ditunda: T12.5c, T12.4 Wear OS. Rilis gabungan Fase 11–13 + MobSF setelah Fase 13.
 
 ## Daftar centang Fase 11
@@ -45,10 +45,10 @@ Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.m
 - [x] T13.2 Skrip screenshot pembanding · [Feature Report](reports/features/T13.2-screen-compare.md)
 - [x] T13.3 Fondasi ukuran `Regular`/`Compact` · [Feature Report](reports/features/T13.3-size-foundation.md)
 - [x] T13.4 Layar ride & persiapan ride · [Feature Report](reports/features/T13.4-ride-screens.md)
-- [ ] T13.5 Beranda, onboarding & sambutan
-- [ ] T13.6 Riwayat & detail ride
-- [ ] T13.7 Rute, sensor, latihan
-- [ ] T13.8 Setelan & sub-layar
+- [x] T13.5 Beranda, onboarding & sambutan · [Feature Report](reports/features/T13.5-T13.8-audit-fixes.md)
+- [x] T13.6 Riwayat & detail ride · [Feature Report](reports/features/T13.5-T13.8-audit-fixes.md)
+- [x] T13.7 Rute, sensor, latihan · [Feature Report](reports/features/T13.5-T13.8-audit-fixes.md)
+- [x] T13.8 Setelan & sub-layar · [Feature Report](reports/features/T13.5-T13.8-audit-fixes.md)
 
 Fase lain: lihat kolom Status di tabel atas `planning/06-ROADMAP.md` (Fase 0–5, 7, 9, 10 selesai; Fase 6 iOS belum mulai).
 
