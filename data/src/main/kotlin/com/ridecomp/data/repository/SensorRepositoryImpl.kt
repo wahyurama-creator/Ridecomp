@@ -16,6 +16,9 @@ internal object SensorServiceNames {
 
     /** Smart trainer (FTMS, T9.1): stored with its kinds, not a kind of its own. */
     const val TRAINER = "ftms"
+
+    /** GloryFit watch (T12.5b): heart rate through the watch's own protocol, also not a kind of its own. */
+    const val GLORYFIT_WATCH = "gloryfit"
     const val SEPARATOR = ","
 }
 
@@ -44,16 +47,23 @@ internal fun SensorEntity.toDomain() = SavedSensor(
     lastBatteryPercent = lastBattery,
     isAutoConnect = isAutoConnect,
     createdAtMs = createdAt,
-    isTrainer = services.split(SensorServiceNames.SEPARATOR).any { it.trim() == SensorServiceNames.TRAINER },
+    isTrainer = services.hasServiceName(SensorServiceNames.TRAINER),
+    isGloryFitWatch = services.hasServiceName(SensorServiceNames.GLORYFIT_WATCH),
 )
+
+private fun String.hasServiceName(name: String): Boolean = split(SensorServiceNames.SEPARATOR).any { it.trim() == name }
 
 internal fun SavedSensor.toEntity(existingId: Long = 0) = SensorEntity(
     id = existingId,
     remoteId = address,
     name = name,
-    services = kinds.toServices().let {
-        if (isTrainer) it + SensorServiceNames.SEPARATOR + SensorServiceNames.TRAINER else it
-    },
+    services = (
+        listOf(kinds.toServices()) +
+            listOfNotNull(
+                SensorServiceNames.TRAINER.takeIf { isTrainer },
+                SensorServiceNames.GLORYFIT_WATCH.takeIf { isGloryFitWatch },
+            )
+        ).filter { it.isNotEmpty() }.joinToString(SensorServiceNames.SEPARATOR),
     lastBattery = lastBatteryPercent,
     isAutoConnect = isAutoConnect,
     createdAt = createdAtMs,

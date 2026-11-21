@@ -51,7 +51,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 
 **12C — Jam tangan tanpa broadcast (eksperimental, Aolon)**
 - [x] T12.5a Identifikasi protokol Aolon (go/no-go)
-- [ ] T12.5b Implementasi sensor "Jam tangan (eksperimental)" — hanya bila T12.5a lolos
+- [x] T12.5b Implementasi sensor "Jam tangan (eksperimental)" — hanya bila T12.5a lolos
 - [ ] T12.5c Uji ride sungguhan ±30 menit
 
 **Penutup fase**
@@ -95,7 +95,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 - Hasil (perintah, format data, frekuensi) dicatat di `docs/architecture/04-INTEGRATIONS.md` bagian baru "Jam tangan tanpa standar".
 
 #### T12.5b Implementasi sensor "Jam tangan (eksperimental)"
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [x] **Status:** selesai 2026-11-21 · Feature Report: [`T12.5b-gloryfit-watch.md`](../reports/features/T12.5b-gloryfit-watch.md) · D-136
 - Jenis sensor baru di `:core` (`SensorKind`/parser terpisah), koneksi memakai klien GATT yang ada (`platform/ble`), pemilik & pelepasan resource terdaftar di 09 §1.
 - **Validasi input ketat** (SEC-IN): panjang paket, rentang HR 30–230 bpm, buang nilai di luar rentang; tidak pernah crash karena paket aneh.
 - Ditandai **"Eksperimental"** di UI; pesan bila jam tangan masih tersambung ke aplikasi bawaannya ("Putuskan dulu dari aplikasi Aolon"); berhenti mengirim perintah ke jam tangan saat ride selesai (hemat baterai jam tangan).

@@ -31,6 +31,7 @@
     <string name="sensors_signal_weak">weak signal</string>
     <string name="sensors_ble_info">Bluetooth (BLE) sensors only. ANT+-only sensors are not supported by most phones. Calibrate a power meter with its maker\'s app.</string>
     <string name="sensors_kind_trainer">Smart trainer (ERG)</string>
+    <string name="sensors_kind_gloryfit_watch">Heart rate · Watch (experimental) · close GloryFit before riding</string>
     <string name="sensors_none_found">No new sensors found. Wake them up (spin the pedals or wheel, wet the heart rate strap), keep them close to the phone and search again.</string>
     <string name="sensors_wide_scan">Show all Bluetooth devices</string>
     <string name="sensors_wide_scan_hint">For smartwatches and devices that do not announce a sensor. Each device is checked before it is saved.</string>

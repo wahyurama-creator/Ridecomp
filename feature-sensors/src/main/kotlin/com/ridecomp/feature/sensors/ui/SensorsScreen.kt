@@ -323,9 +323,16 @@ private fun SensorKind?.tint(): Color = when (this) {
 @Composable
 private fun savedSubtitle(sensor: SavedSensor): String {
     val kinds = kindsLabel(sensor.kinds, sensor.isTrainer)
-    val battery = sensor.lastBatteryPercent ?: return kinds
-    val batteryRes = if (sensor.isBatteryLow) R.string.sensors_battery_low else R.string.sensors_battery
-    return stringResource(R.string.sensors_subtitle, kinds, stringResource(batteryRes, battery))
+    val battery = sensor.lastBatteryPercent
+    return when {
+        // The watch is held by its own app unless that app is closed (one connection only, T12.5b).
+        sensor.isGloryFitWatch -> stringResource(R.string.sensors_kind_gloryfit_watch)
+        battery == null -> kinds
+        else -> {
+            val batteryRes = if (sensor.isBatteryLow) R.string.sensors_battery_low else R.string.sensors_battery
+            stringResource(R.string.sensors_subtitle, kinds, stringResource(batteryRes, battery))
+        }
+    }
 }
 
 /** "Power · Speed & cadence", or "Smart trainer (ERG)" for an FTMS trainer (T9.1). */
