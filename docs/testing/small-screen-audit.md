@@ -63,6 +63,8 @@ Elemen yang bisa diketuk dengan ukuran tetap di bawah UI-07, dicari di kode `src
 
 Toggle 56 × 34 dp tidak termasuk: seluruh baris `SwitchRow` yang bisa diketuk.
 
+**Cek perangkat dengan batas 56 dp (2026-11-21, `targets.py`, realme 320 & 360 dp):** selain di atas, juga < 56 dp di **semua lebar**: chip pilihan di Profil aktivitas (68 × 48 dp), baris pilihan Bahasa (tinggi 48 dp), kotak halaman di editor Halaman data (lebar 47 dp). Tidak ada yang hanya muncul di 320 dp. Utang UI-07 lama, di luar Fase 13 (R1).
+
 ## 4. Catatan di 360 dp (tidak diubah, R1)
 
 - Kartu ANT+ di Sensor dan kartu tips di Persiapan ride terpotong tepat di atas tombol bawah tanpa tanda bisa di-scroll (P3 kosmetik). Dicatat saja; tampilan ≥ 360 dp tidak boleh berubah di fase ini.

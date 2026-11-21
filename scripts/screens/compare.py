@@ -4,7 +4,9 @@
     python3 -I scripts/screens/compare.py build/screens/<baseline> build/screens/<result>
 
 Every PNG of the baseline must exist in the result and be identical: one different pixel is a failure.
-Prints the number of different pixels and their bounding box; exit code 1 when anything differs or is missing.
+The status bar rows (status_bar_px in each width's device.txt) are skipped: some ROMs ignore demo mode, so
+the clock changes. Prints the number of different pixels and their bounding box; exit code 1 when anything
+differs or is missing.
 """
 import struct
 import sys
@@ -66,8 +68,17 @@ def unfilter(kind, row, previous, bpp):
             row[i] = (row[i] + predictor) & 0xFF
 
 
-def difference(first, second):
-    """None when identical, else a description of the different pixels."""
+def status_bar_rows(folder):
+    """Height of the status bar in pixels recorded by capture.sh, 0 when unknown."""
+    device = folder / "device.txt"
+    if not device.exists():
+        return 0
+    values = dict(line.split("=", 1) for line in device.read_text().split())
+    return int(values.get("status_bar_px") or 0)
+
+
+def difference(first, second, skip_rows=0):
+    """None when identical (below the first skip_rows rows), else a description of the different pixels."""
     if first.read_bytes() == second.read_bytes():
         return None
     w1, h1, bpp1, rows1 = decode(first)
@@ -76,7 +87,7 @@ def difference(first, second):
         return f"size {w1}x{h1} vs {w2}x{h2}"
     count, box = 0, None
     for y, (a, b) in enumerate(zip(rows1, rows2)):
-        if a == b:
+        if y < skip_rows or a == b:
             continue
         for x in range(w1):
             if a[x * bpp1:x * bpp1 + 3] != b[x * bpp2:x * bpp2 + 3]:
@@ -96,7 +107,8 @@ def main(baseline, result):
             print(f"MISSING   {name}")
             failures += 1
             continue
-        diff = difference(expected, actual)
+        skip = max(status_bar_rows(expected.parent), status_bar_rows(actual.parent))
+        diff = difference(expected, actual, skip)
         print(f"SAME      {name}" if diff is None else f"DIFFERENT {name}: {diff}")
         failures += diff is not None
     print(f"{failures} screen(s) differ or are missing" if failures else "All screens identical")

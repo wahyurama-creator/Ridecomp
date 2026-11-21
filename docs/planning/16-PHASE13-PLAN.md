@@ -1,6 +1,6 @@
 # 16 — Rencana Fase 13: Tampilan Responsif untuk Layar Kecil
 
-**Status:** berjalan (T13.1 selesai 2026-11-21). Disusun 2026-11-19 atas permintaan kolaborator (pembagian tugas dengan pemilik); **disetujui pemilik 2026-11-20**. Dikerjakan **setelah Fase 11 dan 12** (D-124).
+**Status:** berjalan (T13.1–T13.3 selesai 2026-11-21). Disusun 2026-11-19 atas permintaan kolaborator (pembagian tugas dengan pemilik); **disetujui pemilik 2026-11-20**. Dikerjakan **setelah Fase 11 dan 12** (D-124).
 **Acuan:** `13-UI-SCREENS.md` (frame acuan 390 dp; wajib benar di 360 dp dan ≥ 412 dp), `02-DESIGN.md`, `08-CODING-RULES.md` §6 (UI-01…UI-09), `10-FEATURE-CHECKLIST.md`, `14-PHASE11-PLAN.md` §8 (anggaran performa).
 
 ---
@@ -42,8 +42,8 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 
 **13A — Fondasi & audit**
 - [x] T13.1 Audit layar kecil: screenshot semua layar di 320 dp & 360 dp, daftar masalah per layar
-- [ ] T13.2 Skrip screenshot pembanding (`scripts/screens/`) + baseline 412/390/360 dp
-- [ ] T13.3 Fondasi: `WindowWidthClass`, token `Regular`/`Compact`, `@SmallScreenPreviews`
+- [x] T13.2 Skrip screenshot pembanding (`scripts/screens/`) + baseline 412/390/360 dp
+- [x] T13.3 Fondasi: `WindowWidthClass`, token `Regular`/`Compact`, `@SmallScreenPreviews`
 
 **13B — Layar prioritas**
 - [ ] T13.4 Layar ride & persiapan ride (`RideScreen`, `PreRideScreen`, `SummaryScreen`, insiden)
@@ -69,7 +69,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 - Hasil: tabel di `docs/testing/small-screen-audit.md` + prioritas (P1 rusak/tak bisa dipakai, P2 jelek tapi bisa dipakai, P3 kosmetik). Menentukan isi T13.4–T13.8 dan apakah R4 perlu dibuka.
 
 #### T13.2 Skrip screenshot pembanding
-- [ ] **Status:** alat selesai 2026-11-21 (`scripts/screens/`, rute layar debug, D-142); **baseline menunggu perangkat uji** (build debug tidak bisa dipasang di HP pemilik tanpa menghapus build release) · Cara pakai: [`screen-compare.md`](../testing/screen-compare.md) · Feature Report: [`T13.2-screen-compare.md`](../reports/features/T13.2-screen-compare.md)
+- [x] **Status:** selesai 2026-11-21 (`scripts/screens/`, rute layar debug, app debug terpisah; D-142, D-144). Baseline `base-id-dark` (412/390/360/320 dp, 25 layar) dari `49f9141` di realme RMX3830 · Cara pakai: [`screen-compare.md`](../testing/screen-compare.md) · Feature Report: [`T13.2-screen-compare.md`](../reports/features/T13.2-screen-compare.md)
 - `scripts/screens/capture.sh <label>`: untuk setiap lebar (412, 390, 360 dp lewat `wm density`) buka setiap layar lewat langkah adb terdokumentasi (ketuk per koordinat, dihitung ulang per lebar); bila terlalu rapuh, ajukan rute debug khusus (source set `debug`, SEC-BLD-04), simpan PNG ke folder lokal (tidak di-commit: `.gitignore`).
 - `scripts/screens/compare.sh <baseline> <hasil>`: bandingkan per piksel tanpa alat baru (mis. `cmp` atas PNG hasil `screencap` yang deterministik; data dinamis seperti jam/baterai disembunyikan dengan demo mode status bar `adb shell settings put global sysui_demo_allowed 1`).
 - Data uji tetap: ride contoh dari menu Developer (debug) agar layar identik antar pengambilan.
@@ -77,7 +77,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 - Tanpa dependency Gradle baru (R2). Bila otomatisasi penuh di CI diinginkan nanti → ajukan Roborazzi/Paparazzi terpisah (DEP-02).
 
 #### T13.3 Fondasi
-- [ ] **Status:** kode selesai 2026-11-21 (`WindowWidthClass`, `AdaptiveDimens`, `@SmallScreenPreviews`, `MessageState` bisa di-scroll; D-143); **bukti compare 412/390/360 dp menunggu perangkat uji** (baseline dari `49f9141`) · Feature Report: [`T13.3-size-foundation.md`](../reports/features/T13.3-size-foundation.md)
+- [x] **Status:** selesai 2026-11-21 (D-143). Compare di realme RMX3830: **25/25 layar identik di 412, 390, 360 dp**; 10 layar berubah di 320 dp sesuai rencana · Feature Report: [`T13.3-size-foundation.md`](../reports/features/T13.3-size-foundation.md)
 - `WindowWidthClass` + `COMPACT_MAX_WIDTH_DP = 360` di `:ui-common` (konstanta di satu tempat); `LocalWindowWidthClass` diisi di `RideCompTheme`.
 - `RideCompDimens` → `data class` + `Regular` (nilai sekarang, **disalin tanpa perubahan**) + `Compact`; `RideCompTheme.dimens`. Migrasi pemakaian `RideCompDimens.x` → `RideCompTheme.dimens.x` bertahap; selama migrasi keduanya menunjuk nilai `Regular` yang sama.
 - Layar yang sekarang membaca `LocalConfiguration`/`BoxWithConstraints` untuk lebar dialihkan ke `LocalWindowWidthClass` (perilaku `REGULAR` tetap).
