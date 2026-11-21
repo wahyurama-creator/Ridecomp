@@ -192,9 +192,12 @@ fun RideCompNavHost(navController: NavHostController, startDestination: String, 
             )
         }
         composable(TopLevelDestination.SENSORS.route) {
-            SensorsRoute(tipContent = {
-                GuideTip(GuideTip.SENSORS, onLearnMore = { navController.navigate(AppRoutes.helpTopic(it)) })
-            })
+            SensorsRoute(
+                tipContent = {
+                    GuideTip(GuideTip.SENSORS, onLearnMore = { navController.navigate(AppRoutes.helpTopic(it)) })
+                },
+                onOpenHeartRateGuide = { navController.navigate(AppRoutes.helpTopic(GuideTopic.HEART_RATE)) },
+            )
         }
         composable(TopLevelDestination.SETTINGS.route) {
             SettingsRoute(
