@@ -1,0 +1,29 @@
+# Screens captured by capture.sh (T13.2): <file name> <route>. Routes are AppRoutes / TopLevelDestination
+# names, at most one argument (help/WATCHES). Screens that need an id (ride detail, route detail, ...) go in a
+# local file passed with SCREENS_FILE; History's inner tabs are not routes. Keep names stable: baselines are
+# compared file by file.
+home home
+pre_ride pre_ride
+history history
+routes routes
+sensors sensors
+settings settings
+plans plans
+bikes bikes
+bike_new bike_new
+profile profile
+ride_settings ride_settings
+battery_help battery_help
+data_pages data_pages
+activity_profiles activity_profiles
+safety safety
+backup backup
+offline_maps offline_maps
+licenses licenses
+app_update app_update
+strava strava
+strava_help strava_help
+language language
+display display
+help help
+help_watches help/WATCHES

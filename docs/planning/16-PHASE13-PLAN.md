@@ -69,7 +69,7 @@ Centang saat task selesai (juga di `06-ROADMAP.md` dan `docs/STATUS.md`).
 - Hasil: tabel di `docs/testing/small-screen-audit.md` + prioritas (P1 rusak/tak bisa dipakai, P2 jelek tapi bisa dipakai, P3 kosmetik). Menentukan isi T13.4–T13.8 dan apakah R4 perlu dibuka.
 
 #### T13.2 Skrip screenshot pembanding
-- [ ] **Status:** belum dikerjakan · Feature Report: —
+- [ ] **Status:** alat selesai 2026-11-21 (`scripts/screens/`, rute layar debug, D-142); **baseline menunggu perangkat uji** (build debug tidak bisa dipasang di HP pemilik tanpa menghapus build release) · Cara pakai: [`screen-compare.md`](../testing/screen-compare.md) · Feature Report: [`T13.2-screen-compare.md`](../reports/features/T13.2-screen-compare.md)
 - `scripts/screens/capture.sh <label>`: untuk setiap lebar (412, 390, 360 dp lewat `wm density`) buka setiap layar lewat langkah adb terdokumentasi (ketuk per koordinat, dihitung ulang per lebar); bila terlalu rapuh, ajukan rute debug khusus (source set `debug`, SEC-BLD-04), simpan PNG ke folder lokal (tidak di-commit: `.gitignore`).
 - `scripts/screens/compare.sh <baseline> <hasil>`: bandingkan per piksel tanpa alat baru (mis. `cmp` atas PNG hasil `screencap` yang deterministik; data dinamis seperti jam/baterai disembunyikan dengan demo mode status bar `adb shell settings put global sysui_demo_allowed 1`).
 - Data uji tetap: ride contoh dari menu Developer (debug) agar layar identik antar pengambilan.

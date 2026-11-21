@@ -1,6 +1,7 @@
 package com.ridecomp.app
 
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.StrictMode
 import android.os.strictmode.Violation
@@ -42,6 +43,9 @@ object DevTools {
     internal const val PREFERENCES = "ridecomp_developer"
     internal const val KEY_SIMULATE_GPS = "simulate_gps"
     internal const val KEY_SIMULATE_SENSORS = "simulate_sensors"
+
+    /** The screen asked for by the comparison screenshot script, if any ([DebugScreenRoute]). */
+    fun screenRoute(intent: Intent?): String? = DebugScreenRoute.from(intent)
 
     fun install() {
         // Android 9+: our listener logs each violation with its stack; older phones keep the plain log.

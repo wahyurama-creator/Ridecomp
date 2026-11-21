@@ -215,7 +215,7 @@ Rencana, keputusan R1–R4, prinsip teknis, risiko, dan DoD: **`16-PHASE13-PLAN.
 
 **13A — Fondasi & audit**
 - [x] T13.1 Audit layar kecil (320 dp & 360 dp) + daftar masalah per layar. 0 P1, 4 P2, 11 P3 · [Audit](../testing/small-screen-audit.md) · [Feature Report](../reports/features/T13.1-small-screen-audit.md)
-- [ ] T13.2 Skrip screenshot pembanding + baseline 412/390/360 dp.
+- [ ] T13.2 Skrip screenshot pembanding + baseline 412/390/360 dp. Alat selesai (D-142); baseline menunggu perangkat uji · [Feature Report](../reports/features/T13.2-screen-compare.md)
 - [ ] T13.3 Fondasi: `WindowWidthClass`, token `Regular`/`Compact`, preview layar kecil.
 
 **13B — Layar prioritas**

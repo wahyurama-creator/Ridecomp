@@ -9,6 +9,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ridecomp.app.navigation.IncomingDebugScreen
 import com.ridecomp.app.navigation.IncomingGpx
 import com.ridecomp.app.navigation.IncomingStravaAuth
 import com.ridecomp.app.navigation.IncomingWidget
@@ -46,6 +47,7 @@ class MainActivity : ComponentActivity() {
             IncomingGpx.offer(intent)
             IncomingStravaAuth.offer(intent)
             IncomingWidget.offer(intent)
+            IncomingDebugScreen.offer(DevTools.screenRoute(intent))
         }
         setContent {
             // Maps load their native library on the IO dispatcher, not the main thread (T11.2a).
@@ -68,6 +70,7 @@ class MainActivity : ComponentActivity() {
         IncomingGpx.offer(intent)
         IncomingStravaAuth.offer(intent)
         IncomingWidget.offer(intent)
+        IncomingDebugScreen.offer(DevTools.screenRoute(intent))
     }
 
     /**
