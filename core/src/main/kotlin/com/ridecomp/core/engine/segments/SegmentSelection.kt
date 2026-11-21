@@ -12,6 +12,8 @@ public data class SegmentSelectionStats(
     val avgGradePercent: Double?,
     /** Time this ride took over the part (elapsed, like segment efforts). */
     val elapsedS: Double,
+    /** Lowest and highest altitude along the part; null without altitude. */
+    val altitudeRangeM: ClosedFloatingPointRange<Double>? = null,
 ) {
     val avgSpeedMps: Double? get() = if (elapsedS > 0) lengthM / elapsedS else null
 }
@@ -47,6 +49,7 @@ public class TrackProfile(
             gainM = if (hasAltitude) RouteBuilder.ascent(elevations) else null,
             avgGradePercent = if (hasAltitude) netM / lengthM * Units.PERCENT else null,
             elapsedS = elapsedS.coerceAtLeast(0.0),
+            altitudeRangeM = if (hasAltitude) elevations.min()..elevations.max() else null,
         )
     }
 

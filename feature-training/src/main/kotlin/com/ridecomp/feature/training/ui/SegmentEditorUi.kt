@@ -61,7 +61,7 @@ import kotlinx.collections.immutable.toImmutableList
  * New segment from part of a ride (T4.2, redesigned T11.15): three numbered steps. ① Choose: the street map
  * (or sketch) with the whole ride and the chosen part, quick picks (whole ride, detected climbs), the
  * elevation with a range slider, and fine − / + steps for both ends. ② Check: length, climb, grade, and this
- * ride's time and speed over the part. ③ Name, how matching works, and save.
+ * ride's time and speed over the part, its altitude range. ③ Name, how matching works, and save.
  */
 @Composable
 fun SegmentEditorScreen(
@@ -303,6 +303,17 @@ private fun selectionItems(stats: SegmentSelectionStats, formatter: UnitFormatte
             stringResource(R.string.segment_stat_speed),
             stats.avgSpeedMps?.let { formatter.speed(it) } ?: none,
             unit = formatter.speedUnit.takeIf { stats.avgSpeedMps != null },
+        ),
+        StatItem(
+            stringResource(R.string.segment_stat_altitude),
+            stats.altitudeRangeM?.let { range ->
+                stringResource(
+                    R.string.segment_altitude_value,
+                    formatter.elevation(range.start),
+                    formatter.elevation(range.endInclusive),
+                )
+            } ?: none,
+            unit = formatter.elevationUnit.takeIf { stats.altitudeRangeM != null },
         ),
     )
 }

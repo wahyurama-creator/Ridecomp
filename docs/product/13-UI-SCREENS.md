@@ -287,3 +287,6 @@ Hal-hal di bawah ditemukan saat membaca desain; agent mengikuti kolom "Tindakan"
 - [ ] State kosong/menunggu/error tersedia sesuai §4 dan 02 §3.13, dengan `@Preview`.
 - [ ] Varian tema terang tersedia.
 - [ ] Screenshot (build release, HP fisik) dilampirkan di Feature Report untuk dibandingkan dengan canvas.
+
+#### Segmen baru (editor; T4.2, didesain ulang T11.15, D-133)
+- **Isi:** TopBarBack "Segmen baru" → **1 · PILIH BAGIAN**: petunjuk singkat, peta jalan (online/cache/file wilayah; sketsa bila tidak ada) dengan seluruh ride `accent` dan bagian terpilih `track`, titik mulai `ok` & titik selesai `textPrimary`; chip **Pintasan** (Seluruh ride · Tanjakan N · panjang · %); grafik elevasi dengan rentang disorot + RangeSlider; baris "Mulai X km [−][+]" & "Selesai Y km [−][+]" (50 m per ketuk) → **2 · PERIKSA**: StatGrid Panjang · Kenaikan · Rata-rata · Waktumu · Kecepatan · Elevasi (min–maks), peringatan kuning bila di luar 200 m–50 km → **3 · BERI NAMA**: kolom nama, kartu ⓘ cara pencocokan, tombol **Simpan segmen** (nonaktif bila belum valid).

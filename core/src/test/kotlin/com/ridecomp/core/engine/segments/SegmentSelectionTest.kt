@@ -23,6 +23,8 @@ class SegmentSelectionTest {
         assertEquals(3.0, stats.avgGradePercent ?: 0.0, DELTA)
         assertEquals(100.0, stats.elapsedS, DELTA)
         assertEquals(10.0, stats.avgSpeedMps ?: 0.0, DELTA)
+        assertEquals(100.0, stats.altitudeRangeM?.start ?: 0.0, DELTA)
+        assertEquals(130.0, stats.altitudeRangeM?.endInclusive ?: 0.0, DELTA)
     }
 
     @Test

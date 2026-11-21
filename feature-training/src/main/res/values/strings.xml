@@ -74,6 +74,8 @@
     <string name="segment_stat_grade">Avg grade</string>
     <string name="segment_stat_time">Your time</string>
     <string name="segment_stat_speed">Speed</string>
+    <string name="segment_stat_altitude">Altitude</string>
+    <string name="segment_altitude_value">%1$s–%2$s</string>
     <string name="segment_grade_value">%1$.1f%%</string>
     <string name="segment_value_none">–</string>
     <string name="segment_how_it_works">Once saved, past and future rides that pass this part in the same direction are matched automatically, with your rank and record. While recording, a segment card appears as you reach the start.</string>

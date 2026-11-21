@@ -72,6 +72,8 @@
     <string name="segment_stat_grade">Rata-rata</string>
     <string name="segment_stat_time">Waktumu</string>
     <string name="segment_stat_speed">Kecepatan</string>
+    <string name="segment_stat_altitude">Elevasi</string>
+    <string name="segment_altitude_value">%1$s–%2$s</string>
     <string name="segment_grade_value">%1$.1f%%</string>
     <string name="segment_value_none">–</string>
     <string name="segment_how_it_works">Setelah disimpan, ride lama dan ride berikutnya yang melewati bagian ini searah dicatat otomatis, lengkap dengan peringkat dan rekormu. Saat merekam, kartu segmen muncul begitu kamu masuk titik mulai.</string>

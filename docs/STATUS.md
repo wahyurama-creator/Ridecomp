@@ -6,8 +6,8 @@
 - **Rilis terakhir:** **0.9.3** (beta), 2026-11-18 · [GitHub Releases](https://github.com/wahyurama-creator/Ridecomp/releases). Skema DB **v10**.
 - **Fase selesai:** 0–5, 7, 9, dan rilis beta & masukan pengguna (Fase 8/10). Ringkasan: [`planning/06-ROADMAP.md`](planning/06-ROADMAP.md).
 - **Fase berjalan:** **Fase 11 — Analisa ride, usaha terbaik, tema & peta offline.** Rencana lengkap: [`planning/14-PHASE11-PLAN.md`](planning/14-PHASE11-PLAN.md). Keputusan K1–K5 sudah dijawab (D-109…D-113).
-- **Task terakhir:** fix temuan StrictMode Fase 11 (selesai 2026-11-20, [laporan](reports/features/FIX-strictmode-phase11.md), D-132); sebelumnya T11.14. Semua task Fase 11 selesai.
-- **Task berikutnya:** Fase 11 selesai kecuali rilis beta & MobSF (digabung dengan Fase 12–13). Tertunda atas permintaan pemilik: **redesign halaman Segmen baru**. Lalu Fase 12.
+- **Task terakhir:** T11.15 — Redesign halaman Segmen baru (selesai 2026-11-21, [Feature Report](reports/features/T11.15-segment-editor.md)); sebelumnya uji lapangan simulasi Fase 11.
+- **Task berikutnya:** **Fase 12** (smartwatch, `planning/15-PHASE12-PLAN.md`): T12.1 menunggu uji jam Aolon oleh pemilik; T12.2 berikutnya. Fase 11 selesai; rilis beta & MobSF digabung dengan Fase 12–13.
 
 ## Daftar centang Fase 11
 Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.md` §4 setiap kali task selesai.
@@ -29,6 +29,7 @@ Centang di sini, di `planning/06-ROADMAP.md`, dan di `planning/14-PHASE11-PLAN.m
 - [x] T11.13 Paket peta per provinsi
 - [x] T11.12 Peta wilayah otomatis
 - [x] T11.14 Penyimpanan, baterai, keamanan peta
+- [x] T11.15 Redesign halaman Segmen baru
 
 **Setelah Fase 11 — Fase 12: Detak jantung dari smartwatch** ([`planning/15-PHASE12-PLAN.md`](planning/15-PHASE12-PLAN.md)):
 - [ ] T12.1 Uji kompatibilitas jam tangan · Huawei Watch Fit 5 Pro diuji (A1, didukung), Aolon menunggu pemilik · [Feature Report](reports/features/T12.1-smartwatch-compat.md) (menunggu review)
