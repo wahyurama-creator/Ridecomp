@@ -58,6 +58,7 @@ import com.ridecomp.ui.component.ConfirmDialog
 import com.ridecomp.ui.component.EmptyState
 import com.ridecomp.ui.component.IconSquareButton
 import com.ridecomp.ui.component.ListCard
+import com.ridecomp.ui.component.ListCardRow
 import com.ridecomp.ui.component.RideCompCard
 import com.ridecomp.ui.component.ScreenScaffold
 import com.ridecomp.ui.component.SectionHeader
@@ -137,7 +138,9 @@ fun SensorsScreen(
                 item(key = EMPTY_KEY) { EmptyState(message = stringResource(R.string.sensors_empty)) }
             }
             savedSection(state, onForget = { onEvent(SensorsUiEvent.AskForget(it)) })
-            item(key = WIDE_SCAN_KEY) { WideScanSwitch(state.isWideScan) { onEvent(SensorsUiEvent.WideScan(it)) } }
+            item(key = WIDE_SCAN_KEY) {
+                WideScanSwitch(state.isWideScan, onOpenWatchGuide) { onEvent(SensorsUiEvent.WideScan(it)) }
+            }
             discoveredSection(state, onPair)
             item(key = INFO_KEY) { BleInfo() }
         }
@@ -216,7 +219,8 @@ private fun LazyListScope.savedSection(state: SensorsUiState, onForget: (SavedSe
     items(state.saved, key = { SAVED_KEY_PREFIX + it.address }) { sensor ->
         SensorCard(
             iconKind = sensor.kinds.firstOrNull(),
-            isWatch = isLikelyWatch(sensor.name),
+            // A GloryFit watch is a watch whatever its name (T12.5b).
+            isWatch = sensor.isGloryFitWatch || isLikelyWatch(sensor.name),
             title = sensor.name,
             subtitle = savedSubtitle(sensor),
             isOutlined = false,
@@ -414,13 +418,28 @@ private fun FoundSensorCard(sensor: DiscoveredSensor, probingAddress: String?, o
 
 /** "Show all Bluetooth devices" (T12.2): for watches that share heart rate without advertising it. */
 @Composable
-private fun WideScanSwitch(isOn: Boolean, onChange: (Boolean) -> Unit) {
+private fun WideScanSwitch(isOn: Boolean, onOpenWatchGuide: () -> Unit, onChange: (Boolean) -> Unit) {
     ListCard {
         SwitchRow(
             label = stringResource(R.string.sensors_wide_scan),
             description = stringResource(R.string.sensors_wide_scan_hint),
             isChecked = isOn,
             onCheckedChange = onChange,
+        )
+        // Always here, at every rider level: which heart rate source works and how (T12.3).
+        ListCardRow(
+            title = stringResource(R.string.sensors_hr_guide),
+            subtitle = stringResource(R.string.sensors_hr_guide_hint),
+            onClick = onOpenWatchGuide,
+            hasDivider = false,
+            leading = {
+                Icon(
+                    painterResource(UiR.drawable.ic_help),
+                    contentDescription = null,
+                    tint = RideCompTheme.colors.textSecondary,
+                    modifier = Modifier.size(RideCompDimens.iconSize),
+                )
+            },
         )
     }
 }
