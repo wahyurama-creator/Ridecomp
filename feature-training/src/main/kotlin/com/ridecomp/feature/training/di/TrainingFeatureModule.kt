@@ -9,6 +9,7 @@ import com.ridecomp.feature.training.viewmodel.PlansViewModel
 import com.ridecomp.feature.training.viewmodel.RecordsViewModel
 import com.ridecomp.feature.training.viewmodel.RideResultsViewModel
 import com.ridecomp.feature.training.viewmodel.SegmentDetailViewModel
+import com.ridecomp.feature.training.viewmodel.SegmentEditorUseCases
 import com.ridecomp.feature.training.viewmodel.SegmentEditorViewModel
 import com.ridecomp.feature.training.viewmodel.SegmentsViewModel
 import com.ridecomp.feature.training.viewmodel.ShareCardUseCases
@@ -34,5 +35,6 @@ val trainingFeatureModule = module {
     factory { ShareCardUseCases(get(), get(), get(), get(), get(), get()) }
     viewModel { params -> ShareCardViewModel(params.get(), get(), get(), get()) }
     viewModel { params -> SegmentDetailViewModel(params.get(), get(), get(), get(), get()) }
-    viewModel { params -> SegmentEditorViewModel(params.get(), params.getOrNull(), get(), get(), get(), get()) }
+    factory { SegmentEditorUseCases(get(), get(), get(), get(), get()) }
+    viewModel { params -> SegmentEditorViewModel(params.get(), params.getOrNull(), get()) }
 }

@@ -8,6 +8,8 @@ import com.ridecomp.core.model.RideTotals
 import com.ridecomp.core.testing.FakeActivityAnalysisRepository
 import com.ridecomp.core.testing.FakeActivityRepository
 import com.ridecomp.core.testing.FakeClock
+import com.ridecomp.core.testing.FakeNetworkStatusSource
+import com.ridecomp.core.testing.FakeOfflineMapRepository
 import com.ridecomp.core.testing.FakeSegmentRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.testing.TestDispatcherProvider
@@ -16,6 +18,7 @@ import com.ridecomp.core.usecase.CreateSegmentFromActivityUseCase
 import com.ridecomp.core.usecase.DeleteSegmentUseCase
 import com.ridecomp.core.usecase.LoadTrackOutlineUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
+import com.ridecomp.core.usecase.ObserveMapTilesUseCase
 import com.ridecomp.core.usecase.ObserveRideSettingsUseCase
 import com.ridecomp.core.usecase.ObserveSegmentEffortsUseCase
 import com.ridecomp.core.usecase.ObserveSegmentUseCase
@@ -27,6 +30,7 @@ import com.ridecomp.feature.training.viewmodel.SegmentDetailViewModel
 import com.ridecomp.feature.training.viewmodel.SegmentDraft
 import com.ridecomp.feature.training.viewmodel.SegmentEditorEffect
 import com.ridecomp.feature.training.viewmodel.SegmentEditorUiEvent
+import com.ridecomp.feature.training.viewmodel.SegmentEditorUseCases
 import com.ridecomp.feature.training.viewmodel.SegmentEditorViewModel
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -86,16 +90,45 @@ class SegmentViewModelsTest {
     private fun editor(draft: SegmentDraft? = null) = SegmentEditorViewModel(
         1,
         draft,
-        LoadTrackOutlineUseCase(readTrack, dispatchers),
-        ObserveActivityUseCase(activities),
-        settings,
-        CreateSegmentFromActivityUseCase(
-            readTrack,
-            segments,
-            RequestReanalysisUseCase(FakeActivityAnalysisRepository(activities), AnalysisRequests()),
-            FakeClock(),
+        SegmentEditorUseCases(
+            LoadTrackOutlineUseCase(readTrack, dispatchers),
+            ObserveActivityUseCase(activities),
+            settings,
+            CreateSegmentFromActivityUseCase(
+                readTrack,
+                segments,
+                RequestReanalysisUseCase(FakeActivityAnalysisRepository(activities), AnalysisRequests()),
+                FakeClock(),
+            ),
+            ObserveMapTilesUseCase(FakeNetworkStatusSource(), FakeSettingsRepository(), FakeOfflineMapRepository()),
         ),
     )
+
+    @Test
+    fun `the editor shows the chosen part's figures, whole ride and fine steps move the ends`() {
+        val viewModel = editor()
+        // 3 km at 10 m/s: the whole ride, 300 s.
+        assertEquals(300.0, viewModel.uiState.value.stats?.elapsedS ?: 0.0, DELTA)
+
+        viewModel.onEvent(SegmentEditorUiEvent.RangeChanged(1_000.0, 2_000.0))
+        assertEquals(1_000.0, viewModel.uiState.value.stats?.lengthM ?: 0.0, DELTA)
+        assertEquals(100.0, viewModel.uiState.value.stats?.elapsedS ?: 0.0, DELTA)
+
+        viewModel.onEvent(SegmentEditorUiEvent.Nudge(isStart = true, steps = 1))
+        viewModel.onEvent(SegmentEditorUiEvent.Nudge(isStart = false, steps = -2))
+        assertEquals(1_050.0, viewModel.uiState.value.startM, DELTA)
+        assertEquals(1_900.0, viewModel.uiState.value.endM, DELTA)
+
+        // The start never passes the end, the end never leaves the ride.
+        repeat(40) { viewModel.onEvent(SegmentEditorUiEvent.Nudge(isStart = true, steps = 1)) }
+        assertEquals(1_900.0, viewModel.uiState.value.startM, DELTA)
+        repeat(40) { viewModel.onEvent(SegmentEditorUiEvent.Nudge(isStart = false, steps = 1)) }
+        assertEquals(3_000.0, viewModel.uiState.value.endM, DELTA)
+
+        viewModel.onEvent(SegmentEditorUiEvent.SelectWholeRide)
+        assertEquals(0.0, viewModel.uiState.value.startM, DELTA)
+        assertEquals(3_000.0, viewModel.uiState.value.endM, DELTA)
+    }
 
     @Test
     fun `the editor starts on the whole ride named after it and refuses a too short part`() {
@@ -153,5 +186,9 @@ class SegmentViewModelsTest {
             assertEquals(SegmentDetailEffect.Deleted, awaitItem())
         }
         assertTrue(segments.segments.value.isEmpty())
+    }
+
+    private companion object {
+        const val DELTA = 1e-6
     }
 }
