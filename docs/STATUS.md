@@ -3,10 +3,10 @@
 **Diperbarui:** 2026-11-21 · Perbarui file ini setiap kali task selesai (`rules/10-FEATURE-CHECKLIST.md`).
 
 ## Posisi saat ini
-- **Rilis terakhir:** **0.10.1** (beta), 2026-11-22 · [GitHub Releases](https://github.com/wahyurama-creator/Ridecomp/releases). Skema DB **v10**.
+- **Rilis terakhir:** **0.10.2** (beta), 2026-11-22 · [GitHub Releases](https://github.com/wahyurama-creator/Ridecomp/releases). Skema DB **v10**.
 - **Fase selesai:** 0–5, 7, 9, dan rilis beta & masukan pengguna (Fase 8/10). Ringkasan: [`planning/06-ROADMAP.md`](planning/06-ROADMAP.md).
 - **Fase berjalan:** **Fase 13 — Tampilan responsif layar kecil.** Rencana lengkap: [`planning/16-PHASE13-PLAN.md`](planning/16-PHASE13-PLAN.md). Fase 12 ditutup 2026-11-21 (5/7; T12.4 & T12.5c ditunda, D-139).
-- **Task terakhir:** perbaikan tanjakan GPS (D-148, [laporan](reports/features/FIX-elevation-gps.md)) dirilis sebagai 0.10.1.
+- **Task terakhir:** 0.10.2: celah GPS putus-putus + topik Bantuan (D-149), jarak celah mengikuti rute (D-150), geser peta di layar ride (D-151).
 - **Task berikutnya:** belum ada. Kandidat: koreksi tanjakan dengan peta ketinggian (DEM) offline per provinsi (D-148, perlu rencana); MobSF atas APK 0.10.x; audit 320 dp layar yang belum dicakup. Ditunda: T12.5c, T12.4 Wear OS.
 
 ## Daftar centang Fase 11
