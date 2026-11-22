@@ -416,6 +416,8 @@ private fun RideMap(route: RouteView?, map: RideMapView, live: State<LiveRide>, 
             marker = start.takeIf { map.isBackToStart },
             description = stringResource(R.string.breadcrumb_description),
             modifier = Modifier.fillMaxSize(),
+            // Side drags pan the map; the pages still turn with a swipe on the fields below it.
+            isDragExclusive = true,
         )
         if (!isFollowing) {
             IconSquareButton(
