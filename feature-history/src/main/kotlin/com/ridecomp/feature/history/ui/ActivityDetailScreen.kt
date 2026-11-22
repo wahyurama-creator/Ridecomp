@@ -282,6 +282,7 @@ private fun RouteSketch(state: ActivityDetailUiState, mapSource: MapSource) {
             isCached = mapSource.isCached,
             regionPaths = persistentListOf(),
             route = state.route,
+            gaps = state.routeGaps,
             description = stringResource(R.string.detail_route),
             modifier = Modifier
                 .fillMaxWidth()
@@ -295,6 +296,7 @@ private fun RouteSketch(state: ActivityDetailUiState, mapSource: MapSource) {
         description = stringResource(R.string.detail_route),
         lineColor = RideCompTheme.colors.accent,
         hasEndpoints = true,
+        gaps = state.routeGaps,
         modifier = Modifier.height(RideCompDimens.routeSketchHeight),
     )
 }

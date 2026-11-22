@@ -45,6 +45,27 @@ public class LoadRideChartUseCase(private val repository: ActivityRepository) {
     }
 }
 
+/**
+ * Where the GPS signal was lost (forest, tunnel; D-149): among the points that have a fix, in order, the
+ * indices `i` whose line to point `i + 1` crosses chart points without one. That part of the drawn route
+ * is a straight guess, not the way ridden.
+ */
+public fun List<ChartPoint>.routeGaps(): List<Int> {
+    val gaps = mutableListOf<Int>()
+    var lastFixIndex = -1
+    var isMissing = false
+    forEach { point ->
+        if (point.latDeg != null && point.lonDeg != null) {
+            if (isMissing && lastFixIndex >= 0) gaps += lastFixIndex
+            lastFixIndex++
+            isMissing = false
+        } else if (lastFixIndex >= 0) {
+            isMissing = true
+        }
+    }
+    return gaps
+}
+
 /** Averages [size] samples into one chart point; nulls are skipped, an all-null value stays null. */
 private class ChartBucket(private val size: Int) {
     private var samples = 0

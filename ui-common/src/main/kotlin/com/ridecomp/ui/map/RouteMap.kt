@@ -76,6 +76,8 @@ fun RouteMap(
     /** A green dot, e.g. the start to ride back to (T7.2). */
     marker: MapPoint? = null,
     isCached: Boolean = false,
+    /** Lines of [route] drawn without GPS (index i = point i to i + 1), dashed (D-149). */
+    gaps: ImmutableList<Int> = persistentListOf(),
 ) {
     // MapLibre is prepared off the main thread first (T11.2a); meanwhile an empty box of the same size.
     // The whole map then replaces the box in one composition: a MapView added later into an existing box
@@ -108,6 +110,7 @@ fun RouteMap(
         isFollowing = isFollowing,
         onUserMoved = onUserMoved,
         marker = marker,
+        gaps = gaps,
     )
 }
 
@@ -127,6 +130,7 @@ private fun PreparedRouteMap(
     onUserMoved: () -> Unit = {},
     /** A green dot, e.g. the start to ride back to (T7.2). */
     marker: MapPoint? = null,
+    gaps: ImmutableList<Int> = persistentListOf(),
 ) {
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
@@ -161,9 +165,11 @@ private fun PreparedRouteMap(
         style = null
         loaded.setStyle(Style.Builder().fromJson(styleJson)) { style = it }
     }
-    LaunchedEffect(style, route) {
+    LaunchedEffect(style, route, gaps) {
         val ready = style ?: return@LaunchedEffect
-        ready.geoJson(MapSourceIds.ROUTE)?.setGeoJson(route.toLine())
+        val parts = route.splitAtGaps(gaps)
+        ready.geoJson(MapSourceIds.ROUTE)?.setGeoJson(parts.withFix.toLines())
+        ready.geoJson(MapSourceIds.ROUTE_GAPS)?.setGeoJson(parts.guessed.toLines())
         // Bounds need the view's size: in a lazy list the style can load before the first layout (T11.2).
         if (!isFollowing) map?.let { loaded -> mapView.afterLayout { loaded.fitTo(route) } }
     }
@@ -244,6 +250,10 @@ private fun List<MapPoint>.toLine(): FeatureCollection = if (size < 2) {
 } else {
     FeatureCollection.fromFeature(Feature.fromGeometry(LineString.fromLngLats(map { it.toPoint() })))
 }
+
+private fun List<List<MapPoint>>.toLines(): FeatureCollection = FeatureCollection.fromFeatures(
+    filter { it.size >= 2 }.map { part -> Feature.fromGeometry(LineString.fromLngLats(part.map { it.toPoint() })) },
+)
 
 /** Runs [action] now when the view has a size, else once after its first layout. */
 private fun View.afterLayout(action: () -> Unit) {
