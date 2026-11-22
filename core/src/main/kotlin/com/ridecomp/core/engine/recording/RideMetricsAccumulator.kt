@@ -3,6 +3,7 @@ package com.ridecomp.core.engine.recording
 import com.ridecomp.core.config.GpsConfig
 import com.ridecomp.core.config.RecordingConfig
 import com.ridecomp.core.config.Units
+import com.ridecomp.core.engine.geo.AlongRoute
 import com.ridecomp.core.engine.geo.DistanceTracker
 import com.ridecomp.core.engine.geo.GeoMath
 import com.ridecomp.core.engine.geo.GpsFilter
@@ -41,9 +42,9 @@ public data class RecoveredTotals(
  * - Moving time: sum of tick intervals spent recording; an interval longer than
  *   [RecordingConfig.MAX_TICK_INTERVAL_MS] is a stall/gap and is not counted.
  */
-public class RideMetricsAccumulator {
+public class RideMetricsAccumulator(alongRoute: AlongRoute? = null) {
     private val filter = GpsFilter()
-    private val distance = DistanceTracker()
+    private val distance = DistanceTracker(alongRoute = alongRoute)
     private val speedSmoother = ExponentialSmoother(GpsConfig.SPEED_EMA_ALPHA)
     private var previousFix: LocationFix? = null
     private var tentativeMovingMs: Long = 0

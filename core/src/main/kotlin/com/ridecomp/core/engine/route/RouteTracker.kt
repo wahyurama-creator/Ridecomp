@@ -1,6 +1,7 @@
 package com.ridecomp.core.engine.route
 
 import com.ridecomp.core.config.Units
+import com.ridecomp.core.engine.geo.AlongRoute
 import com.ridecomp.core.model.LocationFix
 import com.ridecomp.core.model.RideEventType
 import kotlin.math.cos
@@ -118,6 +119,18 @@ public class RouteTracker(private val points: List<RoutePoint>) {
 
     private fun Long?.hasLasted(timeMs: Long, durationMs: Long): Boolean = this != null && timeMs - this >= durationMs
 
+    /**
+     * Meters along the route from one position to a later one (D-150): both must be within the off-route
+     * distance and the second not behind the first. Searches the whole route (only after a GPS gap).
+     */
+    public fun alongRouteM(fromLatDeg: Double, fromLonDeg: Double, toLatDeg: Double, toLonDeg: Double): Double? {
+        val from = project(fromLatDeg, fromLonDeg, windowed = false)?.takeIf(::isOnRoute)
+        val to = project(toLatDeg, toLonDeg, windowed = false)?.takeIf(::isOnRoute)
+        return if (from == null || to == null) null else (to.alongM - from.alongM).takeIf { it >= 0.0 }
+    }
+
+    private fun isOnRoute(match: Match): Boolean = match.distanceM <= RouteTrackerConfig.OFF_ROUTE_DISTANCE_M
+
     private class Match(val alongM: Double, val distanceM: Double)
 
     /** Nearest point on the route; within the search window around the last progress when [windowed]. */
@@ -202,6 +215,9 @@ public class RouteFollower(
 ) {
     private val climbsAndTurns = ClimbTurnTracker(climbs, turns)
     private val tracker = points.takeIf { it.size >= RouteTrackerConfig.MIN_POINTS }?.let(::RouteTracker)
+
+    /** Distance along this route, for a stretch ridden without GPS (D-150); null without a route. */
+    public val alongRoute: AlongRoute? = tracker?.let { AlongRoute(it::alongRouteM) }
 
     /** Last known progress; kept while the fix is stale or the ride is paused. */
     public var progress: RouteProgress? = null

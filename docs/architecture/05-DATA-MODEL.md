@@ -146,6 +146,8 @@ Tanpa perubahan tabel: migrasi 9→10 hanya menambah baris profil bawaan `FOLDIN
 ### 3.1 Jarak (GPS)
 Haversine, R = 6.371.000 m. Tambahkan jarak hanya bila titik valid (akurasi ≤ 30 m), status recording, dan bukan jitter diam (lihat `03-ARCHITECTURE.md` §5). Jika sensor roda aktif, jarak = akumulasi dari sensor roda (lebih akurat), GPS sebagai cadangan saat sensor putus.
 
+- **Celah GPS saat mengikuti rute (D-150):** fix yang kembali setelah ≥ 5 detik tanpa fix disambung **sepanjang rute** bila kedua titik ≤ 50 m dari rute, titik baru tidak di belakang, jarak rute ≥ garis lurus dan ≤ 3× garis lurus, serta ≤ 120 km/j; selain itu garis lurus.
+
 ### 3.2 Kecepatan
 - Sumber prioritas: sensor roda > GPS.
 - Tampilan "Speed": EMA (α = 0.3) dari nilai per detik.

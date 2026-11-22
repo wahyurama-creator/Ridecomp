@@ -12,6 +12,7 @@ import com.ridecomp.core.model.RideSettings
 import com.ridecomp.core.model.RideStatus
 import com.ridecomp.core.util.Outcome
 import com.ridecomp.core.util.getOrNull
+import kotlin.math.cos
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -63,6 +64,39 @@ private class RideSimulator(
 }
 
 class RideRecorderTest {
+    @Test
+    fun `a stretch without gps on a followed route is measured along the route, not straight across`() {
+        // L-shaped route: 500 m north, then 500 m east. The signal is lost from 400 m north to 200 m east
+        // (300 m around the corner); straight across that is only 224 m.
+        val meterInLonDeg = METER_IN_LAT_DEG / cos(Math.toRadians(7.0))
+        val north = (0..5).map { GpxPoint(-7.0 + it * 100 * METER_IN_LAT_DEG, 110.0, null) }
+        val east = (1..5).map { GpxPoint(north.last().latDeg, 110.0 + it * 100 * meterInLonDeg, null) }
+        val route = RouteBuilder.build(north + east, "r", null, START_MS).points
+        val recorder = RideRecorder(
+            RideSettings(drinkIntervalMin = null, eatIntervalMin = null),
+            AltitudeSource.GPS,
+            context = RideContext(routeId = 1, routePoints = route),
+        )
+        recorder.handle(RideAction.START, START_MS)
+        var nowMs = START_MS
+        (1..200).forEach { second ->
+            nowMs += 1_000
+            val alongM = second * 5.0
+            val isLost = alongM > 400.0 && alongM < 700.0
+            if (!isLost) {
+                val (lat, lon) = if (alongM <= 500.0) {
+                    -7.0 + alongM * METER_IN_LAT_DEG to 110.0
+                } else {
+                    north.last().latDeg to 110.0 + (alongM - 500.0) * meterInLonDeg
+                }
+                recorder.onLocation(LocationFix(nowMs, lat, lon, 100.0, 5.0, 5.0))
+            }
+            recorder.tick(nowMs)
+        }
+        val distanceM = recorder.tick(nowMs).live.distanceM
+        assertTrue(distanceM in 980.0..1_010.0, "distance $distanceM m (straight across would give ~924 m)")
+    }
+
     @Test
     fun `a barometer that reports only every few seconds adds no climb on a flat road`() {
         // Flat road: GPS says 100 m; the uncalibrated barometer altitude is 40 m (an offset of 60 m), and the

@@ -1,6 +1,7 @@
 package com.ridecomp.core.engine.geo
 
 import com.ridecomp.core.config.GpsConfig
+import com.ridecomp.core.config.Units
 import com.ridecomp.core.model.LocationFix
 import kotlin.math.max
 
@@ -13,11 +14,13 @@ import kotlin.math.max
  *   the last counted point (the anchor stays put until then, so slow riding is still counted).
  *
  * While not [isCounting][add] (paused) the anchor follows the rider, so movement during a pause is never
- * added after resume.
+ * added after resume. After a stretch without GPS the segment follows [alongRoute] when a route is
+ * followed (D-150), so a winding trail is not measured as its straight shortcut.
  */
 public class DistanceTracker(
     private val stationarySpeedMps: Double = GpsConfig.STATIONARY_SPEED_MPS,
     private val jitterFloorM: Double = GpsConfig.JITTER_FLOOR_M,
+    private val alongRoute: AlongRoute? = null,
 ) {
     private var anchor: LocationFix? = null
 
@@ -57,7 +60,7 @@ public class DistanceTracker(
 
     private fun measure(fix: LocationFix, isCounting: Boolean): Double {
         val previous = anchor
-        val segmentM = previous?.let { GeoMath.distanceM(it.latDeg, it.lonDeg, fix.latDeg, fix.lonDeg) } ?: 0.0
+        val segmentM = previous?.let { segment(it, fix) } ?: 0.0
         val reportedSpeed = fix.speedMps
         val counted = when {
             previous == null || !isCounting -> null
@@ -67,5 +70,19 @@ public class DistanceTracker(
         val isAnchorMoving = previous == null || !isCounting || reportedSpeed != null || counted != null
         if (isAnchorMoving) anchor = fix
         return counted ?: 0.0
+    }
+
+    /** Straight line, or along the route after a gap when that is plausible (never shorter, ≤ 3×, ≤ 120 km/h). */
+    private fun segment(from: LocationFix, to: LocationFix): Double {
+        val straightM = GeoMath.distanceM(from.latDeg, from.lonDeg, to.latDeg, to.lonDeg)
+        val gapMs = to.timeMs - from.timeMs
+        val routeM = alongRoute?.takeIf { gapMs >= GpsConfig.ROUTE_GAP_MIN_MS }
+            ?.distanceM(from.latDeg, from.lonDeg, to.latDeg, to.lonDeg)
+            ?.takeIf { route ->
+                route >= straightM &&
+                    route <= straightM * GpsConfig.ROUTE_GAP_MAX_FACTOR &&
+                    route / gapMs * Units.MS_PER_SECOND <= GpsConfig.MAX_PLAUSIBLE_SPEED_MPS
+            }
+        return routeM ?: straightM
     }
 }
