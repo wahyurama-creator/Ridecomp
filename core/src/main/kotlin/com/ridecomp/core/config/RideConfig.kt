@@ -52,6 +52,13 @@ public object GpsConfig {
      */
     public const val JITTER_FLOOR_M: Double = 5.0
 
+    /**
+     * Following a route, a fix that comes back after at least this long without one is joined along the
+     * route instead of in a straight line (D-150), if that is at most [ROUTE_GAP_MAX_FACTOR] times longer.
+     */
+    public const val ROUTE_GAP_MIN_MS: Long = 5_000L
+    public const val ROUTE_GAP_MAX_FACTOR: Double = 3.0
+
     /** Waiting for a first fix in pre-ride is bounded (CO-09). */
     public const val FIRST_FIX_TIMEOUT_MS: Long = 2L * Units.MS_PER_MINUTE
 }

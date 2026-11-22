@@ -127,8 +127,8 @@ public class RideRecorder(
     ageYears: Int? = null,
     private val context: RideContext = RideContext(),
 ) {
-    private val metrics = RideMetricsAccumulator()
     private val route = RouteFollower(context.routePoints, context.routeClimbs, context.routeTurns)
+    private val metrics = RideMetricsAccumulator(route.alongRoute)
     private val segments = LiveSegmentFollower(context.segments)
     private val sensors = SensorRideMetrics(profile, ageYears)
     private var sensorSnapshot = SensorSnapshot()
