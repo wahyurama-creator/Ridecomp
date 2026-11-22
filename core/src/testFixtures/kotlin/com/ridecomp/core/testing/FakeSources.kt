@@ -6,15 +6,18 @@ import com.ridecomp.core.engine.recording.LiveRide
 import com.ridecomp.core.engine.recording.RideAction
 import com.ridecomp.core.engine.safety.IncidentAction
 import com.ridecomp.core.model.LocationFix
+import com.ridecomp.core.model.PressureReading
 import com.ridecomp.core.source.BatteryLevelSource
 import com.ridecomp.core.source.LocationSource
 import com.ridecomp.core.source.MapCacheSource
 import com.ridecomp.core.source.NetworkStatusSource
+import com.ridecomp.core.source.PressureSource
 import com.ridecomp.core.source.RideController
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 
@@ -108,4 +111,9 @@ public class FakeMapCacheSource(public var size: Long = 0L) : MapCacheSource {
 public class FakeBatteryLevelSource(public var status: BatteryStatus? = BatteryStatus(80, isCharging = false)) :
     BatteryLevelSource {
     override fun read(): BatteryStatus? = status
+}
+
+/** A barometer, or none ([hasBarometer] false, the default: most low-end phones, D-148). */
+public class FakePressureSource(override val hasBarometer: Boolean = false) : PressureSource {
+    override fun readings(): Flow<PressureReading> = emptyFlow()
 }

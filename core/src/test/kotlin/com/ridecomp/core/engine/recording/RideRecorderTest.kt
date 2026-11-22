@@ -64,6 +64,26 @@ private class RideSimulator(
 
 class RideRecorderTest {
     @Test
+    fun `a barometer that reports only every few seconds adds no climb on a flat road`() {
+        // Flat road: GPS says 100 m; the uncalibrated barometer altitude is 40 m (an offset of 60 m), and the
+        // phone delivers a pressure reading only every 5 s (sensor batching / OEM throttling).
+        val recorder =
+            RideRecorder(RideSettings(drinkIntervalMin = null, eatIntervalMin = null), AltitudeSource.BAROMETER)
+        recorder.handle(RideAction.START, START_MS)
+        var northM = 0.0
+        var nowMs = START_MS
+        repeat(600) { second ->
+            nowMs += 1_000
+            northM += 6.0
+            if (second % 5 == 0) recorder.onAltitude(40.0, nowMs)
+            recorder.onLocation(LocationFix(nowMs, -7.0 + northM * METER_IN_LAT_DEG, 110.0, 100.0, 5.0, 6.0))
+            recorder.tick(nowMs)
+        }
+        val elevation = recorder.tick(nowMs).live.elevation
+        assertTrue(elevation.ascentM < 5.0, "ascent ${elevation.ascentM} m on a flat road")
+    }
+
+    @Test
     fun `following a route reports distance to go and an off route event when the rider leaves it`() {
         // Route: 1 km north from the start, then 1 km east. The rider keeps going north.
         val north = (0..10).map { GpxPoint(-7.0 + it * 100 * METER_IN_LAT_DEG, 110.0, null) }

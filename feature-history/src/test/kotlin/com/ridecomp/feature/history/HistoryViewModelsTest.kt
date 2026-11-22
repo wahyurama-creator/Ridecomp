@@ -20,6 +20,7 @@ import com.ridecomp.core.testing.FakeExportedFileHandler
 import com.ridecomp.core.testing.FakeGuideRepository
 import com.ridecomp.core.testing.FakeNetworkStatusSource
 import com.ridecomp.core.testing.FakeOfflineMapRepository
+import com.ridecomp.core.testing.FakePressureSource
 import com.ridecomp.core.testing.FakeProfileRepository
 import com.ridecomp.core.testing.FakeSettingsRepository
 import com.ridecomp.core.testing.FakeStravaAccountStore
@@ -37,6 +38,7 @@ import com.ridecomp.core.usecase.ExportFitUseCase
 import com.ridecomp.core.usecase.ExportFormat
 import com.ridecomp.core.usecase.ExportGpxUseCase
 import com.ridecomp.core.usecase.GetLapsUseCase
+import com.ridecomp.core.usecase.HasBarometerUseCase
 import com.ridecomp.core.usecase.LoadActivityAnalysisUseCase
 import com.ridecomp.core.usecase.LoadRideChartUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
@@ -166,6 +168,8 @@ class HistoryViewModelsTest {
             observeMapTiles = ObserveMapTilesUseCase(FakeNetworkStatusSource(), settings, FakeOfflineMapRepository()),
             observeGuide = ObserveGuideUseCase(guide),
             dismissTip = DismissTipUseCase(guide),
+            // The test phone has no barometer: climbing is shown as an estimate (D-148).
+            hasBarometer = HasBarometerUseCase(FakePressureSource()),
         )
         val strava = ActivityStravaUseCases(
             ObserveStravaStatusUseCase(stravaStore, FakeStravaApi.SETUP),
@@ -189,6 +193,8 @@ class HistoryViewModelsTest {
         assertEquals(1.0, speed.first().x)
         // No altitude or sensor data: those sections are hidden.
         assertEquals(listOf(AnalysisSectionKind.SPEED), state.sections.map { it.kind })
+        // Without a barometer the climbing is labelled as a GPS estimate.
+        assertTrue(state.isAscentEstimated)
     }
 
     @Test

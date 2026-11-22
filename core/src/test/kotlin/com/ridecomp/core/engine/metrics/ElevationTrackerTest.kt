@@ -21,6 +21,22 @@ class ElevationTrackerTest {
     }
 
     @Test
+    fun `gps spikes of hundreds of meters on a flat road add no ascent`() {
+        // Seen on a phone without a barometer (D-148): single readings 300 m off, and short runs of them.
+        val tracker = ElevationTracker(AltitudeSource.GPS)
+        repeat(1_800) { second ->
+            val spike = when {
+                second % 137 == 0 -> 300.0
+                second % 211 in 0..4 -> -250.0
+                else -> 0.0
+            }
+            tracker.add(40.0 + spike, null, distanceM = second * 5.0, isMoving = true)
+        }
+
+        assertEquals(0.0, tracker.snapshot().ascentM)
+    }
+
+    @Test
     fun `steady climb is counted as ascent`() {
         val tracker = ElevationTracker(AltitudeSource.GPS)
 
