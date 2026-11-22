@@ -122,7 +122,7 @@ public data class RecorderOutput(
  */
 public class RideRecorder(
     settings: RideSettings,
-    altitudeSource: AltitudeSource,
+    private val altitudeSource: AltitudeSource,
     profile: RiderProfile = RiderProfile(),
     ageYears: Int? = null,
     private val context: RideContext = RideContext(),
@@ -393,7 +393,9 @@ public class RideRecorder(
         val fix = metrics.latestFix?.takeIf { metrics.isFixFresh(nowMs) }
         val barometric = latestAltitudeM?.takeIf { isFresh(latestAltitudeTimeMs, nowMs) }
         return elevation.add(
-            rawAltitudeM = barometric ?: fix?.altitudeM,
+            // One source per ride (D-148): a GPS altitude in place of a late barometer reading would carry the
+            // barometer's calibration offset and count as a climb each time the source switched.
+            rawAltitudeM = if (altitudeSource == AltitudeSource.BAROMETER) barometric else fix?.altitudeM,
             gpsAltitudeM = fix?.altitudeM,
             distanceM = metrics.distanceM,
             isMoving = status == RideStatus.RECORDING,

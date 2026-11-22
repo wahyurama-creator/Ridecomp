@@ -19,6 +19,7 @@ import com.ridecomp.core.usecase.DismissTipUseCase
 import com.ridecomp.core.usecase.ExportFormat
 import com.ridecomp.core.usecase.FtpEstimate
 import com.ridecomp.core.usecase.GetLapsUseCase
+import com.ridecomp.core.usecase.HasBarometerUseCase
 import com.ridecomp.core.usecase.HrMaxSource
 import com.ridecomp.core.usecase.LoadActivityAnalysisUseCase
 import com.ridecomp.core.usecase.ObserveActivityUseCase
@@ -63,6 +64,8 @@ data class ActivityDetailUiState(
     /** The ride's line for the route sketch (same downsampling as the charts); empty without GPS. */
     val route: ImmutableList<MapPoint> = persistentListOf(),
     val unitSystem: UnitSystem = UnitSystem.METRIC,
+    /** The phone has no barometer: climbing comes from GPS and is an estimate (D-148). */
+    val isAscentEstimated: Boolean = false,
     val isWorking: Boolean = false,
     val message: FileMessage? = null,
     /** Null while loading; the upload row needs a connected account (T5.3). */
@@ -141,6 +144,7 @@ data class ActivityDetailUseCases(
     val observeMapTiles: ObserveMapTilesUseCase,
     val observeGuide: ObserveGuideUseCase,
     val dismissTip: DismissTipUseCase,
+    val hasBarometer: HasBarometerUseCase,
 )
 
 /** Activity detail (T1.13): totals, charts, laps; export/share FIT & GPX (T1.14); delete. */
@@ -156,7 +160,9 @@ class ActivityDetailViewModel(
     useCases: ActivityDetailUseCases,
     private val strava: ActivityStravaUseCases,
     private val dispatchers: DispatcherProvider,
-) : UdfViewModel<ActivityDetailUiState, ActivityDetailUiEvent, ActivityDetailEffect>(ActivityDetailUiState()) {
+) : UdfViewModel<ActivityDetailUiState, ActivityDetailUiEvent, ActivityDetailEffect>(
+    ActivityDetailUiState(isAscentEstimated = !useCases.hasBarometer()),
+) {
     /**
      * The track on the online map while there is internet or from the tile cache offline (D-90, T11.11), else
      * the sketch; watched only while shown.

@@ -159,9 +159,9 @@ Haversine, R = 6.371.000 m. Tambahkan jarak hanya bila titik valid (akurasi ≤ 
 Default: pause bila speed < 2 km/h (≈ 0.56 m/s) dan tidak ada perpindahan berarti selama **5 detik** (pilihan 3/5/10/30 dtk); resume bila speed > 3 km/h selama ≥ 2 detik **dan** (tanpa sensor roda) perpindahan > max(akurasi GPS, 10 m) dari titik jeda. Pause manual tidak di-resume otomatis. Detail: `12-FEATURE-SPECS.md` §1.
 
 ### 3.5 Elevasi, tanjakan, grade
-- Sumber: barometer (bila ada sensor tekanan, dikalibrasi ke altitude GPS di awal) > altitude GPS.
-- Smoothing: moving average 10 detik.
-- Total tanjakan dengan histeresis: simpan `anchor`; jika `alt − anchor ≥ threshold` → `ascent += alt − anchor`, `anchor = alt`; jika `anchor − alt ≥ threshold` → `descent += ...`, `anchor = alt`. Threshold: 2 m (barometer), 4 m (GPS).
+- Sumber: barometer (bila ada sensor tekanan, dikalibrasi ke altitude GPS di awal) > altitude GPS. **Satu sumber per ride**: di mode barometer, detik tanpa bacaan barometer yang segar dilewati, tidak diganti altitude GPS (D-148).
+- Smoothing: barometer moving average 10 detik; GPS **median 30 detik** lalu perubahan dibatasi **0,5 m per sampel 1 detik** (lonjakan GPS ratusan meter diabaikan, D-148).
+- Total tanjakan dengan histeresis: simpan `anchor`; jika `alt − anchor ≥ threshold` → `ascent += alt − anchor`, `anchor = alt`; jika `anchor − alt ≥ threshold` → `descent += ...`, `anchor = alt`. Threshold: 2 m (barometer), 10 m (GPS). Tanpa barometer, tanjakan tetap kebesaran (altitude GPS melayang ±40 m dalam hitungan menit) → ditampilkan sebagai **perkiraan** di detail ride.
 - Grade = Δalt / Δdist pada jendela jarak ~50 m (minimal 30 m ditempuh), dibatasi ±30%, tampil 0 decimal.
 
 ### 3.6 Power (power meter)

@@ -4,6 +4,7 @@ import com.ridecomp.core.config.ElevationConfig
 import com.ridecomp.core.config.Units
 import com.ridecomp.core.util.RingBuffer
 import com.ridecomp.core.util.RollingAverage
+import com.ridecomp.core.util.RollingMedian
 import kotlin.math.pow
 
 /** Where an altitude value came from; decides the ascent hysteresis (05-DATA-MODEL §3.5). */
@@ -29,15 +30,17 @@ public object BarometricAltitude {
  * Smoothed altitude, total ascent/descent with hysteresis and grade (05-DATA-MODEL §3.5).
  *
  * - Source: barometer when present (offset calibrated once to the first GPS altitude), else GPS.
- * - Smoothing: 10 s moving average.
- * - Ascent: an anchor moves only when altitude changed by ≥ threshold (2 m barometer / 4 m GPS),
- *   so noise of a few meters is never counted.
+ * - Smoothing: barometer 10 s moving average; GPS 30 s median, then at most 0.5 m per sample (D-148).
+ * - Ascent: an anchor moves only when altitude changed by ≥ threshold (2 m barometer / 10 m GPS),
+ *   so noise is never counted.
  * - Grade: Δalt / Δdist over the last ~50 m (≥ 30 m covered), clamped to ±30 %.
  *
  * Feed one value per second; all buffers are bounded (MEM-05).
  */
 public class ElevationTracker(private val source: AltitudeSource) {
     private val smoother = RollingAverage(ElevationConfig.SMOOTHING_WINDOW_S)
+    private val gpsMedian = RollingMedian(ElevationConfig.GPS_SMOOTHING_WINDOW_S)
+    private var gpsFilteredM: Double? = null
     private val gradeWindow = RingBuffer<Pair<Double, Double>>(ElevationConfig.GRADE_BUFFER_SIZE)
     private var anchorM: Double? = null
     private var barometerOffsetM: Double? = null
@@ -71,8 +74,7 @@ public class ElevationTracker(private val source: AltitudeSource) {
         val raw = rawAltitudeM?.takeIf { it.isFinite() }
         if (raw != null) {
             calibrateOffsetOnce(raw, gpsAltitudeM)
-            smoother.add(calibrate(raw))
-            val smoothed = smoother.averageOrNull()
+            val smoothed = smooth(calibrate(raw))
             altitudeM = smoothed
             if (smoothed != null) updateTotals(smoothed, isMoving)
             if (smoothed != null && isMoving) updateGrade(smoothed, distanceM)
@@ -81,6 +83,26 @@ public class ElevationTracker(private val source: AltitudeSource) {
     }
 
     public fun snapshot(): ElevationSnapshot = ElevationSnapshot(altitudeM, ascentM, descentM, gradePercent)
+
+    private fun smooth(valueM: Double): Double? = when (source) {
+        AltitudeSource.BAROMETER -> {
+            smoother.add(valueM)
+            smoother.averageOrNull()
+        }
+        AltitudeSource.GPS -> {
+            gpsMedian.add(valueM)
+            gpsMedian.medianOrNull()?.let(::limitGpsStep)
+        }
+    }
+
+    /** A real climb is slow: a jump larger than [ElevationConfig.GPS_MAX_ALTITUDE_STEP_M] per sample is GPS error. */
+    private fun limitGpsStep(medianM: Double): Double {
+        val previous = gpsFilteredM
+        val step = ElevationConfig.GPS_MAX_ALTITUDE_STEP_M
+        val next = if (previous == null) medianM else previous + (medianM - previous).coerceIn(-step, step)
+        gpsFilteredM = next
+        return next
+    }
 
     private fun calibrate(rawM: Double): Double = when (source) {
         AltitudeSource.GPS -> rawM

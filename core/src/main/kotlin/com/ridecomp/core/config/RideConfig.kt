@@ -110,7 +110,15 @@ public object AutoPauseConfig {
 public object ElevationConfig {
     public const val SMOOTHING_WINDOW_S: Int = 10
     public const val HYSTERESIS_BAROMETER_M: Double = 2.0
-    public const val HYSTERESIS_GPS_M: Double = 4.0
+
+    /**
+     * GPS altitude without a barometer wanders tens of meters and spikes by hundreds (D-148): a 30 s
+     * median, at most 0.5 m of change per 1 s sample (a steep climb on a bike is ~0.4 m/s) and a 10 m
+     * hysteresis. It still over-counts on such phones, so the ascent is shown as an estimate.
+     */
+    public const val GPS_SMOOTHING_WINDOW_S: Int = 30
+    public const val GPS_MAX_ALTITUDE_STEP_M: Double = 0.5
+    public const val HYSTERESIS_GPS_M: Double = 10.0
     public const val GRADE_WINDOW_M: Double = 50.0
     public const val GRADE_MIN_DISTANCE_M: Double = 30.0
     public const val GRADE_LIMIT_PERCENT: Double = 30.0

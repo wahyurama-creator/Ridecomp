@@ -438,7 +438,14 @@ private fun SectionItem(
             AnalysisSectionKind.POWER -> state.powerZones?.takeUnless { it.isEstimatedPower }?.let {
                 PowerZonesBlock(it, format, hasHeading = true, onOpenProfile = onOpenProfile)
             }
-            AnalysisSectionKind.SPEED, AnalysisSectionKind.ELEVATION, AnalysisSectionKind.CADENCE -> Unit
+            AnalysisSectionKind.ELEVATION -> if (state.isAscentEstimated) {
+                Text(
+                    text = stringResource(R.string.detail_ascent_estimated),
+                    style = RideCompTheme.typography.caption,
+                    color = RideCompTheme.colors.textSecondary,
+                )
+            }
+            AnalysisSectionKind.SPEED, AnalysisSectionKind.CADENCE -> Unit
         }
     }
 }

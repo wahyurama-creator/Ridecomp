@@ -7,6 +7,7 @@ import com.ridecomp.core.model.RideTotals
 import com.ridecomp.core.repository.ActivityRepository
 import com.ridecomp.core.repository.ProfileRepository
 import com.ridecomp.core.source.Clock
+import com.ridecomp.core.source.PressureSource
 import kotlin.math.ceil
 
 /** Sections of the ride detail, in the order they are shown (14-PHASE11-PLAN T11.2). */
@@ -155,3 +156,11 @@ private fun List<Double>.averageOrNull(): Double? = takeIf { it.isNotEmpty() }?.
 
 /** A line needs two points. */
 private const val MIN_SECTION_VALUES = 2
+
+/**
+ * Whether this phone has a barometer. Without one the ride's climbing comes from GPS altitude and is shown
+ * as an estimate (D-148): it over-counts even after filtering.
+ */
+public class HasBarometerUseCase(private val pressure: PressureSource) {
+    public operator fun invoke(): Boolean = pressure.hasBarometer
+}

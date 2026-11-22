@@ -78,6 +78,7 @@
     <string name="detail_section_info_label">Penjelasan %1$s</string>
     <string name="detail_info_speed">Rata-rata dihitung hanya saat bergerak; waktu berhenti tidak ikut (waktu total menghitungnya). Kecepatan maksimum disaring agar lonjakan GPS tidak terhitung. Area abu-abu di belakang grafik adalah elevasi.</string>
     <string name="detail_info_elevation">Kenaikan elevasi dan penurunan adalah total naik dan turun sepanjang ride. Grafik hanya mencakup rentang ketinggian ride, dengan sedikit ruang di atas dan bawah, agar bentuk tanjakan terlihat.</string>
+    <string name="detail_ascent_estimated">Perkiraan dari GPS: HP ini tidak punya barometer, jadi tanjakan bisa jauh lebih besar dari sebenarnya.</string>
     <string name="detail_info_heart_rate">Dari sensor detak jantung yang tersambung saat ride. Celah pada grafik berarti sensor sempat terputus.</string>
     <string name="detail_info_power">Dari power meter atau smart trainer. NP (normalized power) memberi bobot lebih pada usaha berat, sehingga lebih mendekati beratnya ride yang terasa daripada rata-rata biasa.</string>
     <string name="detail_info_cadence">Putaran pedal per menit. Rata-rata dihitung hanya saat mengayuh; saat meluncur tidak ikut.</string>

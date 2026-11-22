@@ -42,6 +42,7 @@ import com.ridecomp.core.source.MapPackDownloader
 import com.ridecomp.core.source.MapRegionIndexSource
 import com.ridecomp.core.source.NetworkStatusSource
 import com.ridecomp.core.source.PickedContactReader
+import com.ridecomp.core.source.PressureSource
 import com.ridecomp.core.source.RideController
 import com.ridecomp.core.source.SafetyMessages
 import com.ridecomp.core.source.SmsGateway
@@ -76,6 +77,7 @@ import com.ridecomp.core.testing.FakeMapRegionIndexSource
 import com.ridecomp.core.testing.FakeNetworkStatusSource
 import com.ridecomp.core.testing.FakeOfflineMapRepository
 import com.ridecomp.core.testing.FakePickedContactReader
+import com.ridecomp.core.testing.FakePressureSource
 import com.ridecomp.core.testing.FakeProfileRepository
 import com.ridecomp.core.testing.FakeReleaseSource
 import com.ridecomp.core.testing.FakeRideController
@@ -200,6 +202,7 @@ class AppModulesTest {
         single<PickedContactReader> { FakePickedContactReader() }
         single<IncidentRepository> { FakeIncidentRepository() }
         single<AccelerometerSource> { FakeAccelerometerSource() }
+        single<PressureSource> { FakePressureSource() }
         single<BackupDatabase> { FakeBackupDatabase(tempDir) }
         single<BackupFiles> { FakeBackupFiles(tempDir) }
         single<BackupStateRepository> { FakeBackupStateRepository() }

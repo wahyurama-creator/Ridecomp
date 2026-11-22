@@ -59,6 +59,7 @@ import com.ridecomp.core.usecase.GetSelectedBikeUseCase
 import com.ridecomp.core.usecase.GetShareTargetsUseCase
 import com.ridecomp.core.usecase.GetStravaAccessTokenUseCase
 import com.ridecomp.core.usecase.HandleRecoveredRideUseCase
+import com.ridecomp.core.usecase.HasBarometerUseCase
 import com.ridecomp.core.usecase.HasProfileUseCase
 import com.ridecomp.core.usecase.ImportGpxUseCase
 import com.ridecomp.core.usecase.ImportOfflineMapUseCase
@@ -204,6 +205,7 @@ val useCaseModule = module {
     factory { DeleteActivityUseCase(get(), get()) }
     factory { LoadRideChartUseCase(get()) }
     factory { LoadActivityAnalysisUseCase(get(), get(), get(), get(), get()) }
+    factory { HasBarometerUseCase(get()) }
     factory { EstimateFtpUseCase(get(), get(), get(), get()) }
     factory { ExportFitUseCase(get(), get(), get(), get(), get()) }
     factory { ExportGpxUseCase(get(), get(), get()) }
