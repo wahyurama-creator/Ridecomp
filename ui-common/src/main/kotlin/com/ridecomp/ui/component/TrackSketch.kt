@@ -13,18 +13,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.ridecomp.ui.map.MapPoint
+import com.ridecomp.ui.map.splitAtGaps
 import com.ridecomp.ui.preview.RideCompPreview
 import com.ridecomp.ui.preview.ThemePreviews
 import com.ridecomp.ui.theme.RideCompDimens
 import com.ridecomp.ui.theme.RideCompTheme
 import kotlin.math.cos
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 
 /**
@@ -40,6 +43,8 @@ fun TrackSketch(
     lineColor: Color = RideCompTheme.colors.textTertiary,
     /** Start (green) and finish (accent) dots: a whole ride, not a part of it. */
     hasEndpoints: Boolean = false,
+    /** Lines drawn without GPS (index i = point i to i + 1), dashed (D-149). */
+    gaps: ImmutableList<Int> = persistentListOf(),
 ) {
     val colors = RideCompTheme.colors
     val projection = remember(points) { Projection.of(points) }
@@ -54,7 +59,13 @@ fun TrackSketch(
     ) {
         val fit = projection ?: return@Canvas
         val stroke = Stroke(width = RideCompDimens.chartStroke.toPx() * STROKE_SCALE, cap = StrokeCap.Round)
-        drawPath(path(points, points.indices, fit), color = lineColor, style = stroke)
+        val parts = points.splitAtGaps(gaps)
+        parts.withFix.forEach { part -> drawPath(path(part, part.indices, fit), color = lineColor, style = stroke) }
+        val dashed = Stroke(
+            width = stroke.width,
+            pathEffect = PathEffect.dashPathEffect(floatArrayOf(stroke.width * GAP_DASH, stroke.width * GAP_SPACE)),
+        )
+        parts.guessed.forEach { gap -> drawPath(path(gap, gap.indices, fit), color = lineColor, style = dashed) }
         highlight?.let { range -> drawPath(path(points, range, fit), color = colors.accent, style = stroke) }
         if (hasEndpoints) {
             val radius = RideCompDimens.markerDotRadius.toPx()
@@ -107,6 +118,10 @@ private fun DrawScope.offset(point: MapPoint, fit: Projection): Offset {
 }
 
 private const val STROKE_SCALE = 1.5f
+
+/** Dash and space of a line without GPS, in line widths (as on the map). */
+private const val GAP_DASH = 1f
+private const val GAP_SPACE = 1.5f
 
 /** The surface ring around an end dot, so it stands out on the line. */
 private const val DOT_RING_SCALE = 1.6f

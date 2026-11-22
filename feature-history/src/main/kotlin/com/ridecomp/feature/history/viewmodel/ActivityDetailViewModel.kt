@@ -34,6 +34,7 @@ import com.ridecomp.core.usecase.ShareActivityFileUseCase
 import com.ridecomp.core.usecase.SuggestExportFileNameUseCase
 import com.ridecomp.core.usecase.ZoneTimeSlice
 import com.ridecomp.core.usecase.isDuration
+import com.ridecomp.core.usecase.routeGaps
 import com.ridecomp.core.usecase.valueOf
 import com.ridecomp.core.util.Outcome
 import com.ridecomp.ui.component.ChartValue
@@ -63,6 +64,8 @@ data class ActivityDetailUiState(
     val sections: ImmutableList<DetailSection> = persistentListOf(),
     /** The ride's line for the route sketch (same downsampling as the charts); empty without GPS. */
     val route: ImmutableList<MapPoint> = persistentListOf(),
+    /** Segments of [route] drawn without GPS (index i = the line from point i to i + 1), shown dashed (D-149). */
+    val routeGaps: ImmutableList<Int> = persistentListOf(),
     val unitSystem: UnitSystem = UnitSystem.METRIC,
     /** The phone has no barometer: climbing comes from GPS and is an estimate (D-148). */
     val isAscentEstimated: Boolean = false,
@@ -233,6 +236,7 @@ class ActivityDetailViewModel(
             val analysis = loadAnalysis(activityId, totals)
             Triple(analysis, analysis.toSections(unitSystem), analysis.points.toRoute())
         }
+        val gaps = analysis.points.routeGaps().toImmutableList()
         val zones = analysis.heartRateZones?.let {
             DetailHeartRateZones(it.hrMaxBpm, it.source == HrMaxSource.AGE, it.zones.toImmutableList(), it.totalSeconds)
         }
@@ -244,6 +248,7 @@ class ActivityDetailViewModel(
                 laps = laps,
                 sections = sections,
                 route = route,
+                routeGaps = gaps,
                 heartRateZones = zones,
                 powerZones = power,
                 isAnalysisLoaded = true,

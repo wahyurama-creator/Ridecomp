@@ -37,6 +37,9 @@ public enum class GuideTopic {
     SHARE_CARD,
     SAFETY,
     BATTERY,
+
+    /** GPS lost in a forest or tunnel: what the recording does and how to keep the signal (D-149). */
+    GPS_SIGNAL,
 }
 
 /**

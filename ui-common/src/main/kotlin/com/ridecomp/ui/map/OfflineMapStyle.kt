@@ -106,6 +106,9 @@ internal object OfflineMapStyle {
         "{\"id\":\"route\",\"type\":\"line\",\"source\":\"${MapSourceIds.ROUTE}\"," +
             "\"layout\":{\"line-cap\":\"round\",\"line-join\":\"round\"}," +
             "\"paint\":{\"line-color\":${hex(colors.accent)},\"line-width\":$ROUTE_WIDTH}}",
+        "{\"id\":\"route_gaps\",\"type\":\"line\",\"source\":\"${MapSourceIds.ROUTE_GAPS}\"," +
+            "\"paint\":{\"line-color\":${hex(colors.accent)},\"line-width\":$ROUTE_WIDTH," +
+            "\"line-dasharray\":[$GAP_DASH,$GAP_SPACE]}}",
         "{\"id\":\"ridden\",\"type\":\"line\",\"source\":\"${MapSourceIds.RIDDEN}\"," +
             "\"layout\":{\"line-cap\":\"round\",\"line-join\":\"round\"}," +
             "\"paint\":{\"line-color\":${hex(colors.track)},\"line-width\":$ROUTE_WIDTH}}",
@@ -144,6 +147,10 @@ internal object OfflineMapStyle {
 
     private const val RGB_MASK = 0xFFFFFF
     private const val ROUTE_WIDTH = 6f
+
+    /** Dash and space of a line without GPS, in line widths. */
+    private const val GAP_DASH = 1f
+    private const val GAP_SPACE = 1.5f
     private const val MINOR_ROAD_WIDTH = 2f
     private const val MAJOR_ROAD_WIDTH = 4f
     private const val POSITION_RADIUS = 8f
@@ -153,12 +160,15 @@ internal object OfflineMapStyle {
 /** GeoJSON sources the map composable updates while riding. */
 internal object MapSourceIds {
     const val ROUTE = "route"
+
+    /** Straight lines across stretches without GPS, dashed (D-149). */
+    const val ROUTE_GAPS = "route_gaps"
     const val RIDDEN = "ridden"
     const val POSITION = "position"
 
     /** A place to go back to, e.g. the ride start (T7.2). */
     const val MARKER = "marker"
-    val ALL = listOf(ROUTE, RIDDEN, POSITION, MARKER)
+    val ALL = listOf(ROUTE, ROUTE_GAPS, RIDDEN, POSITION, MARKER)
 }
 
 /** The online map (D-90). */
