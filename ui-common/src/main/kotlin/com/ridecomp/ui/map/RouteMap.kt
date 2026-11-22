@@ -1,5 +1,7 @@
 package com.ridecomp.ui.map
 
+import android.annotation.SuppressLint
+import android.view.MotionEvent
 import android.view.View
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
@@ -78,6 +80,11 @@ fun RouteMap(
     isCached: Boolean = false,
     /** Lines of [route] drawn without GPS (index i = point i to i + 1), dashed (D-149). */
     gaps: ImmutableList<Int> = persistentListOf(),
+    /**
+     * Drags on the map pan the map and are not taken by a parent pager or list (the ride screen's pages).
+     * Off on scrolling pages, where a drag over the map should still scroll the page.
+     */
+    isDragExclusive: Boolean = false,
 ) {
     // MapLibre is prepared off the main thread first (T11.2a); meanwhile an empty box of the same size.
     // The whole map then replaces the box in one composition: a MapView added later into an existing box
@@ -111,6 +118,7 @@ fun RouteMap(
         onUserMoved = onUserMoved,
         marker = marker,
         gaps = gaps,
+        isDragExclusive = isDragExclusive,
     )
 }
 
@@ -131,6 +139,7 @@ private fun PreparedRouteMap(
     /** A green dot, e.g. the start to ride back to (T7.2). */
     marker: MapPoint? = null,
     gaps: ImmutableList<Int> = persistentListOf(),
+    isDragExclusive: Boolean = false,
 ) {
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
@@ -142,7 +151,10 @@ private fun PreparedRouteMap(
     var map by remember { mutableStateOf<MapLibreMap?>(null) }
     var style by remember { mutableStateOf<Style?>(null) }
     val mapView = remember {
-        MapView(context, options).apply { onCreate(null) }
+        MapView(context, options).apply {
+            onCreate(null)
+            if (isDragExclusive) keepDragsFromParent()
+        }
     }
     DisposableEffect(lifecycle, mapView) {
         val observer = mapView.lifecycleObserver()
@@ -217,6 +229,18 @@ private fun MapView.release(state: Lifecycle.State) {
     if (state.isAtLeast(Lifecycle.State.RESUMED)) onPause()
     if (state.isAtLeast(Lifecycle.State.STARTED)) onStop()
     onDestroy()
+}
+
+/**
+ * From the first touch the parent may not take the gesture over: in a pager, Compose honours this and the
+ * drag pans the map instead of turning the page. The map still handles the touch itself.
+ */
+@SuppressLint("ClickableViewAccessibility") // Not a click: only claims the drag; the map's own handling runs.
+private fun View.keepDragsFromParent() {
+    setOnTouchListener { view, event ->
+        if (event.actionMasked == MotionEvent.ACTION_DOWN) view.parent?.requestDisallowInterceptTouchEvent(true)
+        false
+    }
 }
 
 /** North-up, no tilt, our own attribution; a user pan reports [onUserMoved] (stops following). */
